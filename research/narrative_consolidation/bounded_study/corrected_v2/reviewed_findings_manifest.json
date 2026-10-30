@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "main_worlds": 10000,
+  "exploratory_worlds": 200,
+  "independent_confirmation_seeds": 100,
+  "source_sha256": "da40aba65a470052bfaa6ae3c8c202ebe2eda196c790d2692afe2b4d0d465bcc",
+  "main_frozen_plan_sha256": "a832ddd6ef94a7ec4a5459e1e6bce631c58f7ee5e1ea102018ec055965521c94",
+  "final_findings_sha256": "8453e3b2b8225d56476ebe0344793fb0a4dc256631788ba308d9727aaefc405b"
+}

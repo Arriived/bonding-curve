@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "worlds": [
+    {
+      "world": "base:C:idle:30037",
+      "expected": "186b4a04d10cb246c8ecb34f160a307399c88ba3268a4955f9f9f4e7b9e10af5",
+      "actual": "186b4a04d10cb246c8ecb34f160a307399c88ba3268a4955f9f9f4e7b9e10af5",
+      "passed": true
+    },
+    {
+      "world": "spam90:C:trained:30073",
+      "expected": "fb4baa193bfc1c024c23766f66999d242b76988749d073ade9e173278407509a",
+      "actual": "fb4baa193bfc1c024c23766f66999d242b76988749d073ade9e173278407509a",
+      "passed": true
+    },
+    {
+      "world": "combined90:C:trained:30042",
+      "expected": "814be0325982807926b3e24ae35e44cd39c399e3d6a8a01a48dc9a9bf9b6d9ba",
+      "actual": "814be0325982807926b3e24ae35e44cd39c399e3d6a8a01a48dc9a9bf9b6d9ba",
+      "passed": true
+    }
+  ]
+}

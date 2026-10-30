@@ -1,0 +1,221 @@
+{
+  "status": "complete",
+  "historical_runs_verified": 2800,
+  "historical_events_verified": 8800000,
+  "source_hashes_verified": true,
+  "checks": [
+    {
+      "batch": "pilot",
+      "scenario": "baseline",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "pilot",
+      "scenario": "baseline",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    },
+    {
+      "batch": "pilot",
+      "scenario": "popular",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "pilot",
+      "scenario": "popular",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    },
+    {
+      "batch": "pilot",
+      "scenario": "crash",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "pilot",
+      "scenario": "crash",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    },
+    {
+      "batch": "pilot",
+      "scenario": "bundled",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "pilot",
+      "scenario": "bundled",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    },
+    {
+      "batch": "pilot",
+      "scenario": "frontrun",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "pilot",
+      "scenario": "frontrun",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    },
+    {
+      "batch": "pilot",
+      "scenario": "bank_run",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "pilot",
+      "scenario": "bank_run",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    },
+    {
+      "batch": "long_baseline",
+      "scenario": "baseline",
+      "basis": "equal_supplies",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": false
+    },
+    {
+      "batch": "long_baseline",
+      "scenario": "baseline",
+      "basis": "equal_capital",
+      "summary_verified": true,
+      "replicated_seeds": [
+        42,
+        77,
+        141
+      ],
+      "equal_capital_verified": true
+    }
+  ],
+  "slippage_diagnostics": [
+    {
+      "basis": "equal_supplies",
+      "model": "shared",
+      "initial_price": 0.335,
+      "required": 1725.0,
+      "fixed_100_price_change": 0.01,
+      "fixed_100_relative_slippage": 0.014925373134328358,
+      "fixed_20_budget_relative_slippage": 0.008832654738232408
+    },
+    {
+      "basis": "equal_supplies",
+      "model": "independent",
+      "initial_price": 0.11,
+      "required": 600.0,
+      "fixed_100_price_change": 0.01,
+      "fixed_100_relative_slippage": 0.045454545454545456,
+      "fixed_20_budget_relative_slippage": 0.0767535245658873
+    },
+    {
+      "basis": "equal_capital",
+      "model": "shared",
+      "initial_price": 0.335,
+      "required": 1725.0,
+      "fixed_100_price_change": 0.01,
+      "fixed_100_relative_slippage": 0.014925373134328358,
+      "fixed_20_budget_relative_slippage": 0.008832654738232408
+    },
+    {
+      "basis": "equal_capital",
+      "model": "independent",
+      "initial_price": 0.18601075237738274,
+      "required": 1724.9999999999998,
+      "fixed_100_price_change": 0.01,
+      "fixed_100_relative_slippage": 0.02688016652852352,
+      "fixed_20_budget_relative_slippage": 0.028111478860331388
+    }
+  ],
+  "legacy_underfunding_example": {
+    "required": 145,
+    "actual": 144.9999999995,
+    "buffer": -4.999947122996673e-10,
+    "accepted_by_legacy": true
+  },
+  "elapsed_seconds": 40.22245900006965
+}

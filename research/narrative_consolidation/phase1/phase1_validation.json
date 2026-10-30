@@ -1,0 +1,55 @@
+{
+  "created_at_utc": "2026-10-30T06:34:36.207665+00:00",
+  "status": "passed",
+  "phase": "Phase 1 only; no new A-D simulation engine executed",
+  "original_files_verified": 445,
+  "existing_test_baseline": {
+    "tests": 138,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 138,
+    "duration_seconds": 63.447,
+    "xml_sha256": "48c6f4068f750c75d9661ea1fef21bc2ee0a5eb9b10b395a364dc2f2465a0b5f"
+  },
+  "document_sha256": {
+    "PRIOR_ART.md": "7875fd4aa608b2fb4fb24efeb2936683821904249a69ce35f5ed2c7271d4c889",
+    "MECHANISM_DESIGNS.md": "e09ecaef94695635811d7a96c0df7c6b2cc4d0ff01bc6a305bf52d2d4c0062ab",
+    "ECONOMIC_INVARIANTS.md": "5ee38ad426800a1ebdd1466cda14c27c3c003b7c9d5615e31c2e5cb89bc0b644",
+    "RESEARCH_PLAN.md": "e913fa175fd4f6bdf523c36a4513ab4505bf3064897a08d9bff653117e337477"
+  },
+  "phase1_script_sha256": {
+    "probe_public_data.py": "ec345061f6f4da2986961b05eefba974629b5d3dbfb1e8f2e82fcad0fa8c8945",
+    "run_baseline.py": "64f1149c2f81916a6f37f57c4bcab4cf84f9d79cb666d9f83b838596e0cbcfc2",
+    "validate_phase1.py": "305edb0f636218f0063a08cb1f4de02a4c4a94f48dc314ed5cdf08a3c1af7813"
+  },
+  "preservation_manifest_sha256": "8c020de4a1e2da1dd65f5d6e0a40797b9378cd31bac225ef63fe090cdbb07076",
+  "arithmetic_witnesses": {
+    "scope": "Exact analytical examples, zero fees/costs, abstract quote units; not research outcome estimates",
+    "reserve_vs_cap": {
+      "reserve": "60.0000",
+      "market_cap": "110.0000"
+    },
+    "terminal_vs_early_exit": {
+      "terminal_each": "30.0000",
+      "early": "42.5000",
+      "late": "17.5000"
+    },
+    "sell_depth_5pct": "5.89875000",
+    "migration_ordering": {
+      "attacker_outlay": "160.0000",
+      "attacker_proceeds": "260.0000",
+      "complete_exit_profit": "100.0000",
+      "victim_extra_cost": "100.0000"
+    },
+    "illustrative_acceptance_thresholds": [
+      "2/3",
+      "5/6"
+    ]
+  },
+  "data_status": {
+    "PNUT": "snapshot_only",
+    "NEIRO": "snapshot_only"
+  },
+  "failures": []
+}

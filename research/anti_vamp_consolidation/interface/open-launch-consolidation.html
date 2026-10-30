@@ -1,0 +1,113 @@
+<div id="open-launch-concept" class="viz-carousel" aria-label="Open launchpad entry points">
+  <section data-variant="Narrative first" aria-label="Narrative page concept">
+    <div class="oc-app" data-view="narrative">
+      <header class="oc-top"><span class="oc-brand">Converge <span>concept</span></span><span class="oc-top-note">Illustrative coins · no live orders</span></header>
+      <div class="oc-shell">
+        <aside class="oc-sidebar"><span class="oc-overline">DISCOVER NARRATIVES</span><button type="button" class="oc-nav oc-selected cursor-interaction">☾ Moon dog</button><span class="oc-nav">✦ AI frogs</span><span class="oc-nav">◉ Space cats</span><button type="button" class="oc-launch cursor-interaction" data-action="launch">Create a coin</button><span class="oc-small">0 platform launch fee<br>Network costs additional</span></aside>
+        <main class="oc-main">
+          <div class="oc-breadcrumb">Narratives / Moon dog</div>
+          <div class="oc-title-row"><div><h2>Moon dog</h2><span class="oc-muted">One group · independent coins</span></div><span class="oc-label">Open entry</span></div>
+          <div class="oc-lead"><span class="oc-overline">CURRENT LEAD · EXAMPLE MINT A</span><h3>☾ MOONDOG <span>MDOG</span></h3><div class="oc-lead-meta">Public activity ranking · expires in 6h</div><button type="button" class="oc-primary cursor-interaction" data-action="lead">Review MDOG purchase</button><span class="oc-small">The ranking can be manipulated.</span></div>
+          <div class="oc-list-head"><h3>Choose a coin</h3><span class="oc-small">Each keeps its own market</span></div>
+          <div class="oc-coins"><button type="button" class="oc-coin cursor-interaction" data-mint="A"><span>☾ MOONDOG <small>Example mint A</small></span><span>Current lead →</span></button><button type="button" class="oc-coin cursor-interaction" data-mint="B"><span>◉ ORBITDOG <small>Example mint B</small></span><span>Trade directly →</span></button><button type="button" class="oc-coin cursor-interaction" data-mint="C"><span>✦ LUNAPUP <small>Example mint C</small></span><span>Late entrant →</span></button></div>
+          <div class="oc-status" aria-live="polite">Existing holdings stay in the coin you bought.</div>
+        </main>
+        <aside class="oc-order"><span class="oc-overline">YOUR CHOICE</span><h3>Review purchase</h3><label>Amount <input type="number" min="1" value="20" aria-label="Purchase amount in abstract quote units"></label><span class="oc-small">Illustrative quote units</span><div class="oc-receive"><span>You receive</span><strong data-received>MDOG · example mint A</strong></div><div class="oc-order-note">Your budget buys only the named coin. Review the actual output and fees before signing.</div><button type="button" class="oc-primary cursor-interaction" data-action="review">Preview confirmation</button><button type="button" class="oc-secondary cursor-interaction" data-action="direct">Choose ORBITDOG instead</button><div class="oc-receipt" aria-live="polite"></div></aside>
+      </div>
+      <div class="oc-creator" hidden><div class="oc-creator-head"><h3>Create an independent coin</h3><button type="button" class="oc-secondary cursor-interaction" data-action="close-launch">Back to group</button></div><label>Coin name <input aria-label="New coin name" value="Another Moon Dog" maxlength="40"></label><div class="oc-order-note">No creator purchase required. Network fees and account costs are quoted separately. Joining this group does not transfer your fees or existing holders.</div><button type="button" class="oc-primary cursor-interaction" data-action="create">Preview creation</button><div class="oc-created" aria-live="polite"></div></div>
+    </div>
+  </section>
+  <section data-variant="Coin first" aria-label="Individual token page concept" hidden>
+    <div class="oc-app" data-view="coin">
+      <header class="oc-top"><span class="oc-brand">Converge <span>concept</span></span><span class="oc-top-note">Illustrative coins · no live orders</span></header>
+      <div class="oc-token-shell"><main class="oc-main"><div class="oc-breadcrumb">Moon dog / ORBITDOG</div><div class="oc-title-row"><div><h2>◉ ORBITDOG</h2><span class="oc-muted">ORB · example mint B</span></div><span class="oc-label">Independent coin</span></div><div class="oc-market"><div class="oc-orbit">◉</div><span>ORBITDOG's own market</span><small>No shared backing with other coins</small></div><div class="oc-alternative"><span class="oc-overline">PART OF THE MOON DOG GROUP</span><h3>The current lead is MDOG</h3><span class="oc-muted">Review another coin, or keep buying ORBITDOG.</span><button type="button" class="oc-secondary cursor-interaction" data-action="lead">Review MDOG instead →</button><span class="oc-small">An alternative purchase, with your consent.</span></div><div class="oc-status" aria-live="polite">Your ORBITDOG holdings remain ORBITDOG.</div></main><aside class="oc-order"><span class="oc-overline">DIRECT PURCHASE</span><h3>Buy ORBITDOG</h3><label>Amount <input type="number" min="1" value="20" aria-label="Purchase amount in abstract quote units"></label><span class="oc-small">Illustrative quote units</span><div class="oc-receive"><span>You receive</span><strong data-received>ORB · example mint B</strong></div><div class="oc-order-note">This coin's direct market stays available, regardless of the group's current lead.</div><button type="button" class="oc-primary cursor-interaction" data-action="review">Preview confirmation</button><button type="button" class="oc-secondary cursor-interaction" data-action="direct">Keep ORBITDOG selected</button><div class="oc-receipt" aria-live="polite"></div></aside></div>
+    </div>
+  </section>
+</div>
+<style>
+#open-launch-concept .oc-app{--oc-bg:light-dark(#fcfcfa,#161918);--oc-panel:light-dark(#f1f3ef,#232925);--oc-text:light-dark(#17241c,#e7eee8);--oc-muted:light-dark(#526359,#a6b8aa);--oc-line:light-dark(#d8e0d8,#3b4840);--oc-primary:light-dark(#214d35,#b6d5ba);--oc-on-primary:light-dark(#f4fbf5,#18291c);color-scheme:light dark;background:var(--oc-bg);color:var(--oc-text);font:400 14px/1.5 system-ui,sans-serif;border:1px solid var(--oc-line);border-radius:15px;overflow:hidden;min-height:560px}
+#open-launch-concept .oc-app *{box-sizing:border-box}
+#open-launch-concept .oc-top{padding:19px 24px;border-bottom:1px solid var(--oc-line);display:flex;align-items:center;gap:20px;justify-content:space-between}
+#open-launch-concept .oc-brand{font-size:20px;font-weight:500;letter-spacing:-.5px}
+#open-launch-concept .oc-brand span{font-size:12px;color:var(--oc-muted);letter-spacing:0;margin-left:5px}
+#open-launch-concept .oc-top-note{font-size:12px;color:var(--oc-muted);margin-right:75px}
+#open-launch-concept .oc-shell{display:grid;grid-template-columns:155px minmax(0,1fr) 235px}
+#open-launch-concept .oc-token-shell{display:grid;grid-template-columns:minmax(0,1fr) 285px;max-width:870px;margin:auto}
+#open-launch-concept .oc-sidebar{padding:25px 14px;border-right:1px solid var(--oc-line);display:flex;flex-direction:column;gap:13px}
+#open-launch-concept .oc-main{padding:23px;min-width:0}
+#open-launch-concept .oc-order{padding:26px 20px;border-left:1px solid var(--oc-line);background:var(--oc-panel);display:flex;flex-direction:column;gap:12px}
+#open-launch-concept .oc-overline{font-size:11px;letter-spacing:1.1px;font-weight:500;color:var(--oc-muted)}
+#open-launch-concept .oc-nav{font:inherit;color:var(--oc-text);padding:9px 8px;text-align:left;border:0;background:none;border-radius:7px}
+#open-launch-concept .oc-selected{background:var(--oc-panel);font-weight:500}
+#open-launch-concept .oc-launch{font:500 13px/1.5 system-ui;background:none;color:var(--oc-text);border:1px solid var(--oc-line);border-radius:7px;padding:10px;margin-top:22px}
+#open-launch-concept h2{font:500 28px/1.2 system-ui;letter-spacing:-.7px;margin:0 0 7px}
+#open-launch-concept h3{font:500 16px/1.4 system-ui;margin:0}
+#open-launch-concept .oc-breadcrumb{font-size:12px;color:var(--oc-muted);margin-bottom:20px}
+#open-launch-concept .oc-title-row{display:flex;justify-content:space-between;gap:10px;align-items:start;margin-bottom:22px}
+#open-launch-concept .oc-muted,#open-launch-concept .oc-small{color:var(--oc-muted)}
+#open-launch-concept .oc-small{font-size:12px}
+#open-launch-concept .oc-label{font-size:11px;padding:4px 8px;background:var(--oc-panel);border-radius:20px;white-space:nowrap}
+#open-launch-concept .oc-lead{background:var(--oc-panel);border-radius:10px;padding:19px;display:flex;flex-direction:column;gap:9px}
+#open-launch-concept .oc-lead h3{font-size:23px}
+#open-launch-concept .oc-lead h3 span{font-size:12px;color:var(--oc-muted);margin-left:5px}
+#open-launch-concept .oc-lead-meta{font-size:12px;color:var(--oc-muted);margin-bottom:4px}
+#open-launch-concept button{cursor:inherit}
+#open-launch-concept .oc-primary,#open-launch-concept .oc-secondary{font:500 13px/1.4 system-ui;border-radius:7px;padding:11px 12px;text-align:center;white-space:normal}
+#open-launch-concept .oc-primary{border:0;background:var(--oc-primary);color:var(--oc-on-primary)}
+#open-launch-concept .oc-secondary{border:1px solid var(--oc-line);background:var(--oc-bg);color:var(--oc-text)}
+#open-launch-concept button:disabled{opacity:.55}
+#open-launch-concept .oc-list-head{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:23px 0 10px}
+#open-launch-concept .oc-coins{display:flex;flex-direction:column}
+#open-launch-concept .oc-coin{font:400 13px/1.4 system-ui;display:flex;justify-content:space-between;gap:10px;padding:13px 0;background:none;border:0;border-top:1px solid var(--oc-line);color:var(--oc-text);text-align:left;align-items:center}
+#open-launch-concept .oc-coin small{display:block;font-size:11px;color:var(--oc-muted);margin:4px 0 0 19px}
+#open-launch-concept .oc-coin>span:last-child{font-size:11px;color:var(--oc-muted)}
+#open-launch-concept .oc-status{font-size:12px;color:var(--oc-muted);margin-top:17px}
+#open-launch-concept label{display:flex;flex-direction:column;gap:6px;font-size:12px}
+#open-launch-concept input{width:100%;min-width:0;background:var(--oc-bg);border:1px solid var(--oc-line);border-radius:7px;color:var(--oc-text);padding:11px;font:400 17px system-ui}
+#open-launch-concept .oc-receive{display:flex;flex-direction:column;gap:6px;padding:15px 0;border-top:1px solid var(--oc-line);border-bottom:1px solid var(--oc-line);font-size:12px}
+#open-launch-concept strong{font-weight:500;font-size:14px}
+#open-launch-concept .oc-order-note{font-size:12px;color:var(--oc-muted)}
+#open-launch-concept .oc-receipt{font-size:12px;min-height:35px;color:var(--oc-text)}
+#open-launch-concept .oc-market{height:180px;background:var(--oc-panel);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;margin-bottom:22px}
+#open-launch-concept .oc-market small{color:var(--oc-muted);font-size:12px}
+#open-launch-concept .oc-orbit{font-size:54px;line-height:1;margin-bottom:9px}
+#open-launch-concept .oc-alternative{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--oc-line);border-radius:10px}
+#open-launch-concept .oc-creator{padding:28px;max-width:650px;margin:auto;display:flex;flex-direction:column;gap:18px;min-height:485px}
+#open-launch-concept .oc-creator[hidden]{display:none}
+#open-launch-concept .oc-shell[hidden]{display:none}
+#open-launch-concept .oc-creator-head{display:flex;justify-content:space-between;align-items:center;gap:15px}
+@media(max-width:780px){#open-launch-concept .oc-sidebar{display:none}#open-launch-concept .oc-shell{grid-template-columns:minmax(0,1fr) 235px}#open-launch-concept .oc-top-note{margin-right:0}#open-launch-concept .oc-list-head{align-items:start;flex-direction:column}}
+@media(max-width:540px){#open-launch-concept .oc-shell,#open-launch-concept .oc-token-shell{display:flex;flex-direction:column}#open-launch-concept .oc-main{padding:20px}#open-launch-concept .oc-order{border-left:0;border-top:1px solid var(--oc-line);padding:20px}#open-launch-concept .oc-top{align-items:start;padding:18px;gap:8px;flex-direction:column}#open-launch-concept .oc-title-row{flex-wrap:wrap}#open-launch-concept .oc-app{min-height:960px}#open-launch-concept .oc-creator-head{align-items:start;flex-direction:column}}
+</style>
+<script>
+(() => {
+ const root=document.getElementById('open-launch-concept');
+ const labels={A:'MDOG · example mint A',B:'ORB · example mint B',C:'LUNA · example mint C'};
+ const saved=window.openai?.widgetState?.modelContent||{};
+ root.querySelectorAll('.oc-app').forEach(app=>{
+   const view=app.dataset.view;
+   const state={mint:saved.view===view&&labels[saved.mint]?saved.mint:(view==='coin'?'B':'A'),recommendation:saved.view===view&&['Available','Daily limit reached','Expired'].includes(saved.recommendation)?saved.recommendation:'Available'};
+   const received=app.querySelector('[data-received]');
+   const receipt=app.querySelector('.oc-receipt');
+   const status=app.querySelector('.oc-status');
+   const initialStatus=status.textContent;
+   function render(){received.textContent=labels[state.mint];app.querySelector('.oc-order h3').textContent=`Buy ${{A:'MOONDOG',B:'ORBITDOG',C:'LUNAPUP'}[state.mint]}`;app.querySelector('.oc-order .oc-overline').textContent='YOUR CHOICE';app.querySelectorAll('[data-action="lead"]').forEach(b=>b.disabled=state.recommendation!=='Available');status.textContent=state.recommendation==='Available'?initialStatus:state.recommendation==='Daily limit reached'?'Recommendation limit reached. Direct purchases remain available.':'Recommendation expired. Choose a coin directly.';}
+   function persist(){Promise.resolve(window.openai?.setWidgetState?.({modelContent:{view,mint:state.mint,recommendation:state.recommendation},privateContent:null})).catch(()=>{});}
+   function select(mint){state.mint=mint;receipt.textContent='';render();persist();}
+   app.querySelectorAll('[data-mint]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.mint)));
+   app.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{
+     const action=b.dataset.action;
+     if(action==='lead')select('A');
+     if(action==='direct')select('B');
+     if(action==='review'){const amount=Number(app.querySelector('.oc-order input').value);receipt.textContent=amount>0?`Preview: spend up to ${amount} quote units for ${labels[state.mint]}. No order submitted.`:'Enter a positive amount.';persist();}
+     if(action==='launch'){app.querySelector('.oc-shell').hidden=true;app.querySelector('.oc-creator').hidden=false;}
+     if(action==='close-launch'){app.querySelector('.oc-shell').hidden=false;app.querySelector('.oc-creator').hidden=true;}
+     if(action==='create'){const name=app.querySelector('.oc-creator input').value.trim();app.querySelector('.oc-created').textContent=name?`${name}: independent launch preview. Late entry does not reopen the finalized contest.`:'Enter a coin name.';}
+   }));
+   render();
+   window.addEventListener('openai:set_globals',event=>{const next=event.detail?.globals?.widgetState?.modelContent;if(next?.view===view&&labels[next.mint]){state.mint=next.mint;if(['Available','Daily limit reached','Expired'].includes(next.recommendation))state.recommendation=next.recommendation;render();}});
+   app.setAttribute('aria-label',view==='coin'?'Individual coin purchase':'Narrative group purchase');
+   if(globalThis.Tweak){const tweak=new Tweak({container:app,onChange:render});tweak.addSelect(state,'recommendation',{label:'Recommendation state',options:['Available','Daily limit reached','Expired']});}
+ });
+})();
+</script>

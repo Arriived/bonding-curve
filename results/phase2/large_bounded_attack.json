@@ -1,0 +1,14 @@
+{
+  "victim_fraction": 0.6,
+  "attacker_fraction": 0.1,
+  "fee": 0.003,
+  "attacker_capital": 5000,
+  "victim_capital": 20000,
+  "victim_filled": true,
+  "victim_payment_tolerance": 0.01,
+  "victim_original_payment": 12633.785346165858,
+  "victim_extra_payment": 8.495090803842913,
+  "attacker_profit_after_trading_fees": 1.3440722034599686,
+  "network_expense": 0.0,
+  "accounting": "exact rational; actual funded mint and burn"
+}

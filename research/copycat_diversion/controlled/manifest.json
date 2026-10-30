@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "cases": 216,
+  "positive_cases": 100,
+  "max_positive_profit": 45375.49322487903,
+  "search": "65-iteration golden-section plus 100 logarithmic sizes and abstention; funded execution validated",
+  "minimum_leader_output_fraction": 0.98,
+  "gas_per_transaction": 0.05,
+  "synthetic": true
+}

@@ -1,0 +1,194 @@
+[
+  {
+    "variant": "volume5_buyer_1pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -1.0373923942097463e-12,
+    "min_cash": -1.0373923942097463e-12
+  },
+  {
+    "variant": "volume5_buyer_1pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -1.4210854715202004e-13,
+    "min_cash": -1.1226575225009583e-12
+  },
+  {
+    "variant": "volume5_buyer_3pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -1.4210854715202004e-13,
+    "min_cash": -2.1316282072803006e-13
+  },
+  {
+    "variant": "volume5_buyer_3pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -1.2505552149377763e-12,
+    "min_cash": -2.3874235921539366e-12
+  },
+  {
+    "variant": "volume5_buyer_5pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -5.684341886080801e-13,
+    "min_cash": -5.684341886080801e-13
+  },
+  {
+    "variant": "volume5_buyer_5pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -5.684341886080801e-13,
+    "min_cash": -1.0231815394945443e-12
+  },
+  {
+    "variant": "volume5_buyer_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -3.410605131648481e-13,
+    "min_cash": -3.410605131648481e-13
+  },
+  {
+    "variant": "volume5_buyer_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -1.3642420526593924e-12,
+    "min_cash": -2.9558577807620168e-12
+  },
+  {
+    "variant": "volume5_burn_1pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -1.0231815394945443e-12,
+    "min_cash": -1.6200374375330284e-12
+  },
+  {
+    "variant": "volume5_burn_1pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -1.1368683772161603e-13,
+    "min_cash": -1.4210854715202004e-12
+  },
+  {
+    "variant": "volume5_burn_3pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -1.1368683772161603e-13,
+    "min_cash": -5.6274984672199935e-12
+  },
+  {
+    "variant": "volume5_burn_3pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -1.2221335055073723e-12,
+    "min_cash": -5.9969806898152456e-12
+  },
+  {
+    "variant": "volume5_burn_3pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":32,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Insufficient cash",
+    "source_cash": 159020.94582833027,
+    "min_cash": 0.0
+  },
+  {
+    "variant": "volume5_burn_3pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":32,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Insufficient cash",
+    "source_cash": 161169.9638869175,
+    "min_cash": -5.968558980384842e-13
+  },
+  {
+    "variant": "volume5_burn_5pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -5.684341886080801e-13,
+    "min_cash": -7.048583938740194e-12
+  },
+  {
+    "variant": "volume5_burn_5pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -5.684341886080801e-13,
+    "min_cash": -5.7980287238024175e-12
+  },
+  {
+    "variant": "volume5_burn_5pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":32,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Insufficient cash",
+    "source_cash": 0.0,
+    "min_cash": -1.0231815394945443e-12
+  },
+  {
+    "variant": "volume5_burn_5pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":32,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Insufficient cash",
+    "source_cash": 0.0,
+    "min_cash": -1.9326762412674725e-12
+  },
+  {
+    "variant": "volume5_burn_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Unfunded transfer",
+    "source_cash": -2.2737367544323206e-13,
+    "min_cash": -1.2732925824820995e-11
+  },
+  {
+    "variant": "volume5_burn_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":3,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1.0,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Unfunded transfer",
+    "source_cash": -1.3642420526593924e-12,
+    "min_cash": -1.3528733688872308e-11
+  },
+  {
+    "variant": "volume5_burn_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":12,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Insufficient cash",
+    "source_cash": 0.0,
+    "min_cash": -2.0463630789890885e-12
+  },
+  {
+    "variant": "volume5_burn_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":12,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Insufficient cash",
+    "source_cash": 98233.09142670035,
+    "min_cash": -2.0463630789890885e-12
+  },
+  {
+    "variant": "volume5_burn_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":32,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 11,
+    "error": "Insufficient cash",
+    "source_cash": 0.0,
+    "min_cash": 0.0
+  },
+  {
+    "variant": "volume5_burn_10pct_exact_fixed_badge0",
+    "strategy": "{\"aliases\":32,\"copies\":0,\"exit_at\":235.0,\"exit_on_capture\":true,\"family\":\"flip\",\"front_mode\":\"optimal\",\"front_scale\":1.0,\"pulse\":6,\"pump\":10.0,\"residual\":1e-06,\"rounds\":3,\"seed_budget\":10000.0,\"start\":2.0,\"ticker\":\"ELON\"}",
+    "seed": 22,
+    "error": "Insufficient cash",
+    "source_cash": 0.0,
+    "min_cash": -2.9558577807620168e-12
+  }
+]

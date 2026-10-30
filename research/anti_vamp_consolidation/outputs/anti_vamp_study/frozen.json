@@ -1,0 +1,146 @@
+{
+  "status": "frozen_before_confirmation",
+  "source_hashes": {
+    "ledger.py": "3a681a5e9a6f5ce1cfb71d0889d98046b6fca21cf97026e56ab5b77988bbc5b3",
+    "model.py": "658bbeb72d3cdfe832bb85455ae67210328f04d2144b3eba5c4f329485da4663",
+    "study.py": "2f0c556a028d48b5c09444d44a6d367d2def956442db3dbd229c0ffbbdb5210d",
+    "test_model.py": "47d673e955cfc9e4b5d71b75021cbb8ec2c4269b5488023b90e15733118337fd"
+  },
+  "created": "2026-10-30T10:39:29.032890+00:00",
+  "selected": [
+    {
+      "cell": "copies9__independent",
+      "policy": {
+        "target": 0,
+        "start": 1,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 905.3106745833334,
+      "family": "overall"
+    },
+    {
+      "cell": "copies9__original_first",
+      "policy": {
+        "target": 0,
+        "start": 1,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1629.9585157499998,
+      "family": "overall"
+    },
+    {
+      "cell": "copies9__elected_120s",
+      "policy": {
+        "target": 0,
+        "start": 1,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1558.1708460833336,
+      "family": "overall"
+    },
+    {
+      "cell": "copies9__elected_300s",
+      "policy": {
+        "target": 0,
+        "start": 1,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1440.891300666667,
+      "family": "overall"
+    },
+    {
+      "cell": "copies99__original_first",
+      "policy": {
+        "target": 0,
+        "start": 1,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1629.9585157499998,
+      "family": "overall"
+    },
+    {
+      "cell": "copies99__elected_120s",
+      "policy": {
+        "target": 0,
+        "start": 1,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1558.1708460833336,
+      "family": "overall"
+    },
+    {
+      "cell": "copies9__independent",
+      "family": "copy_only",
+      "policy": {
+        "target": 1,
+        "start": 16,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 337.1028548333333
+    },
+    {
+      "cell": "copies9__original_first",
+      "family": "copy_only",
+      "policy": {
+        "target": 1,
+        "start": 16,
+        "budget": 500,
+        "exit": 1800
+      },
+      "training_mean": 210.41960308333333
+    },
+    {
+      "cell": "copies9__elected_120s",
+      "family": "copy_only",
+      "policy": {
+        "target": 1,
+        "start": 16,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1184.7086363333333
+    },
+    {
+      "cell": "copies9__elected_300s",
+      "family": "copy_only",
+      "policy": {
+        "target": 1,
+        "start": 16,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1032.6147595000002
+    },
+    {
+      "cell": "copies99__original_first",
+      "family": "copy_only",
+      "policy": {
+        "target": 1,
+        "start": 16,
+        "budget": 500,
+        "exit": 300
+      },
+      "training_mean": 28.413541249999998
+    },
+    {
+      "cell": "copies99__elected_120s",
+      "family": "copy_only",
+      "policy": {
+        "target": 1,
+        "start": 16,
+        "budget": 2000,
+        "exit": 1800
+      },
+      "training_mean": 1046.3312551666666
+    }
+  ],
+  "plan_hash": "2ade4be3725b7d9b9b41d95ced4d7221cff8739ee16d7ac7be0a2c0b6a25d8a7",
+  "revision": "Before confirmation: separately select copy-only policies from already-completed disclosed training grid; exclude abstaining copy-only confirmation duplicates"
+}

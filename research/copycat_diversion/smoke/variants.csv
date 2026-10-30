@@ -1,0 +1,12 @@
+variant,rule,form,rate,matching,changes,window,threshold,min_age,cooldown,badge,burn,treasury_exit,volume_mode
+first_buyer_5pct_exact_fixed_badge0,first,buyer,0.05,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+threshold100000_creator_5pct_exact_fixed_badge0,threshold,creator,0.05,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+volume30_holders_5pct_exact_flip_badge0,volume,holders,0.05,exact,flip,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+held30_burn_5pct_exact_fixed_badge0,held,burn,0.05,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+first_treasury_5pct_exact_fixed_badge0,first,treasury,0.05,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+first_burn_supply_5pct_exact_fixed_badge0,first,burn,0.05,exact,fixed,30.0,100000.0,5.0,30.0,0.0,supply,never,first_buy
+first_control_0pct_exact_fixed_badge0,first,control,0.0,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+threshold100000_control_0pct_exact_fixed_badge0,threshold,control,0.0,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+volume30_control_0pct_exact_flip_badge0,volume,control,0.0,exact,flip,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+held30_control_0pct_exact_fixed_badge0,held,control,0.0,exact,fixed,30.0,100000.0,5.0,30.0,0.0,lock,never,first_buy
+first_control_0pct_exact_fixed_badge50,first,control,0.0,exact,fixed,30.0,100000.0,5.0,30.0,0.5,lock,never,first_buy

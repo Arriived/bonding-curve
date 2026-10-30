@@ -1,0 +1,20 @@
+[
+  {
+    "cell": "copies9__original_first",
+    "seed": 50037,
+    "hash": "a769663aaf9bb5145112a560513421659523a8f0c2041afd3d079e47c808f5d2",
+    "passed": true
+  },
+  {
+    "cell": "copies99__elected_120s",
+    "seed": 50073,
+    "hash": "95f587067d4c274cad21cbb0fb124b5ba89f5cd68e18cd9e8168f7607c070734",
+    "passed": true
+  },
+  {
+    "cell": "copy_attack__copies9__elected_120s",
+    "seed": 50042,
+    "hash": "a5f537ae450d679f7d7635f58ba06429637a20255cd289ba640d37aaa9ec4cc5",
+    "passed": true
+  }
+]

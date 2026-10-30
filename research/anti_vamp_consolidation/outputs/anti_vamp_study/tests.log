@@ -1,0 +1,23 @@
+test_common_budget_not_multiplied_by_copies (test_model.AntiVampTests.test_common_budget_not_multiplied_by_copies) ... ok
+test_copy_redirect_does_not_burn_old_claims (test_model.AntiVampTests.test_copy_redirect_does_not_burn_old_claims) ... ok
+test_deterministic_replay (test_model.AntiVampTests.test_deterministic_replay) ... ok
+test_election_has_no_routing_before_close (test_model.AntiVampTests.test_election_has_no_routing_before_close) ... ok
+test_flow_includes_missing_execution (test_model.AntiVampTests.test_flow_includes_missing_execution) ... ok
+test_invariants_under_attack (test_model.AntiVampTests.test_invariants_under_attack) ... ok
+test_late_copy_cannot_replace_fixed_original (test_model.AntiVampTests.test_late_copy_cannot_replace_fixed_original) ... ok
+test_no_consent_matches_independent (test_model.AntiVampTests.test_no_consent_matches_independent) ... ok
+test_no_creator_seed_or_free_redeemable_allocation (test_model.AntiVampTests.test_no_creator_seed_or_free_redeemable_allocation) ... ok
+test_optimized_invariant_agrees_with_reference (test_model.AntiVampTests.test_optimized_invariant_agrees_with_reference) ... ok
+test_original_is_first_in_default (test_model.AntiVampTests.test_original_is_first_in_default) ... ok
+test_original_router_is_active_before_election (test_model.AntiVampTests.test_original_router_is_active_before_election) ... ok
+test_preclaim_does_not_use_authenticity_oracle (test_model.AntiVampTests.test_preclaim_does_not_use_authenticity_oracle) ... ok
+test_refused_order_keeps_its_received_mint (test_model.AntiVampTests.test_refused_order_keeps_its_received_mint) ... ok
+test_sale_uses_only_associated_lot (test_model.AntiVampTests.test_sale_uses_only_associated_lot) ... ok
+test_true_original_and_elected_leader_are_separate (test_model.AntiVampTests.test_true_original_and_elected_leader_are_separate) ... ok
+test_unfunded_or_empty_election_uses_direct_markets (test_model.AntiVampTests.test_unfunded_or_empty_election_uses_direct_markets) ... ok
+test_zero_reach_matches_independent (test_model.AntiVampTests.test_zero_reach_matches_independent) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.273s
+
+OK

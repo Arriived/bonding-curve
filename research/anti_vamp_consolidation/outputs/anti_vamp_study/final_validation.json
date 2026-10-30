@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "confirmation_worlds": 11700,
+  "paired_seeds": 100,
+  "new_tests": 19,
+  "replays": 3,
+  "protected_original_files": 1061,
+  "changed_or_missing": [],
+  "repository_writes": false,
+  "findings_sha256": "9a95137f3278e9921ef57ceb77383d953bc68184547eaba93b3f60a33ce93afb",
+  "data_dictionary": "No-copy copy_creator_cash is N/A; unused creator allocation remains owned cash in a separate account."
+}

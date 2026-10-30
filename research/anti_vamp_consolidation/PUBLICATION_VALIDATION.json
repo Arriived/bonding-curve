@@ -1,0 +1,42 @@
+{
+  "publication_date": "2026-10-30",
+  "existing_tests": {
+    "command": "python -B -m pytest tests -q -p no:cacheprovider",
+    "passed": 196,
+    "exit_code": 0,
+    "environment_note": "At interpreter exit Windows denied deletion of a sandbox temporary directory; test execution completed successfully."
+  },
+  "anti_vamp_tests": {
+    "command": "python -B -m unittest discover -s research/anti_vamp_consolidation/work/anti_vamp -p test_model.py -v",
+    "passed": 19,
+    "exit_code": 0
+  },
+  "open_launch_tests": {
+    "command": "python -B -m unittest discover -s research/anti_vamp_consolidation/work/c_followup -p test_open_model.py -v",
+    "passed": 18,
+    "exit_code": 0
+  },
+  "evidence_verification": {
+    "status": "passed",
+    "confirmation_worlds": [
+      11700,
+      5600
+    ],
+    "paired_seeds_per_study": 100,
+    "anti_vamp_checkpoint_rows": 58500,
+    "anti_vamp_minute_rows": 702000,
+    "open_launch_checkpoint_rows": 22400,
+    "recorded_replays_verified": 6
+  },
+  "preservation": {
+    "original_files_checked": 1061,
+    "authorized_existing_file_edits": [
+      ".gitignore",
+      "README.md"
+    ],
+    "new_files": 123,
+    "unexpected_existing_file_changes": [],
+    "publication_date": "2026-10-30"
+  },
+  "byte_preservation": "Root .gitattributes disables line-ending rewriting so frozen evidence hashes survive clone/checkout."
+}

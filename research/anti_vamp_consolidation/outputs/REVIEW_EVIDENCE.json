@@ -1,0 +1,95 @@
+{
+  "review_date": "2026-10-30",
+  "repository": "C:\\Users\\moadl\\OneDrive\\Documents\\ChatGPT\\bonding curve research",
+  "uploaded_documents": {
+    "PRIOR_ART.md": {
+      "repository_sha256": "7875fd4aa608b2fb4fb24efeb2936683821904249a69ce35f5ed2c7271d4c889",
+      "uploaded_sha256": "7875fd4aa608b2fb4fb24efeb2936683821904249a69ce35f5ed2c7271d4c889",
+      "identical": true
+    },
+    "MECHANISM_DESIGNS.md": {
+      "repository_sha256": "e09ecaef94695635811d7a96c0df7c6b2cc4d0ff01bc6a305bf52d2d4c0062ab",
+      "uploaded_sha256": "e09ecaef94695635811d7a96c0df7c6b2cc4d0ff01bc6a305bf52d2d4c0062ab",
+      "identical": true
+    },
+    "ECONOMIC_INVARIANTS.md": {
+      "repository_sha256": "5ee38ad426800a1ebdd1466cda14c27c3c003b7c9d5615e31c2e5cb89bc0b644",
+      "uploaded_sha256": "5ee38ad426800a1ebdd1466cda14c27c3c003b7c9d5615e31c2e5cb89bc0b644",
+      "identical": true
+    },
+    "RESEARCH_PLAN.md": {
+      "repository_sha256": "e913fa175fd4f6bdf523c36a4513ab4505bf3064897a08d9bff653117e337477",
+      "uploaded_sha256": "e913fa175fd4f6bdf523c36a4513ab4505bf3064897a08d9bff653117e337477",
+      "identical": true
+    }
+  },
+  "phase1_preservation_recheck": {
+    "inventoried_files": 445,
+    "changed_or_missing": []
+  },
+  "archived_baseline": {
+    "tests": 138,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "recorded_seconds": 63.447,
+    "xml_sha256": "48c6f4068f750c75d9661ea1fef21bc2ee0a5eb9b10b395a364dc2f2465a0b5f",
+    "rerun_during_review": false
+  },
+  "analytical_witnesses": {
+    "scope": "Deterministic analytical witnesses; zero fees/costs; not new architecture simulations or market observations",
+    "reserve": "60.0000",
+    "cap": "110.0000",
+    "D_equal_batch": {
+      "total_tokens": "1000",
+      "total_principal": "60.0000",
+      "each_buyer_cost": "30.0000",
+      "first_exit": "42.5000",
+      "last_exit": "17.5000",
+      "first_exit_profit": "12.5000"
+    },
+    "B_support_then_original_holders_exit": {
+      "initial_reserve": "60.0000",
+      "funded_support_spend": "30",
+      "fund_tokens": "245.3624047073710317163085462170404193870962385520120275200487283318039",
+      "private_holder_sale": "84.53624047073710317163085462170404193870962385520120275200487283318042",
+      "remaining_locked_claim_reserve": "5.463759529262896828369145378295958061290376144798797247995127166819614",
+      "support_cash_increment_paid_to_original_holders": "24.53624047073710317163085462170404193870962385520120275200487283318042"
+    },
+    "depth_at_fixed_total_reserve_60": {
+      "one_market_5pct": "5.89875",
+      "two_markets_each_5pct": "2.97375",
+      "two_market_sum_5pct": "5.94750"
+    },
+    "C_equal_retention": {
+      "D": "100",
+      "acceptance": ".5",
+      "rejection_original_fraction": "0",
+      "r_W_and_r_L": ".4",
+      "extra_loss_K": "0",
+      "cohort_retained_delta": "-20.00"
+    },
+    "migration_frontrun": {
+      "outlay": "160.0000",
+      "proceeds": "260.0000",
+      "profit": "100.0000"
+    }
+  },
+  "review_scope": "Read-only review; no pytest, model imports, Phase 1 scripts or economic simulation runs",
+  "review_preservation": {
+    "before_file_count": 465,
+    "after_file_count": 465,
+    "changed_added_or_removed_paths": [],
+    "excluded_generated_or_environment_directories": [
+      ".git",
+      ".hypothesis",
+      ".pytest_cache",
+      ".tmp",
+      ".venv",
+      "__pycache__",
+      "shared_bonding_lab.egg-info"
+    ],
+    "checked_at_utc": "2026-10-30T07:04:13.141264+00:00",
+    "repository_writes_performed": false
+  }
+}

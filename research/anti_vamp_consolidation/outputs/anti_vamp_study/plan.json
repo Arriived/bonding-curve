@@ -1,0 +1,2882 @@
+{
+  "status": "predeclared",
+  "created": "2026-10-30T10:32:56.734592+00:00",
+  "source_hashes": {
+    "ledger.py": "3a681a5e9a6f5ce1cfb71d0889d98046b6fca21cf97026e56ab5b77988bbc5b3",
+    "model.py": "658bbeb72d3cdfe832bb85455ae67210328f04d2144b3eba5c4f329485da4663",
+    "study.py": "2f0c556a028d48b5c09444d44a6d367d2def956442db3dbd229c0ffbbdb5210d",
+    "test_model.py": "47d673e955cfc9e4b5d71b75021cbb8ec2c4269b5488023b90e15733118337fd"
+  },
+  "cells": [
+    {
+      "id": "copies9__independent",
+      "environment": {
+        "name": "copies9",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "c64d9134c7918fc983ed034609e059cbb958a607aa3507b622e0ac916cf5cfff",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "copies9__original_first",
+      "environment": {
+        "name": "copies9",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "653b0fe24dc9a2c44541e60f93bbe15ff0e6da61278ede4c8c49f2bf4a2aaeb5",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "copies9__elected_30s",
+      "environment": {
+        "name": "copies9",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_30s",
+        "rule": "cap",
+        "close": 30
+      },
+      "economic_key": "608ab6ba40208aca76dcf8fd5634e309b9957a0aad49b27bbe3184c0e903c4c4",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "copies9__elected_120s",
+      "environment": {
+        "name": "copies9",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "a348ea34f94df4192f59134572564ef977071dadfeae6474657380a1b581b67a",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "copies9__elected_300s",
+      "environment": {
+        "name": "copies9",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "3df25d9cdb94d6d0bc6e141e7e09a4d84af140a7609fa12cf1f5e14d9e098d4f",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "copies9__elected_900s",
+      "environment": {
+        "name": "copies9",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_900s",
+        "rule": "cap",
+        "close": 900
+      },
+      "economic_key": "35ae64969722bbdb7c7de9cf2360b6bafcb51ad80c35cccb784f818154be5f4e",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "copies49__independent",
+      "environment": {
+        "name": "copies49",
+        "coins": 50,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "3d442bcb95487b5dd995ae2a3b02a1b663a930ba72081d36518286a886be3e67",
+      "control": "copies49__independent"
+    },
+    {
+      "id": "copies49__original_first",
+      "environment": {
+        "name": "copies49",
+        "coins": 50,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "fca3cd8614e77cb2e0218e12a032399af4bcff21875d2b0aff5f23848513c74e",
+      "control": "copies49__independent"
+    },
+    {
+      "id": "copies49__elected_30s",
+      "environment": {
+        "name": "copies49",
+        "coins": 50,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_30s",
+        "rule": "cap",
+        "close": 30
+      },
+      "economic_key": "c04e2b7c844054e637dc167e47b1e9af3fdca9963226322f57e4ee66bcbf480e",
+      "control": "copies49__independent"
+    },
+    {
+      "id": "copies49__elected_120s",
+      "environment": {
+        "name": "copies49",
+        "coins": 50,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "ae92625d0ff6c3432e3599ebb2c4a7708fc8d9969851e264c1d5b093a258345a",
+      "control": "copies49__independent"
+    },
+    {
+      "id": "copies49__elected_300s",
+      "environment": {
+        "name": "copies49",
+        "coins": 50,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "43e495b2afca11d0ec144bdc8e8cd640015af89784e222536ee4c77fdaa981bc",
+      "control": "copies49__independent"
+    },
+    {
+      "id": "copies49__elected_900s",
+      "environment": {
+        "name": "copies49",
+        "coins": 50,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_900s",
+        "rule": "cap",
+        "close": 900
+      },
+      "economic_key": "c74273ca3d94fecbf520f44059ae0c54addef977dcd9181000b4db6eea4d37b1",
+      "control": "copies49__independent"
+    },
+    {
+      "id": "copies99__independent",
+      "environment": {
+        "name": "copies99",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "31eb05558d531e2a1320d2bd8bd07ef0237a25a64f88fb73b4ff684be82d7b3d",
+      "control": "copies99__independent"
+    },
+    {
+      "id": "copies99__original_first",
+      "environment": {
+        "name": "copies99",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "8b4086db1fde8ae611289fe9eb908a4a933cbcfd2683de6d219477b0940b541b",
+      "control": "copies99__independent"
+    },
+    {
+      "id": "copies99__elected_30s",
+      "environment": {
+        "name": "copies99",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_30s",
+        "rule": "cap",
+        "close": 30
+      },
+      "economic_key": "3402c160657dc851539a4f2e7fc2a191fce4d6fa89fcf57e468a646338de3efd",
+      "control": "copies99__independent"
+    },
+    {
+      "id": "copies99__elected_120s",
+      "environment": {
+        "name": "copies99",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "778025c5227a21f62fd9ac776a083e58fddde22903f4272564d63228ae3004b6",
+      "control": "copies99__independent"
+    },
+    {
+      "id": "copies99__elected_300s",
+      "environment": {
+        "name": "copies99",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "7edfabb57633e27d3d31de8234b90c8118a819feab4e4d97f77d2870aacfd5de",
+      "control": "copies99__independent"
+    },
+    {
+      "id": "copies99__elected_900s",
+      "environment": {
+        "name": "copies99",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_900s",
+        "rule": "cap",
+        "close": 900
+      },
+      "economic_key": "6251c2bf9bdbcba736dd2525e33f6ea387d9f0a50be9c5ec5a4bd38fced54bfb",
+      "control": "copies99__independent"
+    },
+    {
+      "id": "reach30_accept30__original_first",
+      "environment": {
+        "name": "reach30_accept30",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.3,
+        "acceptance": 0.3,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "3fb625e852447a9423e624ff618bab96ec117f8b956eff9bbcdf87771b112ad5",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach30_accept30__elected_120s",
+      "environment": {
+        "name": "reach30_accept30",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.3,
+        "acceptance": 0.3,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "8936bf648ccc3bdff79c8b58af15b8100c18818abbc2307a3f9385da48da109f",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach30_accept60__original_first",
+      "environment": {
+        "name": "reach30_accept60",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.3,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "3af8ddc7dd497b8626d5b6678221f278fbc7c96286b9f5d4d4616f76f3d62185",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach30_accept60__elected_120s",
+      "environment": {
+        "name": "reach30_accept60",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.3,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "bf5304db4379edc7a897fb8bc0595bb9b4516607efb919ae5597029675c8a6a0",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach30_accept100__original_first",
+      "environment": {
+        "name": "reach30_accept100",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.3,
+        "acceptance": 1.0,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "69651f596121a6b6ca81fa3edd9a0ca6a2149678e65fbce8492df70c78f0d748",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach30_accept100__elected_120s",
+      "environment": {
+        "name": "reach30_accept100",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.3,
+        "acceptance": 1.0,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "d2015609beac8c1d17a5d1608f46c38540f5dc2d2caefb85cbee2487d395cd1d",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach60_accept30__original_first",
+      "environment": {
+        "name": "reach60_accept30",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.3,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "377e6429135e7c9b07d16feb25197052b9cd5f763fc13ba3b989e9d48eee89a2",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach60_accept30__elected_120s",
+      "environment": {
+        "name": "reach60_accept30",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.3,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "6f41891507d4537120f0c5f4cd4a8abed8d21679017a6c96a5db2a8834ca6a79",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach60_accept100__original_first",
+      "environment": {
+        "name": "reach60_accept100",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 1.0,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "6776e0b1dc5e8437bab9049e3579af39e038f26145334fd592e9b09c202ff5bc",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach60_accept100__elected_120s",
+      "environment": {
+        "name": "reach60_accept100",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 1.0,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "c23364624cdf8794b1f29e4ea8ad96a4df08ce2a34a7b23f5494724c65f0c598",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach100_accept30__original_first",
+      "environment": {
+        "name": "reach100_accept30",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 1.0,
+        "acceptance": 0.3,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "c82fc147674be00adf9133c16f213eac9bf0290b991af1d455159b66ba97b0e2",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach100_accept30__elected_120s",
+      "environment": {
+        "name": "reach100_accept30",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 1.0,
+        "acceptance": 0.3,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "a7f84e1190342a6ff73a05911bbc0814112097acebc42030fa30c6e98f6587ee",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach100_accept60__original_first",
+      "environment": {
+        "name": "reach100_accept60",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 1.0,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "c08d4fe55ab9d4af9542e425bff600df3242d27e9b9d6bdd2ae6c2aae5dfaa8b",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach100_accept60__elected_120s",
+      "environment": {
+        "name": "reach100_accept60",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 1.0,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "ace50c20aa8ededd3a02d18bdb17b87ef476ed4254c845e32e32a8bbe678f3fb",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach100_accept100__original_first",
+      "environment": {
+        "name": "reach100_accept100",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 1.0,
+        "acceptance": 1.0,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "091d1d3dfe622ec4713c040a84a6c12353e57eb81f901cfc73d353315372da45",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reach100_accept100__elected_120s",
+      "environment": {
+        "name": "reach100_accept100",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 1.0,
+        "acceptance": 1.0,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "52e016f9ef7503c6c2c620989be21109a4a2342e55c6ee869b8a95d01d84e8f3",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "fast10__independent",
+      "environment": {
+        "name": "fast10",
+        "coins": 10,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "ea4ebb336536d61e2c76f6ede53be4346ccb16e85202bf1de20187c10408c5ce",
+      "control": "fast10__independent"
+    },
+    {
+      "id": "fast10__original_first",
+      "environment": {
+        "name": "fast10",
+        "coins": 10,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "a39823a5f5b26c1a40c616d0844daba86ca628cd2e801195ffa76750614a1e56",
+      "control": "fast10__independent"
+    },
+    {
+      "id": "fast10__elected_120s",
+      "environment": {
+        "name": "fast10",
+        "coins": 10,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "7cb1414d4808da4b6548f3a5456b90cc64897843db5c1ac28400a1a8e2880f8b",
+      "control": "fast10__independent"
+    },
+    {
+      "id": "fast10__elected_300s",
+      "environment": {
+        "name": "fast10",
+        "coins": 10,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "192e081f2a946f5fde63269ea770acc1828d8d6a7a5ae737a98b125e45e7f0d2",
+      "control": "fast10__independent"
+    },
+    {
+      "id": "slow10__independent",
+      "environment": {
+        "name": "slow10",
+        "coins": 10,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "b18f77866646f823a31e79bc31f0585429ab429fb8f5daa64941d0409a9ff2c6",
+      "control": "slow10__independent"
+    },
+    {
+      "id": "slow10__original_first",
+      "environment": {
+        "name": "slow10",
+        "coins": 10,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "3d448289de01e07eb7d45bc7f1973cb29168a88b7fd49c45dda61faf4e5d13d0",
+      "control": "slow10__independent"
+    },
+    {
+      "id": "slow10__elected_120s",
+      "environment": {
+        "name": "slow10",
+        "coins": 10,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "2825874fcc9e7fc246284b144e00883b041a1cdf841ec2aebf730b619269f8c8",
+      "control": "slow10__independent"
+    },
+    {
+      "id": "slow10__elected_300s",
+      "environment": {
+        "name": "slow10",
+        "coins": 10,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "10335726c674147227d4ee52f0f25827e7dda581cab5f4fa07927f352e7e2aa9",
+      "control": "slow10__independent"
+    },
+    {
+      "id": "viral10__independent",
+      "environment": {
+        "name": "viral10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "9a4b143b03024ff6d1ace9084fee178203a729a1ceb05c509aacbebae10e693e",
+      "control": "viral10__independent"
+    },
+    {
+      "id": "viral10__original_first",
+      "environment": {
+        "name": "viral10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "71739d35d500534c62ede7487e5944f6cf840d53ca909543e1ba6cfd52498a00",
+      "control": "viral10__independent"
+    },
+    {
+      "id": "viral10__elected_120s",
+      "environment": {
+        "name": "viral10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "92a56d798a3220bf40e476ca66e69ae8c3f949f7f2752ec53a617ed26436a19f",
+      "control": "viral10__independent"
+    },
+    {
+      "id": "viral10__elected_300s",
+      "environment": {
+        "name": "viral10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "d04467dc21033d6c3885cf04e3cda5b913064fa6fc400a8df78c964ae8035345",
+      "control": "viral10__independent"
+    },
+    {
+      "id": "position_sales10__independent",
+      "environment": {
+        "name": "position_sales10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "72a077de9af2094e22fa4755bef83677a91523259ae1f0d0546e9d81529a53a0",
+      "control": "position_sales10__independent"
+    },
+    {
+      "id": "position_sales10__original_first",
+      "environment": {
+        "name": "position_sales10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "9ff7c52b3a61d4d36b6f65fd4fc4f3bbf28a7b42420ee6b014f66472f3f5add0",
+      "control": "position_sales10__independent"
+    },
+    {
+      "id": "position_sales10__elected_120s",
+      "environment": {
+        "name": "position_sales10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "5fa56d1bc8504f0810bf5cbfb11eb6950cd5c8cbe19da449ad2ec8d4cec3ea3c",
+      "control": "position_sales10__independent"
+    },
+    {
+      "id": "position_sales10__elected_300s",
+      "environment": {
+        "name": "position_sales10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "88120ff1b5b80e126780bb78cb5d1959df6bf9a80762660442a8999183db3aea",
+      "control": "position_sales10__independent"
+    },
+    {
+      "id": "fast100__independent",
+      "environment": {
+        "name": "fast100",
+        "coins": 100,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "3f5cb9bdb1191775add330c789f5e3830c3a1f6e84df641c6c47e8d0d2298188",
+      "control": "fast100__independent"
+    },
+    {
+      "id": "fast100__original_first",
+      "environment": {
+        "name": "fast100",
+        "coins": 100,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "bd967f56c7a44d011f60df7b19ccde3a1e763ca78bc05d258af50840661a0340",
+      "control": "fast100__independent"
+    },
+    {
+      "id": "fast100__elected_120s",
+      "environment": {
+        "name": "fast100",
+        "coins": 100,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "ef9f1dd3d9679689750c84e9569ffbf2d3181e047c2db78a12cb41ee5bfd8040",
+      "control": "fast100__independent"
+    },
+    {
+      "id": "fast100__elected_300s",
+      "environment": {
+        "name": "fast100",
+        "coins": 100,
+        "half_life": 120,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "70debd3812fafdc9cecea17e4982c12f57ee186ddae2e14f1d68cd915ae50ea5",
+      "control": "fast100__independent"
+    },
+    {
+      "id": "slow100__independent",
+      "environment": {
+        "name": "slow100",
+        "coins": 100,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "963f50a0628b6a21dbb12d70489d8a133f0d02cebf2d1b4da76de183dfb3bd6c",
+      "control": "slow100__independent"
+    },
+    {
+      "id": "slow100__original_first",
+      "environment": {
+        "name": "slow100",
+        "coins": 100,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "7ab27c3375900af23a69744cb978d240ef910f5f2d3102c44d2ca2eaf6ea7a01",
+      "control": "slow100__independent"
+    },
+    {
+      "id": "slow100__elected_120s",
+      "environment": {
+        "name": "slow100",
+        "coins": 100,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "b4f6297f639217674559e50fb403c9e4f33cbaf371aa46b1820cff76b814890d",
+      "control": "slow100__independent"
+    },
+    {
+      "id": "slow100__elected_300s",
+      "environment": {
+        "name": "slow100",
+        "coins": 100,
+        "half_life": 1200,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "b2fb5eb5e3846c4b9e123f0cfa6419f92d158e09a5b94d29fcee0c54a0ade087",
+      "control": "slow100__independent"
+    },
+    {
+      "id": "viral100__independent",
+      "environment": {
+        "name": "viral100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "83cc9b0c0c733c7a8dfed2c45a29b82736a7fee68e7f04938b08c2f825188fbe",
+      "control": "viral100__independent"
+    },
+    {
+      "id": "viral100__original_first",
+      "environment": {
+        "name": "viral100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "6158424e86b34a43d0ac7dd8d381103850ddfa3d189bbc09ba0e5f1989146bd2",
+      "control": "viral100__independent"
+    },
+    {
+      "id": "viral100__elected_120s",
+      "environment": {
+        "name": "viral100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "d1f7ddd5ef33a98c0a124252e9b77bda9942b6a318e8d46512fc7303dde0300d",
+      "control": "viral100__independent"
+    },
+    {
+      "id": "viral100__elected_300s",
+      "environment": {
+        "name": "viral100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": true,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "c3f75720ac1dbf5e331856a7fa9ed48301e967e7c68f902e6edc7c35c72f7655",
+      "control": "viral100__independent"
+    },
+    {
+      "id": "position_sales100__independent",
+      "environment": {
+        "name": "position_sales100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "f7ebb011f9e7396d238fda262a0d0abcea3b6cc8e4efc8c366d8eef3380056d7",
+      "control": "position_sales100__independent"
+    },
+    {
+      "id": "position_sales100__original_first",
+      "environment": {
+        "name": "position_sales100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "1f962986e5c1d7ba12a41fc9bf708747cfe1374498f9d5203032938c75e48fc4",
+      "control": "position_sales100__independent"
+    },
+    {
+      "id": "position_sales100__elected_120s",
+      "environment": {
+        "name": "position_sales100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "d3fef814f4fe0d18d8e088d255dff0e95bceb283525102ea7c421fd5c7dbe9bf",
+      "control": "position_sales100__independent"
+    },
+    {
+      "id": "position_sales100__elected_300s",
+      "environment": {
+        "name": "position_sales100",
+        "coins": 100,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "position",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "3ecda9851b7df8678db3fff848d3feb87bb65e48851b08db86f14a7a3a975a35",
+      "control": "position_sales100__independent"
+    },
+    {
+      "id": "original_share10__independent",
+      "environment": {
+        "name": "original_share10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.1,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "bfeaffb99c627383d1fedf703066a2ec7a52f83abd30263f6d262d1cce005c79",
+      "control": "original_share10__independent"
+    },
+    {
+      "id": "original_share10__original_first",
+      "environment": {
+        "name": "original_share10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.1,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "6b1a770d7d7608d94643e9484c9800f6e0e3c341faef4cd3978a979076c7dd1f",
+      "control": "original_share10__independent"
+    },
+    {
+      "id": "original_share10__elected_120s",
+      "environment": {
+        "name": "original_share10",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.1,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "d338eaeadac5135ff48aa6da6496d63acae15191a3c920de5e004d2c7775e146",
+      "control": "original_share10__independent"
+    },
+    {
+      "id": "original_share50__independent",
+      "environment": {
+        "name": "original_share50",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.5,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "8faf5b30025a8e594efb9571a00533b782392a2302538a951a11a98da0fad640",
+      "control": "original_share50__independent"
+    },
+    {
+      "id": "original_share50__original_first",
+      "environment": {
+        "name": "original_share50",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.5,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "8d9dd0bc5e1837c6f1aec0967a9e77a51431c93d40c6778107a23c3c1677a0b9",
+      "control": "original_share50__independent"
+    },
+    {
+      "id": "original_share50__elected_120s",
+      "environment": {
+        "name": "original_share50",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.5,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "e2c7cb3ce4c4ad9470ac46bb8b2cc707a93462f6e2f82953a0c816cd3556b48d",
+      "control": "original_share50__independent"
+    },
+    {
+      "id": "copies_after120s__independent",
+      "environment": {
+        "name": "copies_after120s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 120,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "b5a16e08962d8dfea6b90235b1c63302cdbf6b57aacc9b35cec8ce56595fd399",
+      "control": "copies_after120s__independent"
+    },
+    {
+      "id": "copies_after120s__original_first",
+      "environment": {
+        "name": "copies_after120s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 120,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "39d63f2d91cb0cff5e64e3e1888bd9815da3f97f920651a182f4ab6fa6032e7e",
+      "control": "copies_after120s__independent"
+    },
+    {
+      "id": "copies_after120s__elected_120s",
+      "environment": {
+        "name": "copies_after120s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 120,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "236f0c746a47955dd479357318d8b010ac704e8cfb808c0a5d686c0b07aa74df",
+      "control": "copies_after120s__independent"
+    },
+    {
+      "id": "copies_after120s__elected_300s",
+      "environment": {
+        "name": "copies_after120s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 120,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "78f298d16aaf13a7b4945db1ee7e8073cfdcb16b820a94be46a6314417b58b61",
+      "control": "copies_after120s__independent"
+    },
+    {
+      "id": "copies_after600s__independent",
+      "environment": {
+        "name": "copies_after600s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 600,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "9579d5c41ea72d0e0eaddd107590ce9769f972cff30af002d969cb0113ca0da6",
+      "control": "copies_after600s__independent"
+    },
+    {
+      "id": "copies_after600s__original_first",
+      "environment": {
+        "name": "copies_after600s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 600,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "ad9e28da0cdfb123e454afc07c97e825aa73a8181df339039f1b7c1bb2cec627",
+      "control": "copies_after600s__independent"
+    },
+    {
+      "id": "copies_after600s__elected_120s",
+      "environment": {
+        "name": "copies_after600s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 600,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "c0d9adbe1a38eec539d94cb18141ecc81237f4a47df99c2c6be6c46af75608f1",
+      "control": "copies_after600s__independent"
+    },
+    {
+      "id": "copies_after600s__elected_300s",
+      "environment": {
+        "name": "copies_after600s",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 600,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "96e155eff09b11dbab244c9d562d819744c28addf36dd706926291162383c496",
+      "control": "copies_after600s__independent"
+    },
+    {
+      "id": "preclaimed__independent",
+      "environment": {
+        "name": "preclaimed",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": true,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "b1f211a98c27ad373a62478d8dba0a62deef90781aec1b73a6c11db9b6bfb09e",
+      "control": "preclaimed__independent"
+    },
+    {
+      "id": "preclaimed__original_first",
+      "environment": {
+        "name": "preclaimed",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": true,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "49def9cec25b28129e179ff2ce9be1979d2a91b3a9b3521968c398d9ad7250cf",
+      "control": "preclaimed__independent"
+    },
+    {
+      "id": "preclaimed__elected_120s",
+      "environment": {
+        "name": "preclaimed",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": true,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "ae7bea4b5141252268f8d750d013de02282ec07fd32f8392f7dbc625ec418ac7",
+      "control": "preclaimed__independent"
+    },
+    {
+      "id": "preclaimed__elected_300s",
+      "environment": {
+        "name": "preclaimed",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": true,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "a98498d341c19d51ea6e1be9e01c55d46d4d4fa5a1c8bd1c45c0376d1942fa95",
+      "control": "preclaimed__independent"
+    },
+    {
+      "id": "reject_leave__original_first",
+      "environment": {
+        "name": "reject_leave",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "leave",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "85506f7f69a2d3d9469ddec9db80ca8ffc15efa592ce838afe467f60da96f468",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reject_leave__elected_120s",
+      "environment": {
+        "name": "reject_leave",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "leave",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "4b3ffe0e3cf506ca54e68117c22a622a3903cfb0769a38253ef6c51d71468088",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reject_leave__elected_300s",
+      "environment": {
+        "name": "reject_leave",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "leave",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "370ee4c102ed575138a9e9bb9417e675fa9990c47fb5761aeb6163f5949f227f",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reject_outside__original_first",
+      "environment": {
+        "name": "reject_outside",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "outside",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "7a9802845aa64cfdc373ba111b6848a9e97bc18ba15c49d6811149f7a0a4e1ab",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reject_outside__elected_120s",
+      "environment": {
+        "name": "reject_outside",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "outside",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "3d74ea80b18228eb849e58a1a24ad21e7e4edb6b500276afa3704aca834494ad",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "reject_outside__elected_300s",
+      "environment": {
+        "name": "reject_outside",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "outside",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "34dd203113b47488cb24042751da26beb015ccf005d6e50ee0772f2032304a9a",
+      "control": "copies9__independent"
+    },
+    {
+      "id": "fees125__independent",
+      "environment": {
+        "name": "fees125",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 125,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "ace3ec84378a8a40973a8364ce36831c0204bb88fe800b6a7e317ac7820a0fb9",
+      "control": "fees125__independent"
+    },
+    {
+      "id": "fees125__original_first",
+      "environment": {
+        "name": "fees125",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 125,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "original_first",
+        "rule": "original",
+        "close": 0
+      },
+      "economic_key": "9d2d720ec607174bb37d3f2a423e392fc3cf1b4f4f688e50a1ff2da2a06cdd59",
+      "control": "fees125__independent"
+    },
+    {
+      "id": "fees125__elected_120s",
+      "environment": {
+        "name": "fees125",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 125,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_120s",
+        "rule": "cap",
+        "close": 120
+      },
+      "economic_key": "573399c41bc5c0f6a83bf6f6c9a6de45a7ba37c8d385f548a2952428f586ca45",
+      "control": "fees125__independent"
+    },
+    {
+      "id": "fees125__elected_300s",
+      "environment": {
+        "name": "fees125",
+        "coins": 10,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 125,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "elected_300s",
+        "rule": "cap",
+        "close": 300
+      },
+      "economic_key": "22b27733f7b9e1a9b3e24928462aaf1b8b7b8894022a7a907711eab05e1b3333",
+      "control": "fees125__independent"
+    },
+    {
+      "id": "no_copies__independent",
+      "environment": {
+        "name": "no_copies",
+        "coins": 1,
+        "half_life": 600,
+        "first_copy": 15,
+        "original_share": 0.25,
+        "reach": 0.6,
+        "acceptance": 0.6,
+        "viral_copy": false,
+        "preclaim": false,
+        "rejection": "direct",
+        "sale_rule": "lot",
+        "fee_bps": 40,
+        "opportunities": 480,
+        "network": 10000
+      },
+      "mechanism": {
+        "name": "independent",
+        "rule": "independent",
+        "close": 0
+      },
+      "economic_key": "87b9f21cae561d80b665fdee533abd9f16f4faf0364046d33b35e7da95a03b0f",
+      "control": "no_copies__independent"
+    }
+  ],
+  "aliases": {
+    "copies9__independent": "copies9__independent",
+    "copies9__original_first": "copies9__original_first",
+    "copies9__elected_30s": "copies9__elected_30s",
+    "copies9__elected_120s": "copies9__elected_120s",
+    "copies9__elected_300s": "copies9__elected_300s",
+    "copies9__elected_900s": "copies9__elected_900s",
+    "copies49__independent": "copies49__independent",
+    "copies49__original_first": "copies49__original_first",
+    "copies49__elected_30s": "copies49__elected_30s",
+    "copies49__elected_120s": "copies49__elected_120s",
+    "copies49__elected_300s": "copies49__elected_300s",
+    "copies49__elected_900s": "copies49__elected_900s",
+    "copies99__independent": "copies99__independent",
+    "copies99__original_first": "copies99__original_first",
+    "copies99__elected_30s": "copies99__elected_30s",
+    "copies99__elected_120s": "copies99__elected_120s",
+    "copies99__elected_300s": "copies99__elected_300s",
+    "copies99__elected_900s": "copies99__elected_900s",
+    "reach30_accept30__independent": "copies9__independent",
+    "reach30_accept30__original_first": "reach30_accept30__original_first",
+    "reach30_accept30__elected_120s": "reach30_accept30__elected_120s",
+    "reach30_accept60__independent": "copies9__independent",
+    "reach30_accept60__original_first": "reach30_accept60__original_first",
+    "reach30_accept60__elected_120s": "reach30_accept60__elected_120s",
+    "reach30_accept100__independent": "copies9__independent",
+    "reach30_accept100__original_first": "reach30_accept100__original_first",
+    "reach30_accept100__elected_120s": "reach30_accept100__elected_120s",
+    "reach60_accept30__independent": "copies9__independent",
+    "reach60_accept30__original_first": "reach60_accept30__original_first",
+    "reach60_accept30__elected_120s": "reach60_accept30__elected_120s",
+    "reach60_accept60__independent": "copies9__independent",
+    "reach60_accept60__original_first": "copies9__original_first",
+    "reach60_accept60__elected_120s": "copies9__elected_120s",
+    "reach60_accept100__independent": "copies9__independent",
+    "reach60_accept100__original_first": "reach60_accept100__original_first",
+    "reach60_accept100__elected_120s": "reach60_accept100__elected_120s",
+    "reach100_accept30__independent": "copies9__independent",
+    "reach100_accept30__original_first": "reach100_accept30__original_first",
+    "reach100_accept30__elected_120s": "reach100_accept30__elected_120s",
+    "reach100_accept60__independent": "copies9__independent",
+    "reach100_accept60__original_first": "reach100_accept60__original_first",
+    "reach100_accept60__elected_120s": "reach100_accept60__elected_120s",
+    "reach100_accept100__independent": "copies9__independent",
+    "reach100_accept100__original_first": "reach100_accept100__original_first",
+    "reach100_accept100__elected_120s": "reach100_accept100__elected_120s",
+    "fast10__independent": "fast10__independent",
+    "fast10__original_first": "fast10__original_first",
+    "fast10__elected_120s": "fast10__elected_120s",
+    "fast10__elected_300s": "fast10__elected_300s",
+    "slow10__independent": "slow10__independent",
+    "slow10__original_first": "slow10__original_first",
+    "slow10__elected_120s": "slow10__elected_120s",
+    "slow10__elected_300s": "slow10__elected_300s",
+    "viral10__independent": "viral10__independent",
+    "viral10__original_first": "viral10__original_first",
+    "viral10__elected_120s": "viral10__elected_120s",
+    "viral10__elected_300s": "viral10__elected_300s",
+    "position_sales10__independent": "position_sales10__independent",
+    "position_sales10__original_first": "position_sales10__original_first",
+    "position_sales10__elected_120s": "position_sales10__elected_120s",
+    "position_sales10__elected_300s": "position_sales10__elected_300s",
+    "fast100__independent": "fast100__independent",
+    "fast100__original_first": "fast100__original_first",
+    "fast100__elected_120s": "fast100__elected_120s",
+    "fast100__elected_300s": "fast100__elected_300s",
+    "slow100__independent": "slow100__independent",
+    "slow100__original_first": "slow100__original_first",
+    "slow100__elected_120s": "slow100__elected_120s",
+    "slow100__elected_300s": "slow100__elected_300s",
+    "viral100__independent": "viral100__independent",
+    "viral100__original_first": "viral100__original_first",
+    "viral100__elected_120s": "viral100__elected_120s",
+    "viral100__elected_300s": "viral100__elected_300s",
+    "position_sales100__independent": "position_sales100__independent",
+    "position_sales100__original_first": "position_sales100__original_first",
+    "position_sales100__elected_120s": "position_sales100__elected_120s",
+    "position_sales100__elected_300s": "position_sales100__elected_300s",
+    "original_share10__independent": "original_share10__independent",
+    "original_share10__original_first": "original_share10__original_first",
+    "original_share10__elected_120s": "original_share10__elected_120s",
+    "original_share50__independent": "original_share50__independent",
+    "original_share50__original_first": "original_share50__original_first",
+    "original_share50__elected_120s": "original_share50__elected_120s",
+    "copies_after120s__independent": "copies_after120s__independent",
+    "copies_after120s__original_first": "copies_after120s__original_first",
+    "copies_after120s__elected_120s": "copies_after120s__elected_120s",
+    "copies_after120s__elected_300s": "copies_after120s__elected_300s",
+    "copies_after600s__independent": "copies_after600s__independent",
+    "copies_after600s__original_first": "copies_after600s__original_first",
+    "copies_after600s__elected_120s": "copies_after600s__elected_120s",
+    "copies_after600s__elected_300s": "copies_after600s__elected_300s",
+    "preclaimed__independent": "preclaimed__independent",
+    "preclaimed__original_first": "preclaimed__original_first",
+    "preclaimed__elected_120s": "preclaimed__elected_120s",
+    "preclaimed__elected_300s": "preclaimed__elected_300s",
+    "reject_leave__independent": "copies9__independent",
+    "reject_leave__original_first": "reject_leave__original_first",
+    "reject_leave__elected_120s": "reject_leave__elected_120s",
+    "reject_leave__elected_300s": "reject_leave__elected_300s",
+    "reject_outside__independent": "copies9__independent",
+    "reject_outside__original_first": "reject_outside__original_first",
+    "reject_outside__elected_120s": "reject_outside__elected_120s",
+    "reject_outside__elected_300s": "reject_outside__elected_300s",
+    "fees125__independent": "fees125__independent",
+    "fees125__original_first": "fees125__original_first",
+    "fees125__elected_120s": "fees125__elected_120s",
+    "fees125__elected_300s": "fees125__elected_300s",
+    "no_copies__independent": "no_copies__independent"
+  },
+  "training": [
+    "copies9__independent",
+    "copies9__original_first",
+    "copies9__elected_120s",
+    "copies9__elected_300s",
+    "copies99__original_first",
+    "copies99__elected_120s"
+  ],
+  "policies": [
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    },
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 500,
+      "exit": 300
+    },
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 500,
+      "exit": 900
+    },
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 500,
+      "exit": 1800
+    },
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 300
+    },
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 900
+    },
+    {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 300
+    },
+    {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 900
+    },
+    {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 1800
+    },
+    {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 300
+    },
+    {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 900
+    },
+    {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    {
+      "target": 1,
+      "start": 119,
+      "budget": 500,
+      "exit": 300
+    },
+    {
+      "target": 1,
+      "start": 119,
+      "budget": 500,
+      "exit": 900
+    },
+    {
+      "target": 1,
+      "start": 119,
+      "budget": 500,
+      "exit": 1800
+    },
+    {
+      "target": 1,
+      "start": 119,
+      "budget": 2000,
+      "exit": 300
+    },
+    {
+      "target": 1,
+      "start": 119,
+      "budget": 2000,
+      "exit": 900
+    },
+    {
+      "target": 1,
+      "start": 119,
+      "budget": 2000,
+      "exit": 1800
+    },
+    {
+      "target": 1,
+      "start": 299,
+      "budget": 500,
+      "exit": 300
+    },
+    {
+      "target": 1,
+      "start": 299,
+      "budget": 500,
+      "exit": 900
+    },
+    {
+      "target": 1,
+      "start": 299,
+      "budget": 500,
+      "exit": 1800
+    },
+    {
+      "target": 1,
+      "start": 299,
+      "budget": 2000,
+      "exit": 300
+    },
+    {
+      "target": 1,
+      "start": 299,
+      "budget": 2000,
+      "exit": 900
+    },
+    {
+      "target": 1,
+      "start": 299,
+      "budget": 2000,
+      "exit": 1800
+    }
+  ],
+  "development_seeds": [
+    3000,
+    3001,
+    3002,
+    3003,
+    3004
+  ],
+  "training_seeds": [
+    500,
+    501,
+    502,
+    503,
+    504,
+    505,
+    506,
+    507,
+    508,
+    509,
+    510,
+    511
+  ],
+  "confirmation_seeds": [
+    50000,
+    50001,
+    50002,
+    50003,
+    50004,
+    50005,
+    50006,
+    50007,
+    50008,
+    50009,
+    50010,
+    50011,
+    50012,
+    50013,
+    50014,
+    50015,
+    50016,
+    50017,
+    50018,
+    50019,
+    50020,
+    50021,
+    50022,
+    50023,
+    50024,
+    50025,
+    50026,
+    50027,
+    50028,
+    50029,
+    50030,
+    50031,
+    50032,
+    50033,
+    50034,
+    50035,
+    50036,
+    50037,
+    50038,
+    50039,
+    50040,
+    50041,
+    50042,
+    50043,
+    50044,
+    50045,
+    50046,
+    50047,
+    50048,
+    50049,
+    50050,
+    50051,
+    50052,
+    50053,
+    50054,
+    50055,
+    50056,
+    50057,
+    50058,
+    50059,
+    50060,
+    50061,
+    50062,
+    50063,
+    50064,
+    50065,
+    50066,
+    50067,
+    50068,
+    50069,
+    50070,
+    50071,
+    50072,
+    50073,
+    50074,
+    50075,
+    50076,
+    50077,
+    50078,
+    50079,
+    50080,
+    50081,
+    50082,
+    50083,
+    50084,
+    50085,
+    50086,
+    50087,
+    50088,
+    50089,
+    50090,
+    50091,
+    50092,
+    50093,
+    50094,
+    50095,
+    50096,
+    50097,
+    50098,
+    50099
+  ],
+  "primary": "One original + nine copies: original-first minus independent original buying share and organic 5%-impact sell depth at 15 minutes",
+  "goals": "Reduce short-window fragmentation; report true-original and any-leader concentration separately; no longevity endpoint",
+  "benchmarks": "50% and 70% 5-minute buying share, sustained for two minute observations, >=5 fills and 100 quote; start after a full copy-exposure window",
+  "attention": "Fixed common narrative visits and budgets; no winning-generated demand or empirical attention claim",
+  "limitations": "Synthetic willingness, copy arrival and holding policies; one-hour linear-curve model, not Pump replication",
+  "revision": "Before training/confirmation: no-copy benchmark, explicit narrative fill, deterministic process parallelism; v1 preserved",
+  "copy_family_selection": "Best mean complete-exit P&L among copy-target policies and abstention; declared before confirmation"
+}

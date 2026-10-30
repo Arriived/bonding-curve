@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "rows": 12,
+  "comparison": "bit-identical seed-level records",
+  "physical_calls": 24,
+  "logical_calls": 24,
+  "script_sha256": "9dd7b7af5ca43c08ff2f78cce084e28d2e5813414cb2aeb2048fa7324c9f3fc1"
+}

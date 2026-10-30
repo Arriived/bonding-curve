@@ -1,0 +1,75 @@
+{
+  "status": "complete",
+  "created_utc": "2026-10-29T04:04:53.715902+00:00",
+  "mode": "smoke",
+  "base_config": {
+    "events": 60,
+    "horizon": 240.0,
+    "base_tokens": 15,
+    "max_spam": 24,
+    "seed": 11,
+    "p0": 0.01,
+    "k": 0.0001,
+    "fee": 0.003,
+    "confusion": 0.35,
+    "informed": 0.2,
+    "total_demand": 600000.0,
+    "organic_capital": 1000000.0,
+    "attacker_capital": 1100000.0,
+    "launch_cost": 10.0,
+    "gas": 0.05,
+    "exit_probability": 0.7,
+    "leader_slippage": 0.02,
+    "exit_order": "random"
+  },
+  "variants": 11,
+  "training_seeds": [
+    11
+  ],
+  "screen_seeds": [
+    100,
+    101
+  ],
+  "confirmation_seeds": [
+    1000,
+    1001
+  ],
+  "training_events": 60,
+  "screen_events": 60,
+  "confirmation_events": 480,
+  "synthetic": true,
+  "search_claim": "best found in disclosed finite policy classes; not global optimality",
+  "sources": {
+    "bonding_lab/copycat/__init__.py": "dfd104aecb369942b0fab80a6fb6fd85c4f351f3d1da0454a22da239cd64b7e1",
+    "bonding_lab/copycat/__main__.py": "444da350b1e045c5b51f91f1d20600d7396779630b7fb845e7cec63351a929e7",
+    "bonding_lab/copycat/attacks.py": "090e1459c4a418c0a993a92ee0d4eaef7663b37c30c96242542a6a779af301b6",
+    "bonding_lab/copycat/config.py": "1ccdcc696b9f590c04f37238715b692af9dd9391b9cf0c02a894660793ac1e53",
+    "bonding_lab/copycat/election.py": "7128d4a14e0b4c1a8e30432e4311c6acdae57a353b1306c5086831ec52efba05",
+    "bonding_lab/copycat/experiments.py": "ef47793adc3d5a3efa62a1ca7e2574bbb6cf3701fccdfb286981307b826e2e08",
+    "bonding_lab/copycat/market.py": "43b895426ec68fd04cf752ae62636c098cb64abcb95711eb62d5a72dae111807",
+    "bonding_lab/copycat/matching.py": "b4cc2860c0a5d48bb9372a5c5adeb2a4f2906334be6013226906c9ece0a4764e",
+    "bonding_lab/copycat/reference.py": "41638ff6d715b8eabfe66c30ef6ff1ab067a77a059104509a0902002b98e3003",
+    "bonding_lab/copycat/router.py": "e960e33e67db1bbf839d7cb41bece209e346e07aa434f2612bae757d883eb813",
+    "bonding_lab/fast.py": "85a78a0927e296e43b0cd8594907f6997499497f1b6d7215a869f5db9eeb6ef1",
+    "bonding_lab/engine.py": "6c9602172e43810ddd25d17c82e5ebbd9506d4b3712f924ea25dbeabbfb152b5",
+    "bonding_lab/experiments.py": "3a312d97a02b31b54f6a2196cafea187d7f1286540786ec76689a9fc684f101a"
+  },
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "pytest": "9.2.0",
+    "hypothesis": "6.170.13"
+  },
+  "completed": [
+    "strategy_search",
+    "screen",
+    "confirmation"
+  ],
+  "finalists": [
+    "first_treasury_5pct_exact_fixed_badge0",
+    "first_buyer_5pct_exact_fixed_badge0",
+    "first_burn_supply_5pct_exact_fixed_badge0"
+  ],
+  "actual_market_executions": 688,
+  "elapsed_seconds": 13.696877700043842
+}

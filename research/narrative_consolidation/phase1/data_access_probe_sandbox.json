@@ -1,0 +1,28 @@
+{
+  "purpose": "Public access feasibility only; explicitly not a historical dataset",
+  "created_at_utc": "2026-10-30T06:24:49.071416+00:00",
+  "paid_spend": 0,
+  "credentials_used": false,
+  "browser_probe": {
+    "url": "https://api.dexscreener.com/latest/dex/search?q=PNUT",
+    "result": "Web tool reported URL inaccessible"
+  },
+  "requests": [
+    {
+      "query": "PNUT",
+      "url": "https://api.dexscreener.com/latest/dex/search?q=PNUT",
+      "requested_at_utc": "2026-10-30T06:24:48.852887+00:00",
+      "status": "unavailable",
+      "error": "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "query": "NEIRO",
+      "url": "https://api.dexscreener.com/latest/dex/search?q=NEIRO",
+      "requested_at_utc": "2026-10-30T06:24:49.068401+00:00",
+      "status": "unavailable",
+      "error": "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
+    }
+  ],
+  "historical_cluster_verified": false,
+  "calibrated_parameters": []
+}

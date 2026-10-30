@@ -1,0 +1,392 @@
+[
+  {
+    "config": "A",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 250000000,
+      "exit_delay": 3600,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 6.5376211799999995,
+    "candidate_count": 7
+  },
+  {
+    "config": "A",
+    "family": "split",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 7
+  },
+  {
+    "config": "A",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "A",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "B",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 250000000,
+      "exit_delay": 3600,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 6.621588419999999,
+    "candidate_count": 7
+  },
+  {
+    "config": "B",
+    "family": "split",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 7
+  },
+  {
+    "config": "B",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "B",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "C",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 3000000000,
+      "exit_delay": 3600,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 855.4100018800001,
+    "candidate_count": 7
+  },
+  {
+    "config": "C",
+    "family": "split",
+    "policy": {
+      "family": "split",
+      "budget": 3000000000,
+      "exit_delay": 3600,
+      "aliases": 64,
+      "rounds": 1
+    },
+    "training_mean_profit": 869.65538248,
+    "candidate_count": 7
+  },
+  {
+    "config": "C",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "C",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "D",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 3000000000,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 1362.00150086,
+    "candidate_count": 7
+  },
+  {
+    "config": "B_CREATOR",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 250000000,
+      "exit_delay": 3600,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 6.96052376,
+    "candidate_count": 7
+  },
+  {
+    "config": "B_CREATOR",
+    "family": "split",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 7
+  },
+  {
+    "config": "B_CREATOR",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "B_CREATOR",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "D_TIME",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 3000000000,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 843.86944102,
+    "candidate_count": 7
+  },
+  {
+    "config": "A_HOLDERS",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 250000000,
+      "exit_delay": 3600,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 6.5376211799999995,
+    "candidate_count": 7
+  },
+  {
+    "config": "A_HOLDERS",
+    "family": "split",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 7
+  },
+  {
+    "config": "A_HOLDERS",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "A_HOLDERS",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "C_HOLDERS",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 250000000,
+      "exit_delay": 3600,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 6.020614240000001,
+    "candidate_count": 7
+  },
+  {
+    "config": "C_HOLDERS",
+    "family": "split",
+    "policy": {
+      "family": "split",
+      "budget": 3000000000,
+      "exit_delay": 3600,
+      "aliases": 64,
+      "rounds": 1
+    },
+    "training_mean_profit": 869.65538248,
+    "candidate_count": 7
+  },
+  {
+    "config": "C_HOLDERS",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "C_HOLDERS",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "C_HHI",
+    "family": "capture",
+    "policy": {
+      "family": "capture",
+      "budget": 250000000,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 2.0487683599999995,
+    "candidate_count": 7
+  },
+  {
+    "config": "C_HHI",
+    "family": "split",
+    "policy": {
+      "family": "split",
+      "budget": 3000000000,
+      "exit_delay": 3600,
+      "aliases": 64,
+      "rounds": 1
+    },
+    "training_mean_profit": 869.65538248,
+    "candidate_count": 7
+  },
+  {
+    "config": "C_HHI",
+    "family": "support_front",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  },
+  {
+    "config": "C_HHI",
+    "family": "wash",
+    "policy": {
+      "family": "idle",
+      "budget": 0,
+      "exit_delay": 0,
+      "aliases": 1,
+      "rounds": 1
+    },
+    "training_mean_profit": 0.0,
+    "candidate_count": 3
+  }
+]

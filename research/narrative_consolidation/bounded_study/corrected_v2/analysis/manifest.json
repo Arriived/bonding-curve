@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "rows": 90000,
+  "worlds": 10000,
+  "bootstrap_replications": 2000,
+  "paired_seed_count": 100,
+  "source_results_sha256": "8075ca45900ca7207a6b0f6245b35f9736dce1ac069535ffba15ca1240c6cafe"
+}

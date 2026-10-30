@@ -1,0 +1,8 @@
+{
+  "stage": "before study predeclaration and confirmation",
+  "initial_gate": {"tests": 18, "passed": 17, "failed": 1},
+  "failure": "A zero-hour route expiry still allowed an opportunity exactly at finalization because its comparison was inclusive.",
+  "repair": "Expiry is exclusive: routing is permitted strictly before its expiry timestamp.",
+  "additional_review": "Include router fees in executed gross cash and daily routed-budget accounting.",
+  "confirmation_outcomes_seen": false
+}

@@ -1,0 +1,6 @@
+{
+  "status": "interrupted_for_preconfirmation_review",
+  "created": "2026-10-30T07:48:11.788542+00:00",
+  "completed_exported_rows": 4600,
+  "reason": "Batch cash accounts conserved, but per-subscriber acquisition/fee counters omitted aggregate batch contributions. Repair before confirmation; broaden alias search and add migration-free routing grid from development review."
+}

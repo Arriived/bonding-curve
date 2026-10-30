@@ -1,0 +1,242 @@
+[
+  {
+    "cell": "copies9__independent",
+    "attack_id": "attack__copies9__independent",
+    "family": "overall",
+    "actor_profit": 925.05266386,
+    "matched_A_profit": 0,
+    "extra_profit": 925.05266386,
+    "low": 905.3820127345001,
+    "high": 945.6678449845,
+    "profit_frequency": 1.0,
+    "actor_led_share": 0.0,
+    "residual": 0.0,
+    "peak": 1999.9999670000004,
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__original_first",
+    "attack_id": "attack__copies9__original_first",
+    "family": "overall",
+    "actor_profit": 1652.53695014,
+    "matched_A_profit": 925.05266386,
+    "extra_profit": 727.48428628,
+    "low": 709.4406724680001,
+    "high": 745.71394475475,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999670000004,
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__elected_120s",
+    "attack_id": "attack__copies9__elected_120s",
+    "family": "overall",
+    "actor_profit": 1574.4334989499998,
+    "matched_A_profit": 925.05266386,
+    "extra_profit": 649.38083509,
+    "low": 633.6802533314999,
+    "high": 665.9165266002501,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999670000004,
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__elected_300s",
+    "attack_id": "attack__copies9__elected_300s",
+    "family": "overall",
+    "actor_profit": 1462.2499046300006,
+    "matched_A_profit": 925.05266386,
+    "extra_profit": 537.19724077,
+    "low": 519.9057836625,
+    "high": 554.102087946,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999670000004,
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies99__original_first",
+    "attack_id": "attack__copies99__original_first",
+    "family": "overall",
+    "actor_profit": 1652.53695014,
+    "matched_A_profit": 925.05266386,
+    "extra_profit": 727.48428628,
+    "low": 709.4635169224998,
+    "high": 745.1468580070001,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999670000004,
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies99__elected_120s",
+    "attack_id": "attack__copies99__elected_120s",
+    "family": "overall",
+    "actor_profit": 1574.4334989499998,
+    "matched_A_profit": 925.05266386,
+    "extra_profit": 649.38083509,
+    "low": 632.6080573990001,
+    "high": 665.6572728745,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999670000004,
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__independent",
+    "attack_id": "copy_attack__copies9__independent",
+    "family": "copy_only",
+    "actor_profit": 318.24646086999996,
+    "matched_A_profit": 0,
+    "extra_profit": 318.24646086999996,
+    "low": 279.47800890724994,
+    "high": 354.80407047099993,
+    "profit_frequency": 0.92,
+    "actor_led_share": 0.0,
+    "residual": 0.0,
+    "peak": 1999.9999668100002,
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__original_first",
+    "attack_id": "copy_attack__copies9__original_first",
+    "family": "copy_only",
+    "actor_profit": 212.26071660999997,
+    "matched_A_profit": 293.92790138,
+    "extra_profit": -81.66718477,
+    "low": -94.491514478,
+    "high": -67.8806748475,
+    "profit_frequency": 0.97,
+    "actor_led_share": 0.0,
+    "residual": 0.0,
+    "peak": 499.99997881,
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__elected_120s",
+    "attack_id": "copy_attack__copies9__elected_120s",
+    "family": "copy_only",
+    "actor_profit": 1183.59343294,
+    "matched_A_profit": 318.24646086999996,
+    "extra_profit": 865.34697207,
+    "low": 843.976102708,
+    "high": 889.19649634475,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999668100002,
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies9__elected_300s",
+    "attack_id": "copy_attack__copies9__elected_300s",
+    "family": "copy_only",
+    "actor_profit": 1042.10611496,
+    "matched_A_profit": 318.24646086999996,
+    "extra_profit": 723.8596540899999,
+    "low": 700.482252464,
+    "high": 745.7806524455,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999668100002,
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    }
+  },
+  {
+    "cell": "copies99__original_first",
+    "attack_id": "copy_attack__copies99__original_first",
+    "family": "copy_only",
+    "actor_profit": 20.487950180000002,
+    "matched_A_profit": 29.258265179999995,
+    "extra_profit": -8.770315,
+    "low": -17.454427258500004,
+    "high": 0.5538455099999882,
+    "profit_frequency": 0.78,
+    "actor_led_share": 0.0,
+    "residual": 0.0,
+    "peak": 499.9999784700001,
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 300
+    }
+  },
+  {
+    "cell": "copies99__elected_120s",
+    "attack_id": "copy_attack__copies99__elected_120s",
+    "family": "copy_only",
+    "actor_profit": 992.2558033999999,
+    "matched_A_profit": -34.48218319000001,
+    "extra_profit": 1026.73798659,
+    "low": 1003.4932230167499,
+    "high": 1050.2292157420002,
+    "profit_frequency": 1.0,
+    "actor_led_share": 1.0,
+    "residual": 0.0,
+    "peak": 1999.9999670700001,
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    }
+  }
+]

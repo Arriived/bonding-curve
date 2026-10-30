@@ -1,0 +1,14 @@
+gate,tests,failures
+gate10_refusal_correction,196,0
+gate1_mechanics,26,1
+gate1_pass,164,0
+gate2_behavior,46,0
+gate2_namespace_pass,184,0
+gate2_pass,1,1
+gate3_attacks,190,0
+gate4_study_ready,192,0
+gate5_pre_pilot,193,0
+gate6_metrics,55,0
+gate7_batch_attribution,194,0
+gate8_final_model,57,0
+gate9_frozen_ready,195,0

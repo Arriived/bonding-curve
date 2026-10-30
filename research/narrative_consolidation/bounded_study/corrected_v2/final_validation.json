@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "original_user_files_unchanged": 465,
+  "changed": [],
+  "tests_passed": 196,
+  "original_tests": 138,
+  "new_tests": 58,
+  "corrected_confirmation_worlds": 10000,
+  "checkpoint_rows": 90000,
+  "confirmation_seeds": 100,
+  "additional_exploratory_worlds": 200,
+  "earlier_worlds_preserved": 10000,
+  "unchanged_world_hashes_after_repair": 9900,
+  "arbitrary_exact_replays": 3,
+  "source_matches_frozen_plan": true,
+  "findings_sha256": "8453e3b2b8225d56476ebe0344793fb0a4dc256631788ba308d9727aaefc405b"
+}

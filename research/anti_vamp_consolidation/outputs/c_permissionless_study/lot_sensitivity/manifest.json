@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "worlds": 1200,
+  "seeds": 100,
+  "checkpoint_rows": 4800,
+  "elapsed": 382.5462915999815,
+  "exploratory": true,
+  "new_independent_seeds": false,
+  "policies_retrained": false,
+  "lot_coverage_checks": true,
+  "smoke_tests": 2,
+  "primary_source_unchanged": true
+}

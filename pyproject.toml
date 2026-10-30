@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shared-bonding-lab"
+version = "0.1.0"
+description = "Reproducible research laboratory for a shared quadratic bonding surface"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy>=1.26,<3", "pandas>=2.2,<4", "plotly>=5.24,<7",
+  "streamlit>=1.52,<2", "pytest>=8,<10", "hypothesis>=6.112,<7"
+]
+
+[project.scripts]
+bonding-lab = "bonding_lab.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bonding_lab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+

@@ -1,0 +1,14 @@
+{
+  "created": "2026-10-30T08:09:08.993522+00:00",
+  "status": "corrected_source_tested_196_passed; same configuration frozen before rerun",
+  "issue": "D_REFUSAL put refusing creator seed cash into platform escrow rather than independent outside markets. Cash conserved; participation rule incorrect.",
+  "affected_setting": "D_REFUSAL",
+  "unchanged_economic_parameters": true,
+  "confirmation_outcomes_used_for_tuning": false,
+  "first_run_worlds": 10000,
+  "first_run_manifest_sha256": "c84e1b63ec768b55661a36b60672c453490996fa303506c57339da8354d99542",
+  "resolution": "Add ownership regression, rerun all original 10000 frozen worlds under corrected source, compare outcome hashes for the 9900 unaffected worlds.",
+  "previous_bundle": "research\\narrative_consolidation\\bounded_study",
+  "unchanged_target_count": 100,
+  "config_policy_identity_sha256": "ebdb35b01c944d5675783b553165e29faf09de913f76f37883d0907fa29ddd35"
+}

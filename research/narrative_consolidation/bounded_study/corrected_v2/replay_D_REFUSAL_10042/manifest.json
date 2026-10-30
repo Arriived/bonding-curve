@@ -1,0 +1,8 @@
+{
+  "status": "exact_match",
+  "name": "D_REFUSAL",
+  "seed": 10042,
+  "tape_hash": "35fd428db12b7c89ab6c099be33ee49ddd649fea36e89284bfdbd888f5a14836",
+  "outcome_hash": "cf0c52365698bd3f6ad53c24ba22cc85de62770cf1f3208e7fbab7ee3532554d",
+  "event_count": 3716
+}

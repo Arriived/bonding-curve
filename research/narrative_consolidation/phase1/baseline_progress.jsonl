@@ -1,0 +1,552 @@
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-creator]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-creator]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-creator]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-creator]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-holders]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-holders]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-holders]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-holders]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-buyer]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-buyer]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-buyer]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-buyer]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-treasury]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-treasury]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-treasury]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-treasury]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-burn]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-burn]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-burn]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-burn]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-control]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-control]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-control]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[lock-control]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-creator]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-creator]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-creator]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-creator]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-holders]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-holders]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-holders]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-holders]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-buyer]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-buyer]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-buyer]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-buyer]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-treasury]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-treasury]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-treasury]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-treasury]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-burn]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-burn]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-burn]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-burn]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-control]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-control]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-control]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_decimal_routing_and_float_parity[supply-control]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_buyer_owned_split_has_same_isolated_roundtrip"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_buyer_owned_split_has_same_isolated_roundtrip", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_buyer_owned_split_has_same_isolated_roundtrip", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_buyer_owned_split_has_same_isolated_roundtrip", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_literal_burn_retraces_price_and_preserves_collateral"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_literal_burn_retraces_price_and_preserves_collateral", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_literal_burn_retraces_price_and_preserves_collateral", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_literal_burn_retraces_price_and_preserves_collateral", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_zero_holder_waiver_and_atomic_slippage"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_zero_holder_waiver_and_atomic_slippage", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_zero_holder_waiver_and_atomic_slippage", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_zero_holder_waiver_and_atomic_slippage", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[creator]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[creator]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[creator]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[creator]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[holders]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[holders]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[holders]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[holders]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[buyer]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[buyer]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[buyer]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[buyer]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[treasury]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[treasury]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[treasury]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[treasury]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[burn]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[burn]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[burn]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[burn]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[control]"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[control]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[control]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_market_funded_and_reproducible[control]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_accounting.py::test_never_selling_treasury_and_lock_have_same_public_path"}
+{"event": "setup", "test": "tests/copycat/test_accounting.py::test_never_selling_treasury_and_lock_have_same_public_path", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_accounting.py::test_never_selling_treasury_and_lock_have_same_public_path", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_accounting.py::test_never_selling_treasury_and_lock_have_same_public_path", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_badge_fallback.py::test_first_launch_badge_needs_no_undefined_leader_fallback"}
+{"event": "setup", "test": "tests/copycat/test_badge_fallback.py::test_first_launch_badge_needs_no_undefined_leader_fallback", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_badge_fallback.py::test_first_launch_badge_needs_no_undefined_leader_fallback", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_badge_fallback.py::test_first_launch_badge_needs_no_undefined_leader_fallback", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_badge_fallback.py::test_an_unqualified_badge_does_not_steer_buyers_to_an_original_oracle"}
+{"event": "setup", "test": "tests/copycat/test_badge_fallback.py::test_an_unqualified_badge_does_not_steer_buyers_to_an_original_oracle", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_badge_fallback.py::test_an_unqualified_badge_does_not_steer_buyers_to_an_original_oracle", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_badge_fallback.py::test_an_unqualified_badge_does_not_steer_buyers_to_an_original_oracle", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_budget_boundary.py::test_two_leg_budget_depletion_never_overdraws_a_wallet"}
+{"event": "setup", "test": "tests/copycat/test_budget_boundary.py::test_two_leg_budget_depletion_never_overdraws_a_wallet", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_budget_boundary.py::test_two_leg_budget_depletion_never_overdraws_a_wallet", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_budget_boundary.py::test_two_leg_budget_depletion_never_overdraws_a_wallet", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_self_paid_creator_wash_is_not_external_revenue"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_self_paid_creator_wash_is_not_external_revenue", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_self_paid_creator_wash_is_not_external_revenue", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_self_paid_creator_wash_is_not_external_revenue", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_budget_frontrun_and_literal_burn_cancellation"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_budget_frontrun_and_literal_burn_cancellation", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_budget_frontrun_and_literal_burn_cancellation", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_budget_frontrun_and_literal_burn_cancellation", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[race]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[race]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[race]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[race]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[spam]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[spam]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[spam]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[spam]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[evasion]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[evasion]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[evasion]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[evasion]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[flip]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[flip]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[flip]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[flip]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[front]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[front]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[front]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_funded_adaptive_strategies[front]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_capital_capture_and_evasion_are_actual_strategies"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_capital_capture_and_evasion_are_actual_strategies", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_capital_capture_and_evasion_are_actual_strategies", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_capital_capture_and_evasion_are_actual_strategies", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[buyer-0.01-3-1.0]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[buyer-0.01-3-1.0]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[buyer-0.01-3-1.0]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[buyer-0.01-3-1.0]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.03-32-1e-06]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.03-32-1e-06]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.03-32-1e-06]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.03-32-1e-06]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.1-12-1e-06]"}
+{"event": "setup", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.1-12-1e-06]", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.1-12-1e-06]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_diversion_attacks.py::test_repeated_depleted_alias_funding_stays_nonnegative[burn-0.1-12-1e-06]", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_election.py::test_matching_boundaries_and_semantic_evasion"}
+{"event": "setup", "test": "tests/copycat/test_election.py::test_matching_boundaries_and_semantic_evasion", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_election.py::test_matching_boundaries_and_semantic_evasion", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_election.py::test_matching_boundaries_and_semantic_evasion", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_election.py::test_fixed_threshold_title_can_survive_dump"}
+{"event": "setup", "test": "tests/copycat/test_election.py::test_fixed_threshold_title_can_survive_dump", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_election.py::test_fixed_threshold_title_can_survive_dump", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_election.py::test_fixed_threshold_title_can_survive_dump", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_election.py::test_continuous_dwell_and_cooldown"}
+{"event": "setup", "test": "tests/copycat/test_election.py::test_continuous_dwell_and_cooldown", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_election.py::test_continuous_dwell_and_cooldown", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_election.py::test_continuous_dwell_and_cooldown", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_election.py::test_distinct_first_buys_reject_one_address_wash_but_not_sybils"}
+{"event": "setup", "test": "tests/copycat/test_election.py::test_distinct_first_buys_reject_one_address_wash_but_not_sybils", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_election.py::test_distinct_first_buys_reject_one_address_wash_but_not_sybils", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_election.py::test_distinct_first_buys_reject_one_address_wash_but_not_sybils", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_portfolio_control.py::test_zero_voluntary_split_is_the_existing_no_tax_control"}
+{"event": "setup", "test": "tests/copycat/test_portfolio_control.py::test_zero_voluntary_split_is_the_existing_no_tax_control", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_portfolio_control.py::test_zero_voluntary_split_is_the_existing_no_tax_control", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_portfolio_control.py::test_zero_voluntary_split_is_the_existing_no_tax_control", "outcome": "passed"}
+{"event": "start", "test": "tests/copycat/test_portfolio_control.py::test_voluntary_portfolio_only_spends_actor_money_not_outsider_money"}
+{"event": "setup", "test": "tests/copycat/test_portfolio_control.py::test_voluntary_portfolio_only_spends_actor_money_not_outsider_money", "outcome": "passed"}
+{"event": "call", "test": "tests/copycat/test_portfolio_control.py::test_voluntary_portfolio_only_spends_actor_money_not_outsider_money", "outcome": "passed"}
+{"event": "teardown", "test": "tests/copycat/test_portfolio_control.py::test_voluntary_portfolio_only_spends_actor_money_not_outsider_money", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_exact_random_funded_paths"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_exact_random_funded_paths", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_exact_random_funded_paths", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_exact_random_funded_paths", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_fast_exact_parity[independent]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_fast_exact_parity[independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_fast_exact_parity[independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_fast_exact_parity[independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_fast_exact_parity[quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_fast_exact_parity[quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_fast_exact_parity[quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_fast_exact_parity[quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_fast_exact_parity[bounded]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_fast_exact_parity[bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_fast_exact_parity[bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_fast_exact_parity[bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_raw_redenomination"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_raw_redenomination", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_raw_redenomination", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_raw_redenomination", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_admission_does_not_reprice_or_fund"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_admission_does_not_reprice_or_fund", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_admission_does_not_reprice_or_fund", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_admission_does_not_reprice_or_fund", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_bounded_derivatives_and_attack"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_bounded_derivatives_and_attack", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_bounded_derivatives_and_attack", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_bounded_derivatives_and_attack", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_hessian_convexity_and_roundtrip"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_hessian_convexity_and_roundtrip", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_hessian_convexity_and_roundtrip", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_hessian_convexity_and_roundtrip", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-independent]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[2-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-independent]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[10-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-independent]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[100-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-independent]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_capital_and_price_calibration[1000-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[2]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[2]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[2]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[2]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[10]"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[10]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[10]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_weighted_reference_parity_and_invariant[10]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_weighted_local_depth_and_toxicity"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_weighted_local_depth_and_toxicity", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_weighted_local_depth_and_toxicity", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_weighted_local_depth_and_toxicity", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_external_finite_depth_and_sequence_cost"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_external_finite_depth_and_sequence_cost", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_external_finite_depth_and_sequence_cost", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_external_finite_depth_and_sequence_cost", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_models.py::test_legacy_genesis_underfunding_rejected"}
+{"event": "setup", "test": "tests/phase2/test_models.py::test_legacy_genesis_underfunding_rejected", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_models.py::test_legacy_genesis_underfunding_rejected", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_models.py::test_legacy_genesis_underfunding_rejected", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[independent]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[bounded]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[weighted]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[weighted]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[weighted]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[weighted]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[hub]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[hub]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[hub]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_global_genesis_budget_and_ownership[hub]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-independent]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-weighted]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-weighted]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-weighted]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[baseline-weighted]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-independent]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-weighted]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-weighted]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-weighted]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[divergent-weighted]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-independent]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-weighted]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-weighted]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-weighted]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[crash-weighted]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-independent]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-weighted]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-weighted]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-weighted]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[toxic_admission-weighted]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-independent]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-independent]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-independent]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-independent]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-quadratic]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-quadratic]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-quadratic]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-quadratic]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-bounded]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-bounded]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-bounded]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-bounded]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-weighted]"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-weighted]", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-weighted]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_matched_worlds_deterministic_and_funded[joint_run-weighted]", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_arb_is_finite_and_cash_profitable"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_arb_is_finite_and_cash_profitable", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_arb_is_finite_and_cash_profitable", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_arb_is_finite_and_cash_profitable", "outcome": "passed"}
+{"event": "start", "test": "tests/phase2/test_world.py::test_toxicity_local_depth_and_cross_order_transfers"}
+{"event": "setup", "test": "tests/phase2/test_world.py::test_toxicity_local_depth_and_cross_order_transfers", "outcome": "passed"}
+{"event": "call", "test": "tests/phase2/test_world.py::test_toxicity_local_depth_and_cross_order_transfers", "outcome": "passed"}
+{"event": "teardown", "test": "tests/phase2/test_world.py::test_toxicity_local_depth_and_cross_order_transfers", "outcome": "passed"}
+{"event": "start", "test": "tests/test_analysis.py::test_market_cap_identity_and_wallet_vector_liquidation"}
+{"event": "setup", "test": "tests/test_analysis.py::test_market_cap_identity_and_wallet_vector_liquidation", "outcome": "passed"}
+{"event": "call", "test": "tests/test_analysis.py::test_market_cap_identity_and_wallet_vector_liquidation", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_analysis.py::test_market_cap_identity_and_wallet_vector_liquidation", "outcome": "passed"}
+{"event": "start", "test": "tests/test_analysis.py::test_heterogeneous_supplies_and_capital_matching"}
+{"event": "setup", "test": "tests/test_analysis.py::test_heterogeneous_supplies_and_capital_matching", "outcome": "passed"}
+{"event": "call", "test": "tests/test_analysis.py::test_heterogeneous_supplies_and_capital_matching", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_analysis.py::test_heterogeneous_supplies_and_capital_matching", "outcome": "passed"}
+{"event": "start", "test": "tests/test_analysis.py::test_small_monte_carlo_matches_seed_differences"}
+{"event": "setup", "test": "tests/test_analysis.py::test_small_monte_carlo_matches_seed_differences", "outcome": "passed"}
+{"event": "call", "test": "tests/test_analysis.py::test_small_monte_carlo_matches_seed_differences", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_analysis.py::test_small_monte_carlo_matches_seed_differences", "outcome": "passed"}
+{"event": "start", "test": "tests/test_analysis.py::test_gas_is_capital_constrained"}
+{"event": "setup", "test": "tests/test_analysis.py::test_gas_is_capital_constrained", "outcome": "passed"}
+{"event": "call", "test": "tests/test_analysis.py::test_gas_is_capital_constrained", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_analysis.py::test_gas_is_capital_constrained", "outcome": "passed"}
+{"event": "start", "test": "tests/test_attacks.py::test_frontrun_formula"}
+{"event": "setup", "test": "tests/test_attacks.py::test_frontrun_formula", "outcome": "passed"}
+{"event": "call", "test": "tests/test_attacks.py::test_frontrun_formula", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_attacks.py::test_frontrun_formula", "outcome": "passed"}
+{"event": "start", "test": "tests/test_attacks.py::test_constraints_and_competition"}
+{"event": "setup", "test": "tests/test_attacks.py::test_constraints_and_competition", "outcome": "passed"}
+{"event": "call", "test": "tests/test_attacks.py::test_constraints_and_competition", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_attacks.py::test_constraints_and_competition", "outcome": "passed"}
+{"event": "start", "test": "tests/test_attacks.py::test_bundle_closed_loop_and_external_transfer"}
+{"event": "setup", "test": "tests/test_attacks.py::test_bundle_closed_loop_and_external_transfer", "outcome": "passed"}
+{"event": "call", "test": "tests/test_attacks.py::test_bundle_closed_loop_and_external_transfer", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_attacks.py::test_bundle_closed_loop_and_external_transfer", "outcome": "passed"}
+{"event": "start", "test": "tests/test_attacks.py::test_bankrun_and_analyses"}
+{"event": "setup", "test": "tests/test_attacks.py::test_bankrun_and_analyses", "outcome": "passed"}
+{"event": "call", "test": "tests/test_attacks.py::test_bankrun_and_analyses", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_attacks.py::test_bankrun_and_analyses", "outcome": "passed"}
+{"event": "start", "test": "tests/test_dashboard.py::test_dashboard_run_compare_replay_reset"}
+{"event": "setup", "test": "tests/test_dashboard.py::test_dashboard_run_compare_replay_reset", "outcome": "passed"}
+{"event": "call", "test": "tests/test_dashboard.py::test_dashboard_run_compare_replay_reset", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_dashboard.py::test_dashboard_run_compare_replay_reset", "outcome": "passed"}
+{"event": "start", "test": "tests/test_dashboard.py::test_dashboard_stress_and_exact_attack"}
+{"event": "setup", "test": "tests/test_dashboard.py::test_dashboard_stress_and_exact_attack", "outcome": "passed"}
+{"event": "call", "test": "tests/test_dashboard.py::test_dashboard_stress_and_exact_attack", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_dashboard.py::test_dashboard_stress_and_exact_attack", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_exact_reserve_differences"}
+{"event": "setup", "test": "tests/test_engine.py::test_exact_reserve_differences", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_exact_reserve_differences", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_exact_reserve_differences", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_random_valid_sequences"}
+{"event": "setup", "test": "tests/test_engine.py::test_random_valid_sequences", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_random_valid_sequences", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_random_valid_sequences", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0]"}
+{"event": "setup", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.1]"}
+{"event": "setup", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.1]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.1]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.1]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.25]"}
+{"event": "setup", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.25]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.25]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.25]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.5]"}
+{"event": "setup", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.5]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.5]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.5]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.75]"}
+{"event": "setup", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.75]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.75]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[0.75]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[1]"}
+{"event": "setup", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[1]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[1]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_self_cross_sensitivity_and_roundtrip[1]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_path_independence_and_full_redemption"}
+{"event": "setup", "test": "tests/test_engine.py::test_path_independence_and_full_redemption", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_path_independence_and_full_redemption", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_path_independence_and_full_redemption", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_creation_and_immutable_parameters"}
+{"event": "setup", "test": "tests/test_engine.py::test_creation_and_immutable_parameters", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_creation_and_immutable_parameters", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_creation_and_immutable_parameters", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_invalid_inputs[-1]"}
+{"event": "setup", "test": "tests/test_engine.py::test_invalid_inputs[-1]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_invalid_inputs[-1]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_invalid_inputs[-1]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_invalid_inputs[NaN]"}
+{"event": "setup", "test": "tests/test_engine.py::test_invalid_inputs[NaN]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_invalid_inputs[NaN]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_invalid_inputs[NaN]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_invalid_inputs[Infinity]"}
+{"event": "setup", "test": "tests/test_engine.py::test_invalid_inputs[Infinity]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_invalid_inputs[Infinity]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_invalid_inputs[Infinity]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_invalid_inputs[1e19]"}
+{"event": "setup", "test": "tests/test_engine.py::test_invalid_inputs[1e19]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_invalid_inputs[1e19]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_invalid_inputs[1e19]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_invalid_inputs[1e-19]"}
+{"event": "setup", "test": "tests/test_engine.py::test_invalid_inputs[1e-19]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_invalid_inputs[1e-19]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_invalid_inputs[1e-19]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_invalid_inputs[abc]"}
+{"event": "setup", "test": "tests/test_engine.py::test_invalid_inputs[abc]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_invalid_inputs[abc]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_invalid_inputs[abc]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_atomic_rejection_and_slippage"}
+{"event": "setup", "test": "tests/test_engine.py::test_atomic_rejection_and_slippage", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_atomic_rejection_and_slippage", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_atomic_rejection_and_slippage", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_extreme_quantities[0.000000000000000001]"}
+{"event": "setup", "test": "tests/test_engine.py::test_extreme_quantities[0.000000000000000001]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_extreme_quantities[0.000000000000000001]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_extreme_quantities[0.000000000000000001]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_extreme_quantities[1]"}
+{"event": "setup", "test": "tests/test_engine.py::test_extreme_quantities[1]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_extreme_quantities[1]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_extreme_quantities[1]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_extreme_quantities[100000000000]"}
+{"event": "setup", "test": "tests/test_engine.py::test_extreme_quantities[100000000000]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_extreme_quantities[100000000000]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_extreme_quantities[100000000000]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_engine.py::test_fees_buffer_and_independence"}
+{"event": "setup", "test": "tests/test_engine.py::test_fees_buffer_and_independence", "outcome": "passed"}
+{"event": "call", "test": "tests/test_engine.py::test_fees_buffer_and_independence", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_engine.py::test_fees_buffer_and_independence", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_fast_matches_decimal[0]"}
+{"event": "setup", "test": "tests/test_fast.py::test_fast_matches_decimal[0]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_fast_matches_decimal[0]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_fast_matches_decimal[0]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_fast_matches_decimal[0.1]"}
+{"event": "setup", "test": "tests/test_fast.py::test_fast_matches_decimal[0.1]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_fast_matches_decimal[0.1]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_fast_matches_decimal[0.1]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_fast_matches_decimal[0.25]"}
+{"event": "setup", "test": "tests/test_fast.py::test_fast_matches_decimal[0.25]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_fast_matches_decimal[0.25]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_fast_matches_decimal[0.25]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_fast_matches_decimal[0.5]"}
+{"event": "setup", "test": "tests/test_fast.py::test_fast_matches_decimal[0.5]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_fast_matches_decimal[0.5]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_fast_matches_decimal[0.5]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_fast_matches_decimal[0.75]"}
+{"event": "setup", "test": "tests/test_fast.py::test_fast_matches_decimal[0.75]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_fast_matches_decimal[0.75]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_fast_matches_decimal[0.75]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_fast_matches_decimal[1]"}
+{"event": "setup", "test": "tests/test_fast.py::test_fast_matches_decimal[1]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_fast_matches_decimal[1]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_fast_matches_decimal[1]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_scenarios_reproducible[baseline]"}
+{"event": "setup", "test": "tests/test_fast.py::test_scenarios_reproducible[baseline]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_scenarios_reproducible[baseline]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_scenarios_reproducible[baseline]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_scenarios_reproducible[popular]"}
+{"event": "setup", "test": "tests/test_fast.py::test_scenarios_reproducible[popular]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_scenarios_reproducible[popular]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_scenarios_reproducible[popular]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_scenarios_reproducible[crash]"}
+{"event": "setup", "test": "tests/test_fast.py::test_scenarios_reproducible[crash]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_scenarios_reproducible[crash]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_scenarios_reproducible[crash]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_scenarios_reproducible[bundled]"}
+{"event": "setup", "test": "tests/test_fast.py::test_scenarios_reproducible[bundled]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_scenarios_reproducible[bundled]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_scenarios_reproducible[bundled]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_scenarios_reproducible[frontrun]"}
+{"event": "setup", "test": "tests/test_fast.py::test_scenarios_reproducible[frontrun]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_scenarios_reproducible[frontrun]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_scenarios_reproducible[frontrun]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_scenarios_reproducible[bank_run]"}
+{"event": "setup", "test": "tests/test_fast.py::test_scenarios_reproducible[bank_run]", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_scenarios_reproducible[bank_run]", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_scenarios_reproducible[bank_run]", "outcome": "passed"}
+{"event": "start", "test": "tests/test_fast.py::test_comparison_and_export"}
+{"event": "setup", "test": "tests/test_fast.py::test_comparison_and_export", "outcome": "passed"}
+{"event": "call", "test": "tests/test_fast.py::test_comparison_and_export", "outcome": "passed"}
+{"event": "teardown", "test": "tests/test_fast.py::test_comparison_and_export", "outcome": "passed"}

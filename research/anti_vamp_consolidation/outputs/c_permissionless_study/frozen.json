@@ -1,0 +1,112 @@
+{
+  "status": "frozen_before_confirmation",
+  "created": "2026-10-30T09:11:42.003704+00:00",
+  "source_hashes": {
+    "open_model.py": "3fbc6c6fed9ac0bb22aca53fb1ec10449d4e5c5f908a17289126406adecca69a",
+    "run_study.py": "62f42dd18d9ae2a00d3fc899a9669521881e10c73fafcf1de50c80ca17a01ea1",
+    "test_open_model.py": "97fb83aa9697ad01ae9e715c2492ec8b7bc8400dac8b347cda9e247c10d153a7",
+    "upstream/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "upstream/attacks.py": "23f231a9b8ada526f77a74268564e93b5550853b6051bd82880890ca60946c1c",
+    "upstream/ledger.py": "3a681a5e9a6f5ce1cfb71d0889d98046b6fca21cf97026e56ab5b77988bbc5b3",
+    "upstream/model.py": "2f92f5e225ba6732466e918b50e296f6434f6e0f4c212ea6d1f0b60ead2b9cd0"
+  },
+  "plan_hash": "79ffe001379354aee2a680f40a529d6539c31f55cb32297642d90f693106643c",
+  "selected": [
+    {
+      "setting": "base",
+      "arch": "A",
+      "policy": {
+        "budget": 1000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 312.849671,
+      "idle_mean": 0.0
+    },
+    {
+      "setting": "base",
+      "arch": "C",
+      "policy": {
+        "budget": 3000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 833.3332056000002,
+      "idle_mean": 0.0
+    },
+    {
+      "setting": "spam90",
+      "arch": "A",
+      "policy": {
+        "budget": 1000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 61.01741554999999,
+      "idle_mean": 46.41344725
+    },
+    {
+      "setting": "spam90",
+      "arch": "C",
+      "policy": {
+        "budget": 3000,
+        "start": 0.85,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 743.4192278500001,
+      "idle_mean": 31.161269100000005
+    },
+    {
+      "setting": "daily_cap",
+      "arch": "C",
+      "policy": {
+        "budget": 3000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 665.0049336999999,
+      "idle_mean": 0.0
+    },
+    {
+      "setting": "timecap",
+      "arch": "C",
+      "policy": {
+        "budget": 3000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 833.3332056000002,
+      "idle_mean": 0.0
+    },
+    {
+      "setting": "combined",
+      "arch": "C",
+      "policy": {
+        "budget": 1000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 417.90088209999993,
+      "idle_mean": 0.0
+    },
+    {
+      "setting": "combined90",
+      "arch": "C",
+      "policy": {
+        "budget": 1000,
+        "start": 0.05,
+        "exit_hours": 1,
+        "aliases": 1
+      },
+      "training_mean": 74.64486489999999,
+      "idle_mean": 41.772910350000004
+    }
+  ]
+}

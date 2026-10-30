@@ -1,0 +1,52 @@
+{
+  "purpose": "Public access feasibility only; explicitly not a historical dataset",
+  "created_at_utc": "2026-10-30T06:32:02.655057+00:00",
+  "paid_spend": 0,
+  "credentials_used": false,
+  "browser_probe": {
+    "url": "https://api.dexscreener.com/latest/dex/search?q=PNUT",
+    "result": "Web tool reported URL inaccessible"
+  },
+  "requests": [
+    {
+      "query": "PNUT",
+      "url": "https://api.dexscreener.com/latest/dex/search?q=PNUT",
+      "requested_at_utc": "2026-10-30T06:32:02.081910+00:00",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "status": "snapshot_only",
+      "raw_response": "dexscreener_pnut_snapshot.json",
+      "response_sha256": "f719c98c05150ecf2a60c3e7264e86700edf9da3a7fea007c59dc32391a89ef1",
+      "returned_pairs": 30,
+      "distinct_base_assets": 17,
+      "limitations": [
+        "Keyword results are neither verified narrative members nor a complete cohort.",
+        "Pairs are venues, not independent launches or people.",
+        "Current/rolling metrics do not reconstruct historical reserves or net quote flows.",
+        "pairCreatedAt is not necessarily the original token launch time.",
+        "No empirical behavioral parameter is calibrated from this response."
+      ]
+    },
+    {
+      "query": "NEIRO",
+      "url": "https://api.dexscreener.com/latest/dex/search?q=NEIRO",
+      "requested_at_utc": "2026-10-30T06:32:02.534354+00:00",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "status": "snapshot_only",
+      "raw_response": "dexscreener_neiro_snapshot.json",
+      "response_sha256": "358825957ddc850e5233faebae3dd712b42037324f10b107b203a7aaa5efe8df",
+      "returned_pairs": 30,
+      "distinct_base_assets": 17,
+      "limitations": [
+        "Keyword results are neither verified narrative members nor a complete cohort.",
+        "Pairs are venues, not independent launches or people.",
+        "Current/rolling metrics do not reconstruct historical reserves or net quote flows.",
+        "pairCreatedAt is not necessarily the original token launch time.",
+        "No empirical behavioral parameter is calibrated from this response."
+      ]
+    }
+  ],
+  "historical_cluster_verified": false,
+  "calibrated_parameters": []
+}

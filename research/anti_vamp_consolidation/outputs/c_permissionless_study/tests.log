@@ -1,0 +1,23 @@
+test_alias_budget_shared (test_open_model.OpenLaunchTests.test_alias_budget_shared) ... ok
+test_daily_cap_holds (test_open_model.OpenLaunchTests.test_daily_cap_holds) ... ok
+test_deterministic_replay (test_open_model.OpenLaunchTests.test_deterministic_replay) ... ok
+test_free_still_pays_network (test_open_model.OpenLaunchTests.test_free_still_pays_network) ... ok
+test_funded_world (test_open_model.OpenLaunchTests.test_funded_world) ... ok
+test_late_entry_cannot_reopen_election (test_open_model.OpenLaunchTests.test_late_entry_cannot_reopen_election) ... ok
+test_minimum_age (test_open_model.OpenLaunchTests.test_minimum_age) ... ok
+test_no_cash_creation_by_spam (test_open_model.OpenLaunchTests.test_no_cash_creation_by_spam) ... ok
+test_no_dev_seed (test_open_model.OpenLaunchTests.test_no_dev_seed) ... ok
+test_observable_time_score (test_open_model.OpenLaunchTests.test_observable_time_score) ... ok
+test_outside_candidates_still_count_in_cohort (test_open_model.OpenLaunchTests.test_outside_candidates_still_count_in_cohort) ... ok
+test_reference_exit_witness (test_open_model.OpenLaunchTests.test_reference_exit_witness) ... ok
+test_refusal_direct_is_control (test_open_model.OpenLaunchTests.test_refusal_direct_is_control) ... ok
+test_route_expiry (test_open_model.OpenLaunchTests.test_route_expiry) ... ok
+test_router_fee_funded (test_open_model.OpenLaunchTests.test_router_fee_funded) ... ok
+test_sponsor_has_finite_balance (test_open_model.OpenLaunchTests.test_sponsor_has_finite_balance) ... ok
+test_unaffordable_launch_rejected_before_cost (test_open_model.OpenLaunchTests.test_unaffordable_launch_rejected_before_cost) ... ok
+test_zero_reach_is_control (test_open_model.OpenLaunchTests.test_zero_reach_is_control) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.932s
+
+OK

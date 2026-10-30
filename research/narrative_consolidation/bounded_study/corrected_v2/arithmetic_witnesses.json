@@ -1,0 +1,21 @@
+{
+  "initial": {
+    "reserve": 60.0,
+    "market_cap": 110.0
+  },
+  "support_extraction": {
+    "support_claims": 245.3624,
+    "original_holder_proceeds": 84.53624,
+    "remaining_backing": 5.463759
+  },
+  "D_equal_subscribers": {
+    "claims_each": 500.0,
+    "first_exit": 42.5,
+    "second_exit": 17.5
+  },
+  "ordering": {
+    "outlay": 160.0,
+    "proceeds": 260.0,
+    "profit": 100.0
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "tests": [
+    "direct received mint",
+    "heading agrees with mint",
+    "confirmation agrees with mint",
+    "launch navigation",
+    "late-entry creation preview",
+    "optional lead selection",
+    "390px overflow",
+    "browser runtime"
+  ],
+  "screenshots": [
+    "work/open-launch-wide.png",
+    "work/open-launch-narrow.png"
+  ],
+  "errors": []
+}

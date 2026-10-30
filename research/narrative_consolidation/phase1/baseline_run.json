@@ -1,0 +1,8 @@
+{
+  "started_at_utc": "2026-10-30T06:31:28.874482+00:00",
+  "purpose": "Unchanged existing test suite, workspace-local temporary directory",
+  "earlier_attempt": "Default-temp run interrupted after 102 completed tests; no final XML. Collection succeeded separately. Workspace temp retry retains diagnostics.",
+  "temp_directory": "C:\\Users\\moadl\\OneDrive\\Documents\\ChatGPT\\bonding curve research\\.tmp\\narrative_baseline_runtime",
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-30T06:32:35.684559+00:00"
+}

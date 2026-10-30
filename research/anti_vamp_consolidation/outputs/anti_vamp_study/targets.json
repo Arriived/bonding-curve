@@ -1,0 +1,1323 @@
+[
+  {
+    "id": "copies9__independent",
+    "base": "copies9__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies9__original_first",
+    "base": "copies9__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies9__elected_30s",
+    "base": "copies9__elected_30s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies9__elected_120s",
+    "base": "copies9__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies9__elected_300s",
+    "base": "copies9__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies9__elected_900s",
+    "base": "copies9__elected_900s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies49__independent",
+    "base": "copies49__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies49__original_first",
+    "base": "copies49__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies49__elected_30s",
+    "base": "copies49__elected_30s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies49__elected_120s",
+    "base": "copies49__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies49__elected_300s",
+    "base": "copies49__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies49__elected_900s",
+    "base": "copies49__elected_900s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies99__independent",
+    "base": "copies99__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies99__original_first",
+    "base": "copies99__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies99__elected_30s",
+    "base": "copies99__elected_30s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies99__elected_120s",
+    "base": "copies99__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies99__elected_300s",
+    "base": "copies99__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies99__elected_900s",
+    "base": "copies99__elected_900s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach30_accept30__original_first",
+    "base": "reach30_accept30__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach30_accept30__elected_120s",
+    "base": "reach30_accept30__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach30_accept60__original_first",
+    "base": "reach30_accept60__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach30_accept60__elected_120s",
+    "base": "reach30_accept60__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach30_accept100__original_first",
+    "base": "reach30_accept100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach30_accept100__elected_120s",
+    "base": "reach30_accept100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach60_accept30__original_first",
+    "base": "reach60_accept30__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach60_accept30__elected_120s",
+    "base": "reach60_accept30__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach60_accept100__original_first",
+    "base": "reach60_accept100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach60_accept100__elected_120s",
+    "base": "reach60_accept100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach100_accept30__original_first",
+    "base": "reach100_accept30__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach100_accept30__elected_120s",
+    "base": "reach100_accept30__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach100_accept60__original_first",
+    "base": "reach100_accept60__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach100_accept60__elected_120s",
+    "base": "reach100_accept60__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach100_accept100__original_first",
+    "base": "reach100_accept100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reach100_accept100__elected_120s",
+    "base": "reach100_accept100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast10__independent",
+    "base": "fast10__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast10__original_first",
+    "base": "fast10__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast10__elected_120s",
+    "base": "fast10__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast10__elected_300s",
+    "base": "fast10__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow10__independent",
+    "base": "slow10__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow10__original_first",
+    "base": "slow10__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow10__elected_120s",
+    "base": "slow10__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow10__elected_300s",
+    "base": "slow10__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral10__independent",
+    "base": "viral10__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral10__original_first",
+    "base": "viral10__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral10__elected_120s",
+    "base": "viral10__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral10__elected_300s",
+    "base": "viral10__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales10__independent",
+    "base": "position_sales10__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales10__original_first",
+    "base": "position_sales10__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales10__elected_120s",
+    "base": "position_sales10__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales10__elected_300s",
+    "base": "position_sales10__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast100__independent",
+    "base": "fast100__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast100__original_first",
+    "base": "fast100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast100__elected_120s",
+    "base": "fast100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fast100__elected_300s",
+    "base": "fast100__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow100__independent",
+    "base": "slow100__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow100__original_first",
+    "base": "slow100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow100__elected_120s",
+    "base": "slow100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "slow100__elected_300s",
+    "base": "slow100__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral100__independent",
+    "base": "viral100__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral100__original_first",
+    "base": "viral100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral100__elected_120s",
+    "base": "viral100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "viral100__elected_300s",
+    "base": "viral100__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales100__independent",
+    "base": "position_sales100__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales100__original_first",
+    "base": "position_sales100__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales100__elected_120s",
+    "base": "position_sales100__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "position_sales100__elected_300s",
+    "base": "position_sales100__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "original_share10__independent",
+    "base": "original_share10__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "original_share10__original_first",
+    "base": "original_share10__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "original_share10__elected_120s",
+    "base": "original_share10__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "original_share50__independent",
+    "base": "original_share50__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "original_share50__original_first",
+    "base": "original_share50__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "original_share50__elected_120s",
+    "base": "original_share50__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after120s__independent",
+    "base": "copies_after120s__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after120s__original_first",
+    "base": "copies_after120s__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after120s__elected_120s",
+    "base": "copies_after120s__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after120s__elected_300s",
+    "base": "copies_after120s__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after600s__independent",
+    "base": "copies_after600s__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after600s__original_first",
+    "base": "copies_after600s__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after600s__elected_120s",
+    "base": "copies_after600s__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "copies_after600s__elected_300s",
+    "base": "copies_after600s__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "preclaimed__independent",
+    "base": "preclaimed__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "preclaimed__original_first",
+    "base": "preclaimed__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "preclaimed__elected_120s",
+    "base": "preclaimed__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "preclaimed__elected_300s",
+    "base": "preclaimed__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reject_leave__original_first",
+    "base": "reject_leave__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reject_leave__elected_120s",
+    "base": "reject_leave__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reject_leave__elected_300s",
+    "base": "reject_leave__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reject_outside__original_first",
+    "base": "reject_outside__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reject_outside__elected_120s",
+    "base": "reject_outside__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "reject_outside__elected_300s",
+    "base": "reject_outside__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fees125__independent",
+    "base": "fees125__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fees125__original_first",
+    "base": "fees125__original_first",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fees125__elected_120s",
+    "base": "fees125__elected_120s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "fees125__elected_300s",
+    "base": "fees125__elected_300s",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "no_copies__independent",
+    "base": "no_copies__independent",
+    "kind": "idle",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 0,
+      "exit": 900
+    }
+  },
+  {
+    "id": "attack__copies9__independent",
+    "base": "copies9__independent",
+    "kind": "trained",
+    "family": "overall",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__attack__copies9__independent"
+  },
+  {
+    "id": "attack__copies9__original_first",
+    "base": "copies9__original_first",
+    "kind": "trained",
+    "family": "overall",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__attack__copies9__original_first"
+  },
+  {
+    "id": "same_policy_A__attack__copies9__original_first",
+    "base": "copies9__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies9__original_first"
+  },
+  {
+    "id": "attack__copies9__elected_120s",
+    "base": "copies9__elected_120s",
+    "kind": "trained",
+    "family": "overall",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__attack__copies9__elected_120s"
+  },
+  {
+    "id": "same_policy_A__attack__copies9__elected_120s",
+    "base": "copies9__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies9__elected_120s"
+  },
+  {
+    "id": "attack__copies9__elected_300s",
+    "base": "copies9__elected_300s",
+    "kind": "trained",
+    "family": "overall",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__attack__copies9__elected_300s"
+  },
+  {
+    "id": "same_policy_A__attack__copies9__elected_300s",
+    "base": "copies9__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies9__elected_300s"
+  },
+  {
+    "id": "attack__copies99__original_first",
+    "base": "copies99__original_first",
+    "kind": "trained",
+    "family": "overall",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__attack__copies99__original_first"
+  },
+  {
+    "id": "same_policy_A__attack__copies99__original_first",
+    "base": "copies99__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies99__original_first"
+  },
+  {
+    "id": "attack__copies99__elected_120s",
+    "base": "copies99__elected_120s",
+    "kind": "trained",
+    "family": "overall",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__attack__copies99__elected_120s"
+  },
+  {
+    "id": "same_policy_A__attack__copies99__elected_120s",
+    "base": "copies99__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 0,
+      "start": 1,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies99__elected_120s"
+  },
+  {
+    "id": "copy_attack__copies9__independent",
+    "base": "copies9__independent",
+    "kind": "trained",
+    "family": "copy_only",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__copy_attack__copies9__independent"
+  },
+  {
+    "id": "copy_attack__copies9__original_first",
+    "base": "copies9__original_first",
+    "kind": "trained",
+    "family": "copy_only",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__copy_attack__copies9__original_first"
+  },
+  {
+    "id": "same_policy_A__copy_attack__copies9__original_first",
+    "base": "copies9__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 1800
+    },
+    "matched_C": "copies9__original_first"
+  },
+  {
+    "id": "copy_attack__copies9__elected_120s",
+    "base": "copies9__elected_120s",
+    "kind": "trained",
+    "family": "copy_only",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__copy_attack__copies9__elected_120s"
+  },
+  {
+    "id": "same_policy_A__copy_attack__copies9__elected_120s",
+    "base": "copies9__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies9__elected_120s"
+  },
+  {
+    "id": "copy_attack__copies9__elected_300s",
+    "base": "copies9__elected_300s",
+    "kind": "trained",
+    "family": "copy_only",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__copy_attack__copies9__elected_300s"
+  },
+  {
+    "id": "same_policy_A__copy_attack__copies9__elected_300s",
+    "base": "copies9__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies9__elected_300s"
+  },
+  {
+    "id": "copy_attack__copies99__original_first",
+    "base": "copies99__original_first",
+    "kind": "trained",
+    "family": "copy_only",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 300
+    },
+    "matched_id": "same_policy_A__copy_attack__copies99__original_first"
+  },
+  {
+    "id": "same_policy_A__copy_attack__copies99__original_first",
+    "base": "copies99__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 500,
+      "exit": 300
+    },
+    "matched_C": "copies99__original_first"
+  },
+  {
+    "id": "copy_attack__copies99__elected_120s",
+    "base": "copies99__elected_120s",
+    "kind": "trained",
+    "family": "copy_only",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_id": "same_policy_A__copy_attack__copies99__elected_120s"
+  },
+  {
+    "id": "same_policy_A__copy_attack__copies99__elected_120s",
+    "base": "copies99__independent",
+    "kind": "matched_A",
+    "policy": {
+      "target": 1,
+      "start": 16,
+      "budget": 2000,
+      "exit": 1800
+    },
+    "matched_C": "copies99__elected_120s"
+  }
+]

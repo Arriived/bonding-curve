@@ -1,0 +1,7 @@
+numpy>=1.26,<3
+pandas>=2.2,<4
+plotly>=5.24,<7
+streamlit>=1.52,<2
+pytest>=8,<10
+hypothesis>=6.112,<7
+-e .

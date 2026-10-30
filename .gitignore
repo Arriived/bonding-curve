@@ -1,0 +1,15 @@
+.venv/
+.tmp/
+__pycache__/
+*.pyc
+.pytest_cache/
+.hypothesis/
+*.egg-info/
+.streamlit/secrets.toml
+results/scratch/
+shared-bonding-lab.zip
+shared-bonding-lab-phase2.zip
+copycat-diversion-research.zip
+
+# Full-project export; its unpacked source/evidence is versioned.
+MEMECOIN_ANTI_VAMP_COMPLETE_PROJECT.zip

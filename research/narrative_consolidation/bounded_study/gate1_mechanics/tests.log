@@ -1,0 +1,17 @@
+........................F.                                               [100%]
+================================== FAILURES ===================================
+_______ test_c_equal_retention_no_extra_demand_does_not_create_capital ________
+
+    def test_c_equal_retention_no_extra_demand_does_not_create_capital():
+        a=book();c=book()
+        for i in range(10):a.buy('a',i,10*M);c.buy('a',i,10*M)
+        for i in range(10):a.buy('b',i,20*M);c.buy('b',0,20*M,allowed=(0,))
+>       assert sum(a.cash[f'market:{i}'] for i in range(10))==sum(c.cash[f'market:{i}'] for i in range(10))==300*M
+E       assert 299999940 == 299999891
+E        +  where 299999940 = sum(<generator object test_c_equal_retention_no_extra_demand_does_not_create_capital.<locals>.<genexpr> at 0x000002212D869D20>)
+E        +  and   299999891 = sum(<generator object test_c_equal_retention_no_extra_demand_does_not_create_capital.<locals>.<genexpr> at 0x000002212D869E00>)
+
+tests\narrative\test_ledger.py:160: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/narrative/test_ledger.py::test_c_equal_retention_no_extra_demand_does_not_create_capital
+1 failed, 25 passed in 1.60s

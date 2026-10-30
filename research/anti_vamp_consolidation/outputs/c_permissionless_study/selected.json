@@ -1,0 +1,98 @@
+[
+  {
+    "setting": "base",
+    "arch": "A",
+    "policy": {
+      "budget": 1000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 312.849671,
+    "idle_mean": 0.0
+  },
+  {
+    "setting": "base",
+    "arch": "C",
+    "policy": {
+      "budget": 3000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 833.3332056000002,
+    "idle_mean": 0.0
+  },
+  {
+    "setting": "spam90",
+    "arch": "A",
+    "policy": {
+      "budget": 1000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 61.01741554999999,
+    "idle_mean": 46.41344725
+  },
+  {
+    "setting": "spam90",
+    "arch": "C",
+    "policy": {
+      "budget": 3000,
+      "start": 0.85,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 743.4192278500001,
+    "idle_mean": 31.161269100000005
+  },
+  {
+    "setting": "daily_cap",
+    "arch": "C",
+    "policy": {
+      "budget": 3000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 665.0049336999999,
+    "idle_mean": 0.0
+  },
+  {
+    "setting": "timecap",
+    "arch": "C",
+    "policy": {
+      "budget": 3000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 833.3332056000002,
+    "idle_mean": 0.0
+  },
+  {
+    "setting": "combined",
+    "arch": "C",
+    "policy": {
+      "budget": 1000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 417.90088209999993,
+    "idle_mean": 0.0
+  },
+  {
+    "setting": "combined90",
+    "arch": "C",
+    "policy": {
+      "budget": 1000,
+      "start": 0.05,
+      "exit_hours": 1,
+      "aliases": 1
+    },
+    "training_mean": 74.64486489999999,
+    "idle_mean": 41.772910350000004
+  }
+]

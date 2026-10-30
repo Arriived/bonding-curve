@@ -1,0 +1,29 @@
+{
+  "full_suite": {
+    "passed": 44,
+    "elapsed_seconds": 55.68,
+    "command": "python -m pytest -q"
+  },
+  "dashboard_sizing_followup": {
+    "passed": 2,
+    "elapsed_seconds": 19.01
+  },
+  "browser": {
+    "url": "http://127.0.0.1:8501",
+    "default_run_seed": 42,
+    "events": 2000,
+    "price_chart_verified": true
+  },
+  "dependency_check": "No broken requirements found",
+  "export_zip_integrity": true,
+  "source_hashes_verified": true,
+  "replay_controls_followup": {
+    "passed": 2,
+    "elapsed_seconds": 10.61,
+    "covered": [
+      "play",
+      "pause",
+      "single event step"
+    ]
+  }
+}

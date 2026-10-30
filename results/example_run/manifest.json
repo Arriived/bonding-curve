@@ -1,0 +1,49 @@
+{
+  "created_utc": "2026-10-28T16:13:36.158621+00:00",
+  "python": "3.12.14",
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "plotly": "6.9.0",
+    "streamlit": "1.66.1",
+    "pytest": "9.2.0",
+    "hypothesis": "6.170.13"
+  },
+  "config": {
+    "tokens": 10,
+    "coupling": 0.25,
+    "initial_supply": 1000,
+    "initial_supplies": null,
+    "reserve_capital": 0,
+    "p0": 0.01,
+    "k": 0.0001,
+    "traders": 100,
+    "retail_fraction": 0.6,
+    "whale_fraction": 0.1,
+    "trader_cash": 1000,
+    "trade_size": 20,
+    "buy_pressure": 0.55,
+    "volatility": 0.8,
+    "events": 100,
+    "fee": 0.003,
+    "seed": 42,
+    "scenario": "frontrun",
+    "sample_every": 10,
+    "attack_capital": 500,
+    "slippage_tolerance": 0.02,
+    "competitors": 1
+  },
+  "synthetic": true,
+  "source_sha256": {
+    "bonding_lab\\__init__.py": "2cd428dec4a7a2e5be135f0d4a4535627fc0b8a15600f53e8c7428ad4f4fd2ae",
+    "bonding_lab\\agents.py": "ed252718c861c2bec7eaba00d9d75b54aa078ce8b60b31ab47a0cfe901033449",
+    "bonding_lab\\attacks.py": "9f48386d30c85bac716c5346275c7b416bff9631049c69e856b22f2496cb18ec",
+    "bonding_lab\\cli.py": "212db35a942327d138e6b132e20f046d3548fe1363413a8b43d763b686c43561",
+    "bonding_lab\\engine.py": "6c9602172e43810ddd25d17c82e5ebbd9506d4b3712f924ea25dbeabbfb152b5",
+    "bonding_lab\\experiments.py": "3a312d97a02b31b54f6a2196cafea187d7f1286540786ec76689a9fc684f101a",
+    "bonding_lab\\fast.py": "4dcae1ac0f9c82579bd04a426fe88c718f49514c6fb71151c6652d974291d4b3",
+    "bonding_lab\\simulation.py": "d87b423db80bca8619aa319a2a8c683f6131bfca87f700f3e61c42f8a47c8969"
+  },
+  "intervals": "95% normal approximation of IID seed means; paired differences use matched seed outcomes",
+  "status": "complete"
+}
