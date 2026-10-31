@@ -6,27 +6,34 @@ Trade fee 100 bps on every buy and sell, charged on top of the trade.
 | through door N, per $1M | $6.0k | $0 | $4.0k | $10.0k |
 | room token through the program, per $1M | $0 | $6.0k | $4.0k | $10.0k |
 
-Door fee 0.5 SOL: 0.30 SOL to the reserve, 0.20 SOL to the protocol; plus rent 0.013565 SOL (cost to the opener 0.513565 SOL = $77.03).
-Room fee 1.0 SOL: 0.024680 SOL into GradPayer for the DAMM v2 accounts, 0.975320 SOL to the protocol.
+Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.012584 SOL = $1.89. Graduation rent (0.024680 SOL) is paid from the reserve at graduate, not by the launcher.
 
-Break-even door fee for one more no-traffic door, door_rate × rho × V / (D + 1), in USD:
+Room lifetime volume at which one more no-traffic door repays its rent, V = rent × (D + 1) / (door_rate × rho):
+
+| rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
+|---|---|---|---|---|
+| 0.01 | $346.1k | $3.18M | $31.49M | $314.62M |
+| 0.05 | $69.2k | $635.5k | $6.30M | $62.92M |
+| 0.3 | $11.5k | $105.9k | $1.05M | $10.49M |
+
+Income of one more no-traffic door over the room's life, net of its rent, door_rate × rho × V / (D + 1) − rent:
 
 | room lifetime volume V | rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
 |---|---|---|---|---|---|
-| $1.00M | 0.05 | $27.27 | $2.97 | $0.30 | $0.03 |
-| $1.00M | 0.3 | $163.64 | $17.82 | $1.80 | $0.18 |
-| $10.00M | 0.05 | $272.73 | $29.70 | $3.00 | $0.30 |
-| $10.00M | 0.3 | $1.6k | $178.22 | $17.98 | $1.80 |
-| $50.00M | 0.05 | $1.4k | $148.51 | $14.99 | $1.50 |
-| $50.00M | 0.3 | $8.2k | $891.09 | $89.91 | $9.00 |
+| $1.00M | 0.05 | $25.39 | $1.08 | $-1.59 | $-1.86 |
+| $1.00M | 0.3 | $161.75 | $15.93 | $-0.09 | $-1.71 |
+| $10.00M | 0.05 | $270.84 | $27.82 | $1.11 | $-1.59 |
+| $10.00M | 0.3 | $1.6k | $176.33 | $16.09 | $-0.09 |
+| $50.00M | 0.05 | $1.4k | $146.63 | $13.10 | $-0.39 |
+| $50.00M | 0.3 | $8.2k | $889.20 | $88.02 | $7.11 |
 
-10,000 spam doors in a room with 10 honest doors:
+10,000 spam doors in a room with 10 doors already (cost = rent only):
 
-| V | rho | spam income | cost, rent only | cost, 0.5 SOL fee + rent | minimum door fee on top of rent to make it unprofitable (SOL) |
-|---|---|---|---|---|---|
-| $1.00M | 0.05 | $299.70 | $20.3k | $770.3k | 0.0000 |
-| $1.00M | 0.3 | $1.8k | $20.3k | $770.3k | 0.0000 |
-| $10.00M | 0.05 | $3.0k | $20.3k | $770.3k | 0.0000 |
-| $10.00M | 0.3 | $18.0k | $20.3k | $770.3k | 0.0000 |
-| $50.00M | 0.05 | $15.0k | $20.3k | $770.3k | 0.0000 |
-| $50.00M | 0.3 | $89.9k | $20.3k | $770.3k | 0.0464 |
+| V | rho | spam income | spam cost (rent) | net |
+|---|---|---|---|---|
+| $1.00M | 0.05 | $299.70 | $18.9k | $-18.6k |
+| $1.00M | 0.3 | $1.8k | $18.9k | $-17.1k |
+| $10.00M | 0.05 | $3.0k | $18.9k | $-15.9k |
+| $10.00M | 0.3 | $18.0k | $18.9k | $-893.50 |
+| $50.00M | 0.05 | $15.0k | $18.9k | $-3.9k |
+| $50.00M | 0.3 | $89.9k | $18.9k | $71.0k |

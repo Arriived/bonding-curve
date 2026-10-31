@@ -35,20 +35,35 @@
 | room tokens left to seed the pool, S − q_g | 206,900,000,000,475 base units = 206,900,000.000475 tokens |
 | price step at the switch (integer rounding) | +0.000000105546% |
 
+### Graduation trigger raised to R* + graduation rent
+
+| quantity | value |
+|---|---|
+| graduation rent (DAMM v2 accounts, from account_sizes.py) | 24,680,160 lamports |
+| trigger T = R* + rent | 85,024,680,160 lamports (85.024680160 SOL) |
+| q_g at T (largest q with R(q) ≤ T) | 793,160,061,522,864 base units = 793,160,061.522864 tokens |
+| R(q_g) | 85,024,680,160 lamports (T − R(q_g) = 0) |
+| room tokens left in RoomVault, U − q_g | 206,839,938,477,136 base units |
+| literal reading: seed R* with all remaining tokens, price step | -0.013883% |
+| chosen: seed R* with N = floor(R*·(V_tok − q_g)²/K) tokens | N = 206,811,223,802,753 base units = 206,811,223.802753 tokens |
+| chosen: unsold tokens retired, U − q_g − N | 28,714,674,383 base units = 28,714.674383 tokens |
+| chosen: price step (pool opens at or above the curve's closing price by < 1 base unit) | +2.755e-13% |
+| alternative: re-derive V_sol (V_tok fixed) to seed all remaining tokens | V_sol = 29,992,871,855 lamports; seed 206,784,900,603,504 base units; step +0.000000000046% |
+
 ### Price impact of a buy (marginal price after vs before; fees excluded)
 
-Curve phase below 85 SOL of reserve; pool phase above (the pool's SOL side x equals the reserve at graduation and grows with net buying). Pool fee excluded.
+Curve phase below 85 SOL of reserve; pool phase from 85 SOL (the pool's SOL side x starts at R* = 85 and grows with net buying; K' = R* x N). Rows at and above 85 SOL are pool-phase. Pool fee excluded.
 
 | reserve / pool SOL side | buy 0.5 SOL | 5 SOL | 50 SOL | 500 SOL | FDV (SOL) | FDV / reserve |
 |---|---|---|---|---|---|---|
-| 1 SOL | 3.25% | 34.86% | 582.70% | 47,707.10% | 30 | 29.9× |
-| 10 SOL | 2.52% | 26.56% | 406.24% | 29,655.42% | 50 | 5.0× |
-| 50 SOL | 1.25% | 12.89% | 186.01% | 8,551.68% | 199 | 4.0× |
-| 84 SOL | 0.88% | 11.57% | 152.91% | 4,703.68% | 404 | 4.8× |
+| 1 SOL | 3.25% | 34.86% | 582.70% | 47,722.91% | 30 | 29.9× |
+| 10 SOL | 2.52% | 26.56% | 406.24% | 29,665.31% | 50 | 5.0× |
+| 50 SOL | 1.25% | 12.89% | 185.99% | 8,554.62% | 199 | 4.0× |
+| 84 SOL | 0.88% | 11.55% | 152.92% | 4,705.33% | 404 | 4.8× |
 | 85 SOL | 1.18% | 12.11% | 152.25% | 4,636.68% | 411 | 4.8× |
-| 500 SOL | 0.20% | 2.01% | 21.00% | 300.00% | 14,215 | 28.4× |
-| 5,000 SOL | 0.02% | 0.20% | 2.01% | 21.00% | 1,421,545 | 284.3× |
-| 50,000 SOL | 0.00% | 0.02% | 0.20% | 2.01% | 142,154,494 | 2,843.1× |
+| 500 SOL | 0.20% | 2.01% | 21.00% | 300.00% | 14,222 | 28.4× |
+| 5,000 SOL | 0.02% | 0.20% | 2.01% | 21.00% | 1,422,155 | 284.4× |
+| 50,000 SOL | 0.00% | 0.02% | 0.20% | 2.01% | 142,215,515 | 2,844.3× |
 
 ### Depth: SOL needed to move the price (fees excluded)
 

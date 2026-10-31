@@ -16,7 +16,13 @@ CONVERT = ["user", "config", "room", "fee_vault", "door_a", "door_b", "door_mint
            "door_vault_b", "door_room_vault_a", "door_room_vault_b", "room_mint", "user_ata_a", "user_ata_b",
            "token_2022_program", "system_program"]
 OPEN_DOOR = ["opener", "config", "room", "fee_vault", "door", "door_mint", "door_vault", "door_room_vault", "room_mint",
-             "ticker_lock", "token_2022_program", "system_program", "event_authority", "doors_program"]
+             "token_2022_program", "system_program", "event_authority", "doors_program"]
+# create_room always creates door 0 (the room token takes door 0's name, symbol and URI)
+CREATE_ROOM = ["launcher", "config", "room", "reserve_vault", "fee_vault", "grad_payer", "slug_lock", "room_mint",
+               "room_vault", "retired_vault", "fee_wsol", "wsol_mint", "door0", "door0_mint", "door0_vault",
+               "door0_room_vault", "token_2022_program", "spl_token_program", "system_program", "event_authority",
+               "doors_program"]
+RELEASE_SLUG = ["caller", "room", "slug_lock", "system_program"]
 GRADUATE = ["cranker", "config", "room", "reserve_vault", "room_vault", "retired_vault", "room_mint", "grad_payer",
             "grad_payer_wsol_tmp", "grad_payer_room_ata", "pool_creator_pda", "position_nft_mint_pda",
             "position_nft_account", "damm_config", "damm_pool_authority", "damm_pool", "damm_position",
@@ -30,6 +36,8 @@ LISTS = {
     "buy/sell, room-token route, pool": CURVE_ROOM+POOL_EXTRA,
     "convert": CONVERT,
     "open_door (without first buy)": OPEN_DOOR,
+    "create_room (with door 0, without first buy)": CREATE_ROOM,
+    "release_slug": RELEASE_SLUG,
     "graduate": GRADUATE,
 }
 
@@ -44,7 +52,9 @@ def main():
         keys = 32*n
         # one signature (64) + header/blockhash/compact-array overhead (~40) + instruction data (assume <= 100)
         fits = keys+64+40+100 <= 1232
-        print(f"| {name} | {n} | {'yes' if n <= 64 else 'NO'} | {keys:,} | {'yes' if fits else 'no: use a v0 transaction with an address lookup table'} |")
+        margin = 1232-(keys+64+40+100)
+        print(f"| {name} | {n} | {'yes' if n <= 64 else 'NO'} | {keys:,} | "
+              f"{('yes, ' + str(margin) + ' bytes to spare') if fits else 'no: use a v0 transaction with an address lookup table'} |")
     print("\nThe 64-byte signature, ~40 bytes of header/blockhash/array overhead and <=100 bytes of instruction "
           "data in the packet estimate are assumptions for the check, not measurements.")
 

@@ -9,6 +9,11 @@ Pool after graduation: (R*, (1 - f) S), constant product K' = R* (1 - f) S.
 """
 from fractions import Fraction as F
 import math
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from account_sizes import graduation_rent_lamports  # noqa: E402
 
 LAMPORTS = 10**9
 DEC = 10**6
@@ -107,9 +112,55 @@ def main():
             f"| room tokens left to seed the pool, S − q_g | {ic['seed_tokens']:,} base units = "
             f"{fmt(F(ic['seed_tokens'], DEC), 6)} tokens |",
             f"| price step at the switch (integer rounding) | {float(ic['step'])*100:+.12f}% |", ""]
+    # graduation trigger raised by the graduation rent (owner ruling 2)
+    rent = graduation_rent_lamports()
+    T = 85*LAMPORTS+rent
+    Kc = v_sol_lamports*v_tok_base
+    U = 10**15
+    Rf = lambda q: Kc//(v_tok_base-q)-v_sol_lamports
+    q_t = v_tok_base-Kc//(T+v_sol_lamports+1)-1
+    assert Rf(q_t) <= T < Rf(q_t+1)
+    remaining = U-q_t
+    curve_close = F(Kc, (v_tok_base-q_t)**2)
+    lit_step = F(85*LAMPORTS, remaining)/curve_close-1
+    seed = (85*LAMPORTS*(v_tok_base-q_t)**2)//Kc
+    seed_step = F(85*LAMPORTS, seed)/curve_close-1
+    # alternative: re-derive V_sol (V_tok fixed) so all remaining tokens seed continuously
+    def alt_step(vs):
+        k = vs*V_TOK_BRIEF*DEC
+        y = F(k, vs+T)
+        q = V_TOK_BRIEF*DEC-y
+        return F(85*LAMPORTS, U-q)/(F(vs+T)/y)-1
+    lo, hi = F(29*LAMPORTS), F(31*LAMPORTS)
+    for _ in range(200):
+        mid = (lo+hi)/2
+        if alt_step(mid) > 0:
+            lo = mid
+        else:
+            hi = mid
+    vs_alt = round(lo)
+    k_alt = vs_alt*v_tok_base
+    q_alt = v_tok_base-k_alt//(T+vs_alt+1)-1
+    alt_final = F(85*LAMPORTS, U-q_alt)/F(k_alt, (v_tok_base-q_alt)**2)-1
+    out += ["### Graduation trigger raised to R* + graduation rent", "",
+            "| quantity | value |", "|---|---|",
+            f"| graduation rent (DAMM v2 accounts, from account_sizes.py) | {rent:,} lamports |",
+            f"| trigger T = R* + rent | {T:,} lamports ({fmt(F(T, LAMPORTS), 9)} SOL) |",
+            f"| q_g at T (largest q with R(q) ≤ T) | {q_t:,} base units = {fmt(F(q_t, DEC), 6)} tokens |",
+            f"| R(q_g) | {Rf(q_t):,} lamports (T − R(q_g) = {T-Rf(q_t)}) |",
+            f"| room tokens left in RoomVault, U − q_g | {remaining:,} base units |",
+            f"| literal reading: seed R* with all remaining tokens, price step | {float(lit_step)*100:+.6f}% |",
+            f"| chosen: seed R* with N = floor(R*·(V_tok − q_g)²/K) tokens | N = {seed:,} base units = "
+            f"{fmt(F(seed, DEC), 6)} tokens |",
+            f"| chosen: unsold tokens retired, U − q_g − N | {remaining-seed:,} base units = "
+            f"{fmt(F(remaining-seed, DEC), 6)} tokens |",
+            f"| chosen: price step (pool opens at or above the curve's closing price by < 1 base unit) | "
+            f"{float(seed_step)*100:+.3e}% |",
+            f"| alternative: re-derive V_sol (V_tok fixed) to seed all remaining tokens | V_sol = {vs_alt:,} lamports; "
+            f"seed {U-q_alt:,} base units; step {float(alt_final)*100:+.12f}% |", ""]
     # price impact and depth on the chosen curve, in SOL
     K = v_sol_chosen*V_TOK_BRIEF
-    Kp = R_STAR*(S-f*S)
+    Kp = R_STAR*F(seed, DEC)          # pool constant with the chosen seed (R* SOL, N tokens)
     def state(R):
         if R < R_STAR:
             x = v_sol_chosen+R
@@ -118,13 +169,14 @@ def main():
         return x, Kp/x, Kp
     def impact(R, b):
         x, y, k = state(R)
-        if R < R_STAR <= R+b:            # crosses graduation: price after = pool price at R+b
-            x2 = R+b
+        T_sol = F(T, LAMPORTS)
+        if R < R_STAR and T_sol <= R+b:  # curve-phase row whose buy crosses graduation: the curve fills to T, the reserve hands R* to the
+            x2 = R+b-F(rent, LAMPORTS)   # pool and the rent to GradPayer, so the pool's SOL side ends at R+b-rent
             return float((x2*x2/Kp)/(x*x/k)-1)
         return float(((x+b)**2)/(x*x)-1)
     out += ["### Price impact of a buy (marginal price after vs before; fees excluded)", "",
-            "Curve phase below 85 SOL of reserve; pool phase above (the pool's SOL side x equals the reserve at "
-            "graduation and grows with net buying). Pool fee excluded.", "",
+            "Curve phase below 85 SOL of reserve; pool phase from 85 SOL (the pool's SOL side x starts at R* = 85 "
+            "and grows with net buying; K' = R* x N). Rows at and above 85 SOL are pool-phase. Pool fee excluded.", "",
             "| reserve / pool SOL side | buy 0.5 SOL | 5 SOL | 50 SOL | 500 SOL | FDV (SOL) | FDV / reserve |",
             "|---|---|---|---|---|---|---|"]
     for R in (F(1), F(10), F(50), F(84), F(85), F(500), F(5000), F(50000)):

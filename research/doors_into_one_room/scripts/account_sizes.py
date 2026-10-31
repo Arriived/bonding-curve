@@ -19,6 +19,7 @@ mint: decimals 0, MetadataPointer + MintCloseAuthority, TokenMetadata "Meteora P
 LAMPORTS_PER_BYTE = 6960
 OVERHEAD = 128
 SOL = 1_000_000_000
+USD_PER_SOL = 150.0       # only to quote SOL figures in dollars
 DAMM_NFT_URI = "https://raw.githubusercontent.com/MeteoraAg/token-metadata/main/meteora_position_nft.png"
 
 
@@ -29,10 +30,11 @@ def rent(n):
 LAYOUTS = {
     "Config": [
         ("anchor discriminator", 8), ("admin: Pubkey", 32), ("protocol_fee_recipient: Pubkey", 32),
-        ("fee_bps: u16", 2), ("door_share_bps: u16", 2), ("door_fee_lamports: u64", 8),
-        ("door_fee_reserve_bps: u16", 2), ("room_fee_lamports: u64", 8), ("convert_fee_lamports: u64", 8),
+        ("fee_bps: u16", 2), ("door_share_bps: u16", 2), ("door_fee_lamports: u64 (default 0)", 8),
+        ("room_fee_lamports: u64 (default 0)", 8), ("convert_fee_lamports: u64", 8),
         ("v_sol_lamports: u64", 8), ("v_tok: u64 (base units)", 8), ("supply: u64 (base units)", 8),
-        ("r_star_lamports: u64", 8), ("meteora_dynamic_config: Pubkey", 32), ("graduation_rent_lamports: u64", 8),
+        ("r_star_lamports: u64 (pool seed)", 8), ("meteora_dynamic_config: Pubkey", 32),
+        ("graduation_trigger_lamports: u64 (R* + graduation rent)", 8),
         ("paused: bool", 1), ("bump: u8", 1), ("reserved: [u8; 64]", 64)],
     "Room": [
         ("anchor discriminator", 8), ("room_id: u64", 8),
@@ -40,6 +42,7 @@ LAYOUTS = {
         ("status: u8 (0 curve, 1 complete, 2 graduated)", 1),
         ("room_mint: Pubkey", 32), ("room_vault: Pubkey", 32), ("retired_vault: Pubkey", 32), ("fee_wsol: Pubkey", 32),
         ("v_sol_lamports: u64", 8), ("v_tok: u64", 8), ("supply: u64", 8), ("r_star_lamports: u64", 8),
+        ("graduation_trigger_lamports: u64", 8),
         ("fee_bps: u16", 2), ("door_share_bps: u16", 2),
         ("reserve: u64 (lamports the program credited to ReserveVault)", 8),
         ("sold: u64 (curve position q = S - room_vault balance before graduation)", 8),
@@ -62,7 +65,6 @@ LAYOUTS = {
         ("accrued_sol: u64", 8), ("accrued_wsol: u64", 8), ("claimed_sol: u64", 8), ("claimed_wsol: u64", 8),
         ("buy_volume: u128 (gross lamports)", 16), ("sell_volume: u128", 16), ("trades: u64", 8),
         ("created_at: i64", 8), ("reserved: [u8; 32]", 32)],
-    "TickerLock": [("anchor discriminator", 8), ("door_index: u32", 4), ("bump: u8", 1)],
 }
 
 
@@ -80,6 +82,18 @@ def meme_mint(name, symbol, uri, extra):
 
 def damm_nft_mint():
     return 165+1+(4+64)+(4+32)+4+token_metadata_value(len("Meteora Position NFT"), len("MPN"), len(DAMM_NFT_URI), [])
+
+
+def graduation_rent_lamports():
+    """Rent for the accounts graduate creates (DAMM v2 pool, position, NFT mint + account, two vaults,
+    protocol's NFT ATA). Shared with curve_identities.py and fee_model.py."""
+    TA, ATA22 = 165, 170
+    return sum(rent(n) for n in (8+1104, 8+400, damm_nft_mint(), TA, TA, TA, ATA22))
+
+
+def per_door_rent_lamports():
+    door = sum(b for _, b in LAYOUTS["Door"])
+    return rent(door)+rent(meme_mint(32, 10, 200, [(4, 44), (4, 10)]))+2*rent(165)
 
 
 def main():
@@ -103,15 +117,20 @@ def main():
     print("| account | data bytes | rent-exempt lamports | SOL |\n|---|---|---|---|")
     for k, n in rows:
         print(f"| {k} | {n} | {rent(n):,} | {rent(n)/SOL:.6f} |")
-    per_door = rent(sizes["Door"])+rent(door_mint_max)+2*rent(TA)+rent(sizes["TickerLock"])
-    per_door_min = rent(sizes["Door"])+rent(door_mint_min)+2*rent(TA)+rent(sizes["TickerLock"])
+    per_door = rent(sizes["Door"])+rent(door_mint_max)+2*rent(TA)
+    per_door_min = rent(sizes["Door"])+rent(door_mint_min)+2*rent(TA)
     per_room = (rent(sizes["Room"])+3*rent(0)+rent(sizes["SlugLock"])+rent(room_mint)+3*rent(TA))
-    print(f"\nPer-door rent (Door + DoorMint max + DoorVault + DoorRoomVault + TickerLock): {per_door:,} lamports "
-          f"= {per_door/SOL:.6f} SOL (minimum metadata: {per_door_min:,} = {per_door_min/SOL:.6f} SOL)")
-    print(f"Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault + TickerLock): "
-          f"{sizes['Door']+door_mint_max+2*TA+sizes['TickerLock']:,}")
+    print(f"\nPer-door rent (Door + DoorMint max + DoorVault + DoorRoomVault): {per_door:,} lamports "
+          f"= {per_door/SOL:.6f} SOL = ${per_door/SOL*USD_PER_SOL:,.2f} at ${USD_PER_SOL:.0f}/SOL "
+          f"(minimum metadata: {per_door_min:,} = {per_door_min/SOL:.6f} SOL = ${per_door_min/SOL*USD_PER_SOL:,.2f})")
+    print(f"Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault): "
+          f"{sizes['Door']+door_mint_max+2*TA:,}")
     print(f"Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + RoomMint "
-          f"+ RoomVault + RetiredVault + FeeWsol): {per_room:,} lamports = {per_room/SOL:.6f} SOL")
+          f"+ RoomVault + RetiredVault + FeeWsol): {per_room:,} lamports = {per_room/SOL:.6f} SOL "
+          f"= ${per_room/SOL*USD_PER_SOL:,.2f}")
+    launch = per_room+per_door
+    print(f"Launching a room (room accounts + door 0 at max metadata; no room or door fee): {launch:,} lamports "
+          f"= {launch/SOL:.6f} SOL = ${launch/SOL*USD_PER_SOL:,.2f}, plus transaction fees")
     nft = damm_nft_mint()
     grad = [("DAMM v2 Pool (8 + 1104)", 8+1104), ("DAMM v2 Position (8 + 400)", 8+400),
             ("DAMM v2 position NFT mint", nft), ("DAMM v2 position NFT account", TA),
@@ -122,7 +141,8 @@ def main():
     for k, n in grad:
         print(f"| {k} | {n} | {rent(n):,} |")
     g = sum(rent(n) for _, n in grad)
-    print(f"| **total, funded from GradPayer** | | **{g:,} lamports = {g/SOL:.6f} SOL** |")
+    assert g == graduation_rent_lamports()
+    print(f"| **total, moved from the reserve to GradPayer at graduate** | | **{g:,} lamports = {g/SOL:.6f} SOL** |")
     print(f"\nA temporary WSOL account (165 bytes, {rent(165):,} lamports) is created and closed inside `graduate`; "
           "its rent is returned in the same transaction.")
     print("\nField layouts:\n")

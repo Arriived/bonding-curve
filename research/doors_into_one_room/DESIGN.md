@@ -19,11 +19,14 @@
 >   spec §3. Post-graduation trades route through the DAMM v2 pool.
 > - **§4 and §5, fees.** The split is now **60% to the door, 40% to the
 >   protocol, with no founder share**. On the room token the 60% goes to the
->   reserve via retirement. The door fee splits 60% reserve and 40% protocol.
->   The 30% creator share is gone.
-> - **§5, `close_door` is removed.** Doors are never closed.
-> - **§6, slug expiry.** Not part of the spec: the room token's ticker is the
->   slug, and it is fixed.
+>   reserve via retirement. Launching is free: the door and room fees default
+>   to 0, and graduation rent comes out of the reserve. The 30% creator share
+>   is gone.
+> - **§5, `close_door` is removed.** Doors are never closed. Ticker locks are
+>   removed: doors may share names, symbols and images.
+> - **§6, room identity.** SlugLock and its expiry rule are kept (spec
+>   `release_slug`, before graduation only). The room token's name, symbol
+>   and image are door 0's, fixed permanently.
 > - **§8–9, display.** Every door and the room token show the room FDV, because
 >   every mint has 1B supply (spec §7).
 
