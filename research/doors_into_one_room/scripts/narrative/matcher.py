@@ -31,12 +31,12 @@ DEFAULTS = {
     "jaccard_min": 0.5,
     "symbol_edit1_min_len": 5,
     "containment_min_len": 3,
-    # liveness, pre-graduation (status 0/1)
-    "live_min_reserve_lamports": 2_000_000_000,
+    # liveness, pre-graduation (status 0/1); chosen from outputs/narrative/liveness_table.md
+    "live_min_reserve_lamports": 1_000_000_000,
     "live_max_idle_seconds": 6 * 3600,
     # liveness, post-graduation (status 2), from DAMM v2 Pool.metrics.total_lp_b_fee
     "pool_window_seconds": 86_400,
-    "pool_min_window_lp_fee": 20_000_000,       # lamports of LP fee per window
+    "pool_min_window_lp_fee": 80_000_000,       # LP fee per window = 0.8% of 10 SOL volume; NOT calibrated
     "pool_min_token_b_amount": 0,               # optional floor on Pool.token_b_amount; 0 = off
 }
 
