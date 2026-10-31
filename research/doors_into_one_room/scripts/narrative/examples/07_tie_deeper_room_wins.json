@@ -1,0 +1,41 @@
+{
+ "now": 1793470000,
+ "candidate": {
+  "name": "Elon",
+  "symbol": "ELON",
+  "uri": "",
+  "phash": null
+ },
+ "rooms": [
+  {
+   "room_id": 2,
+   "status": 0,
+   "faces": [
+    {
+     "name": "Elon",
+     "symbol": "ELON",
+     "phash": null
+    }
+   ],
+   "reserve": 5000000000,
+   "last_trade_at": 1793469400
+  },
+  {
+   "room_id": 3,
+   "status": 0,
+   "faces": [
+    {
+     "name": "ELON",
+     "symbol": "elon",
+     "phash": null
+    }
+   ],
+   "reserve": 20000000000,
+   "last_trade_at": 1793469400
+  }
+ ],
+ "expect": {
+  "decision": "door",
+  "room_id": 3
+ }
+}

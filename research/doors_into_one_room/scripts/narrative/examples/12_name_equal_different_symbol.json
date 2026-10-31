@@ -1,0 +1,28 @@
+{
+ "now": 1793470000,
+ "candidate": {
+  "name": "Golden Chihuahua",
+  "symbol": "GCH",
+  "uri": "",
+  "phash": null
+ },
+ "rooms": [
+  {
+   "room_id": 7,
+   "status": 0,
+   "faces": [
+    {
+     "name": "Golden Chihuahua",
+     "symbol": "CHIHUAHUA",
+     "phash": null
+    }
+   ],
+   "reserve": 8000000000,
+   "last_trade_at": 1793469400
+  }
+ ],
+ "expect": {
+  "decision": "door",
+  "room_id": 7
+ }
+}

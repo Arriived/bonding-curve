@@ -1,0 +1,28 @@
+{
+ "now": 1793470000,
+ "candidate": {
+  "name": "Thick Booty Coin",
+  "symbol": "TBC",
+  "uri": "",
+  "phash": null
+ },
+ "rooms": [
+  {
+   "room_id": 6,
+   "status": 0,
+   "faces": [
+    {
+     "name": "The Boring Company",
+     "symbol": "TBC",
+     "phash": null
+    }
+   ],
+   "reserve": 8000000000,
+   "last_trade_at": 1793469400
+  }
+ ],
+ "expect": {
+  "decision": "new_room",
+  "room_id": null
+ }
+}

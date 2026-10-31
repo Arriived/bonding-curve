@@ -1,0 +1,35 @@
+{
+ "now": 1793470000,
+ "candidate": {
+  "name": "Elon",
+  "symbol": "ELON",
+  "uri": "",
+  "phash": null
+ },
+ "rooms": [
+  {
+   "room_id": 4,
+   "status": 2,
+   "faces": [
+    {
+     "name": "Elon",
+     "symbol": "ELON",
+     "phash": null
+    }
+   ],
+   "reserve": 8000000000,
+   "last_trade_at": 1793469400,
+   "pool": {
+    "total_lp_b_fee": 900000000,
+    "ckpt_fee": 700000000,
+    "ckpt_ts": 1793430000,
+    "last_window_fee": 150000000,
+    "token_b_amount": 120000000000
+   }
+  }
+ ],
+ "expect": {
+  "decision": "door",
+  "room_id": 4
+ }
+}
