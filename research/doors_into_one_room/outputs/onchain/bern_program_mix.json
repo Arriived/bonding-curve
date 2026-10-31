@@ -1,0 +1,13 @@
+{
+ "mint": "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo",
+ "sampled_successful": 42,
+ "newest_slot": 463664217,
+ "oldest_slot": 463359063,
+ "txs_invoking": {
+  "Meteora DAMM v2": 22,
+  "Jupiter v6": 6,
+  "Raydium CPMM": 1,
+  "Raydium AMM v4": 1,
+  "PumpSwap": 1
+ }
+}

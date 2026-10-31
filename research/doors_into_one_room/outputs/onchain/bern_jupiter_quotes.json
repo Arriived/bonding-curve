@@ -1,0 +1,134 @@
+[
+ {
+  "sig": "3mtMT47kBFg3SkCRZQt1ffDGqTCM4rwAxMiqKHsJQbAoyLS3b7Yudw4zfJvvbrm9b71sKE1QCXQMvB5QnSq9e9uW",
+  "slot": 463629497,
+  "ix": "shared_accounts_route",
+  "sent": {
+   "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo": 177476
+  },
+  "fee_mint_credited_to_others": 172701,
+  "in_amount": 177478,
+  "quoted_out": 2092,
+  "slippage_bps": 100,
+  "platform_fee_bps": 0,
+  "received": {
+   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 2092
+  },
+  "received_vs_quote": null,
+  "output_is_fee_mint": false
+ },
+ {
+  "sig": "2DXXVF3BQPfRryQEuQVQP9ndhpHLFi5oVgA2Xiy4vcFpx4iqNwJEAxyNACsgt8HdpYwJdJwiZjQYFdr8A1kjkcZg",
+  "slot": 463626643,
+  "ix": "route",
+  "sent": {
+   "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo": 12479
+  },
+  "fee_mint_credited_to_others": 12143,
+  "in_amount": 12482,
+  "quoted_out": 1545,
+  "slippage_bps": 100,
+  "platform_fee_bps": 0,
+  "received": {},
+  "received_vs_quote": null,
+  "output_is_fee_mint": false
+ },
+ {
+  "sig": "4AoFQh41f9hYEzzoar7gYEUrQMK2FHpqr6M1mpdgcg3ML5XYuymgQpkdFhCaR8J9uwCpjDZTiVEX5t5qrPbgiyvA",
+  "kind": "jupiter ix not decoded (exact-out or other)",
+  "disc": "bb64facc31c4af14"
+ },
+ {
+  "sig": "3G1pX38JPuAb6TpKvsqgipbLJzv3TxFtiFhFCmgi5WkZpxVA5WgoDFEuXkRi4j63bbf3SqwvuFygoQJMwWFjyr4K",
+  "kind": "jupiter ix not decoded (exact-out or other)",
+  "disc": "bb64facc31c4af14"
+ },
+ {
+  "sig": "SYtQu2R2jCYMAPKDjFM7pRpoUdy6WCtUdkHxnpyvEGLadUsgsLt6oAiPbWZAB3mGXfTf6dzcCwWKw6zwPxFUEYx",
+  "kind": "jupiter ix not decoded (exact-out or other)",
+  "disc": "bb64facc31c4af14"
+ },
+ {
+  "sig": "4qfeJYxUFrPdwuKvXEyqoXDvwG7hXxrJzZ9ncY3nZhfDdXVV3BDefzBJBRCrQNRfx6MM2PRoRN8RsKcpbe5wEnsv",
+  "kind": "jupiter ix not decoded (exact-out or other)",
+  "disc": "bb64facc31c4af14"
+ },
+ {
+  "sig": "4QzRPTENsZMDgXPo3c8ZEsmdBQV4x881o1kjpyo33aiuhYoLGrZ9xWaAfmvkKvJcqh28r32aei55rW3Yd69kAPRc",
+  "slot": 463355664,
+  "ix": "route",
+  "sent": {
+   "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo": 647
+  },
+  "fee_mint_credited_to_others": 629,
+  "in_amount": 650,
+  "quoted_out": 80,
+  "slippage_bps": 100,
+  "platform_fee_bps": 0,
+  "received": {},
+  "received_vs_quote": null,
+  "output_is_fee_mint": false
+ },
+ {
+  "sig": "2QxXCPgQ9RLkSMPgfaJX1Ti7uzbXJL42ZhGW4i1HPou9hhkzuUitwgPR13Q3TARrMe9MtqSKq8WEEJg32JqNzd15",
+  "slot": 463355646,
+  "ix": "shared_accounts_route",
+  "sent": {
+   "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo": 1624
+  },
+  "fee_mint_credited_to_others": 1580,
+  "in_amount": 1626,
+  "quoted_out": 19,
+  "slippage_bps": 100,
+  "platform_fee_bps": 0,
+  "received": {
+   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 19
+  },
+  "received_vs_quote": null,
+  "output_is_fee_mint": false
+ },
+ {
+  "sig": "KKVdLe8gPtJufhfGqX5hxa2siL1MLenpsZEwGoS6MrMmgkjvynw8civYMyZTuTkRNzeFHN8uro81D6i5yFHfbaH",
+  "slot": 463351492,
+  "ix": "route",
+  "sent": {
+   "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo": 678946
+  },
+  "fee_mint_credited_to_others": 660682,
+  "in_amount": 678951,
+  "quoted_out": 84006,
+  "slippage_bps": 100,
+  "platform_fee_bps": 0,
+  "received": {},
+  "received_vs_quote": null,
+  "output_is_fee_mint": false
+ },
+ {
+  "sig": "2JecBq9DVsde8YZz8Ch4viocKFc4MxmmXEyzWcXtd9q7E8WKMqsgbqCVb8f54Nh6u8WA6GUQbgoq2RAAj8yKx2nu",
+  "slot": 463351473,
+  "ix": "shared_accounts_route",
+  "sent": {
+   "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo": 1697374
+  },
+  "fee_mint_credited_to_others": 1651714,
+  "in_amount": 1697377,
+  "quoted_out": 19948,
+  "slippage_bps": 100,
+  "platform_fee_bps": 0,
+  "received": {
+   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 19948
+  },
+  "received_vs_quote": null,
+  "output_is_fee_mint": false
+ },
+ {
+  "sig": "3Ahe1z9FXSqSomv1qVbKKmf2jj8GyDnd1RZRE9tujNNpQ87PLBwiYsLCjukvXzGDDHcJnxWC5woz47oS8cRugyc",
+  "kind": "jupiter ix not decoded (exact-out or other)",
+  "disc": "bb64facc31c4af14"
+ },
+ {
+  "sig": "5VUtgkbnwvU7WwwRxhhuhF5wR6abZic2wDT8DLycU8aBZtBXK6cM69sNgrRRtvFZuudMvHWQoLcabERzDCKDZtEh",
+  "kind": "jupiter ix not decoded (exact-out or other)",
+  "disc": "bb64facc31c4af14"
+ }
+]
