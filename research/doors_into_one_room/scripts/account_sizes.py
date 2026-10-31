@@ -1,25 +1,25 @@
-"""Exact byte layouts and rent for the permanent-curve room accounts.
+"""Exact byte layouts and rent for the pre-minted room/door design and its DAMM v2 graduation.
 
-Rent-exempt minimum = (128 + data_bytes) * 6,960 lamports (3,480 lamports per
-byte-year x 2 years; 128 bytes of account metadata overhead).
+Rent-exempt minimum = (128 + data_bytes) * 6,960 lamports.
 
-Token-2022 layout facts used (solana-program/token-2022 @ 986b3aa5):
-  interface/src/extension/mod.rs: accounts with extensions are padded to
-  Account::LEN = 165 bytes, then a 1-byte AccountType, then TLV entries with a
-  2-byte ExtensionType (repr u16) and 2-byte Length header.
-  interface/src/extension/metadata_pointer/mod.rs: MetadataPointer = 2 x 32 bytes.
-TokenMetadata (solana-program/token-metadata @ 685b8b66, interface/src/state.rs)
-is Borsh: update_authority 32, mint 32, name/symbol/uri as u32-length strings,
-additional_metadata as a u32-length Vec<(String, String)>.
-PermissionedBurnConfig (interface/src/extension/permissioned_burn/mod.rs) = 32 bytes;
-present in the mainnet Token-2022 binary (programdata DoU57AYu...HDTY read at slot
-463,687,011, ELF sha256 5e888b29..., contains its error strings).
-ATA for Token-2022 adds ImmutableOwner (solana-program/associated-token-account
-@ 5881eb14, program/src/processor.rs:120), a zero-size extension.
+Token-2022 layout (solana-program/token-2022 @ 986b3aa5, interface/src/extension/mod.rs):
+accounts with extensions are padded to Account::LEN = 165 bytes, then a 1-byte AccountType,
+then TLV entries with a 2-byte type and 2-byte length. MetadataPointer = 64 bytes;
+MintCloseAuthority = 32 bytes. TokenMetadata (solana-program/token-metadata @ 685b8b66,
+interface/src/state.rs) is Borsh: update_authority 32, mint 32, name, symbol, uri as
+u32-length strings, additional_metadata as a u32-length Vec<(String, String)>.
+A token account for a mint whose extensions require no account extensions is 165 bytes;
+an ATA created by the ATA program for a Token-2022 mint adds ImmutableOwner (170 bytes).
+
+DAMM v2 (MeteoraAg/damm-v2 @ 5398b5c7): Pool::INIT_SPACE = 1104 (state/pool.rs:185),
+Position::INIT_SPACE = 400 (state/position.rs:121), both + 8-byte discriminator. Position NFT
+mint: decimals 0, MetadataPointer + MintCloseAuthority, TokenMetadata "Meteora Position NFT" /
+"MPN" / fixed URI (instructions/ix_create_position.rs, create_position_nft).
 """
 LAMPORTS_PER_BYTE = 6960
 OVERHEAD = 128
-LAMPORTS_PER_SOL = 1_000_000_000
+SOL = 1_000_000_000
+DAMM_NFT_URI = "https://raw.githubusercontent.com/MeteoraAg/token-metadata/main/meteora_position_nft.png"
 
 
 def rent(n):
@@ -29,30 +29,37 @@ def rent(n):
 LAYOUTS = {
     "Config": [
         ("anchor discriminator", 8), ("admin: Pubkey", 32), ("protocol_fee_recipient: Pubkey", 32),
-        ("fee_bps: u16", 2), ("creator_share_bps: u16", 2), ("founder_share_bps: u16", 2),
-        ("reserve_share_bps: u16", 2), ("door_fee_lamports: u64", 8), ("door_fee_reserve_bps: u16", 2),
-        ("door_fee_founder_bps: u16", 2), ("room_fee_lamports: u64", 8), ("convert_fee_lamports: u64", 8),
-        ("curve_x0_lamports: u64", 8), ("curve_y0: u64 (base units)", 8), ("curve_s1: u64 (base units)", 8),
+        ("fee_bps: u16", 2), ("door_share_bps: u16", 2), ("door_fee_lamports: u64", 8),
+        ("door_fee_reserve_bps: u16", 2), ("room_fee_lamports: u64", 8), ("convert_fee_lamports: u64", 8),
+        ("v_sol_lamports: u64", 8), ("v_tok: u64 (base units)", 8), ("supply: u64 (base units)", 8),
+        ("r_star_lamports: u64", 8), ("meteora_dynamic_config: Pubkey", 32), ("graduation_rent_lamports: u64", 8),
         ("paused: bool", 1), ("bump: u8", 1), ("reserved: [u8; 64]", 64)],
     "Room": [
-        ("anchor discriminator", 8), ("room_id: u64", 8), ("founder: Pubkey", 32),
-        ("bump, vault_bump, fee_vault_bump: 3 x u8", 3),
-        ("x0_lamports: u64", 8), ("y0: u64", 8), ("s1: u64", 8),
-        ("fee_bps, creator_share_bps, founder_share_bps, reserve_share_bps: 4 x u16", 8),
-        ("reserve: u64 (lamports credited to RoomVault by the program)", 8),
-        ("circulating: u64 (sum of door mint supplies, base units)", 8),
-        ("retired: u64 (curve position bought with reserve-share fees, never minted)", 8),
-        ("door_count: u32", 4), ("founder_accrued: u64", 8), ("protocol_accrued: u64", 8),
-        ("reserve_share_total: u64", 8), ("volume_gross: u128", 16), ("trades: u64", 8),
-        ("created_at: i64", 8), ("last_trade_at: i64", 8), ("slug: [u8; 32]", 32),
+        ("anchor discriminator", 8), ("room_id: u64", 8),
+        ("bumps: room, reserve_vault, fee_vault, grad_payer, room_vault, retired_vault, fee_wsol (7 x u8)", 7),
+        ("status: u8 (0 curve, 1 complete, 2 graduated)", 1),
+        ("room_mint: Pubkey", 32), ("room_vault: Pubkey", 32), ("retired_vault: Pubkey", 32), ("fee_wsol: Pubkey", 32),
+        ("v_sol_lamports: u64", 8), ("v_tok: u64", 8), ("supply: u64", 8), ("r_star_lamports: u64", 8),
+        ("fee_bps: u16", 2), ("door_share_bps: u16", 2),
+        ("reserve: u64 (lamports the program credited to ReserveVault)", 8),
+        ("sold: u64 (curve position q = S - room_vault balance before graduation)", 8),
+        ("retired: u64 (room tokens held in RetiredVault)", 8), ("door_count: u32", 4),
+        ("protocol_accrued_sol: u64", 8), ("protocol_accrued_wsol: u64", 8),
+        ("pending_reserve_sol: u64", 8), ("pending_reserve_wsol: u64", 8), ("reserve_share_total: u64", 8),
+        ("volume_gross: u128", 16), ("trades: u64", 8), ("created_at: i64", 8), ("last_trade_at: i64", 8),
+        ("graduated_at: i64", 8), ("damm_pool: Pubkey", 32), ("damm_position: Pubkey", 32),
+        ("position_nft_mint: Pubkey", 32), ("slug_len: u8", 1), ("slug: [u8; 10]", 10),
         ("uri_len: u8", 1), ("uri: [u8; 200]", 200), ("reserved: [u8; 64]", 64)],
-    "RoomVault (program-owned, no data)": [],
-    "FeeVault (program-owned, no data)": [],
+    "ReserveVault (program-owned, no data; SOL reserve)": [],
+    "FeeVault (program-owned, no data; SOL fees)": [],
+    "GradPayer (SYSTEM-owned PDA, no data; holds DAMM v2 rent, signs as payer)": [],
     "SlugLock": [("anchor discriminator", 8), ("room_id: u64", 8), ("bump: u8", 1)],
     "Door": [
         ("anchor discriminator", 8), ("room: Pubkey", 32), ("index: u32", 4), ("mint: Pubkey", 32),
-        ("creator: Pubkey", 32), ("fee_recipient: Pubkey", 32), ("bump, mint_bump: 2 x u8", 2),
-        ("supply: u64 (cached mint supply, base units)", 8), ("accrued: u64", 8), ("claimed: u64", 8),
+        ("door_vault: Pubkey", 32), ("room_token_vault: Pubkey", 32), ("creator: Pubkey", 32),
+        ("fee_recipient: Pubkey", 32), ("bumps: door, mint, door_vault, room_token_vault (4 x u8)", 4),
+        ("backing: u64 (room tokens in room_token_vault = door tokens circulating)", 8),
+        ("accrued_sol: u64", 8), ("accrued_wsol: u64", 8), ("claimed_sol: u64", 8), ("claimed_wsol: u64", 8),
         ("buy_volume: u128 (gross lamports)", 16), ("sell_volume: u128", 16), ("trades: u64", 8),
         ("created_at: i64", 8), ("reserved: [u8; 32]", 32)],
     "TickerLock": [("anchor discriminator", 8), ("door_index: u32", 4), ("bump: u8", 1)],
@@ -66,46 +73,66 @@ def token_metadata_value(name, symbol, uri, extra):
     return n
 
 
-def door_mint(name=32, symbol=10, uri=200):
-    extra = [(4, 44), (4, 10)]          # ("room", base58 pubkey <= 44), ("door", u32 decimal <= 10)
-    base = 165+1                         # Account::LEN padding + AccountType
-    metadata_pointer = 4+64
-    permissioned_burn = 4+32
-    metadata = 4+token_metadata_value(name, symbol, uri, extra)
-    return base+metadata_pointer+permissioned_burn+metadata
+def meme_mint(name, symbol, uri, extra):
+    """Token-2022 mint with MetadataPointer + TokenMetadata only (what wallets see as a plain memecoin)."""
+    return 165+1+(4+64)+4+token_metadata_value(name, symbol, uri, extra)
+
+
+def damm_nft_mint():
+    return 165+1+(4+64)+(4+32)+4+token_metadata_value(len("Meteora Position NFT"), len("MPN"), len(DAMM_NFT_URI), [])
 
 
 def main():
     print("<!-- generated by scripts/account_sizes.py -->")
+    sizes = {k: sum(b for _, b in v) for k, v in LAYOUTS.items()}
+    room_mint = meme_mint(32, 10, 200, [(4, 44)])                      # ("room", pubkey)
+    door_mint_max = meme_mint(32, 10, 200, [(4, 44), (4, 10)])          # ("room", pubkey), ("door", index)
+    door_mint_min = meme_mint(1, 1, 0, [(4, 44), (4, 1)])
+    TA, ATA22 = 165, 170
+    rows = [(k, v) for k, v in sizes.items()]
+    rows += [("RoomMint (Token-2022 + MetadataPointer + TokenMetadata; name 32 / symbol 10 / uri 200)", room_mint),
+             ("RoomVault (room-token account owned by Room PDA; 1B pre-minted here)", TA),
+             ("RetiredVault (room-token account owned by Room PDA)", TA),
+             ("FeeWsol (SPL WSOL account owned by Room PDA; post-graduation sell fees)", TA),
+             ("DoorMint, max metadata (name 32 / symbol 10 / uri 200)", door_mint_max),
+             ("DoorMint, minimum metadata", door_mint_min),
+             ("DoorVault (door-token account owned by Door PDA; 1B pre-minted here)", TA),
+             ("DoorRoomVault (room-token account owned by Door PDA; the backing)", TA),
+             ("trader's Token-2022 ATA (door or room token; ImmutableOwner)", ATA22),
+             ("check: classic SPL token account", 165)]
     print("| account | data bytes | rent-exempt lamports | SOL |\n|---|---|---|---|")
-    sizes = {}
-    for name, fields in LAYOUTS.items():
-        n = sum(b for _, b in fields)
-        sizes[name] = n
-        print(f"| {name} | {n} | {rent(n):,} | {rent(n)/LAMPORTS_PER_SOL:.6f} |")
-    mx, mn = door_mint(), door_mint(1, 1, 0)
-    sizes["DoorMint max"] = mx
-    print(f"| DoorMint (Token-2022 + MetadataPointer + PermissionedBurn + TokenMetadata), max name 32 / symbol 10 / uri 200 | {mx} | "
-          f"{rent(mx):,} | {rent(mx)/LAMPORTS_PER_SOL:.6f} |")
-    print(f"| DoorMint, minimum (1-byte name/symbol, empty uri) | {mn} | {rent(mn):,} | {rent(mn)/LAMPORTS_PER_SOL:.6f} |")
-    ata = 165+1+4
-    print(f"| user ATA (Token-2022 account + ImmutableOwner), paid by the trader | {ata} | {rent(ata):,} | "
-          f"{rent(ata)/LAMPORTS_PER_SOL:.6f} |")
-    print(f"| check: classic SPL token account, 165 bytes | 165 | {rent(165):,} | {rent(165)/LAMPORTS_PER_SOL:.6f} |")
-    door_total = rent(sizes["Door"])+rent(mx)+rent(sizes["TickerLock"])
-    room_total = (rent(sizes["Room"])+rent(0)+rent(0)+rent(sizes["SlugLock"]))
-    print(f"\nPer-door rent (Door + DoorMint at max metadata + TickerLock): {door_total:,} lamports "
-          f"= {door_total/LAMPORTS_PER_SOL:.6f} SOL")
-    print(f"Per-room rent excluding door 0 (Room + RoomVault + FeeVault + SlugLock): {room_total:,} lamports "
-          f"= {room_total/LAMPORTS_PER_SOL:.6f} SOL")
+    for k, n in rows:
+        print(f"| {k} | {n} | {rent(n):,} | {rent(n)/SOL:.6f} |")
+    per_door = rent(sizes["Door"])+rent(door_mint_max)+2*rent(TA)+rent(sizes["TickerLock"])
+    per_door_min = rent(sizes["Door"])+rent(door_mint_min)+2*rent(TA)+rent(sizes["TickerLock"])
+    per_room = (rent(sizes["Room"])+3*rent(0)+rent(sizes["SlugLock"])+rent(room_mint)+3*rent(TA))
+    print(f"\nPer-door rent (Door + DoorMint max + DoorVault + DoorRoomVault + TickerLock): {per_door:,} lamports "
+          f"= {per_door/SOL:.6f} SOL (minimum metadata: {per_door_min:,} = {per_door_min/SOL:.6f} SOL)")
+    print(f"Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault + TickerLock): "
+          f"{sizes['Door']+door_mint_max+2*TA+sizes['TickerLock']:,}")
+    print(f"Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + RoomMint "
+          f"+ RoomVault + RetiredVault + FeeWsol): {per_room:,} lamports = {per_room/SOL:.6f} SOL")
+    nft = damm_nft_mint()
+    grad = [("DAMM v2 Pool (8 + 1104)", 8+1104), ("DAMM v2 Position (8 + 400)", 8+400),
+            ("DAMM v2 position NFT mint", nft), ("DAMM v2 position NFT account", TA),
+            ("DAMM v2 token A vault (room token)", TA), ("DAMM v2 token B vault (WSOL)", TA),
+            ("protocol fee recipient's ATA for the position NFT (Token-2022, ImmutableOwner)", ATA22)]
+    print("\nAccounts created at graduation, and their rent:\n")
+    print("| account | data bytes | rent-exempt lamports |\n|---|---|---|")
+    for k, n in grad:
+        print(f"| {k} | {n} | {rent(n):,} |")
+    g = sum(rent(n) for _, n in grad)
+    print(f"| **total, funded from GradPayer** | | **{g:,} lamports = {g/SOL:.6f} SOL** |")
+    print(f"\nA temporary WSOL account (165 bytes, {rent(165):,} lamports) is created and closed inside `graduate`; "
+          "its rent is returned in the same transaction.")
     print("\nField layouts:\n")
     for name, fields in LAYOUTS.items():
         if not fields:
             continue
         off = 0
         print(f"**{name}** ({sizes[name]} bytes)\n\n| offset | bytes | field |\n|---|---|---|")
-        for f, b in fields:
-            print(f"| {off} | {b} | {f} |")
+        for fld, b in fields:
+            print(f"| {off} | {b} | {fld} |")
             off += b
         print()
 

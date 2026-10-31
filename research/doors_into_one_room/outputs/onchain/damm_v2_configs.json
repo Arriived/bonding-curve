@@ -1,0 +1,23 @@
+{
+ "slot": 463751288,
+ "total": 766,
+ "by_type_and_restricted": {
+  "config_type=0,restricted=False": 672,
+  "config_type=0,restricted=True": 20,
+  "config_type=1,restricted=True": 74
+ },
+ "dynamic_restricted_examples": [
+  {
+   "config": "csiJGCGb1GgeUJJfC72h4hhkLp8uqnAGrbsJZ3y5Ui7",
+   "pool_creator_authority": "4NkYVK8i7GCs9AceDDCamb8NMed1qoqb4iUCLtU7CM3D"
+  },
+  {
+   "config": "dofaSmMhT5oz3AuwfLXSUdjW4nADUJ4kXDi9chCzcfz",
+   "pool_creator_authority": "94mtrCkBFsm3UzHh33LUT4UU6JUN6qyuqpf7zZyYMCA8"
+  },
+  {
+   "config": "kKUzZ6qHpJk9jxqAvzP2VLYVnpwYJLzsWgQunLKw2pb",
+   "pool_creator_authority": "DynmX9yR5mG7uH4uVdEd5fcBftB9p2qwHff92XXr1o1K"
+  }
+ ]
+}

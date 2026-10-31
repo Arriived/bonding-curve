@@ -1,0 +1,58 @@
+{
+ "program": "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+ "programdata": "AUh8bm2XsMfex3KjYGcM3G4uBqUNSDw6HEhWaWMYnyPH",
+ "read_at_slot": 463751285,
+ "last_deploy_slot": 457080014,
+ "upgrade_authority_present": true,
+ "elf_sha256": "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b",
+ "checks": {
+  "initialize_pool_with_dynamic_config": {
+   "anchor_discriminator": "955248c5fdfc440f",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "initialize_customizable_pool": {
+   "anchor_discriminator": "14a1f118bdddb402",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "permanent_lock_position": {
+   "anchor_discriminator": "a5b07d06e7abbad5",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "claim_position_fee": {
+   "anchor_discriminator": "b4269a118521a2d3",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "create_position": {
+   "anchor_discriminator": "30d7c59960cbb485",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "swap": {
+   "anchor_discriminator": "f8c69e91e17587c8",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "swap2": {
+   "anchor_discriminator": "414b3f4ceb5b5b88",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  },
+  "add_liquidity": {
+   "anchor_discriminator": "b59d59438fb63448",
+   "discriminator_in_elf": false,
+   "log_string_in_elf": true
+  }
+ },
+ "live_pool_check": {
+  "pool": "AeaMYByFeRW6qkAMyiujgU2RY6qMSLtGN8kx4PbemBke",
+  "owner": "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+  "space": 1112,
+  "expected_space": 1112,
+  "slot": 463751287
+ },
+ "note": "Discriminator bytes are not reliably present as raw bytes in compiled BPF; the Anchor 'Instruction: <Name>' log strings are the evidence used."
+}
