@@ -171,13 +171,12 @@ def creator_rank_section(cr, sc, S):
     for r in range(10):
         x = d[d.launch_rank == r]
         a, b = x[x.arm == "A"], x[x.arm == "B"]
-        rows.append([r+1, money(a.launch.mean()/60*60), money(a.fees.mean()), money(b.fees.mean()),
+        rows.append([r+1, f"{a.launch.mean():.0f}", money(a.fees.mean()), money(b.fees.mean()),
                      money(a.dev_pnl.mean()), money(b.dev_pnl.mean()), money(a.net.median()), money(b.net.median()),
                      pct((a.net > 0).mean()), pct((b.net > 0).mean())])
     S.setdefault("creator_rank", {})[sc] = [list(map(str, r)) for r in rows]
-    out = table(rows, ["launch order", "mean launch (s)", "A fees", "B fees", "A first-buy P&L", "B first-buy P&L",
+    return table(rows, ["launch order", "mean launch (s)", "A fees", "B fees", "A first-buy P&L", "B first-buy P&L",
                        "A median net", "B median net", "A P(net>0)", "B P(net>0)"])
-    return out.replace("$", "", 0)
 
 
 def creator_sweep_section(cr, scen_list, S):
@@ -224,12 +223,12 @@ def shock_effect_section(so, S):
     if "shock_eff_mean_A" not in so:
         return ""
     x = so.dropna(subset=["shock_eff_mean_A"])
-    rows = [["mean change in return", ci(x.shock_eff_mean_A, fmt=pct), ci(x.shock_eff_mean_B, fmt=pct),
+    rows = [["mean change in return (pct points of own budget; includes forgone gains)", ci(x.shock_eff_mean_A, fmt=pct), ci(x.shock_eff_mean_B, fmt=pct),
              ci(x.shock_eff_mean_B-x.shock_eff_mean_A, fmt=pct)],
             ["p5 change (mean over seeds)", pct(x.shock_eff_q05_A.mean()), pct(x.shock_eff_q05_B.mean()), ""],
             ["worst single bystander", pct(x.shock_eff_worst_A.min()), pct(x.shock_eff_worst_B.min()), ""],
             ["share of bystanders harmed by >1pt", pct(x.shock_harmed_A.mean()), pct(x.shock_harmed_B.mean()), ""],
-            ["total bystander dollars lost per seed", money(x.shock_eff_dollars_A.mean()), money(x.shock_eff_dollars_B.mean()), ""]]
+            ["total bystander dollar change per seed (negative = loss)", money(x.shock_eff_dollars_A.mean()), money(x.shock_eff_dollars_B.mean()), ""]]
     S["shock_effect"] = dict(mean_A=bootstrap(x.shock_eff_mean_A), mean_B=bootstrap(x.shock_eff_mean_B),
                              worst_A=float(x.shock_eff_worst_A.min()), worst_B=float(x.shock_eff_worst_B.min()),
                              harmed_A=float(x.shock_harmed_A.mean()), harmed_B=float(x.shock_harmed_B.mean()),
@@ -328,7 +327,7 @@ def bundle_section(out, S):
             g = tr[(tr.arm == arm) & (tr.budget == budget)].groupby(["strategy", "tp", "hold"], as_index=False).profit.mean()
             b = g.loc[g.profit.idxmax()]
             c = cf[(cf.arm == arm) & (cf.budget == budget) & (cf.strategy == b.strategy) & (cf.tp == b.tp) & (cf.hold == b.hold)]
-            first = cf[(cf.arm == arm) & (cf.budget == budget) & (cf.strategy == "first")]
+            first = cf[(cf.arm == arm) & (cf.budget == budget) & (cf.strategy == "first") & (cf.tp > 1e6)]
             p, lo, hi = bootstrap(c.profit.values)
             tp = "hold to end" if b.tp > 1e6 else f"TP {b.tp:g}×"
             rows.append([money(budget), arm, f"{b.strategy}, {tp}, max {int(b.hold)//60} min",
@@ -338,7 +337,7 @@ def bundle_section(out, S):
                                                                      profit=(p, lo, hi), share_1min=float(c.share_1min.mean()),
                                                                      first_share_1min=float(first.share_1min.mean()))
     return table(rows, ["budget", "arm", "best response (train)", "confirmation profit [95% CI]", "return on budget",
-                        "P(profit>0)", "share of bundled supply at +1 min (best)", "share at +1 min, launch-block bundle of meme 0",
+                        "P(profit>0)", "share of bundled supply at +1 min (best)", "share at +1 min, launch-block bundle of meme 0 held (same budget)",
                         "organic buyers' P&L change vs no bundler"])
 
 
