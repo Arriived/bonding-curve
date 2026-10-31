@@ -1,5 +1,13 @@
 # Graduation via a transfer-fee canonical token: does the lever exist?
 
+> **Context changed.** This document was written under the earlier ruling that
+> v1 does not graduate, and it uses the superseded 30% / founder / reserve /
+> protocol split. The current build spec
+> ([PERMANENT_CURVE_SPEC.md](PERMANENT_CURVE_SPEC.md)) graduates into Meteora
+> DAMM v2 with no transfer fee and a 60/40 split. The source and on-chain
+> findings about Token-2022 TransferFee support are unaffected.
+
+
 31 October 2026. Document only; nothing is built. Ruling 2 stands: v1 does not
 graduate. This costs the later option.
 

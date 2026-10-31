@@ -1,5 +1,33 @@
 # Doors into one room — Solana design
 
+> **Superseded in part — the build spec is [PERMANENT_CURVE_SPEC.md](PERMANENT_CURVE_SPEC.md).**
+> Where this document and the spec disagree, the spec wins. Sections now
+> contradicted:
+>
+> - **§0 and §1, the curve and graduation.** The spec uses a pump.fun-shape
+>   constant-product curve with V_tok = 1,073,025,606 and a derived V_sol. It
+>   graduates at 85 SOL of reserve into a **Meteora DAMM v2** pool with a
+>   permanently locked position whose NFT is held by the protocol. This
+>   document's internal "phase 1 pool" and its "no external migration"
+>   recommendation in §7 are replaced.
+> - **§0 and §2, doors.** Doors are still pre-minted (1B each, no mint
+>   authority), but each is **backed 1:1 by room tokens** held in its own
+>   room-token vault. There is a new per-room **room token**, 1B pre-minted,
+>   tradeable through the program at the same fee as a door. `convert` moves
+>   the backing between door vaults.
+> - **§3, flows.** The buy and sell account lists and steps are replaced by
+>   spec §3. Post-graduation trades route through the DAMM v2 pool.
+> - **§4 and §5, fees.** The split is now **60% to the door, 40% to the
+>   protocol, with no founder share**. On the room token the 60% goes to the
+>   reserve via retirement. The door fee splits 60% reserve and 40% protocol.
+>   The 30% creator share is gone.
+> - **§5, `close_door` is removed.** Doors are never closed.
+> - **§6, slug expiry.** Not part of the spec: the room token's ticker is the
+>   slug, and it is fixed.
+> - **§8–9, display.** Every door and the room token show the room FDV, because
+>   every mint has 1B supply (spec §7).
+
+
 31 October 2026. Design only; no code. Target: a single Solana program,
 written in Anchor or native Rust (a later choice).
 

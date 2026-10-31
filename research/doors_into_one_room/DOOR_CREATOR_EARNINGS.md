@@ -1,5 +1,16 @@
 # What a door creator actually earns
 
+> **Out of date: regenerate before use.** This document's fee-split numbers
+> assume the superseded model: 30% of the fee to the door creator, a 10%
+> founder share, 20% to the reserve and 40% to the protocol. The rewritten
+> [PERMANENT_CURVE_SPEC.md](PERMANENT_CURVE_SPEC.md) uses **60% to the door
+> and 40% to the protocol, with no founder share**. Its door fee also changed
+> (60% reserve / 40% protocol), and so did its per-door rent (0.013565 SOL).
+> The first-buy multiples in §5 also use the superseded C1 curve. The
+> `scripts/door_creator_model.py` outputs must be regenerated against 60/40
+> before these numbers are quoted.
+
+
 31 October 2026. Terminal substitution is switched on, per Ruling 1. Every
 number below comes from `outputs/door_creator_model.md`, produced by
 `scripts/run_door_creator_model.sh`. On-chain readings are in
