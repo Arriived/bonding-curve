@@ -1,0 +1,415 @@
+{
+ "stage": "wash",
+ "quick": false,
+ "workers": 4,
+ "default_config": {
+  "seed": 0,
+  "shape": "pump",
+  "n_memes": 10,
+  "horizon": 14400,
+  "launch_window": 900,
+  "tick": 30,
+  "arrivals": 6200.0,
+  "demand_scale": 1.0,
+  "decay": 2700,
+  "budget_median": 50.0,
+  "budget_sigma": 1.0,
+  "budget_cap": 2000.0,
+  "whale_mult": 10.0,
+  "type_mix": [
+   0.55,
+   0.2,
+   0.05,
+   0.2
+  ],
+  "concentration": 0.25,
+  "beta": 2.0,
+  "trend_halflife": 600.0,
+  "trend_prior": 100.0,
+  "confused_share": 0.3,
+  "confusion": 0.5,
+  "fee": 0.01,
+  "creator_share": 0.3,
+  "gas": 0.05,
+  "launch_cost": 0.0,
+  "dev_median": 300.0,
+  "dev_sigma": 0.6,
+  "dev_cap": 1500.0,
+  "snipers": 3,
+  "snipe_budget": 150.0,
+  "bundle": [
+   "first",
+   1500.0,
+   3.0,
+   1800
+  ],
+  "adversary_budget": 3000.0,
+  "arbitrageurs": 2,
+  "arb_capital": 3000.0,
+  "tp_scale": 1.0,
+  "organic_exits": true,
+  "shock": false,
+  "shock_time": 3600,
+  "wash": [],
+  "spam": []
+ },
+ "train_seeds": [
+  0,
+  39,
+  40
+ ],
+ "wash_frozen_best": [
+  {
+   "share": 0.3,
+   "rank": 0,
+   "arm": "A",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": 10.963326847365176
+  },
+  {
+   "share": 0.3,
+   "rank": 0,
+   "arm": "B",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": 7.590389958334972
+  },
+  {
+   "share": 0.3,
+   "rank": 4,
+   "arm": "A",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": -26.98322364701578
+  },
+  {
+   "share": 0.3,
+   "rank": 4,
+   "arm": "B",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": -6.3054269830289735
+  },
+  {
+   "share": 0.3,
+   "rank": 9,
+   "arm": "A",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": -11.194970155364517
+  },
+  {
+   "share": 0.3,
+   "rank": 9,
+   "arm": "B",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": -6.923396802376921
+  },
+  {
+   "share": 0.5,
+   "rank": 0,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": 41.26109939153615
+  },
+  {
+   "share": 0.5,
+   "rank": 0,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": 31.185434147129115
+  },
+  {
+   "share": 0.5,
+   "rank": 4,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 600,
+   "profit": 39.26853491698892
+  },
+  {
+   "share": 0.5,
+   "rank": 4,
+   "arm": "B",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": -3.578351902407533
+  },
+  {
+   "share": 0.5,
+   "rank": 9,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 600,
+   "profit": 1.6949555974840025
+  },
+  {
+   "share": 0.5,
+   "rank": 9,
+   "arm": "B",
+   "gross": 100.0,
+   "interval": 120,
+   "duration": 600,
+   "profit": -4.6083016013214415
+  },
+  {
+   "share": 0.7,
+   "rank": 0,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 600,
+   "profit": 256.58741090602507
+  },
+  {
+   "share": 0.7,
+   "rank": 0,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 600,
+   "profit": 221.33205390484332
+  },
+  {
+   "share": 0.7,
+   "rank": 4,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 375.0563675598765
+  },
+  {
+   "share": 0.7,
+   "rank": 4,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 120,
+   "duration": 3600,
+   "profit": 279.2335599410949
+  },
+  {
+   "share": 0.7,
+   "rank": 9,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 120,
+   "duration": 3600,
+   "profit": 353.68562987618776
+  },
+  {
+   "share": 0.7,
+   "rank": 9,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 120,
+   "duration": 3600,
+   "profit": 241.9358067347044
+  },
+  {
+   "share": 0.9,
+   "rank": 0,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 836.0244673945878
+  },
+  {
+   "share": 0.9,
+   "rank": 0,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 731.764475602097
+  },
+  {
+   "share": 0.9,
+   "rank": 4,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 1837.5556967931607
+  },
+  {
+   "share": 0.9,
+   "rank": 4,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 1650.3887775542385
+  },
+  {
+   "share": 0.9,
+   "rank": 9,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 1615.5538225582786
+  },
+  {
+   "share": 0.9,
+   "rank": 9,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 1327.8791018633506
+  },
+  {
+   "share": 1.0,
+   "rank": 0,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 1456.7544114154452
+  },
+  {
+   "share": 1.0,
+   "rank": 0,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 1342.620232136595
+  },
+  {
+   "share": 1.0,
+   "rank": 4,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 2568.805361409829
+  },
+  {
+   "share": 1.0,
+   "rank": 4,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 2363.1382456873534
+  },
+  {
+   "share": 1.0,
+   "rank": 9,
+   "arm": "A",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 2310.5132738038433
+  },
+  {
+   "share": 1.0,
+   "rank": 9,
+   "arm": "B",
+   "gross": 2000.0,
+   "interval": 30,
+   "duration": 3600,
+   "profit": 2004.7941615863608
+  }
+ ],
+ "confirm_seeds": [
+  5000,
+  5199,
+  200
+ ],
+ "grid": {
+  "grid": [
+   [
+    100.0,
+    30,
+    600
+   ],
+   [
+    100.0,
+    30,
+    3600
+   ],
+   [
+    100.0,
+    120,
+    600
+   ],
+   [
+    100.0,
+    120,
+    3600
+   ],
+   [
+    500.0,
+    30,
+    600
+   ],
+   [
+    500.0,
+    30,
+    3600
+   ],
+   [
+    500.0,
+    120,
+    600
+   ],
+   [
+    500.0,
+    120,
+    3600
+   ],
+   [
+    2000.0,
+    30,
+    600
+   ],
+   [
+    2000.0,
+    30,
+    3600
+   ],
+   [
+    2000.0,
+    120,
+    600
+   ],
+   [
+    2000.0,
+    120,
+    3600
+   ]
+  ],
+  "ranks": [
+   0,
+   4,
+   9
+  ],
+  "shares": [
+   0.3,
+   0.5,
+   0.7,
+   0.9,
+   1.0
+  ]
+ },
+ "elapsed_s": 1010.23
+}
