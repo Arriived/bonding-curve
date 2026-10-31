@@ -1,0 +1,342 @@
+[
+ {
+  "pubkey": "5PHirr8joyTMp9JMm6nW7hNDVyEYdkzDqazxPD7RaTjx",
+  "program": "PumpSwap canonical pools",
+  "slot": 463696387,
+  "flat_fees_lp_protocol_creator_bps": [
+   25,
+   5,
+   0
+  ],
+  "tiers": [
+   {
+    "mcap_threshold_sol": 0.0,
+    "lp_bps": 2,
+    "protocol_bps": 93,
+    "creator_bps": 30
+   },
+   {
+    "mcap_threshold_sol": 420.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 95
+   },
+   {
+    "mcap_threshold_sol": 1470.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 90
+   },
+   {
+    "mcap_threshold_sol": 2460.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 85
+   },
+   {
+    "mcap_threshold_sol": 3440.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 80
+   },
+   {
+    "mcap_threshold_sol": 4420.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 75
+   },
+   {
+    "mcap_threshold_sol": 9820.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 70
+   },
+   {
+    "mcap_threshold_sol": 14740.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 65
+   },
+   {
+    "mcap_threshold_sol": 19650.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 60
+   },
+   {
+    "mcap_threshold_sol": 24560.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 55
+   },
+   {
+    "mcap_threshold_sol": 29470.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 50
+   },
+   {
+    "mcap_threshold_sol": 34380.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 45
+   },
+   {
+    "mcap_threshold_sol": 39300.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 40
+   },
+   {
+    "mcap_threshold_sol": 44210.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 35
+   },
+   {
+    "mcap_threshold_sol": 49120.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 30
+   },
+   {
+    "mcap_threshold_sol": 54030.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 28
+   },
+   {
+    "mcap_threshold_sol": 58940.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 25
+   },
+   {
+    "mcap_threshold_sol": 63860.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 23
+   },
+   {
+    "mcap_threshold_sol": 68770.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 20
+   },
+   {
+    "mcap_threshold_sol": 73681.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 18
+   },
+   {
+    "mcap_threshold_sol": 78590.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 15
+   },
+   {
+    "mcap_threshold_sol": 83500.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 13
+   },
+   {
+    "mcap_threshold_sol": 88400.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 10
+   },
+   {
+    "mcap_threshold_sol": 93330.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 8
+   },
+   {
+    "mcap_threshold_sol": 98240.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 5
+   }
+  ],
+  "stable_tiers": [
+   {
+    "mcap_threshold_sol": 0.0,
+    "lp_bps": 2,
+    "protocol_bps": 93,
+    "creator_bps": 30
+   },
+   {
+    "mcap_threshold_sol": 59.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 95
+   },
+   {
+    "mcap_threshold_sol": 300.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 90
+   },
+   {
+    "mcap_threshold_sol": 500.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 85
+   },
+   {
+    "mcap_threshold_sol": 700.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 80
+   },
+   {
+    "mcap_threshold_sol": 900.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 75
+   },
+   {
+    "mcap_threshold_sol": 2000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 70
+   },
+   {
+    "mcap_threshold_sol": 3000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 65
+   },
+   {
+    "mcap_threshold_sol": 4000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 60
+   },
+   {
+    "mcap_threshold_sol": 5000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 55
+   },
+   {
+    "mcap_threshold_sol": 6000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 50
+   },
+   {
+    "mcap_threshold_sol": 7000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 45
+   },
+   {
+    "mcap_threshold_sol": 8000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 40
+   },
+   {
+    "mcap_threshold_sol": 9000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 35
+   },
+   {
+    "mcap_threshold_sol": 10000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 30
+   },
+   {
+    "mcap_threshold_sol": 11000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 28
+   },
+   {
+    "mcap_threshold_sol": 12000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 25
+   },
+   {
+    "mcap_threshold_sol": 13000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 23
+   },
+   {
+    "mcap_threshold_sol": 14000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 20
+   },
+   {
+    "mcap_threshold_sol": 15000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 18
+   },
+   {
+    "mcap_threshold_sol": 16000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 15
+   },
+   {
+    "mcap_threshold_sol": 17000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 13
+   },
+   {
+    "mcap_threshold_sol": 18000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 10
+   },
+   {
+    "mcap_threshold_sol": 19000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 8
+   },
+   {
+    "mcap_threshold_sol": 20000.0,
+    "lp_bps": 20,
+    "protocol_bps": 5,
+    "creator_bps": 5
+   }
+  ]
+ },
+ {
+  "pubkey": "8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt",
+  "program": "pump bonding curve",
+  "slot": 463696387,
+  "flat_fees_lp_protocol_creator_bps": [
+   0,
+   95,
+   30
+  ],
+  "tiers": [
+   {
+    "mcap_threshold_sol": 0.0,
+    "lp_bps": 0,
+    "protocol_bps": 95,
+    "creator_bps": 30
+   }
+  ],
+  "stable_tiers": [
+   {
+    "mcap_threshold_sol": 0.0,
+    "lp_bps": 0,
+    "protocol_bps": 95,
+    "creator_bps": 30
+   }
+  ]
+ }
+]
