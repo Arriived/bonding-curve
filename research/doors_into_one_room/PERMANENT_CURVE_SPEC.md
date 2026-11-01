@@ -54,6 +54,34 @@ instruction this spec uses (§5).
 
 ## 0. Corrections
 
+### 0.C Program-v1 owner-approved corrections
+
+Ordinary Token-2022 transfers can donate tokens into a vault without its
+owner signing; holder burns can reduce mint supply. Exact raw-balance
+equalities would therefore permit denial of service. The owner approved
+surplus-tolerant accounting: balances cover program-tracked liabilities;
+initial mint supply is exactly U and later supply may be below U. The
+counterexamples and decision record are in `program/docs/CORRECTIONS.md`.
+
+Only program counters determine prices, payouts and available inventory.
+Token balances are read only for account validation, liability coverage and
+exact movement checks. Unaccounted vault surplus stays locked: no instruction
+sweeps, credits, retires or redistributes it. Audits reconcile external burns
+and donations rather than calling every balance mismatch a program bug.
+
+Room identifiers are high-entropy random u64 nonces chosen by the matcher,
+included in the whole transaction signed by matcher and launcher. They are
+not sequential and not derived from the slug hash. A collision fails atomically;
+the client requests a fresh routing decision/signature with a new nonce.
+Config stays read-only during creation. Room IDs are not enumerable;
+indexers discover Rooms with `getProgramAccounts`, as they enumerate Doors.
+
+The brief's lamport-delta test means ReserveVault, not the room-token
+RoomVault. For an initialized reserve, exact lamport movement equals the
+reserve-counter change; creation separately accounts for its initial rent
+funding. `retire_pending` caps the amount before any transfer and marks
+completion when the copied trigger is reached.
+
 <!-- BEGIN GENERATED RENT CORRECTION -->
 **Approved rent correction.** The old `(128 + bytes) × 6,960` model is stale. The owner approved `(128 + bytes) × 5,080` after direct rent-exemption RPC confirmation. These are `getMinimumBalanceForRentExemption` results, not account balances. The method has no context slot; finalized slot reads bracket each request.
 
@@ -439,7 +467,7 @@ Existing rooms retain their copied trigger, curve constants and sold state. The 
   ends by asserting B1 (§4) for each door it touched. It reads the two vault
   balances from the token accounts, not from cached fields.
 
-### `create_room(door0_name, door0_symbol, door0_uri, first_buy_lamports, min_tokens_out, matcher_evidence)`
+### `create_room(room_id, door0_name, door0_symbol, door0_uri, first_buy_lamports, min_tokens_out, matcher_evidence)`
 
 **Signers:** launcher and the exact `Config.matcher_authority`. The matcher
 co-signs the whole transaction message: instruction choice, target accounts,
@@ -447,6 +475,12 @@ metadata, first-buy and slippage limits, evidence and recent blockhash. Changing
 any of these invalidates authorization; blockhash expiry bounds replay. The
 launcher signs the same previewed transaction. Launching charges rent and
 transaction fees, with room and door fees defaulting to zero.
+
+`room_id` is a matcher-chosen CSPRNG u64 nonce included in that signed
+message, never a slug-derived value or a sequential counter. Config is
+read-only. An occupied Room PDA is a clean atomic collision failure; a retry
+uses a fresh matcher decision/signature and new nonce, not a modified signed
+transaction. Indexers discover room accounts rather than walking an ID range.
 
 **Identity and routing checks, before account creation:**
 
@@ -811,19 +845,27 @@ Notation:
 - `bal(X)` is a token account balance; `L(X)` is an account's lamports.
 - `U = 10¹⁵`, one billion tokens in base units.
 
-**B1, 1:1 backing.** For every door N:
+**B1, 1:1 redemption with surplus-tolerant backing.** For every door N:
 
 ```
-bal(DoorRoomVault_N) == U − bal(DoorVault_N) == door_N.backing
+0 <= door_N.backing <= U
+bal(DoorRoomVault_N) >= door_N.backing
+bal(DoorVault_N) >= U - door_N.backing
 ```
 
-Asserted at the end of every instruction that touches door N. Holders can
+Asserted at the end of every instruction that touches door N. The backing
+counter tracks program issuance minus program redemption; it is never
+recomputed from either token account or live mint supply. One door unit
+still redeems for one room-token unit. Donations leave the corresponding
+surplus locked and do not credit any counter or change a quote. Holders can
 still burn their own door tokens with a standard Token-2022 `Burn`, since
 there is no PermissionedBurn. That lowers the mint's supply but changes
 neither vault, so B1, defined on vault balances, still holds. The room tokens
 backing a burned door token stay in `DoorRoomVault_N` forever.
 
-**S1, curve position** (status 0 and 1): `room.sold == U − bal(RoomVault)`.
+**S1, curve position** (status 0 and 1): `0 <= room.sold <= U` and
+`bal(RoomVault) >= U - room.sold`. Also `bal(RetiredVault) >= room.retired`.
+Sold and retired are program counters, never inferred from token balances.
 
 **I1, solvency** (status 0 and 1): `room.reserve ≥ R(room.sold)`.
 
@@ -1202,12 +1244,15 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
 
 ## 8. Invariants, testable list
 
-1. **B1:** `bal(DoorRoomVault_N) == U − bal(DoorVault_N) == door_N.backing`, for
-   every door N, after every instruction that touches N.
-2. **S1:** `room.sold == U − bal(RoomVault)` while status < 2.
+1. **B1:** `bal(DoorRoomVault_N) >= door_N.backing` and
+   `bal(DoorVault_N) >= U - door_N.backing`, with backing in `[0,U]`, after
+   every instruction that touches N. Quotes and transfers use the counter.
+2. **S1:** `bal(RoomVault) >= U - room.sold`, sold in `[0,U]`, while status < 2;
+   `bal(RetiredVault) >= room.retired`. Surplus is never credited or moved.
 3. **I1:** `room.reserve ≥ R(room.sold)` while status < 2.
 4. **I2:** `L(ReserveVault) − rent_min ≥ room.reserve`, and
-   `ΔL(ReserveVault) == Δroom.reserve` for every instruction.
+   `ΔL(ReserveVault) == Δroom.reserve` for every post-initialization instruction.
+   Creation additionally accounts for the exact rent-funding credit.
 5. **I3:** a curve sell debits `ReserveVault` by exactly `R(q) − R(q−t)`.
    `graduate` debits exactly `room.reserve` (= T at entry): R* to the pool
    seed, `T − R*` to `GradPayer`, and slack `room.reserve − T` (0 by
@@ -1228,16 +1273,20 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
     one base unit: `R*/N ≥ K/(V_tok − q_g)²` and
     `R*/(N + 1) < K/(V_tok − q_g)²` (measured step +2.755×10⁻¹⁵ relative).
 12. **M1:** every room and door mint has `mint_authority == None`,
-    `freeze_authority == None`, `update_authority == None`, supply `U`, and no
+    `freeze_authority == None`, `update_authority == None`, initial supply `U`
+    and subsequent supply `<= U`, and no
     extensions beyond MetadataPointer and TokenMetadata. The room mint's name,
     symbol and URI equal door 0's.
-13. **D1:** no instruction closes or changes a `Door`, `DoorMint`,
-    `DoorVault` or `DoorRoomVault`, except balance moves under B1.
+13. **D1:** no instruction closes/reallocates these door accounts or changes
+    their identity, vault addresses or revoked mint/metadata authorities.
+    Declared backing, fee, recipient, volume and timestamp updates remain
+    permitted; vault movements must match the corresponding counter changes.
 14. **G1:** after `graduate`:
     - the DAMM v2 position's `permanent_locked_liquidity` equals its total
       liquidity;
     - the position NFT is held by `protocol_fee_recipient`;
-    - `room.reserve == 0` and `bal(RoomVault) == 0`;
+    - `room.reserve == 0` and all accounted RoomVault inventory is consumed;
+      any unaccounted token or SOL vault surplus remains locked;
     - the pool was seeded with exactly R* lamports and N room tokens;
     - `RetiredVault` gained `U − sold − N`.
 15. **G2:** `graduate` debits `ReserveVault` by exactly `room.reserve` at

@@ -1,0 +1,4 @@
+/target/
+/verification/lite_*.txt
+/.anchor/
+node_modules/

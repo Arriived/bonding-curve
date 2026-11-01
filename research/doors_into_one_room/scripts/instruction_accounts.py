@@ -77,6 +77,7 @@ def main():
         signatures = 2 if name.startswith(('open_door', 'create_room')) else 1
         # V1 evidence is version/rule/face only; no image hash or digest is computed or transmitted.
         data = 8 + (4+32) + (4+10) + (4+200) + 8+8 + 2+1+4 if signatures == 2 else 8
+        if name.startswith('create_room'):data += 8  # matcher-signed random u64 room nonce
         size = legacy_size(n, signatures, data, n)
         print(f"| {name} | {n} | {signatures} | {'yes' if n <= 64 else 'NO'} | {size} | {1232-size} |")
     grad = legacy_size(len(GRADUATE), 1, 8, len(GRADUATE))

@@ -238,6 +238,19 @@ each of those was accepted by its launcher.
 
 ### 2.3 Verifying routes after the fact
 
+Room IDs are matcher-chosen random u64 nonces, included in both signatures;
+they are neither sequential nor slug-derived. Indexers discover Rooms via
+`getProgramAccounts` rather than walking an ID range. A nonce collision
+requires a fresh matcher signature and nonce. Config is read-only on creation.
+
+Vault audits use program counters as liabilities and prices, not raw token
+balances. Actual balances must cover those liabilities; positive mismatches
+can be locked donations. Indexers must also ingest standard Token-2022
+transfers and burns, reconcile vault surplus and reduced mint supply against
+those events, and distinguish them from a program movement/counter error.
+Mint supply is exactly U at creation and may be below U after holder burns.
+No donation is swept, credited, retired or redistributed by the program.
+
 The published text matcher is deterministic and versioned. `create_room` and
 `open_door` require a matcher co-signature over the whole message and emit
 `matcher_version`, `rule` and matched door `face`. These text-routing fields

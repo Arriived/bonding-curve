@@ -1,0 +1,135 @@
+//! Raw token amounts are used ONLY for validation and exact delta assertions.
+//! Pricing, inventory, payouts, retirement and claims use state counters.
+use anchor_lang::{prelude::*,solana_program::{program::{invoke,invoke_signed},system_instruction,program_option::COption}};
+use spl_token_2022_interface::{extension::{StateWithExtensions,BaseStateWithExtensions,metadata_pointer::MetadataPointer},state::{Account as TokenAccount,Mint}};
+use spl_token_metadata_interface::{instruction as meta,state::{TokenMetadata,Field}};
+use crate::{state::*,math::*,accounts::Core,Error};
+
+pub const ATA:Pubkey=anchor_lang::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+pub fn pda(ai:&AccountInfo,seeds:&[&[u8]])->Result<u8>{
+    let (key,bump)=Pubkey::find_program_address(seeds,&crate::ID);require_keys_eq!(ai.key(),key,Error::Pda);Ok(bump)
+}
+pub fn room_address(r:&Room,key:Pubkey)->Result<()> {
+    let expected=Pubkey::create_program_address(&[b"room",&r.room_id.to_le_bytes(),&[r.bumps[0]]],&crate::ID).map_err(|_|error!(Error::Pda))?;
+    require_keys_eq!(key,expected,Error::Pda);Ok(())
+}
+pub fn deposit<'a>(user:&AccountInfo<'a>,to:&AccountInfo<'a>,system:&AccountInfo<'a>,n:u64)->Result<()> {
+    if n>0 {let before=to.lamports();invoke(&system_instruction::transfer(user.key,to.key,n),&[user.clone(),to.clone(),system.clone()])?;require!(to.lamports()==add(before,n)?,Error::Invariant);}
+    Ok(())
+}
+pub fn debit(from:&AccountInfo,to:&AccountInfo,n:u64)->Result<()> {
+    require_keys_eq!(*from.owner,crate::ID,Error::Authority);require!(from.key!=to.key,Error::Account);
+    let before=from.lamports();let dest=to.lamports();
+    **from.try_borrow_mut_lamports()?=sub(before,n)?;**to.try_borrow_mut_lamports()?=add(dest,n)?;
+    require!(before-from.lamports()==n && to.lamports()-dest==n,Error::Invariant);Ok(())
+}
+pub fn create_pda<'a>(user:&AccountInfo<'a>,target:&AccountInfo<'a>,system:&AccountInfo<'a>,owner:&Pubkey,
+    space:usize,funded_space:usize,seeds:&[&[u8]])->Result<u8>{
+    let bump=pda(target,seeds)?;require_keys_eq!(*target.owner,anchor_lang::system_program::ID,Error::Account);
+    require!(target.data_is_empty(),Error::Account);
+    let mut signed=seeds.to_vec();let bb=[bump];signed.push(&bb);
+    let rent=Rent::get()?.minimum_balance(funded_space);
+    deposit(user,target,system,rent.saturating_sub(target.lamports()))?;
+    invoke_signed(&system_instruction::allocate(target.key,space as u64),&[target.clone(),system.clone()],&[&signed])?;
+    invoke_signed(&system_instruction::assign(target.key,owner),&[target.clone(),system.clone()],&[&signed])?;Ok(bump)
+}
+pub fn token(ai:&AccountInfo,mint:&Pubkey,owner:&Pubkey,program:&Pubkey)->Result<u64>{
+    require_keys_eq!(*ai.owner,*program,Error::Account);
+    let data=ai.try_borrow_data()?;let a=StateWithExtensions::<TokenAccount>::unpack(&data)?;
+    require_keys_eq!(a.base.mint,*mint,Error::Account);require_keys_eq!(a.base.owner,*owner,Error::Authority);
+    require!(a.base.is_initialized() && !a.base.is_frozen(),Error::Account);Ok(a.base.amount)
+}
+pub fn amount(ai:&AccountInfo)->Result<u64>{
+    require!(ai.owner==&spl_token_2022_interface::ID || ai.owner==&spl_token_interface::ID,Error::Account);
+    Ok(StateWithExtensions::<TokenAccount>::unpack(&ai.try_borrow_data()?)?.base.amount)
+}
+pub fn user_ata(ai:&AccountInfo,user:&Pubkey,mint:&Pubkey,program:&Pubkey)->Result<()> {
+    let key=Pubkey::find_program_address(&[user.as_ref(),program.as_ref(),mint.as_ref()],&ATA).0;
+    require_keys_eq!(ai.key(),key,Error::Account);token(ai,mint,user,program)?;Ok(())
+}
+pub fn mint_check(ai:&AccountInfo,initial:bool)->Result<()> {
+    require_keys_eq!(*ai.owner,spl_token_2022_interface::ID,Error::Account);
+    let data=ai.try_borrow_data()?;let m=StateWithExtensions::<Mint>::unpack(&data)?;
+    require!(m.base.decimals==6 && m.base.is_initialized && m.base.mint_authority==COption::None && m.base.freeze_authority==COption::None,Error::Invariant);
+    require!(if initial {m.base.supply==U}else{m.base.supply<=U},Error::Invariant); // M1: burns only decrease supply
+    let pointer=m.get_extension::<MetadataPointer>()?;
+    require!(Option::<Pubkey>::from(pointer.authority).is_none() && Option::<Pubkey>::from(pointer.metadata_address)==Some(ai.key()),Error::Invariant);
+    let metadata=m.get_variable_len_extension::<TokenMetadata>()?;
+    require!(Option::<Pubkey>::from(metadata.update_authority).is_none() && metadata.mint==ai.key(),Error::Invariant);Ok(())
+}
+pub fn transfer<'a>(from:&AccountInfo<'a>,mint:&AccountInfo<'a>,to:&AccountInfo<'a>,authority:&AccountInfo<'a>,
+    program:&AccountInfo<'a>,n:u64,seeds:Option<&[&[u8]]>,decimals:u8)->Result<()> {
+    let a=amount(from)?;let b=amount(to)?;
+    let ix=spl_token_2022_interface::instruction::transfer_checked(program.key,from.key,mint.key,to.key,authority.key,&[],n,decimals)?;
+    let infos=[from.clone(),mint.clone(),to.clone(),authority.clone(),program.clone()];
+    if let Some(s)=seeds {invoke_signed(&ix,&infos,&[s])?;}else{invoke(&ix,&infos)?;}
+    require!(amount(from)?==sub(a,n)? && amount(to)?==add(b,n)?,Error::Invariant);Ok(())
+}
+pub fn create_token<'a>(user:&AccountInfo<'a>,ai:&AccountInfo<'a>,mint:&AccountInfo<'a>,authority:&Pubkey,
+    system:&AccountInfo<'a>,program:&AccountInfo<'a>,seeds:&[&[u8]])->Result<u8>{
+    let bump=create_pda(user,ai,system,program.key,165,165,seeds)?;
+    invoke(&spl_token_2022_interface::instruction::initialize_account3(program.key,ai.key,mint.key,authority)?,&[ai.clone(),mint.clone(),program.clone()])?;
+    token(ai,mint.key,authority,program.key)?;Ok(bump)
+}
+#[allow(clippy::too_many_arguments)]
+pub fn create_mint<'a>(user:&AccountInfo<'a>,ai:&AccountInfo<'a>,vault:&AccountInfo<'a>,authority:&AccountInfo<'a>,room_key:Pubkey,
+    launch:&Launch,index:Option<u32>,system:&AccountInfo<'a>,program:&AccountInfo<'a>,mint_seeds:&[&[u8]],vault_seeds:&[&[u8]],authority_seeds:&[&[u8]])->Result<(u8,u8)>{
+    let room=room_key.to_string();let mut extra=vec![("room".to_string(),room)];
+    if let Some(i)=index{extra.push(("door".to_string(),i.to_string()));}
+    let meta_value=64+12+launch.name.len()+launch.symbol.len()+launch.uri.len()+4+extra.iter().map(|(k,v)|8+k.len()+v.len()).sum::<usize>();
+    let bump=create_pda(user,ai,system,program.key,234,234+4+meta_value,mint_seeds)?;
+    invoke(&spl_token_2022_interface::extension::metadata_pointer::instruction::initialize(program.key,ai.key,None,Some(ai.key()))?,&[ai.clone(),program.clone()])?;
+    invoke(&spl_token_2022_interface::instruction::initialize_mint2(program.key,ai.key,authority.key,None,6)?,&[ai.clone(),program.clone()])?;
+    invoke_signed(&meta::initialize(program.key,ai.key,authority.key,ai.key,authority.key,launch.name.clone(),launch.symbol.clone(),launch.uri.clone()),&[ai.clone(),authority.clone(),program.clone()],&[authority_seeds])?;
+    for(k,v) in extra {invoke_signed(&meta::update_field(program.key,ai.key,authority.key,Field::Key(k),v),&[ai.clone(),authority.clone(),program.clone()],&[authority_seeds])?;}
+    let vb=create_token(user,vault,ai,authority.key,system,program,vault_seeds)?;
+    invoke_signed(&spl_token_2022_interface::instruction::mint_to_checked(program.key,ai.key,vault.key,authority.key,&[],U,6)?,&[ai.clone(),vault.clone(),authority.clone(),program.clone()],&[authority_seeds])?;
+    invoke_signed(&spl_token_2022_interface::instruction::set_authority(program.key,ai.key,None,spl_token_2022_interface::instruction::AuthorityType::MintTokens,authority.key,&[])?,&[ai.clone(),authority.clone(),program.clone()],&[authority_seeds])?;
+    invoke_signed(&meta::update_authority(program.key,ai.key,authority.key,Default::default()),&[ai.clone(),authority.clone(),program.clone()],&[authority_seeds])?;
+    mint_check(ai,true)?;require!(token(vault,ai.key,authority.key,program.key)?==U,Error::Invariant);Ok((bump,vb))
+}
+pub fn door_check(d:&Door,di:&AccountInfo,r:&Room,rkey:Pubkey,mint:&AccountInfo,vault:&AccountInfo,backing:&AccountInfo)->Result<()> {
+    require_keys_eq!(d.room,rkey,Error::Account);pda(di,&[b"door",rkey.as_ref(),&d.index.to_le_bytes()])?;
+    require_keys_eq!(mint.key(),d.mint,Error::Account);require_keys_eq!(vault.key(),d.door_vault,Error::Account);require_keys_eq!(backing.key(),d.room_token_vault,Error::Account);
+    mint_check(mint,false)?;require!(d.backing<=r.supply,Error::Invariant);
+    // B1 inequalities point towards covering liabilities; never quote from these amounts.
+    require!(token(vault,mint.key,di.key,&spl_token_2022_interface::ID)? >= sub(r.supply,d.backing)?,Error::Invariant);
+    require!(token(backing,&r.room_mint,di.key,&spl_token_2022_interface::ID)? >= d.backing,Error::Invariant);Ok(())
+}
+pub fn core_check(c:&Core,local_door_fees:u64)->Result<()> {
+    room_check(&c.room,c.room.key(),&c.reserve,&c.fees,&c.room_vault,&c.retired,&c.room_mint,local_door_fees)
+}
+pub fn room_check(r:&Room,key:Pubkey,reserve:&AccountInfo,fees:&AccountInfo,room_vault:&AccountInfo,retired:&AccountInfo,room_mint:&AccountInfo,local_door_fees:u64)->Result<()> {
+    require!(r.status<=1 && r.sold<=r.supply && r.retired<=r.sold,Error::Invariant);
+    require!(r.reserve>=r.curve(r.sold)? && r.reserve<=r.graduation_trigger_lamports,Error::Invariant); // I1
+    require!((r.status==1)==(r.reserve==r.graduation_trigger_lamports),Error::Invariant);
+    mint_check(room_mint,false)?;
+    require!(token(room_vault,&r.room_mint,&key,&spl_token_2022_interface::ID)?>=sub(r.supply,r.sold)?,Error::Invariant); // S1
+    require!(token(retired,&r.room_mint,&key,&spl_token_2022_interface::ID)?>=r.retired,Error::Invariant);
+    let rent=Rent::get()?.minimum_balance(0);
+    require!(sub(reserve.lamports(),rent)?>=r.reserve,Error::Invariant);
+    let known=add(add(add(r.protocol_accrued_sol,r.pending_reserve_sol)?,r.founder_accrued)?,local_door_fees)?;
+    require!(sub(fees.lamports(),rent)?>=known,Error::Invariant);
+    // The global sum over doors is inductive: every path changes the vault and
+    // the sum of its touched counters by exactly the same amount. No scan is needed.
+    Ok(())
+}
+pub fn reserve_delta(before_l:u64,before_r:u64,c:&Core)->Result<()> {
+    require!((c.reserve.lamports() as i128-before_l as i128)==(c.room.reserve as i128-before_r as i128),Error::Invariant);Ok(())
+}
+pub fn fee_delta(before_l:u64,after_l:u64,before_known:u128,after_known:u128)->Result<()> {
+    require!(after_l as i128-before_l as i128 == after_known as i128-before_known as i128,Error::Invariant);Ok(())
+}
+pub fn known(r:&Room,doors:&[&Door])->u128 {
+    r.protocol_accrued_sol as u128+r.pending_reserve_sol as u128+r.founder_accrued as u128+doors.iter().map(|d|d.accrued_sol as u128).sum::<u128>()
+}
+pub fn read_slug(ai:&AccountInfo,identity:&[u8;32])->Result<Option<SlugLock>> {
+    pda(ai,&[b"slug",identity])?;
+    if ai.data_is_empty(){require_keys_eq!(*ai.owner,anchor_lang::system_program::ID,Error::Account);return Ok(None);}
+    require_keys_eq!(*ai.owner,crate::ID,Error::Account);
+    Ok(Some(SlugLock::try_deserialize(&mut &ai.try_borrow_data()?[..])?))
+}
+pub fn holder_dead(lock:&SlugLock,holder:Option<&Account<Room>>,c:&Config,now:i64)->Result<()> {
+    let holder=holder.ok_or(Error::Holder)?;room_address(holder,holder.key())?;
+    require!(lock.room_id==holder.room_id,Error::Holder);require!(!holder.live(c,now)?,Error::Live);Ok(())
+}

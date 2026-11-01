@@ -1,0 +1,17 @@
+[toolchain]
+anchor_version = "1.2.2"
+solana_version = "4.4.0"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+doors_v1 = "DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test --locked --test svm -- --nocapture"

@@ -1,0 +1,41 @@
+{
+  "kind": "algebraic spec-conflict reproduction, not SBF execution",
+  "spec_sha256": "2c054a4fdfa55307eb6b467fe49f8916b472040b211237f061ba5351fe71e082",
+  "inputs": {
+    "initial_supply": 1000000000000000,
+    "gross_buy_lamports": 101,
+    "fee_bps": 100,
+    "net_buy_lamports": 100,
+    "sold_base_units": 3612416
+  },
+  "sources": [
+    "https://solana.com/docs/tokens/basics/transfer-tokens",
+    "https://solana.com/docs/tokens/basics/burn-tokens"
+  ],
+  "cases": [
+    {
+      "case": "one door token unit returned directly to DoorVault",
+      "invariant": "B1: DoorRoomVault == U - DoorVault",
+      "before_lhs": 3612416,
+      "before_rhs": 3612416,
+      "after_lhs": 3612416,
+      "after_rhs": 3612415
+    },
+    {
+      "case": "one room token unit returned directly to RoomVault (room-token route)",
+      "invariant": "S1: sold == U - RoomVault",
+      "before_lhs": 3612416,
+      "before_rhs": 3612416,
+      "after_lhs": 3612416,
+      "after_rhs": 3612415
+    },
+    {
+      "case": "holder burns one door token unit",
+      "invariant": "M1: mint.supply == U at all times",
+      "before_lhs": 1000000000000000,
+      "before_rhs": 1000000000000000,
+      "after_lhs": 999999999999999,
+      "after_rhs": 1000000000000000
+    }
+  ]
+}
