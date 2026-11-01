@@ -78,7 +78,8 @@ measured block from execution evidence and refuses to fabricate absent data.
 `tests/svm.rs` loads the compiled Anchor ELF into LiteSVM, calls the real SPL
 programs and leaves transaction signature verification enabled. Its mixed
 property test executes at least 10,000 iterations. It uses a fixed random
-seed for reproduction; fixture IDs are not the production nonce generator.
+seed and deterministic public test keys for reproduction; fixture IDs and keys
+are separate from the production nonce generator and deployment wallets.
 Only duplicate-transaction history is disabled in the test VM, so repeated
 random operations can run without collecting a new blockhash each time.
 

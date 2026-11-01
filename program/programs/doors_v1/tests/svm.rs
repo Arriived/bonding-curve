@@ -106,13 +106,14 @@ struct Fixture {
 }
 impl Fixture {
     fn empty(founder_bps: u16) -> Self {
-        let user = Keypair::new();
-        let matcher = Keypair::new();
+        // Public, deterministic fixture secrets: never use these keys outside tests.
+        let user = Keypair::new_from_array([11;32]);
+        let matcher = Keypair::new_from_array([22;32]);
         let mut svm = LiteSVM::new().with_transaction_history(0);
         let elf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/doors_v1.so");
         svm.add_program(ID, &std::fs::read(elf).expect("run cargo build-sbf first"))
             .unwrap();
-        svm.airdrop(&user.pubkey(), 1_000_000_000_000_000).unwrap();
+        svm.airdrop(&user.pubkey(), 1_000_000_000_000).unwrap();
         svm.airdrop(&matcher.pubkey(), 1_000_000_000).unwrap();
         let pd = bpf_loader_upgradeable::get_program_data_address(&ID);
         let mut pd_account = svm.get_account(&pd).unwrap();
@@ -1060,8 +1061,8 @@ fn mixed_10000_sbf_operations_and_cu_report() {
     max.symbol = "Y".repeat(10);
     max.uri = "u".repeat(200);
     f.open(max);
-    let summary:BTreeMap<String,Value>=f.cus.iter().map(|(k,v)|(k.clone(),json!({"count":v.len(),"min":v.iter().min(),"max":v.iter().max(),"sum":v.iter().sum::<u64>()}))).collect();
-    let output = json!({"kind":"executed compiled Anchor SBF in LiteSVM with real SPL CPIs", "property_iterations":10000,"program_transactions":f.operations,"seed":"8c6513ab72efd501","operation_counts":counts,"cu":summary});
+    let summary:BTreeMap<String,Value>=f.cus.iter().map(|(k,v)|(k.clone(),json!({"count":v.len(),"min":v.iter().min(),"max":v.iter().max(),"sum":v.iter().sum::<u64>(),"samples":v}))).collect();
+    let output = json!({"kind":"executed compiled Anchor SBF in LiteSVM with real SPL CPIs", "property_iterations":10000,"executed_transactions":f.operations,"seed":"8c6513ab72efd501","operation_counts":counts,"cu":summary});
     let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification");
     std::fs::create_dir_all(&out).unwrap();
     std::fs::write(
@@ -1069,5 +1070,5 @@ fn mixed_10000_sbf_operations_and_cu_report() {
         serde_json::to_string_pretty(&output).unwrap() + "\n",
     )
     .unwrap();
-    println!("CU_REPORT {}", output);
+    println!("CU_REPORT property_iterations=10000 executed_transactions={} max_door_buy={} max_door_sell={} max_convert={} max_open_door={}",f.operations,f.cus["buy_door"].iter().max().unwrap(),f.cus["sell_door"].iter().max().unwrap(),f.cus["convert"].iter().max().unwrap(),f.cus["open_door"].iter().max().unwrap());
 }

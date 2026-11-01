@@ -660,9 +660,14 @@ fn initialize_door<'a>(
     });
     Ok(())
 }
-fn require_top_level_launch()->Result<()> {
-    use anchor_lang::solana_program::instruction::{get_stack_height,TRANSACTION_LEVEL_STACK_HEIGHT};
-    require!(get_stack_height()==TRANSACTION_LEVEL_STACK_HEIGHT,Error::LaunchCpi);
+fn require_top_level_launch() -> Result<()> {
+    use anchor_lang::solana_program::instruction::{
+        get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT,
+    };
+    require!(
+        get_stack_height() == TRANSACTION_LEVEL_STACK_HEIGHT,
+        Error::LaunchCpi
+    );
     Ok(())
 }
 fn trade(ctx: Context<Trade>, buy: bool, amount: u64, min: u64) -> Result<()> {

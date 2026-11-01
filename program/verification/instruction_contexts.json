@@ -1,0 +1,67 @@
+{
+  "buy": {
+    "metas_with_optionals": 15,
+    "writable": 9,
+    "signers": 1
+  },
+  "claim_door_fees": {
+    "metas_with_optionals": 17,
+    "writable": 8,
+    "signers": 1
+  },
+  "claim_founder_fees": {
+    "metas_with_optionals": 17,
+    "writable": 8,
+    "signers": 1
+  },
+  "convert": {
+    "metas_with_optionals": 20,
+    "writable": 13,
+    "signers": 1
+  },
+  "create_room": {
+    "metas_with_optionals": 23,
+    "writable": 15,
+    "signers": 2
+  },
+  "initialize_config": {
+    "metas_with_optionals": 5,
+    "writable": 2,
+    "signers": 1
+  },
+  "open_door": {
+    "metas_with_optionals": 19,
+    "writable": 10,
+    "signers": 2
+  },
+  "release_slug": {
+    "metas_with_optionals": 4,
+    "writable": 2,
+    "signers": 1
+  },
+  "retire_pending": {
+    "metas_with_optionals": 9,
+    "writable": 5,
+    "signers": 0
+  },
+  "sell": {
+    "metas_with_optionals": 15,
+    "writable": 9,
+    "signers": 1
+  },
+  "set_fee_recipient": {
+    "metas_with_optionals": 12,
+    "writable": 5,
+    "signers": 1
+  },
+  "sweep_protocol_fees": {
+    "metas_with_optionals": 17,
+    "writable": 8,
+    "signers": 1
+  },
+  "update_config": {
+    "metas_with_optionals": 2,
+    "writable": 1,
+    "signers": 1
+  }
+}
