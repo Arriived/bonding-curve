@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
 pub mod state;
 pub mod math;
-pub mod accounts;
+#[path="accounts.rs"]
+pub mod contexts;
 pub mod vaults;
 mod trading;
-use accounts::*;
+use contexts::*;
 use state::*;
 use math::*;
 use vaults::*;
@@ -55,6 +56,7 @@ pub mod doors_v1 {
         deposit(&user,&a.fees,&system,fee)?;r.protocol_accrued_sol=add(r.protocol_accrued_sol,fee)?;
         emit!(RoomCreated{room:rk,room_id,identity,founder:r.founder,founder_share_bps:r.founder_share_bps,matcher_version:launch.matcher_version,rule:launch.rule,face:launch.face});
         if launch.first_buy_lamports>0 {
+            create_user_ata(&user,&a.user_token,&a.door_mint,&system,&tp,&a.associated_token_program)?;
             execute_trade(r,&room_info,Some(DoorRoute::new(&mut a.door,&door_info,&a.door_mint,&a.door_vault,&a.backing)),
                 &a.reserve,&a.fees,&a.room_vault,&a.room_mint,&user,&a.user_token,&tp,Some(&system),true,launch.first_buy_lamports,launch.min_tokens_out,now)?;
         }
@@ -77,6 +79,7 @@ pub mod doors_v1 {
         initialize_door(&mut a.core.room,&mut a.door,&di,ctx.bumps.door,rk,&user,&a.door_mint,&a.door_vault,&a.backing,&a.core.room_mint,&launch,&system,&tp,now)?;
         let fee=a.core.config.door_fee_lamports;deposit(&user,&a.core.fees,&system,fee)?;a.core.room.protocol_accrued_sol=add(a.core.room.protocol_accrued_sol,fee)?;
         if launch.first_buy_lamports>0 {
+            create_user_ata(&user,&a.user_token,&a.door_mint,&system,&tp,&a.associated_token_program)?;
             execute_trade(&mut a.core.room,&ri,Some(DoorRoute::new(&mut a.door,&di,&a.door_mint,&a.door_vault,&a.backing)),
                 &a.core.reserve,&a.core.fees,&a.core.room_vault,&a.core.room_mint,&user,&a.user_token,&tp,Some(&system),true,launch.first_buy_lamports,launch.min_tokens_out,now)?;
         }

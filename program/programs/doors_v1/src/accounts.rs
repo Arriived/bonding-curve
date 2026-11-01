@@ -22,7 +22,7 @@ pub struct CreateRoom<'info> {
     #[account(mut)] pub user:Signer<'info>,
     #[account(address=config.matcher_authority @ Error::Matcher)] pub matcher:Signer<'info>,
     #[account(seeds=[b"config"],bump=config.bump)] pub config:Account<'info,Config>,
-    #[account(init,payer=user,space=Room::LEN,seeds=[b"room",&room_id.to_le_bytes()],bump)] pub room:Account<'info,Room>,
+    #[account(init,payer=user,space=Room::LEN,seeds=[b"room".as_ref(),room_id.to_le_bytes().as_ref()],bump)] pub room:Account<'info,Room>,
     /// CHECK: canonical PDA, created program-owned by the handler.
     #[account(mut)] pub reserve:UncheckedAccount<'info>,
     /// CHECK: canonical PDA, created program-owned by the handler.
@@ -55,6 +55,8 @@ pub struct CreateRoom<'info> {
     #[account(address=spl_token_interface::ID,executable)] pub classic_token_program:UncheckedAccount<'info>,
     /// CHECK: canonical native mint, validated by token CPI.
     #[account(address=spl_token_interface::native_mint::ID)] pub wsol_mint:UncheckedAccount<'info>,
+    /// CHECK: fixed executable ATA program, for atomic optional first buy.
+    #[account(address=crate::vaults::ATA,executable)] pub associated_token_program:UncheckedAccount<'info>,
     pub system_program:Program<'info,System>,
 }
 
@@ -111,6 +113,8 @@ pub struct OpenDoor<'info> {
     #[account(mut)] pub user_token:UncheckedAccount<'info>,
     /// CHECK: executable Token-2022 program.
     #[account(address=spl_token_2022_interface::ID,executable)] pub token_program:UncheckedAccount<'info>,
+    /// CHECK: fixed executable ATA program, for atomic optional first buy.
+    #[account(address=crate::vaults::ATA,executable)] pub associated_token_program:UncheckedAccount<'info>,
     pub system_program:Program<'info,System>,
 }
 #[derive(Accounts)]

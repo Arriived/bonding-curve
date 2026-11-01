@@ -3,7 +3,8 @@
 use anchor_lang::{prelude::*,solana_program::{program::{invoke,invoke_signed},system_instruction,program_option::COption}};
 use spl_token_2022_interface::{extension::{StateWithExtensions,BaseStateWithExtensions,metadata_pointer::MetadataPointer},state::{Account as TokenAccount,Mint}};
 use spl_token_metadata_interface::{instruction as meta,state::{TokenMetadata,Field}};
-use crate::{state::*,math::*,accounts::Core,Error};
+use crate::{state::*,math::*,contexts::Core,Error};
+use anchor_lang::solana_program::program_pack::IsInitialized;
 
 pub const ATA:Pubkey=anchor_lang::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 pub fn pda(ai:&AccountInfo,seeds:&[&[u8]])->Result<u8>{
@@ -46,6 +47,13 @@ pub fn amount(ai:&AccountInfo)->Result<u64>{
 pub fn user_ata(ai:&AccountInfo,user:&Pubkey,mint:&Pubkey,program:&Pubkey)->Result<()> {
     let key=Pubkey::find_program_address(&[user.as_ref(),program.as_ref(),mint.as_ref()],&ATA).0;
     require_keys_eq!(ai.key(),key,Error::Account);token(ai,mint,user,program)?;Ok(())
+}
+pub fn create_user_ata<'a>(payer:&AccountInfo<'a>,ata:&AccountInfo<'a>,mint:&AccountInfo<'a>,system:&AccountInfo<'a>,token_program:&AccountInfo<'a>,associated:&AccountInfo<'a>)->Result<()> {
+    use anchor_lang::solana_program::instruction::{Instruction,AccountMeta};
+    require_keys_eq!(associated.key(),ATA,Error::Account);
+    let ix=Instruction{program_id:ATA,accounts:vec![AccountMeta::new(payer.key(),true),AccountMeta::new(ata.key(),false),AccountMeta::new_readonly(payer.key(),false),AccountMeta::new_readonly(mint.key(),false),AccountMeta::new_readonly(system.key(),false),AccountMeta::new_readonly(token_program.key(),false)],data:vec![1]};
+    invoke(&ix,&[payer.clone(),ata.clone(),mint.clone(),system.clone(),token_program.clone(),associated.clone()])?;
+    user_ata(ata,payer.key,mint.key,token_program.key)
 }
 pub fn mint_check(ai:&AccountInfo,initial:bool)->Result<()> {
     require_keys_eq!(*ai.owner,spl_token_2022_interface::ID,Error::Account);
