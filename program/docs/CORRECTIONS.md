@@ -85,6 +85,12 @@ execution. This does not deploy a program or send devnet/mainnet transactions.
 - Phase 2 cannot be reached by v1. Status-2 pool operations and liveness checks
   fail closed pending the graduation/pool adapter, instead of inventing a pool
   activity rule. The future implementation must preserve the same gate.
+- LiteSVM 0.18.1's loose dependency ranges select incompatible Agave 4.4
+  APIs and fail to compile. Its official upstream lock at
+  `aff262da627cbd6dfef24d24fb435fbaa5e61bc4` provides the supported 4.3.2 VM
+  pairing. Cargo.lock retains that test runtime; the program's Solana build
+  target/CLI stays at current stable 4.4.0. VM measurements identify the
+  actual runtime rather than implying a 4.4 validator benchmark.
 
 The research measurement remains in the original worktree and is not modified
 by this isolated program branch.

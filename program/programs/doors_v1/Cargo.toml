@@ -35,3 +35,7 @@ solana-system-interface = { version = "3", features = ["bincode"] }
 solana-compute-budget-interface = "3"
 serde_json = "1"
 solana-clock = "~3.2.0"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ['cfg(target_os, values("solana"))', 'cfg(feature, values("custom-heap", "custom-panic", "anchor-debug"))']
