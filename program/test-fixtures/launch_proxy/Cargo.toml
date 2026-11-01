@@ -1,0 +1,20 @@
+[package]
+name = "launch-proxy"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anchor-lang = { version = "=1.2.2", default-features = false, features = ["solana-v4"] }
+
+[profile.release]
+overflow-checks = true
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ['cfg(target_os, values("solana"))', 'cfg(feature, values("custom-heap", "custom-panic"))']

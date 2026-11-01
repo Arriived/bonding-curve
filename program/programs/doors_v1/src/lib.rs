@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-#[path = "accounts.rs"]
 pub mod contexts;
 pub mod math;
 pub mod state;
@@ -47,6 +46,7 @@ pub mod doors_v1 {
         Ok(())
     }
     pub fn create_room(ctx: Context<CreateRoom>, room_id: u64, launch: Launch) -> Result<()> {
+        require_top_level_launch()?;
         let a = ctx.accounts;
         launch.validate()?;
         require!(!a.config.paused, Error::Paused);
@@ -267,6 +267,7 @@ pub mod doors_v1 {
         Ok(())
     }
     pub fn open_door(ctx: Context<OpenDoor>, launch: Launch) -> Result<()> {
+        require_top_level_launch()?;
         let a = ctx.accounts;
         launch.validate()?;
         let now = Clock::get()?.unix_timestamp;
@@ -659,6 +660,11 @@ fn initialize_door<'a>(
     });
     Ok(())
 }
+fn require_top_level_launch()->Result<()> {
+    use anchor_lang::solana_program::instruction::{get_stack_height,TRANSACTION_LEVEL_STACK_HEIGHT};
+    require!(get_stack_height()==TRANSACTION_LEVEL_STACK_HEIGHT,Error::LaunchCpi);
+    Ok(())
+}
 fn trade(ctx: Context<Trade>, buy: bool, amount: u64, min: u64) -> Result<()> {
     let a = ctx.accounts;
     require!(!a.core.config.paused, Error::Paused);
@@ -965,4 +971,6 @@ pub enum Error {
     Slippage,
     #[msg("Invalid execution clock")]
     Clock,
+    #[msg("Launch routing and metadata must be a top-level co-signed instruction")]
+    LaunchCpi,
 }

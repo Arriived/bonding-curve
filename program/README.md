@@ -8,7 +8,9 @@ The program creates immutable Token-2022 room and door mints, premints their
 entire supply and revokes mint and metadata update authorities atomically.
 The native-WSOL fee account uses the existing classic SPL native mint.
 Room creation and door opening require the configured matcher to co-sign the
-whole transaction alongside the launcher. The matcher chooses a random u64
+whole transaction alongside the launcher. These launch instructions must be
+top-level: an untrusted CPI proxy cannot reinterpret a propagated matcher
+signer into different metadata or routing arguments. The matcher chooses a random u64
 room nonce; `scripts/room_nonce.py` generates one using the OS CSPRNG. Encode
 it as an exact u64/BigInt/BN, never a JavaScript Number. A collision needs a new
 nonce and fresh signatures. Config is read-only on permissionless creation.
@@ -43,8 +45,10 @@ version in `--version` is overridden by the explicit build flag below.
 Use Linux (including an already configured WSL environment) with these tools.
 For Agave, the official installer is
 `https://release.anza.xyz/v4.4.0/install`. Install cargo-build-sbf with
-`cargo install cargo-build-sbf --version 4.5.0 --locked`; use the official
-Anchor 1.2.2 release binary. The current Windows workspace has no compiler or
+`cargo install cargo-build-sbf --version 4.5.0 --locked`; put `~/.cargo/bin`
+before the Solana installer's bin directory so its bundled builder cannot
+shadow the pinned version. CI invokes the pinned binary explicitly. Use the
+official Anchor 1.2.2 release binary. The current Windows workspace has no compiler or
 WSL installation; its builds run on GitHub's Ubuntu runner.
 
 From this directory:
@@ -52,8 +56,10 @@ From this directory:
 ```sh
 cargo check --locked --tests
 cargo build-sbf --tools-version v1.58
+cargo build-sbf --tools-version v1.58 --manifest-path test-fixtures/launch_proxy/Cargo.toml --sbf-out-dir "$(pwd)/target/deploy"
 mkdir -p target/idl
 anchor idl build -o target/idl/doors_v1.json
+python3 scripts/check_layouts.py
 cargo test --locked --test svm -- --nocapture
 cargo fmt -- --check
 python3 scripts/build_evidence.py
@@ -80,7 +86,9 @@ Tests exercise creation, opening with first buys, both trade routes,
 conversion, capped crossing and retirement, all fees, admin bounds, paused
 trades, exact liveness boundaries, lock release/takeover, immutable mint
 authorities, changed/missing matcher signatures, full redemptions, slippage,
-zero balances, donations and holder burns. The external audit in each test
+zero balances, donations and holder burns. Signature tests include a test-only
+untrusted SBF proxy for launch-CPI rejection; it is not an application
+instruction or deployment component. The external audit in each test
 enumerates every door, checks global fee coverage and reconciles all token
 account balances to live mint supply. Each affected instruction is checked
 for `delta(ReserveVault lamports) == delta(room.reserve)` independently of

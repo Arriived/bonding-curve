@@ -25,6 +25,10 @@ jobs:
         with:
           workspaces: program
           cache-on-failure: true
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/solana/v1.58
+          key: linux-solana-platform-tools-v1.58
       - name: Host compile
         run: |
           cargo fmt
@@ -38,15 +42,18 @@ jobs:
           sh /tmp/agave-install.sh
           echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
           mkdir -p verification
-          { rustc --version; cargo --version; cargo-build-sbf --version; anchor --version; } | tee verification/toolchain.txt
+          { rustc --version; cargo --version; "$HOME/.cargo/bin/cargo-build-sbf" --version; anchor --version; } | tee verification/toolchain.txt
       - name: Build SBF
         run: |
-          cargo build-sbf --tools-version v1.58 2>&1 | tee verification/sbf-build.log
+          set -o pipefail
+          "$HOME/.cargo/bin/cargo-build-sbf" --tools-version v1.58 2>&1 | tee verification/sbf-build.log
           python3 -c 'from pathlib import Path; s=Path("verification/sbf-build.log").read_text(); assert "Error: Function" not in s, "SBF stack error"'
+          "$HOME/.cargo/bin/cargo-build-sbf" --tools-version v1.58 --manifest-path test-fixtures/launch_proxy/Cargo.toml --sbf-out-dir "$(pwd)/target/deploy"
       - name: Build IDL
         run: |
           mkdir -p target/idl
           anchor idl build -o target/idl/doors_v1.json
+          python3 scripts/check_layouts.py
       - name: Execute SBF tests and mixed-operation property test
         run: cargo test --test svm -- --nocapture
       - name: Format check
@@ -67,4 +74,5 @@ jobs:
             program/verification/
             program/programs/doors_v1/src/
             program/programs/doors_v1/tests/
+            program/test-fixtures/launch_proxy/Cargo.lock
           if-no-files-found: warn

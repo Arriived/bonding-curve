@@ -2,3 +2,4 @@
 /verification/lite_*.txt
 /.anchor/
 node_modules/
+/test-fixtures/launch_proxy/target/

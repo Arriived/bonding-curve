@@ -476,6 +476,11 @@ any of these invalidates authorization; blockhash expiry bounds replay. The
 launcher signs the same previewed transaction. Launching charges rent and
 transaction fees, with room and door fees defaulting to zero.
 
+Both launch instructions execute at transaction level, not through a CPI
+proxy. This makes the on-chain routing accounts and arguments the exact
+instruction payload co-signed by the matcher, rather than letting another
+program reinterpret a propagated signer.
+
 `room_id` is a matcher-chosen CSPRNG u64 nonce included in that signed
 message, never a slug-derived value or a sequential counter. Config is
 read-only. An occupied Room PDA is a clean atomic collision failure; a retry

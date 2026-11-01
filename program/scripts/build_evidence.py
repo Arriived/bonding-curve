@@ -14,7 +14,8 @@ def main():
     files=[*sorted((HERE/'programs').rglob('*.rs')),HERE/'Cargo.lock',HERE/'Cargo.toml',HERE/'Anchor.toml']
     result={'git_commit':command('git','rev-parse','HEAD'),'versions':{name:command(*args) for name,args in {
         'rustc':['rustc','--version'],'cargo':['cargo','--version'],'anchor':['anchor','--version'],
-        'cargo_build_sbf':['cargo-build-sbf','--version'],'solana':['solana','--version']}.items()},
+        'cargo_build_sbf':[str(Path.home()/'.cargo/bin/cargo-build-sbf'),'--version'],'solana':['solana','--version'],
+        'effective_sbf_rust':[str(Path.home()/'.cache/solana/v1.58/platform-tools/rust/bin/rustc'),'--version']}.items()},
         'writable_account_limit':{'units':cap,'source':url,'sha256':hashlib.sha256(raw).hexdigest()},
         'source_sha256':{p.relative_to(HERE).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in files},
         'elf_sha256':hashlib.sha256((HERE/'target/deploy/doors_v1.so').read_bytes()).hexdigest(),

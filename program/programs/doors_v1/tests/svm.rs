@@ -612,6 +612,19 @@ fn signatures_cover_the_entire_message_and_nonce() {
     assert!(f.svm.send_transaction(changed).is_err());
     f.fail(f.create_ix(launch("First room"), None), true); // occupied random nonce cannot overwrite a room
 }
+
+#[test]
+fn a_propagated_signer_cannot_authorize_reinterpreted_cpi_launch_data() {
+    let mut f=Fixture::empty(0);let proxy=Pubkey::new_from_array([29;32]);
+    let elf=PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/launch_proxy.so");
+    f.svm.add_program(proxy,&std::fs::read(elf).expect("build the test-only launch proxy")).unwrap();
+    let original=f.create_ix(launch("First room"),None);
+    let mut metas=vec![AccountMeta::new_readonly(ID,false)];metas.extend(original.accounts);
+    let instruction=Instruction{program_id:proxy,accounts:metas,data:original.data};
+    let tx=Transaction::new(&[&f.user,&f.matcher],Message::new(&[instruction],Some(&f.user.pubkey())),f.svm.latest_blockhash());
+    let err=f.svm.send_transaction(tx).unwrap_err();assert!(err.meta.logs.iter().any(|line|line.contains("LaunchCpi")),"{err:#?}");
+    assert!(f.svm.get_account(&f.room).is_none());assert!(f.svm.get_account(&p(&[b"reserve",f.room.as_ref()])).is_none());
+}
 #[test]
 fn buy_sell_convert_full_redemption_and_zero_balance_edges() {
     let mut f = Fixture::new(0);
