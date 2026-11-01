@@ -13,3 +13,6 @@ copycat-diversion-research.zip
 
 # Full-project export; its unpacked source/evidence is versioned.
 MEMECOIN_ANTI_VAMP_COMPLETE_PROJECT.zip
+
+# Resumable working RPC cache; compressed, verified archive parts are versioned.
+research/doors_into_one_room/outputs/narrative/consolidation_history.sqlite*

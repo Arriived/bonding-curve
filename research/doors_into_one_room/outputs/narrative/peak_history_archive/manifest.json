@@ -1,0 +1,36 @@
+{
+  "exported_at_utc": "2026-11-01T19:11:01.330489+00:00",
+  "format": "concatenate ordered parts, gzip-decompress to SQLite",
+  "database_sha256": "f4a6d0a4f4ea8d8606d0217693b231110ce4c963318ba21a3190a7adab062423",
+  "database_bytes": 91074560,
+  "integrity_check": "ok",
+  "rpc_response_counts": {
+    "getBlock": 25,
+    "getSignaturesForAddress": 2121,
+    "getTransaction": 773
+  },
+  "parts": [
+    {
+      "name": "history.sqlite.gz.part000",
+      "bytes": 20971520,
+      "sha256": "497403c577b90f7b267b2a0f6485ea9a3ae49c6198f9ce652bfde6e79fda9664"
+    },
+    {
+      "name": "history.sqlite.gz.part001",
+      "bytes": 20971520,
+      "sha256": "aa880d3cab2012f4731608b3899c59699cfeb0eb78d395e9996f6d2f168315da"
+    },
+    {
+      "name": "history.sqlite.gz.part002",
+      "bytes": 20971520,
+      "sha256": "30eb3e4d65f971fb4e26503d1b1462385f9d430f77f86ca6f52fc944ae4f796c"
+    },
+    {
+      "name": "history.sqlite.gz.part003",
+      "bytes": 20261229,
+      "sha256": "a7839b151d4e8e6f56c897bb25f21d6493860d91da64cfa0a03d897ebcdefef8"
+    }
+  ],
+  "restore_command": "python scripts/narrative/archive_peak_cache.py --restore",
+  "contents": "Raw compressed RPC replies, batch envelopes, query parameters, timestamps, request telemetry and study checkpoints."
+}

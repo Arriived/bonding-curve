@@ -1,0 +1,377 @@
+{
+  "generated_at_utc": "2026-11-01T19:10:54.623807+00:00",
+  "all_top20_measured": false,
+  "selected_clusters": 20,
+  "completed_measurements": 0,
+  "scope": "top-activity subset of uncompleted multi-member v1 SOL clusters; not a population census",
+  "already_completed_copy_clusters_excluded": 35,
+  "remainder_clusters": 228,
+  "additional_counts_measured": {
+    "spec default": null,
+    "$10,000": null,
+    "$50,000": null,
+    "$100,000": null
+  },
+  "observed_additional_count_lower_bounds": {
+    "spec default": 0,
+    "$10,000": 0,
+    "$50,000": 0,
+    "$100,000": 0
+  },
+  "spec_full_eligible_count_bounds": [
+    0,
+    248
+  ],
+  "primary_c_metrics": {
+    "clusters": 0,
+    "gross_inflow_lamports": 0,
+    "summed_peak_weights_lamports": 0,
+    "c_peak_weighted": null,
+    "c_gross_pooled": null,
+    "c_gross_fixed_stock_leader": null,
+    "c_stock_same_subset": null,
+    "current_reserve_lamports": 0,
+    "retained_share": null,
+    "distribution": {
+      "p25": null,
+      "p50": null,
+      "p75": null,
+      "p90": null,
+      "p99": null,
+      "max": null
+    }
+  },
+  "funded": {
+    "clusters": 0,
+    "gross_inflow_lamports": 0,
+    "summed_peak_weights_lamports": 0,
+    "c_peak_weighted": null,
+    "c_gross_pooled": null,
+    "c_gross_fixed_stock_leader": null,
+    "c_stock_same_subset": null,
+    "current_reserve_lamports": 0,
+    "retained_share": null,
+    "distribution": {
+      "p25": null,
+      "p50": null,
+      "p75": null,
+      "p90": null,
+      "p99": null,
+      "max": null
+    }
+  },
+  "dust": {
+    "clusters": 0,
+    "gross_inflow_lamports": 0,
+    "summed_peak_weights_lamports": 0,
+    "c_peak_weighted": null,
+    "c_gross_pooled": null,
+    "c_gross_fixed_stock_leader": null,
+    "c_stock_same_subset": null,
+    "current_reserve_lamports": 0,
+    "retained_share": null,
+    "distribution": {
+      "p25": null,
+      "p50": null,
+      "p75": null,
+      "p90": null,
+      "p99": null,
+      "max": null
+    }
+  },
+  "stock_reference_c": 0.10176382065610201,
+  "gap_decomposition_points": null,
+  "weighting_divergence_interpretation": "Both weightings remain undefined until complete histories are available.",
+  "drawdown": {
+    "measured_peak_current_ratios": {
+      "p25": null,
+      "p50": null,
+      "p75": null,
+      "p90": null,
+      "p99": null,
+      "max": null
+    },
+    "infinite_ratio_observed": false,
+    "largest_remainder_current_lamports": 14552146958,
+    "largest_remainder_root": "6W4SEuy1DEHbPKrRJNHyoAHYJ63M3JQadgAhHUv8pump",
+    "conditional_envelope_lamports": null,
+    "conditional_envelope_below_spec": null,
+    "unconditional_peak_upper_bound": null,
+    "assumption": "Every remainder cluster has peak/current no greater than the largest measured ratio; not established by this sample."
+  },
+  "copy_launch_lags_seconds": {
+    "p25": null,
+    "p50": null,
+    "p75": null,
+    "p90": null,
+    "p99": null,
+    "max": null
+  },
+  "non_root_first_hour_inflow_share": null,
+  "member_retained_share_distribution": {
+    "p25": null,
+    "p50": null,
+    "p75": null,
+    "p90": null,
+    "p99": null,
+    "max": null
+  },
+  "prewindow_truncated_root_count": null,
+  "window_edge_diagnostics": {
+    "all_copy_clusters": {
+      "clusters": 283,
+      "earliest_in_window_offsets_seconds": {
+        "p25": 735.0,
+        "p50": 1855.0,
+        "p75": 3621.0,
+        "p90": 5146.4,
+        "p99": 5889.22,
+        "max": 6109
+      },
+      "near_edge_counts": {
+        "188": 29,
+        "300": 43,
+        "900": 81,
+        "1800": 139,
+        "3600": 210
+      },
+      "near_edge_shares": {
+        "188": 0.10247349823321555,
+        "300": 0.1519434628975265,
+        "900": 0.2862190812720848,
+        "1800": 0.4911660777385159,
+        "3600": 0.7420494699646644
+      }
+    },
+    "uncompleted_candidates": {
+      "clusters": 248,
+      "earliest_in_window_offsets_seconds": {
+        "p25": 663.25,
+        "p50": 1718.5,
+        "p75": 3630.5,
+        "p90": 5154.900000000001,
+        "p99": 5873.59,
+        "max": 5985
+      },
+      "near_edge_counts": {
+        "188": 29,
+        "300": 43,
+        "900": 74,
+        "1800": 125,
+        "3600": 185
+      },
+      "near_edge_shares": {
+        "188": 0.11693548387096774,
+        "300": 0.17338709677419356,
+        "900": 0.29838709677419356,
+        "1800": 0.5040322580645161,
+        "3600": 0.7459677419354839
+      }
+    },
+    "selected_top20": {
+      "clusters": 20,
+      "earliest_in_window_offsets_seconds": {
+        "p25": 1767.25,
+        "p50": 3365.0,
+        "p75": 4871.25,
+        "p90": 5304.200000000001,
+        "p99": 5681.299999999999,
+        "max": 5725
+      },
+      "near_edge_counts": {
+        "188": 1,
+        "300": 2,
+        "900": 3,
+        "1800": 5,
+        "3600": 12
+      },
+      "near_edge_shares": {
+        "188": 0.05,
+        "300": 0.1,
+        "900": 0.15,
+        "1800": 0.25,
+        "3600": 0.6
+      }
+    }
+  },
+  "signature_count_distribution": {
+    "p25": 221.25,
+    "p50": 569.0,
+    "p75": 2286.25,
+    "p90": 9944.800000000001,
+    "p99": 44214.740000000005,
+    "max": 71826
+  },
+  "signature_total_references": 906967,
+  "successful_signature_total_references": 154577,
+  "rpc_observations": {
+    "getBlock": 25,
+    "getSignaturesForAddress": 2121,
+    "getTransaction": 773
+  },
+  "http_attempts": 3312,
+  "http_429_attempts": 431,
+  "received_bytes": 266007721,
+  "collection_start_utc": "2026-11-01T17:17:16.980591+00:00",
+  "collection_last_utc": "2026-11-01T19:10:52.260060+00:00",
+  "transaction_observation_range_utc": [
+    "2026-11-01T18:31:23.184835+00:00",
+    "2026-11-01T19:10:52.260060+00:00"
+  ],
+  "ranking_elapsed_seconds": 2069.760669708252,
+  "transaction_collection": null,
+  "transaction_progress": {
+    "completed_current": 304,
+    "elapsed_seconds": 2379.4318656921387,
+    "rank": 1,
+    "root_mint": "9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump",
+    "uncached_at_start": 688,
+    "updated_at_utc": "2026-11-01T19:10:52.286590+00:00"
+  },
+  "required_unique_transactions": 55952,
+  "price_source": {
+    "source_url": "https://api.coinbase.com/v2/prices/SOL-USD/spot",
+    "fetched_at_utc": "2026-11-01T14:40:30.312355+00:00",
+    "http_date": "Sun, 01 Nov 2026 14:40:30 GMT",
+    "response": {
+      "data": {
+        "amount": "95.045",
+        "base": "SOL",
+        "currency": "USD"
+      }
+    },
+    "response_sha256": "a44d89ecca2963c9405547a704c2b1e6bd8a70445e68b39a93b1c2db21befcdb"
+  },
+  "thresholds": [
+    {
+      "label": "spec default",
+      "threshold_lamports": 85018013680,
+      "uncompleted_groups": 952,
+      "separate_current_max_above": 0,
+      "current_sum_above": 0,
+      "additional_candidates": 0,
+      "additional_candidate_roots": [],
+      "in_window_grace_prefix_candidates": 0,
+      "counted_multiplier": null,
+      "usd_value": 8080.5371102156
+    },
+    {
+      "label": "$10,000",
+      "threshold_lamports": 105213320007,
+      "uncompleted_groups": 952,
+      "separate_current_max_above": 0,
+      "current_sum_above": 0,
+      "additional_candidates": 0,
+      "additional_candidate_roots": [],
+      "in_window_grace_prefix_candidates": 0,
+      "counted_multiplier": null,
+      "usd_value": 10000.000000065314
+    },
+    {
+      "label": "$50,000",
+      "threshold_lamports": 526066600032,
+      "uncompleted_groups": 952,
+      "separate_current_max_above": 0,
+      "current_sum_above": 0,
+      "additional_candidates": 0,
+      "additional_candidate_roots": [],
+      "in_window_grace_prefix_candidates": 0,
+      "counted_multiplier": null,
+      "usd_value": 50000.00000004144
+    },
+    {
+      "label": "$100,000",
+      "threshold_lamports": 1052133200064,
+      "uncompleted_groups": 952,
+      "separate_current_max_above": 0,
+      "current_sum_above": 0,
+      "additional_candidates": 0,
+      "additional_candidate_roots": [],
+      "in_window_grace_prefix_candidates": 0,
+      "counted_multiplier": null,
+      "usd_value": 100000.00000008287
+    }
+  ],
+  "clusters": [
+    {
+      "root_mint": "9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "Hwn9ZoNK34sVvZbTo412UwDfLUq79H7GVdL9JJsApump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "45fVVhitRDuJhs5otnxvV8o698cpBUzNqhA21U4spump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "H4ZUidDZhuN8CwsWgmPiySnm7dGT58D8XweGzT4epump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "HbsHfxY3dQN5pXz55snkm6AjorwJsPAcCfVmowYopump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "6SA4aimXvukYYY2XGGVvUasS2T3XByyZMEe64H2ypump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "Ddegm6DQLjz7eQorfgbt6ADuGB37YPSC5zw1UNM1pump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "8LXuKQCMw5kjyCevhV791GTXqLZieN1ZfRhUPbhwpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "xt55AsBZ7XBVNeqeghAtHdsQvjcGxQcFbjzxM5tpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "HH1Tc8kGmaTCPrRx3uQp74ZZzdh1iY6qtRtorrH8XrC1",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "BCqWw99e9QW9wL9kYXWo8eGSGpuvCfgxG1S9N1Ngpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "2nmmRmYrBz3wyvFdcLj5o8GCgtVJgm6Y5m9j1ppNpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "FpoCasNWwSwnbnDTcKq5LRbsrAkrF3FQR9buGXgHpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "KP8AFRWji7fzNKdMs5g3Jp6F5Fn5nGc29sZPgeQpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "F5kucU4FKTeDgJwnm31KriQ1cp1uiQXuBb2wXLdbpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "7rNYoZ1oQP2tTJ3YZiz47ps9tL4AgRaU22Lvzk2KjRfy",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "C3VgwQFDhKobyWQJNjy8V1yT5KJYGtiRd31e5zbQpump",
+      "status": "not_measured"
+    },
+    {
+      "root_mint": "7UnMonK9xaPjKL6RZXDdFAiz6g8cZidQe9RsDEqVpump",
+      "status": "not_measured"
+    }
+  ]
+}

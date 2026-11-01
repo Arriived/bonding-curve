@@ -1,0 +1,150 @@
+{
+  "rank_file_sha256": "9de619b4ac5185804b6de18e65856ca539500067da34b8a0f1eb46202cccafe0",
+  "rank_finished_at_utc": "2026-11-01T18:28:30.174654+00:00",
+  "root_mints": [
+    "9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump",
+    "EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump",
+    "GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH",
+    "Hwn9ZoNK34sVvZbTo412UwDfLUq79H7GVdL9JJsApump",
+    "45fVVhitRDuJhs5otnxvV8o698cpBUzNqhA21U4spump",
+    "H4ZUidDZhuN8CwsWgmPiySnm7dGT58D8XweGzT4epump",
+    "HbsHfxY3dQN5pXz55snkm6AjorwJsPAcCfVmowYopump",
+    "6SA4aimXvukYYY2XGGVvUasS2T3XByyZMEe64H2ypump",
+    "Ddegm6DQLjz7eQorfgbt6ADuGB37YPSC5zw1UNM1pump",
+    "8LXuKQCMw5kjyCevhV791GTXqLZieN1ZfRhUPbhwpump",
+    "xt55AsBZ7XBVNeqeghAtHdsQvjcGxQcFbjzxM5tpump",
+    "HH1Tc8kGmaTCPrRx3uQp74ZZzdh1iY6qtRtorrH8XrC1",
+    "BCqWw99e9QW9wL9kYXWo8eGSGpuvCfgxG1S9N1Ngpump",
+    "2nmmRmYrBz3wyvFdcLj5o8GCgtVJgm6Y5m9j1ppNpump",
+    "FpoCasNWwSwnbnDTcKq5LRbsrAkrF3FQR9buGXgHpump",
+    "KP8AFRWji7fzNKdMs5g3Jp6F5Fn5nGc29sZPgeQpump",
+    "F5kucU4FKTeDgJwnm31KriQ1cp1uiQXuBb2wXLdbpump",
+    "7rNYoZ1oQP2tTJ3YZiz47ps9tL4AgRaU22Lvzk2KjRfy",
+    "C3VgwQFDhKobyWQJNjy8V1yT5KJYGtiRd31e5zbQpump",
+    "7UnMonK9xaPjKL6RZXDdFAiz6g8cZidQe9RsDEqVpump"
+  ],
+  "selection": "top 20 by complete total signature count; ties root mint",
+  "counts": [
+    {
+      "root_mint": "9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump",
+      "member_count": 5,
+      "total_signature_count": 71826,
+      "successful_signature_references": 1150
+    },
+    {
+      "root_mint": "EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump",
+      "member_count": 12,
+      "total_signature_count": 60863,
+      "successful_signature_references": 7414
+    },
+    {
+      "root_mint": "GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH",
+      "member_count": 6,
+      "total_signature_count": 46310,
+      "successful_signature_references": 4688
+    },
+    {
+      "root_mint": "Hwn9ZoNK34sVvZbTo412UwDfLUq79H7GVdL9JJsApump",
+      "member_count": 8,
+      "total_signature_count": 41852,
+      "successful_signature_references": 6437
+    },
+    {
+      "root_mint": "45fVVhitRDuJhs5otnxvV8o698cpBUzNqhA21U4spump",
+      "member_count": 6,
+      "total_signature_count": 40291,
+      "successful_signature_references": 3063
+    },
+    {
+      "root_mint": "H4ZUidDZhuN8CwsWgmPiySnm7dGT58D8XweGzT4epump",
+      "member_count": 9,
+      "total_signature_count": 30149,
+      "successful_signature_references": 1895
+    },
+    {
+      "root_mint": "HbsHfxY3dQN5pXz55snkm6AjorwJsPAcCfVmowYopump",
+      "member_count": 5,
+      "total_signature_count": 27114,
+      "successful_signature_references": 4357
+    },
+    {
+      "root_mint": "6SA4aimXvukYYY2XGGVvUasS2T3XByyZMEe64H2ypump",
+      "member_count": 7,
+      "total_signature_count": 26195,
+      "successful_signature_references": 4470
+    },
+    {
+      "root_mint": "Ddegm6DQLjz7eQorfgbt6ADuGB37YPSC5zw1UNM1pump",
+      "member_count": 7,
+      "total_signature_count": 23608,
+      "successful_signature_references": 1737
+    },
+    {
+      "root_mint": "8LXuKQCMw5kjyCevhV791GTXqLZieN1ZfRhUPbhwpump",
+      "member_count": 11,
+      "total_signature_count": 22284,
+      "successful_signature_references": 1946
+    },
+    {
+      "root_mint": "xt55AsBZ7XBVNeqeghAtHdsQvjcGxQcFbjzxM5tpump",
+      "member_count": 3,
+      "total_signature_count": 20713,
+      "successful_signature_references": 3216
+    },
+    {
+      "root_mint": "HH1Tc8kGmaTCPrRx3uQp74ZZzdh1iY6qtRtorrH8XrC1",
+      "member_count": 5,
+      "total_signature_count": 18492,
+      "successful_signature_references": 874
+    },
+    {
+      "root_mint": "BCqWw99e9QW9wL9kYXWo8eGSGpuvCfgxG1S9N1Ngpump",
+      "member_count": 6,
+      "total_signature_count": 17011,
+      "successful_signature_references": 3643
+    },
+    {
+      "root_mint": "2nmmRmYrBz3wyvFdcLj5o8GCgtVJgm6Y5m9j1ppNpump",
+      "member_count": 2,
+      "total_signature_count": 16360,
+      "successful_signature_references": 594
+    },
+    {
+      "root_mint": "FpoCasNWwSwnbnDTcKq5LRbsrAkrF3FQR9buGXgHpump",
+      "member_count": 3,
+      "total_signature_count": 14770,
+      "successful_signature_references": 2107
+    },
+    {
+      "root_mint": "KP8AFRWji7fzNKdMs5g3Jp6F5Fn5nGc29sZPgeQpump",
+      "member_count": 2,
+      "total_signature_count": 13468,
+      "successful_signature_references": 873
+    },
+    {
+      "root_mint": "F5kucU4FKTeDgJwnm31KriQ1cp1uiQXuBb2wXLdbpump",
+      "member_count": 15,
+      "total_signature_count": 13326,
+      "successful_signature_references": 4813
+    },
+    {
+      "root_mint": "7rNYoZ1oQP2tTJ3YZiz47ps9tL4AgRaU22Lvzk2KjRfy",
+      "member_count": 3,
+      "total_signature_count": 13306,
+      "successful_signature_references": 1792
+    },
+    {
+      "root_mint": "C3VgwQFDhKobyWQJNjy8V1yT5KJYGtiRd31e5zbQpump",
+      "member_count": 2,
+      "total_signature_count": 13260,
+      "successful_signature_references": 379
+    },
+    {
+      "root_mint": "7UnMonK9xaPjKL6RZXDdFAiz6g8cZidQe9RsDEqVpump",
+      "member_count": 3,
+      "total_signature_count": 12863,
+      "successful_signature_references": 523
+    }
+  ],
+  "frozen_at_utc": "2026-11-01T18:30:45.977937+00:00"
+}
