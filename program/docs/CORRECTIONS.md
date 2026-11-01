@@ -91,6 +91,17 @@ execution. This does not deploy a program or send devnet/mainnet transactions.
   pairing. Cargo.lock retains that test runtime; the program's Solana build
   target/CLI stays at current stable 4.4.0. VM measurements identify the
   actual runtime rather than implying a 4.4 validator benchmark.
+- Runtime tests caught a construction error: creating every fresh PDA with
+  transfer + allocate + assign consumed the instruction-trace limit during
+  an optional first buy. Fresh PDAs now use the single System create_account
+  CPI. Prefunded PDAs retain the allocate/assign fallback, with redundant
+  zero-byte allocation and same-owner assignment omitted. This is account
+  initialization, not repair or redistribution of existing vault surplus.
+- Test setup corrections: LiteSVM's airdrop payer cannot send its entire
+  balance because the transfer also pays a transaction fee; fixture funding
+  was reduced. LiteSVM loads token programs without creating the canonical
+  native WSOL mint account; the fixture now supplies that initialized account.
+  No production mint or economics was changed to accommodate a missing fixture.
 
 The research measurement remains in the original worktree and is not modified
 by this isolated program branch.
