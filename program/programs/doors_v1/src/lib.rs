@@ -96,8 +96,8 @@ pub mod doors_v1 {
         )?;
         // Separate initial rent/top-up from credited trading liabilities.
         // Prefunded native donations remain unaccounted and locked.
-        let reserve_base=a.reserve.lamports();
-        let fee_base=a.fees.lamports();
+        let reserve_base = a.reserve.lamports();
+        let fee_base = a.fees.lamports();
         let (_, rvb) = create_mint(
             &user,
             &a.room_mint,
@@ -265,10 +265,13 @@ pub mod doors_v1 {
             &a.backing,
         )?;
         require!(
-            a.reserve.lamports() == add(reserve_base,r.reserve)?,
+            a.reserve.lamports() == add(reserve_base, r.reserve)?,
             Error::Invariant
         );
-        require!(a.fees.lamports()==add(fee_base,narrow(known(r,&[&a.door]))?)?,Error::Invariant);
+        require!(
+            a.fees.lamports() == add(fee_base, narrow(known(r, &[&a.door]))?)?,
+            Error::Invariant
+        );
         Ok(())
     }
     pub fn open_door(ctx: Context<OpenDoor>, launch: Launch) -> Result<()> {

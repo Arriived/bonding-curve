@@ -2,6 +2,15 @@ name: program-v1
 on:
   push:
     branches: [claude/program-v1]
+    paths:
+      - 'program/programs/**'
+      - 'program/test-fixtures/**'
+      - 'program/scripts/**'
+      - 'program/Cargo.toml'
+      - 'program/Cargo.lock'
+      - 'program/Anchor.toml'
+      - 'program/idl/**'
+      - '.github/workflows/program-v1.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -53,6 +62,7 @@ jobs:
         run: |
           mkdir -p target/idl
           anchor idl build -o target/idl/doors_v1.json
+          cmp idl/doors_v1.json target/idl/doors_v1.json
           python3 scripts/check_layouts.py
       - name: Execute SBF tests and mixed-operation property test
         run: cargo test --test svm -- --nocapture

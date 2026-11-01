@@ -1145,6 +1145,7 @@ dependencies = [
  "litesvm",
  "serde_json",
  "solana-account",
+ "solana-address-lookup-table-interface",
  "solana-clock 3.2.1",
  "solana-compute-budget-interface",
  "solana-instruction 3.5.1",

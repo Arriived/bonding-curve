@@ -83,24 +83,32 @@ pub fn create_pda<'a>(
     let bb = [bump];
     signed.push(&bb);
     let rent = Rent::get()?.minimum_balance(funded_space);
-    if target.lamports()==0 {
+    if target.lamports() == 0 {
         // A fresh account needs one System CPI. Always using transfer +
         // allocate + assign would overflow the transaction instruction trace
         // when creating both mints and executing the optional first buy.
-        invoke_signed(&system_instruction::create_account(user.key,target.key,rent,space as u64,owner),&[user.clone(),target.clone(),system.clone()],&[&signed])?;
+        invoke_signed(
+            &system_instruction::create_account(user.key, target.key, rent, space as u64, owner),
+            &[user.clone(), target.clone(), system.clone()],
+            &[&signed],
+        )?;
         return Ok(bump);
     }
     deposit(user, target, system, rent.saturating_sub(target.lamports()))?;
-    if space>0 {invoke_signed(
-        &system_instruction::allocate(target.key, space as u64),
-        &[target.clone(), system.clone()],
-        &[&signed],
-    )?;}
-    if owner!=&anchor_lang::system_program::ID {invoke_signed(
-        &system_instruction::assign(target.key, owner),
-        &[target.clone(), system.clone()],
-        &[&signed],
-    )?;}
+    if space > 0 {
+        invoke_signed(
+            &system_instruction::allocate(target.key, space as u64),
+            &[target.clone(), system.clone()],
+            &[&signed],
+        )?;
+    }
+    if owner != &anchor_lang::system_program::ID {
+        invoke_signed(
+            &system_instruction::assign(target.key, owner),
+            &[target.clone(), system.clone()],
+            &[&signed],
+        )?;
+    }
     Ok(bump)
 }
 pub fn token(ai: &AccountInfo, mint: &Pubkey, owner: &Pubkey, program: &Pubkey) -> Result<u64> {

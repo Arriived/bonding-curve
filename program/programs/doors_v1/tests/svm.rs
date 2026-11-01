@@ -1,5 +1,6 @@
 //! All instruction tests execute the compiled SBF ELF, with real SPL programs
 //! and Ed25519 verification. No native replacement of the Anchor entrypoint.
+use anchor_lang::solana_program::program_pack::Pack;
 use anchor_lang::solana_program::{bpf_loader_upgradeable, program_option::COption};
 use anchor_lang::{
     prelude::Pubkey, AccountDeserialize, AccountSerialize, InstructionData, ToAccountMetas,
@@ -7,9 +8,8 @@ use anchor_lang::{
 use doors_v1::{accounts as a, instruction as ix, math::U, state::*, vaults::ATA, ID};
 use litesvm::{types::TransactionMetadata, LiteSVM};
 use serde_json::{json, Value};
-use solana_clock::Clock;
 use solana_account::Account;
-use anchor_lang::solana_program::program_pack::Pack;
+use solana_clock::Clock;
 use solana_compute_budget_interface::ComputeBudgetInstruction;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_keypair::Keypair;
@@ -110,14 +110,31 @@ struct Fixture {
 impl Fixture {
     fn empty(founder_bps: u16) -> Self {
         // Public, deterministic fixture secrets: never use these keys outside tests.
-        let user = Keypair::new_from_array([11;32]);
-        let matcher = Keypair::new_from_array([22;32]);
-        let mut svm = LiteSVM::new().with_transaction_history(0).with_log_bytes_limit(None);
+        let user = Keypair::new_from_array([11; 32]);
+        let matcher = Keypair::new_from_array([22; 32]);
+        let mut svm = LiteSVM::new()
+            .with_transaction_history(0)
+            .with_log_bytes_limit(None);
         // LiteSVM bundles token programs, but does not populate the native mint.
         // Match the canonical initialized classic-SPL native-mint account.
-        let native=spl_token_interface::state::Mint{decimals:9,is_initialized:true,..Default::default()};
-        let mut data=vec![0;spl_token_interface::state::Mint::LEN];spl_token_interface::state::Mint::pack(native,&mut data).unwrap();
-        svm.set_account(spl_token_interface::native_mint::ID,Account{lamports:svm.minimum_balance_for_rent_exemption(data.len()),data,owner:spl_token_interface::ID,executable:false,rent_epoch:0}).unwrap();
+        let native = spl_token_interface::state::Mint {
+            decimals: 9,
+            is_initialized: true,
+            ..Default::default()
+        };
+        let mut data = vec![0; spl_token_interface::state::Mint::LEN];
+        spl_token_interface::state::Mint::pack(native, &mut data).unwrap();
+        svm.set_account(
+            spl_token_interface::native_mint::ID,
+            Account {
+                lamports: svm.minimum_balance_for_rent_exemption(data.len()),
+                data,
+                owner: spl_token_interface::ID,
+                executable: false,
+                rent_epoch: 0,
+            },
+        )
+        .unwrap();
         let elf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/doors_v1.so");
         svm.add_program(ID, &std::fs::read(elf).expect("run cargo build-sbf first"))
             .unwrap();
@@ -132,7 +149,7 @@ impl Fixture {
         clock.unix_timestamp = 1_800_000_000;
         svm.set_sysvar(&clock);
         let cfg = p(&[b"config"]);
-        let rid:u64 = 0xd35a_e081_6ab4_9c27;
+        let rid: u64 = 0xd35a_e081_6ab4_9c27;
         let room = p(&[b"room", &rid.to_le_bytes()]);
         let mut f = Self {
             svm,
@@ -166,14 +183,20 @@ impl Fixture {
         f
     }
     fn send(&mut self, ix: Instruction, matcher: bool, name: &str) -> TransactionMetadata {
-        let measure_program=ix.program_id==ID;
+        let measure_program = ix.program_id == ID;
         let tx = Transaction::new(
             &if matcher {
                 vec![&self.user, &self.matcher]
             } else {
                 vec![&self.user]
             },
-            Message::new(&[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),ix], Some(&self.user.pubkey())),
+            Message::new(
+                &[
+                    ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+                    ix,
+                ],
+                Some(&self.user.pubkey()),
+            ),
             self.svm.latest_blockhash(),
         );
         let meta = self
@@ -182,9 +205,17 @@ impl Fixture {
             .unwrap_or_else(|e| panic!("{name}: {e:#?}"));
         // Inclusive CU for this program and its CPIs, excluding the separate
         // compute-budget instruction. Match the runtime's top-level program log.
-        let prefix=format!("Program {ID} consumed ");
-        let root_cu=meta.logs.iter().find_map(|line|line.strip_prefix(&prefix).and_then(|s|s.split_whitespace().next()).and_then(|n|n.parse::<u64>().ok()));
-        let program_cu=if measure_program {root_cu.expect("runtime must report program-inclusive CU")}else{meta.compute_units_consumed};
+        let prefix = format!("Program {ID} consumed ");
+        let root_cu = meta.logs.iter().find_map(|line| {
+            line.strip_prefix(&prefix)
+                .and_then(|s| s.split_whitespace().next())
+                .and_then(|n| n.parse::<u64>().ok())
+        });
+        let program_cu = if measure_program {
+            root_cu.expect("runtime must report program-inclusive CU")
+        } else {
+            meta.compute_units_consumed
+        };
         self.cus.entry(name.into()).or_default().push(program_cu);
         self.operations += 1;
         meta
@@ -593,27 +624,81 @@ fn creates_exact_layouts_immutable_mints_and_signed_optional_first_buy() {
 
 #[test]
 fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
-    use solana_address_lookup_table_interface::instruction::{create_lookup_table,extend_lookup_table};
-    use solana_message::{v0,AddressLookupTableAccount,VersionedMessage};
+    use solana_address_lookup_table_interface::instruction::{
+        create_lookup_table, extend_lookup_table,
+    };
+    use solana_message::{v0, AddressLookupTableAccount, VersionedMessage};
     use solana_transaction::versioned::VersionedTransaction;
-    let mut f=Fixture::empty(0);let mut l=launch(&"x".repeat(32));l.symbol="Y".repeat(10);l.uri="u".repeat(200);
-    let main=f.create_ix(l,None);let instructions=[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),main.clone()];
-    let hash=f.svm.latest_blockhash();
-    let legacy=Transaction::new(&[&f.user,&f.matcher],Message::new(&instructions,Some(&f.user.pubkey())),hash);
-    let legacy_bytes=1+64*legacy.signatures.len()+legacy.message_data().len();
-    assert!(legacy_bytes>1232,"fixture must exercise the packet-size boundary");
-    let slot=f.svm.get_sysvar::<Clock>().slot;
-    let(create,table)=create_lookup_table(f.user.pubkey(),f.user.pubkey(),slot);f.send(create,false,"create_lookup_table");
-    let addresses:Vec<Pubkey>=main.accounts.iter().map(|a|a.pubkey).collect();
-    f.send(extend_lookup_table(table,f.user.pubkey(),Some(f.user.pubkey()),addresses.clone()),false,"extend_lookup_table");
-    f.svm.warp_to_slot(slot+1);
-    let message=v0::Message::try_compile(&f.user.pubkey(),&instructions,&[AddressLookupTableAccount{key:table,addresses}],hash).unwrap();
-    let tx=VersionedTransaction::try_new(VersionedMessage::V0(message),&[&f.user,&f.matcher]).unwrap();
-    let v0_bytes=1+64*tx.signatures.len()+tx.message.serialize().len();assert!(v0_bytes<=1232);
-    let result=f.svm.send_transaction(tx).unwrap_or_else(|e|panic!("maximum-metadata v0 create: {e:#?}"));
-    f.doors.push(DoorKeys::new(f.room,0,f.user.pubkey()));f.audit();
-    let output=json!({"packet_limit":1232,"legacy_bytes":legacy_bytes,"v0_bytes":v0_bytes,"metadata_bytes":{"name":32,"symbol":10,"uri":200},"first_buy_lamports":0,"transaction_cu":result.compute_units_consumed});
-    let out=PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/packets.json");std::fs::write(out,serde_json::to_string_pretty(&output).unwrap()+"\n").unwrap();
+    let mut f = Fixture::empty(0);
+    let mut l = launch(&"x".repeat(32));
+    l.symbol = "Y".repeat(10);
+    l.uri = "u".repeat(200);
+    l.first_buy_lamports=1_010_000_000;
+    l.min_tokens_out=1;
+    let main = f.create_ix(l, None);
+    let instructions = [
+        ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+        main.clone(),
+    ];
+    let hash = f.svm.latest_blockhash();
+    let legacy = Transaction::new(
+        &[&f.user, &f.matcher],
+        Message::new(&instructions, Some(&f.user.pubkey())),
+        hash,
+    );
+    let legacy_bytes = 1 + 64 * legacy.signatures.len() + legacy.message_data().len();
+    assert!(
+        legacy_bytes > 1232,
+        "fixture must exercise the packet-size boundary"
+    );
+    let slot = f.svm.get_sysvar::<Clock>().slot;
+    let (create, table) = create_lookup_table(f.user.pubkey(), f.user.pubkey(), slot);
+    f.send(create, false, "create_lookup_table");
+    let addresses: Vec<Pubkey> = main.accounts.iter().map(|a| a.pubkey).collect();
+    f.send(
+        extend_lookup_table(
+            table,
+            f.user.pubkey(),
+            Some(f.user.pubkey()),
+            addresses.clone(),
+        ),
+        false,
+        "extend_lookup_table",
+    );
+    f.svm.warp_to_slot(slot + 1);
+    let message = v0::Message::try_compile(
+        &f.user.pubkey(),
+        &instructions,
+        &[AddressLookupTableAccount {
+            key: table,
+            addresses,
+        }],
+        hash,
+    )
+    .unwrap();
+    let tx = VersionedTransaction::try_new(VersionedMessage::V0(message), &[&f.user, &f.matcher])
+        .unwrap();
+    let v0_bytes = 1 + 64 * tx.signatures.len() + tx.message.serialize().len();
+    assert!(v0_bytes <= 1232);
+    let result = f
+        .svm
+        .send_transaction(tx)
+        .unwrap_or_else(|e| panic!("maximum-metadata v0 create: {e:#?}"));
+    f.doors.push(DoorKeys::new(f.room, 0, f.user.pubkey()));
+    f.audit();
+    // Measure maximum-length room/door metadata as well as larger curve
+    // positions and the capped crossing path. The random run uses short URIs.
+    let mut face=launch(&"x".repeat(32));face.symbol="Y".repeat(10);face.uri="u".repeat(200);f.open(face);
+    f.trade(Some(0),true,70_700_000_000);
+    f.trade(Some(1),true,1_010_000);
+    f.trade(Some(0),false,1);
+    let amount=f.balance(f.doors[0].user)/2;f.convert(0,1,amount);f.trade(Some(1),false,amount/2);
+    f.make_ata(f.r().room_mint,spl_token_2022_interface::ID);f.trade(None,true,1_010_000);
+    let amount=f.balance(ata(f.user.pubkey(),f.r().room_mint,spl_token_2022_interface::ID));f.trade(None,false,amount/2);
+    f.trade(Some(0),true,u64::MAX/100);assert_eq!(f.r().status,1);f.convert(0,1,1);
+    let output = json!({"packet_limit":1232,"legacy_bytes":legacy_bytes,"v0_bytes":v0_bytes,"metadata_bytes":{"name":32,"symbol":10,"uri":200},"first_buy_lamports":1_010_000_000u64,"transaction_cu":result.compute_units_consumed,"edge_cu_samples":f.cus});
+    let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/packets.json");
+    std::fs::write(out, serde_json::to_string_pretty(&output).unwrap() + "\n").unwrap();
 }
 #[test]
 fn signatures_cover_the_entire_message_and_nonce() {
@@ -652,15 +737,38 @@ fn signatures_cover_the_entire_message_and_nonce() {
 
 #[test]
 fn a_propagated_signer_cannot_authorize_reinterpreted_cpi_launch_data() {
-    let mut f=Fixture::empty(0);let proxy=Pubkey::new_from_array([29;32]);
-    let elf=PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/launch_proxy.so");
-    f.svm.add_program(proxy,&std::fs::read(elf).expect("build the test-only launch proxy")).unwrap();
-    let original=f.create_ix(launch("First room"),None);
-    let mut metas=vec![AccountMeta::new_readonly(ID,false)];metas.extend(original.accounts);
-    let instruction=Instruction{program_id:proxy,accounts:metas,data:original.data};
-    let tx=Transaction::new(&[&f.user,&f.matcher],Message::new(&[instruction],Some(&f.user.pubkey())),f.svm.latest_blockhash());
-    let err=f.svm.send_transaction(tx).unwrap_err();assert!(err.meta.logs.iter().any(|line|line.contains("LaunchCpi")),"{err:#?}");
-    assert!(f.svm.get_account(&f.room).is_none());assert!(f.svm.get_account(&p(&[b"reserve",f.room.as_ref()])).is_none());
+    let mut f = Fixture::empty(0);
+    let proxy = Pubkey::new_from_array([29; 32]);
+    let elf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/launch_proxy.so");
+    f.svm
+        .add_program(
+            proxy,
+            &std::fs::read(elf).expect("build the test-only launch proxy"),
+        )
+        .unwrap();
+    let original = f.create_ix(launch("First room"), None);
+    let mut metas = vec![AccountMeta::new_readonly(ID, false)];
+    metas.extend(original.accounts);
+    let instruction = Instruction {
+        program_id: proxy,
+        accounts: metas,
+        data: original.data,
+    };
+    let tx = Transaction::new(
+        &[&f.user, &f.matcher],
+        Message::new(&[instruction], Some(&f.user.pubkey())),
+        f.svm.latest_blockhash(),
+    );
+    let err = f.svm.send_transaction(tx).unwrap_err();
+    assert!(
+        err.meta.logs.iter().any(|line| line.contains("LaunchCpi")),
+        "{err:#?}"
+    );
+    assert!(f.svm.get_account(&f.room).is_none());
+    assert!(f
+        .svm
+        .get_account(&p(&[b"reserve", f.room.as_ref()]))
+        .is_none());
 }
 #[test]
 fn buy_sell_convert_full_redemption_and_zero_balance_edges() {
@@ -806,30 +914,82 @@ fn retirement_is_capped_and_does_not_retire_surplus() {
 }
 #[test]
 fn wsol_fee_plumbing_claims_only_accounted_fees_and_leaves_donations_locked() {
-    let mut f=Fixture::new(1000);
+    let mut f = Fixture::new(1000);
     // Explicit future-phase fee fixture: v1 itself never accrues pool WSOL fees.
     // Transfers and claims below still execute real classic-SPL CPIs in SBF.
-    let rk=f.room;let dk=f.doors[0].door;let mut r=f.r();let mut d=f.d(0);
-    r.founder_accrued_wsol=100;r.protocol_accrued_wsol=300;r.pending_reserve_wsol=50;d.accrued_wsol=600;
-    let mut account=f.svm.get_account(&rk).unwrap();r.try_serialize(&mut &mut account.data[..]).unwrap();f.svm.set_account(rk,account).unwrap();
-    let mut account=f.svm.get_account(&dk).unwrap();d.try_serialize(&mut &mut account.data[..]).unwrap();f.svm.set_account(dk,account).unwrap();
-    f.send(solana_system_interface::instruction::transfer(&f.user.pubkey(),&r.fee_wsol,1127),false,"fixture_wsol_funding");
-    f.send(spl_token_interface::instruction::sync_native(&spl_token_interface::ID,&r.fee_wsol).unwrap(),false,"fixture_wsol_sync");
-    f.audit();let reserve=f.r().reserve;for kind in 0..3 {f.claim(kind,0);f.claim(kind,0);}
-    assert_eq!(f.r().reserve,reserve);assert_eq!(f.balance(r.fee_wsol),127); // pending 50 + locked donation 77
-    assert_eq!(f.balance(ata(f.user.pubkey(),spl_token_interface::native_mint::ID,spl_token_interface::ID)),1000);
-    assert_eq!(f.d(0).claimed_wsol,600);assert_eq!(f.r().pending_reserve_wsol,50);
+    let rk = f.room;
+    let dk = f.doors[0].door;
+    let mut r = f.r();
+    let mut d = f.d(0);
+    r.founder_accrued_wsol = 100;
+    r.protocol_accrued_wsol = 300;
+    r.pending_reserve_wsol = 50;
+    d.accrued_wsol = 600;
+    let mut account = f.svm.get_account(&rk).unwrap();
+    r.try_serialize(&mut &mut account.data[..]).unwrap();
+    f.svm.set_account(rk, account).unwrap();
+    let mut account = f.svm.get_account(&dk).unwrap();
+    d.try_serialize(&mut &mut account.data[..]).unwrap();
+    f.svm.set_account(dk, account).unwrap();
+    f.send(
+        solana_system_interface::instruction::transfer(&f.user.pubkey(), &r.fee_wsol, 1127),
+        false,
+        "fixture_wsol_funding",
+    );
+    f.send(
+        spl_token_interface::instruction::sync_native(&spl_token_interface::ID, &r.fee_wsol)
+            .unwrap(),
+        false,
+        "fixture_wsol_sync",
+    );
+    f.audit();
+    let reserve = f.r().reserve;
+    for kind in 0..3 {
+        f.claim(kind, 0);
+        f.claim(kind, 0);
+    }
+    assert_eq!(f.r().reserve, reserve);
+    assert_eq!(f.balance(r.fee_wsol), 127); // pending 50 + locked donation 77
+    assert_eq!(
+        f.balance(ata(
+            f.user.pubkey(),
+            spl_token_interface::native_mint::ID,
+            spl_token_interface::ID
+        )),
+        1000
+    );
+    assert_eq!(f.d(0).claimed_wsol, 600);
+    assert_eq!(f.r().pending_reserve_wsol, 50);
 }
 
 #[test]
 fn mature_gate_is_the_same_for_routing_and_release() {
-    let mut f=Fixture::new(0);f.trade(Some(0),true,5_050_000_000);f.time(3600);
-    let r=f.r();let c=Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
-    let now=f.svm.get_sysvar::<Clock>().unix_timestamp;assert!(r.live(&c,now).unwrap());
-    let slug=p(&[b"slug",&r.identity]);let release=instr(a::ReleaseSlug{caller:f.user.pubkey(),config:f.cfg,room:f.room,slug},ix::ReleaseSlug{});
-    f.fail(release.clone(),false);f.open(launch("Mature live face"));f.time(21601);
-    assert!(!f.r().live(&c,f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
-    f.fail(f.open_ix(launch("Stale target"),None),true);f.checked(release,false,"release_slug");
+    let mut f = Fixture::new(0);
+    f.trade(Some(0), true, 5_050_000_000);
+    f.time(3600);
+    let r = f.r();
+    let c = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    let now = f.svm.get_sysvar::<Clock>().unix_timestamp;
+    assert!(r.live(&c, now).unwrap());
+    let slug = p(&[b"slug", &r.identity]);
+    let release = instr(
+        a::ReleaseSlug {
+            caller: f.user.pubkey(),
+            config: f.cfg,
+            room: f.room,
+            slug,
+        },
+        ix::ReleaseSlug {},
+    );
+    f.fail(release.clone(), false);
+    f.open(launch("Mature live face"));
+    f.time(21601);
+    assert!(!f
+        .r()
+        .live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp)
+        .unwrap());
+    f.fail(f.open_ix(launch("Stale target"), None), true);
+    f.checked(release, false, "release_slug");
 }
 
 #[test]

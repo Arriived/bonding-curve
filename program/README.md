@@ -51,6 +51,13 @@ shadow the pinned version. CI invokes the pinned binary explicitly. Use the
 official Anchor 1.2.2 release binary. The current Windows workspace has no compiler or
 WSL installation; its builds run on GitHub's Ubuntu runner.
 
+The effective SBF compiler in platform-tools v1.58 reports
+`rustc 1.95.0-dev (1e20dd0d5 2026-10-05)`; the host compiler reports
+`rustc 1.99.0 (b940084d7 2026-09-28)`. The VM uses LiteSVM's unmodified default
+feature set and bundled Token-2022 11.0.0, classic p-token and ATA 1.1.1
+binaries. Their hashes are recorded with the measurements. These VM inputs
+are separate from a public cluster's active features and deployed binaries.
+
 From this directory:
 
 ```sh
@@ -59,6 +66,7 @@ cargo build-sbf --tools-version v1.58
 cargo build-sbf --tools-version v1.58 --manifest-path test-fixtures/launch_proxy/Cargo.toml --sbf-out-dir "$(pwd)/target/deploy"
 mkdir -p target/idl
 anchor idl build -o target/idl/doors_v1.json
+cmp idl/doors_v1.json target/idl/doors_v1.json
 python3 scripts/check_layouts.py
 cargo test --locked --test svm -- --nocapture
 cargo fmt -- --check
@@ -72,6 +80,7 @@ returns success. CI explicitly enforces this. The generated IDL is
 both, the lockfile, formatted source and verification evidence. Secret
 deployment keypairs are never uploaded. The CU generator writes the spec's
 measured block from execution evidence and refuses to fabricate absent data.
+The checked-in [IDL](idl/doors_v1.json) is compared against the build in CI.
 
 ## Tests and accounting
 
@@ -121,6 +130,7 @@ is a test address; its private key is not supplied. Generate your deployment
 program keypair and sync its address **before rebuilding**:
 
 ```sh
+mkdir -p target/deploy
 solana-keygen new --outfile target/deploy/doors_v1-keypair.json
 anchor keys sync
 cargo build-sbf --tools-version v1.58
@@ -128,7 +138,7 @@ anchor idl build -o target/idl/doors_v1.json
 cargo test --locked --test svm -- --nocapture
 solana config set --url devnet
 solana airdrop 2
-anchor deploy --provider.cluster devnet
+solana program deploy --url devnet --program-id target/deploy/doors_v1-keypair.json target/deploy/doors_v1.so
 ```
 
 The airdrop amount is a request, not a guarantee or deployment-cost estimate.
