@@ -163,6 +163,7 @@ def measure_group(cache,group,histories):
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
             list(pool.map(lambda slot:block_order(cache,slot),required))
         path=trajectory(events,members,lambda slot:block_order(cache,slot))
+        assert not path['event_amount_matches_reserve_delta'].get('False',0), 'reserve delta differs from emitted trade amount; accounting review required'
         expected={mint:m['stock_reserve_lamports'] for mint,m in members.items()}
         assert path['terminal_lamports']==expected, f'terminal reserve mismatch: {path["terminal_lamports"]} != {expected}'
         assert all(path['gross_inflow_lamports'][m]-path['sell_outflow_lamports'][m]==expected[m] for m in members)
