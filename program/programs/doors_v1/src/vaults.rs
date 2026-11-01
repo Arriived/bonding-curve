@@ -137,7 +137,7 @@ pub fn read_slug(ai:&AccountInfo,identity:&[u8;32])->Result<Option<SlugLock>> {
     require_keys_eq!(*ai.owner,crate::ID,Error::Account);
     Ok(Some(SlugLock::try_deserialize(&mut &ai.try_borrow_data()?[..])?))
 }
-pub fn holder_dead(lock:&SlugLock,holder:Option<&Account<Room>>,c:&Config,now:i64)->Result<()> {
+pub fn holder_dead(lock:&SlugLock,holder:Option<&Box<Account<Room>>>,c:&Config,now:i64)->Result<()> {
     let holder=holder.ok_or(Error::Holder)?;room_address(holder,holder.key())?;
     require!(lock.room_id==holder.room_id,Error::Holder);require!(!holder.live(c,now)?,Error::Live);Ok(())
 }

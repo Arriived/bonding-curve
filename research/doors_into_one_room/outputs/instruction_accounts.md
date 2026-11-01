@@ -8,8 +8,8 @@
 | convert | 17 | 1 | yes | 674 | 558 |
 | open_door (curve, distinct identity holder; no first buy) | 16 | 2 | yes | 983 | 249 |
 | open_door (both pools, distinct identity holder; no first buy) | 18 | 2 | yes | 1049 | 183 |
-| create_room (fresh identity, door 0; no first buy) | 22 | 2 | yes | 1181 | 51 |
-| create_room (graduated dead-holder takeover; no first buy) | 24 | 2 | yes | 1247 | -15 |
+| create_room (fresh identity, door 0; no first buy) | 22 | 2 | yes | 1189 | 43 |
+| create_room (graduated dead-holder takeover; no first buy) | 24 | 2 | yes | 1255 | -23 |
 | release_slug (curve) | 5 | 1 | yes | 278 | 954 |
 | release_slug (pool) | 6 | 1 | yes | 311 | 921 |
 | checkpoint_pool | 4 | 1 | yes | 245 | 987 |

@@ -706,15 +706,17 @@ supply. Door fees no longer feed it.
 
 **Status 0:**
 
-1. Move `pending_reserve_sol` lamports `FeeVault → ReserveVault` (direct
-   debit).
+1. Before transferring, compute `r = min(pending_reserve_sol, T - room.reserve)`.
+   Move exactly r lamports `FeeVault → ReserveVault` (direct debit), and
+   decrement `pending_reserve_sol` by r. A zero pending amount is a no-op.
 2. `room.reserve += r`.
-3. Buy curve position: `q′` = the largest with `R(q′) ≤ R(q) + r`, with `r`
-   capped so that `room.reserve + r ≤ T`.
+3. Buy curve position: `q′` = the largest with `R(q′) ≤ R(q) + r`, using
+   the pre-increment q and the capped r. Prices read counters only.
 4. Transfer `q′ − q` room tokens `RoomVault → RetiredVault`.
 5. `room.sold = q′`, `room.retired += q′ − q`.
 6. Any part that would take the reserve above T stays pending. It is retired
-   on the pool after graduation.
+   on the pool after graduation. If reserve reaches T, set status 1. This
+   internal retirement does not count as external trading volume.
 
 **Status 2:**
 
@@ -758,6 +760,8 @@ is in §7).
    - Transfer N room tokens `RoomVault → GradPayer`'s room-token account.
    - Transfer the rest, `U − room.sold − N`,
      `RoomVault → RetiredVault`, and add it to `room.retired`.
+   - Only accounted inventory is moved. Any donated excess in RoomVault
+     stays locked there; it is not included in the seed or retirement.
    - The seed of exactly R* and N opens the pool at the curve's closing
      price (§2).
 5. **Create the pool and position.** CPI DAMM v2
@@ -774,9 +778,11 @@ is in §7).
 7. **Hand the NFT to the protocol.** The Room PDA signs
    `TransferChecked(position NFT → protocol_fee_recipient's NFT ATA, 1)`.
 8. **Dust.**
-   - Close the temporary WSOL account into `GradPayer`, then send `GradPayer`'s
-     lamports above its own rent-exempt minimum to the protocol.
-   - Leftover room tokens in `GradPayer`'s account go to `RetiredVault`.
+   - Close the temporary WSOL account into `GradPayer`, then send only the
+     tracked unused graduation budget to the protocol. Any donated excess
+     remains locked; never sweep the raw balance above rent.
+   - Only tracked pool-seeding room-token leftovers in `GradPayer`'s account
+     go to `RetiredVault`. Unaccounted donations remain locked.
 9. **State:** `room.status = 2`; store `damm_pool`, `damm_position`,
    `position_nft_mint`, `graduated_at`.
    Clear curve-volume buckets; initialize `fee_ckpt` from the new pool's
@@ -1171,8 +1177,8 @@ pool/holder accounts it may require):
 | convert | 17 | 1 | yes | 674 | 558 |
 | open_door (curve, distinct identity holder; no first buy) | 16 | 2 | yes | 983 | 249 |
 | open_door (both pools, distinct identity holder; no first buy) | 18 | 2 | yes | 1049 | 183 |
-| create_room (fresh identity, door 0; no first buy) | 22 | 2 | yes | 1181 | 51 |
-| create_room (graduated dead-holder takeover; no first buy) | 24 | 2 | yes | 1247 | -15 |
+| create_room (fresh identity, door 0; no first buy) | 22 | 2 | yes | 1189 | 43 |
+| create_room (graduated dead-holder takeover; no first buy) | 24 | 2 | yes | 1255 | -23 |
 | release_slug (curve) | 5 | 1 | yes | 278 | 954 |
 | release_slug (pool) | 6 | 1 | yes | 311 | 921 |
 | checkpoint_pool | 4 | 1 | yes | 245 | 987 |

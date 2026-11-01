@@ -89,8 +89,8 @@ Field layouts:
 | 192 | 2 | fee_bps: u16 |
 | 194 | 2 | door_share_bps: u16 |
 | 196 | 8 | reserve: u64 (lamports the program credited to ReserveVault) |
-| 204 | 8 | sold: u64 (curve position q = S - room_vault balance before graduation) |
-| 212 | 8 | retired: u64 (room tokens held in RetiredVault) |
+| 204 | 8 | sold: u64 (program curve position q; never inferred from vault balance) |
+| 212 | 8 | retired: u64 (accounted retirement; excess stays locked) |
 | 220 | 4 | door_count: u32 |
 | 224 | 8 | protocol_accrued_sol: u64 |
 | 232 | 8 | protocol_accrued_wsol: u64 |
@@ -137,7 +137,7 @@ Field layouts:
 | 140 | 32 | creator: Pubkey |
 | 172 | 32 | fee_recipient: Pubkey |
 | 204 | 4 | bumps: door, mint, door_vault, room_token_vault (4 x u8) |
-| 208 | 8 | backing: u64 (room tokens in room_token_vault = door tokens circulating) |
+| 208 | 8 | backing: u64 (program-tracked 1:1 redemption liability; vaults may hold surplus) |
 | 216 | 8 | accrued_sol: u64 |
 | 224 | 8 | accrued_wsol: u64 |
 | 232 | 8 | claimed_sol: u64 |

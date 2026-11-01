@@ -5,10 +5,11 @@ This is not a CU measurement or a substitute for the requested SBF tests.
 """
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SPEC = ROOT / 'research/doors_into_one_room/PERMANENT_CURVE_SPEC.md'
+BASELINE = 'de1f7fd'
 OUT = ROOT / 'program/verification'
 
 
@@ -40,8 +41,9 @@ def main():
     for case in cases:
         assert case['before_lhs']==case['before_rhs']
         assert case['after_lhs']!=case['after_rhs']
-    result={'kind':'algebraic spec-conflict reproduction, not SBF execution',
-        'spec_sha256':hashlib.sha256(SPEC.read_bytes()).hexdigest(),
+    original=subprocess.run(['git','show',BASELINE+':research/doors_into_one_room/PERMANENT_CURVE_SPEC.md'],cwd=ROOT,capture_output=True,check=True).stdout
+    result={'kind':'algebraic reproduction of the original spec conflict; corrected policy is approved; not SBF execution',
+        'original_spec_commit':BASELINE,'original_spec_sha256':hashlib.sha256(original).hexdigest(),
         'inputs':{'initial_supply':supply,'gross_buy_lamports':gross,'fee_bps':fee_bps,
                   'net_buy_lamports':net,'sold_base_units':sold},
         'sources':['https://solana.com/docs/tokens/basics/transfer-tokens',

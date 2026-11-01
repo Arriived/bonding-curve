@@ -1,6 +1,7 @@
 {
-  "kind": "algebraic spec-conflict reproduction, not SBF execution",
-  "spec_sha256": "2c054a4fdfa55307eb6b467fe49f8916b472040b211237f061ba5351fe71e082",
+  "kind": "algebraic reproduction of the original spec conflict; corrected policy is approved; not SBF execution",
+  "original_spec_commit": "de1f7fd",
+  "original_spec_sha256": "2c054a4fdfa55307eb6b467fe49f8916b472040b211237f061ba5351fe71e082",
   "inputs": {
     "initial_supply": 1000000000000000,
     "gross_buy_lamports": 101,

@@ -174,7 +174,7 @@ fn claim(ctx:Context<Claim>,kind:u8)->Result<()> {
     user_ata(&a.recipient_wsol,&recipient,&spl_token_interface::native_mint::ID,&spl_token_interface::ID)?;
     token(&a.fee_wsol,&spl_token_interface::native_mint::ID,&rk,&spl_token_interface::ID)?;
     let (sol,wsol)=match kind {0=>{let d=a.door.as_ref().unwrap();(d.accrued_sol,d.accrued_wsol)},1=>(a.core.room.founder_accrued,a.core.room.founder_accrued_wsol),_=>(a.core.room.protocol_accrued_sol,a.core.room.protocol_accrued_wsol)};
-    let bl=a.core.reserve.lamports();let br=a.core.room.reserve;let fl=a.core.fees.lamports();let fk=known(&a.core.room,&a.door.as_ref().map(|d|vec![&**d]).unwrap_or_default());
+    let bl=a.core.reserve.lamports();let br=a.core.room.reserve;let fl=a.core.fees.lamports();let fk=known(&a.core.room,&a.door.as_ref().map(|d|vec![&***d]).unwrap_or_default());
     let fw=amount(&a.fee_wsol)?;let known_w=a.core.room.founder_accrued_wsol as u128+a.core.room.protocol_accrued_wsol as u128+a.core.room.pending_reserve_wsol as u128+a.door.as_ref().map_or(0,|d|d.accrued_wsol) as u128;
     require!(fw as u128>=known_w,Error::Invariant);
     if sol>0 {debit(&a.core.fees,&a.recipient,sol)?;}
@@ -182,7 +182,7 @@ fn claim(ctx:Context<Claim>,kind:u8)->Result<()> {
     match kind {0=>{let d=a.door.as_mut().unwrap();d.accrued_sol=0;d.accrued_wsol=0;d.claimed_sol=add(d.claimed_sol,sol)?;d.claimed_wsol=add(d.claimed_wsol,wsol)?;},1=>{a.core.room.founder_accrued=0;a.core.room.founder_accrued_wsol=0;},_=>{a.core.room.protocol_accrued_sol=0;a.core.room.protocol_accrued_wsol=0;}}
     require!(amount(&a.fee_wsol)?==sub(fw,wsol)?,Error::Invariant);
     core_check(&a.core,a.door.as_ref().map_or(0,|d|d.accrued_sol))?;reserve_delta(bl,br,&a.core)?;
-    fee_delta(fl,a.core.fees.lamports(),fk,known(&a.core.room,&a.door.as_ref().map(|d|vec![&**d]).unwrap_or_default()))?;
+    fee_delta(fl,a.core.fees.lamports(),fk,known(&a.core.room,&a.door.as_ref().map(|d|vec![&***d]).unwrap_or_default()))?;
     if let Some(d)=a.door.as_ref(){door_check(d,di.as_ref().unwrap(),&a.core.room,rk,a.door_mint.as_ref().unwrap(),a.door_vault.as_ref().unwrap(),a.backing.as_ref().unwrap())?;}
     if kind==1 {emit!(FounderFeesClaimed{room:rk,founder:recipient,sol,wsol});}
     else {emit!(FeesClaimed{room:rk,recipient,kind,sol,wsol});}Ok(())

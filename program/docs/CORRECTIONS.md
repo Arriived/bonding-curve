@@ -1,10 +1,11 @@
 # Program-v1 preflight corrections
 
-Status: implementation paused on the invariant policy below, as required by
-the brief's “stop and record” rule. No Anchor program or CU figures are claimed.
-The authoritative build spec has not been silently weakened.
+Status: the owner approved surplus-tolerant accounting and signed random room
+nonces on 1 November 2026. Those decisions are implemented in the Anchor program
+and recorded in spec section 0.C. Build/test/CU results are recorded separately;
+the algebraic examples below are not execution measurements.
 
-## Blocking: permissionless transfers and burns
+## Approved: permissionless transfers and burns
 
 The spec requires ordinary Token-2022 mints, without freeze authority or a
 transfer hook. A holder can transfer into a program-controlled token vault
@@ -27,27 +28,24 @@ The generated [counterexamples](../verification/spec_conflicts.md) use the
 spec's actual integer buy formula. They are algebra, not executed Token-2022
 transactions or a replacement for the requested invariant/property tests.
 
-Owner decision needed:
+Approved policy: retain sold/backing as accounting liabilities; vault balances
+must be **greater than or equal to** those liabilities. Initial mint supply is
+exactly U; subsequent supply is at most U. Prices, payouts, available inventory,
+claims and retirement use only program counters. Token balances are used only
+for validation, liability coverage and exact transfer deltas. Surplus remains
+locked, including at the future graduation seam; there is no sweep or automatic
+retirement of donations. The audit reconciles external donations and burns.
+No CPI work is spent correcting these safe-direction differences.
 
-- Surplus-tolerant accounting: retain sold/backing as accounting liabilities;
-  require vault balances to cover them, rather than equal them. Leave
-  unsolicited excess locked. Mint supply is initially exact, then at most
-  the initial supply after holder burns. Quotes ignore unsolicited balances.
-- Alternatively, retire unsolicited token surplus before checking the exact
-  vault equalities. This needs additional accounts/logic on affected paths;
-  mint supply still needs to permit holder burns.
-
-Neither policy is implemented pending the owner's choice. Both preserve
-one room token of redemption per door token; neither adds a transfer hook.
-Phase-2 graduation must also specify how any vault surplus is retired.
-
-## Missing allocation rule: room identifiers
+## Approved allocation rule: room identifiers
 
 Room and SlugLock use a room identifier, but create_room has no identifier
-argument and Config has no identifier allocator. A matcher-selected nonce
-argument, covered by both transaction signatures, preserves the current
-account layout. An on-chain counter would instead add a Config field and a
-global creation write lock. This choice needs to be made explicit in the IDL.
+argument and Config has no identifier allocator. create_room now takes a
+matcher-selected CSPRNG u64 nonce, covered by the whole signed transaction.
+Config stays read-only; there is no global creation counter. The client must
+request a new nonce and fresh signatures after an occupied-PDA failure. Never
+derive the nonce from a slug, since dead slugs may be reused. Room IDs are not
+enumerable; indexers use getProgramAccounts for rooms as well as doors.
 
 ## Resolved by the authoritative spec
 
@@ -67,10 +65,26 @@ global creation write lock. This choice needs to be made explicit in the IDL.
 
 ## Build environment
 
-The current Windows environment has no Rust, Solana or Anchor command on PATH,
-and WSL reports that it is not installed. Official Windows release artifacts
-exist; absence of WSL is not yet treated as a build impossibility. Exact
-release metadata is being retained before selecting/installing a toolchain.
+The Windows environment has no Rust, Solana or Anchor command on PATH, and WSL
+is not installed. Current Agave no longer ships Windows prebuilts. The isolated
+program branch therefore uses Linux GitHub Actions for compilation and SBF
+execution. This does not deploy a program or send devnet/mainnet transactions.
+
+## Implementation clarifications
+
+- A first buy inside create_room/open_door needs its user ATA created after
+  the new mint exists. The handler uses the canonical ATA program's idempotent
+  creation CPI before that optional buy. This is atomic with metadata, premint,
+  authority revocation and trade; a preceding instruction cannot create an ATA
+  for a mint that does not exist yet.
+- The fixed Room layout has no aggregate door-fee counter. Global fee backing
+  is preserved inductively: every affected instruction asserts an exact match
+  between FeeVault movement and its touched liability-counter changes, starting
+  from zero. It also checks coverage for room liabilities and the touched doors.
+  Execution tests enumerate all doors and assert the full global inequality.
+- Phase 2 cannot be reached by v1. Status-2 pool operations and liveness checks
+  fail closed pending the graduation/pool adapter, instead of inventing a pool
+  activity rule. The future implementation must preserve the same gate.
 
 The research measurement remains in the original worktree and is not modified
 by this isolated program branch.

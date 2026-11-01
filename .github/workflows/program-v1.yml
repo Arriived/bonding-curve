@@ -26,22 +26,35 @@ jobs:
           workspaces: program
           cache-on-failure: true
       - name: Host compile
-        run: cargo check --lib
+        run: |
+          cargo fmt
+          cargo check --tests
       - name: Install current SBF builder and Anchor
         run: |
           if ! command -v cargo-build-sbf; then cargo install cargo-build-sbf --version 4.5.0 --locked; fi
           curl --fail --location --retry 3 https://github.com/otter-sec/anchor/releases/download/v1.2.2/anchor-1.2.2-x86_64-unknown-linux-gnu -o "$HOME/.cargo/bin/anchor"
           chmod +x "$HOME/.cargo/bin/anchor"
+          curl --fail --location --retry 3 https://release.anza.xyz/v4.4.0/install -o /tmp/agave-install.sh
+          sh /tmp/agave-install.sh
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
           mkdir -p verification
           { rustc --version; cargo --version; cargo-build-sbf --version; anchor --version; } | tee verification/toolchain.txt
       - name: Build SBF
-        run: cargo build-sbf --tools-version v1.58
+        run: |
+          cargo build-sbf --tools-version v1.58 2>&1 | tee verification/sbf-build.log
+          python3 -c 'from pathlib import Path; s=Path("verification/sbf-build.log").read_text(); assert "Error: Function" not in s, "SBF stack error"'
       - name: Build IDL
-        run: anchor idl build -o target/idl/doors_v1.json
+        run: |
+          mkdir -p target/idl
+          anchor idl build -o target/idl/doors_v1.json
       - name: Execute SBF tests and mixed-operation property test
         run: cargo test --test svm -- --nocapture
       - name: Format check
         run: cargo fmt -- --check
+      - name: Generate measured evidence
+        run: |
+          python3 scripts/build_evidence.py
+          python3 scripts/report_cu.py
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,4 +65,6 @@ jobs:
             program/target/deploy/doors_v1.so
             program/target/idl/doors_v1.json
             program/verification/
+            program/programs/doors_v1/src/
+            program/programs/doors_v1/tests/
           if-no-files-found: warn

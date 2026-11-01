@@ -11,7 +11,10 @@ API='https://api.github.com/repos/Arriived/bonding-curve'
 def get(url,raw=False):
     cred=subprocess.run(['git','credential','fill'],input='protocol=https\nhost=github.com\n\n',text=True,capture_output=True,check=True,cwd=ROOT)
     fields=dict(line.split('=',1) for line in cred.stdout.splitlines() if '=' in line)
-    req=urllib.request.Request(url,headers={'Authorization':'Bearer '+fields['password'],'User-Agent':'program-v1-ci','Accept':'application/vnd.github+json'})
+    from urllib.parse import urlsplit
+    if urlsplit(url).hostname!='api.github.com':raise ValueError('credentials only sent to GitHub API')
+    req=urllib.request.Request(url,headers={'User-Agent':'program-v1-ci','Accept':'application/vnd.github+json'})
+    req.add_unredirected_header('Authorization','Bearer '+fields['password'])
     with urllib.request.urlopen(req,timeout=60) as r:data=r.read()
     return data if raw else json.loads(data)
 def main():
@@ -29,7 +32,7 @@ def main():
                 if '/' not in name:
                     s=z.read(name).decode('utf-8',errors='replace')
                     lines=s.splitlines()
-                    hits=[i for i,l in enumerate(lines) if 'error' in l.lower() or 'panicked' in l.lower() or 'test result:' in l or 'CU_REPORT' in l]
+                    hits=[i for i,l in enumerate(lines) if any(t in l for t in ['error[','error:','Error:','##[error]','panicked','test result:','CU_REPORT','stack offset'])]
                     indices=set()
                     for i in hits:
                         indices.update(range(max(0,i-3),min(len(lines),i+14)))

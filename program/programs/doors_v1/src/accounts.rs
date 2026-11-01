@@ -4,7 +4,7 @@ use crate::{state::*,Error};
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
     #[account(mut)] pub admin:Signer<'info>,
-    #[account(init,payer=admin,space=Config::LEN,seeds=[b"config"],bump)] pub config:Account<'info,Config>,
+    #[account(init,payer=admin,space=Config::LEN,seeds=[b"config"],bump)] pub config:Box<Account<'info,Config>>,
     pub program:Program<'info,crate::program::DoorsV1>,
     #[account(constraint=program.programdata_address()?==Some(program_data.key()) @ Error::Authority,
               constraint=program_data.upgrade_authority_address==Some(admin.key()) @ Error::Authority)]
@@ -14,15 +14,15 @@ pub struct InitializeConfig<'info> {
 #[derive(Accounts)]
 pub struct UpdateConfig<'info> {
     pub admin:Signer<'info>,
-    #[account(mut,seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Account<'info,Config>,
+    #[account(mut,seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
 }
 #[derive(Accounts)]
 #[instruction(room_id:u64)]
 pub struct CreateRoom<'info> {
     #[account(mut)] pub user:Signer<'info>,
     #[account(address=config.matcher_authority @ Error::Matcher)] pub matcher:Signer<'info>,
-    #[account(seeds=[b"config"],bump=config.bump)] pub config:Account<'info,Config>,
-    #[account(init,payer=user,space=Room::LEN,seeds=[b"room".as_ref(),room_id.to_le_bytes().as_ref()],bump)] pub room:Account<'info,Room>,
+    #[account(seeds=[b"config"],bump=config.bump)] pub config:Box<Account<'info,Config>>,
+    #[account(init,payer=user,space=Room::LEN,seeds=[b"room".as_ref(),room_id.to_le_bytes().as_ref()],bump)] pub room:Box<Account<'info,Room>>,
     /// CHECK: canonical PDA, created program-owned by the handler.
     #[account(mut)] pub reserve:UncheckedAccount<'info>,
     /// CHECK: canonical PDA, created program-owned by the handler.
@@ -31,7 +31,7 @@ pub struct CreateRoom<'info> {
     #[account(mut)] pub grad_payer:UncheckedAccount<'info>,
     /// CHECK: identity-derived PDA, manually initialized or validated before takeover.
     #[account(mut)] pub slug:UncheckedAccount<'info>,
-    pub old_holder:Option<Account<'info,Room>>,
+    pub old_holder:Option<Box<Account<'info,Room>>>,
     /// CHECK: canonical Token-2022 mint, initialized and revoked atomically.
     #[account(mut)] pub room_mint:UncheckedAccount<'info>,
     /// CHECK: canonical token PDA created by handler.
@@ -40,7 +40,7 @@ pub struct CreateRoom<'info> {
     #[account(mut)] pub retired:UncheckedAccount<'info>,
     /// CHECK: canonical classic native-WSOL token PDA created by handler.
     #[account(mut)] pub fee_wsol:UncheckedAccount<'info>,
-    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",room.key().as_ref(),&0u32.to_le_bytes()],bump)] pub door:Account<'info,Door>,
+    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",room.key().as_ref(),&0u32.to_le_bytes()],bump)] pub door:Box<Account<'info,Door>>,
     /// CHECK: canonical Token-2022 mint, initialized and revoked atomically.
     #[account(mut)] pub door_mint:UncheckedAccount<'info>,
     /// CHECK: canonical token PDA created by handler.
@@ -63,9 +63,9 @@ pub struct CreateRoom<'info> {
 // Every live curve path validates the same immutable room/vault identities.
 #[derive(Accounts)]
 pub struct Core<'info> {
-    #[account(seeds=[b"config"],bump=config.bump)] pub config:Account<'info,Config>,
+    #[account(seeds=[b"config"],bump=config.bump)] pub config:Box<Account<'info,Config>>,
     #[account(mut,seeds=[b"room",&room.room_id.to_le_bytes()],bump=room.bumps[0])]
-    pub room:Account<'info,Room>,
+    pub room:Box<Account<'info,Room>>,
     /// CHECK: canonical program-owned empty reserve PDA, checked by invariants too.
     #[account(mut,seeds=[b"reserve",room.key().as_ref()],bump=room.bumps[1],owner=crate::ID)] pub reserve:UncheckedAccount<'info>,
     /// CHECK: canonical program-owned empty fee PDA.
@@ -81,7 +81,7 @@ pub struct Core<'info> {
 pub struct Trade<'info> {
     #[account(mut)] pub user:Signer<'info>,
     pub core:Core<'info>,
-    #[account(mut)] pub door:Option<Account<'info,Door>>,
+    #[account(mut)] pub door:Option<Box<Account<'info,Door>>>,
     /// CHECK: required and validated for door route, must be None on room route.
     pub door_mint:Option<UncheckedAccount<'info>>,
     /// CHECK: required and validated for door route.
@@ -101,8 +101,8 @@ pub struct OpenDoor<'info> {
     pub core:Core<'info>,
     /// CHECK: derived from launch metadata, existing lock validated even when not selected.
     pub slug:UncheckedAccount<'info>,
-    pub old_holder:Option<Account<'info,Room>>,
-    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",core.room.key().as_ref(),&core.room.door_count.to_le_bytes()],bump)] pub door:Account<'info,Door>,
+    pub old_holder:Option<Box<Account<'info,Room>>>,
+    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",core.room.key().as_ref(),&core.room.door_count.to_le_bytes()],bump)] pub door:Box<Account<'info,Door>>,
     /// CHECK: canonical Token-2022 mint created in handler.
     #[account(mut)] pub door_mint:UncheckedAccount<'info>,
     /// CHECK: canonical token PDA created in handler.
@@ -120,8 +120,8 @@ pub struct OpenDoor<'info> {
 #[derive(Accounts)]
 pub struct Convert<'info> {
     #[account(mut)] pub user:Signer<'info>,pub core:Core<'info>,
-    #[account(mut)] pub door_a:Account<'info,Door>,
-    #[account(mut)] pub door_b:Account<'info,Door>,
+    #[account(mut)] pub door_a:Box<Account<'info,Door>>,
+    #[account(mut)] pub door_b:Box<Account<'info,Door>>,
     /// CHECK: validated by B1 and mint validation.
     pub mint_a:UncheckedAccount<'info>,
     /// CHECK: validated by B1 and mint validation.
@@ -153,7 +153,7 @@ pub struct Retire<'info> {
 #[derive(Accounts)]
 pub struct Claim<'info> {
     pub authority:Signer<'info>,pub core:Core<'info>,
-    #[account(mut)] pub door:Option<Account<'info,Door>>,
+    #[account(mut)] pub door:Option<Box<Account<'info,Door>>>,
     /// CHECK: if a door is provided, all three B1 accounts are required.
     pub door_mint:Option<UncheckedAccount<'info>>,
     /// CHECK: if a door is provided, all three B1 accounts are required.
@@ -174,7 +174,7 @@ pub struct Claim<'info> {
 #[derive(Accounts)]
 pub struct SetRecipient<'info> {
     pub authority:Signer<'info>,pub core:Core<'info>,
-    #[account(mut)] pub door:Account<'info,Door>,
+    #[account(mut)] pub door:Box<Account<'info,Door>>,
     /// CHECK: B1/M1 validated in handler.
     pub door_mint:UncheckedAccount<'info>,
     /// CHECK: B1 validated in handler.
@@ -185,8 +185,8 @@ pub struct SetRecipient<'info> {
 #[derive(Accounts)]
 pub struct ReleaseSlug<'info> {
     #[account(mut)] pub caller:Signer<'info>,
-    #[account(seeds=[b"config"],bump=config.bump)] pub config:Account<'info,Config>,
-    #[account(seeds=[b"room",&room.room_id.to_le_bytes()],bump=room.bumps[0])] pub room:Account<'info,Room>,
+    #[account(seeds=[b"config"],bump=config.bump)] pub config:Box<Account<'info,Config>>,
+    #[account(seeds=[b"room",&room.room_id.to_le_bytes()],bump=room.bumps[0])] pub room:Box<Account<'info,Room>>,
     #[account(mut,close=caller,seeds=[b"slug",room.identity.as_ref()],bump=slug.bump,
               constraint=slug.room_id==room.room_id @ Error::Identity)] pub slug:Account<'info,SlugLock>,
 }
