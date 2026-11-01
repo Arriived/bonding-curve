@@ -27,7 +27,13 @@ def main():
         with zipfile.ZipFile(io.BytesIO(data)) as z:
             for name in z.namelist():
                 if '/' not in name:
-                    s=z.read(name).decode('utf-8',errors='replace');print(name+'\n'+s[-45000:])
+                    s=z.read(name).decode('utf-8',errors='replace')
+                    lines=s.splitlines()
+                    hits=[i for i,l in enumerate(lines) if 'error' in l.lower() or 'panicked' in l.lower() or 'test result:' in l or 'CU_REPORT' in l]
+                    indices=set()
+                    for i in hits:
+                        indices.update(range(max(0,i-3),min(len(lines),i+14)))
+                    print(name+'\n'+'\n'.join(lines[i] for i in sorted(indices))[-45000:])
     elif cmd=='download':
         out=ROOT/'.tmp/ci_artifacts'/str(run_id);out.mkdir(parents=True,exist_ok=True)
         for a in get(API+f'/actions/runs/{run_id}/artifacts')['artifacts']:
