@@ -7,7 +7,6 @@ use anchor_lang::{
 use doors_v1::{accounts as a, instruction as ix, math::U, state::*, vaults::ATA, ID};
 use litesvm::{types::TransactionMetadata, LiteSVM};
 use serde_json::{json, Value};
-use solana_account::Account;
 use solana_clock::Clock;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_keypair::Keypair;
@@ -69,7 +68,7 @@ fn defaults(matcher: Pubkey, recipient: Pubkey) -> Settings {
         live_max_idle_seconds: 21600,
         live_new_seconds: 3600,
         live_min_volume_lamports: 5_000_000_000,
-        pool_min_window_lp_fee: 1,
+        pool_min_window_lp_fee: 80_000_000,
         founder_share_bps: 0,
     }
 }
@@ -124,7 +123,7 @@ impl Fixture {
         clock.unix_timestamp = 1_800_000_000;
         svm.set_sysvar(&clock);
         let cfg = p(&[b"config"]);
-        let rid = 0xd35a_e081_6ab4_9c27;
+        let rid:u64 = 0xd35a_e081_6ab4_9c27;
         let room = p(&[b"room", &rid.to_le_bytes()]);
         let mut f = Self {
             svm,
@@ -755,6 +754,34 @@ fn retirement_is_capped_and_does_not_retire_surplus() {
     assert_eq!(g.r().reserve, g.r().graduation_trigger_lamports);
     assert!(g.r().pending_reserve_sol > 0);
 }
+#[test]
+fn wsol_fee_plumbing_claims_only_accounted_fees_and_leaves_donations_locked() {
+    let mut f=Fixture::new(1000);
+    // Explicit future-phase fee fixture: v1 itself never accrues pool WSOL fees.
+    // Transfers and claims below still execute real classic-SPL CPIs in SBF.
+    let rk=f.room;let dk=f.doors[0].door;let mut r=f.r();let mut d=f.d(0);
+    r.founder_accrued_wsol=100;r.protocol_accrued_wsol=300;r.pending_reserve_wsol=50;d.accrued_wsol=600;
+    let mut account=f.svm.get_account(&rk).unwrap();r.try_serialize(&mut &mut account.data[..]).unwrap();f.svm.set_account(rk,account).unwrap();
+    let mut account=f.svm.get_account(&dk).unwrap();d.try_serialize(&mut &mut account.data[..]).unwrap();f.svm.set_account(dk,account).unwrap();
+    f.send(solana_system_interface::instruction::transfer(&f.user.pubkey(),&r.fee_wsol,1127),false,"fixture_wsol_funding");
+    f.send(spl_token_interface::instruction::sync_native(&spl_token_interface::ID,&r.fee_wsol).unwrap(),false,"fixture_wsol_sync");
+    f.audit();let reserve=f.r().reserve;for kind in 0..3 {f.claim(kind,0);f.claim(kind,0);}
+    assert_eq!(f.r().reserve,reserve);assert_eq!(f.balance(r.fee_wsol),127); // pending 50 + locked donation 77
+    assert_eq!(f.balance(ata(f.user.pubkey(),spl_token_interface::native_mint::ID,spl_token_interface::ID)),1000);
+    assert_eq!(f.d(0).claimed_wsol,600);assert_eq!(f.r().pending_reserve_wsol,50);
+}
+
+#[test]
+fn mature_gate_is_the_same_for_routing_and_release() {
+    let mut f=Fixture::new(0);f.trade(Some(0),true,5_050_000_000);f.time(3600);
+    let r=f.r();let c=Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    let now=f.svm.get_sysvar::<Clock>().unix_timestamp;assert!(r.live(&c,now).unwrap());
+    let slug=p(&[b"slug",&r.identity]);let release=instr(a::ReleaseSlug{caller:f.user.pubkey(),config:f.cfg,room:f.room,slug},ix::ReleaseSlug{});
+    f.fail(release.clone(),false);f.open(launch("Mature live face"));f.time(21601);
+    assert!(!f.r().live(&c,f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
+    f.fail(f.open_ix(launch("Stale target"),None),true);f.checked(release,false,"release_slug");
+}
+
 #[test]
 fn direct_donations_and_holder_burns_preserve_coverage_and_quotes() {
     let mut f = Fixture::new(0);

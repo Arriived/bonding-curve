@@ -20,11 +20,12 @@ pub mod doors_v1 {
         let c = &mut ctx.accounts.config;
         c.admin = ctx.accounts.admin.key();
         c.bump = ctx.bumps.config;
-        c.apply(settings)?;
+        c.apply(settings.clone())?;
         emit!(ConfigChanged {
             admin: c.admin,
             matcher: c.matcher_authority,
-            founder_share_bps: c.founder_share_bps
+            founder_share_bps: c.founder_share_bps,
+            settings,
         });
         Ok(())
     }
@@ -35,12 +36,13 @@ pub mod doors_v1 {
     ) -> Result<()> {
         require!(new_admin != Pubkey::default(), Error::Authority);
         let c = &mut ctx.accounts.config;
-        c.apply(settings)?;
+        c.apply(settings.clone())?;
         c.admin = new_admin;
         emit!(ConfigChanged {
             admin: c.admin,
             matcher: c.matcher_authority,
-            founder_share_bps: c.founder_share_bps
+            founder_share_bps: c.founder_share_bps,
+            settings,
         });
         Ok(())
     }
@@ -850,6 +852,7 @@ pub struct ConfigChanged {
     pub admin: Pubkey,
     pub matcher: Pubkey,
     pub founder_share_bps: u16,
+    pub settings: Settings,
 }
 #[event]
 pub struct RoomCreated {
