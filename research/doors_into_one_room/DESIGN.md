@@ -18,7 +18,7 @@
 > - **§3, flows.** The buy and sell account lists and steps are replaced by
 >   spec §3. Post-graduation trades route through the DAMM v2 pool.
 > - **§4 and §5, fees.** The split is now **60% to the door, 40% to the
->   protocol, with no founder share**. On the room token the 60% goes to the
+>   protocol, with founder share defaulted to 0 bps**. On the room token the 60% goes to the
 >   reserve via retirement. Launching is free: the door and room fees default
 >   to 0, and graduation rent comes out of the reserve. The 30% creator share
 >   is gone.

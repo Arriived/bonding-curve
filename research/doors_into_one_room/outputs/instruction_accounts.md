@@ -13,6 +13,8 @@
 | release_slug (curve) | 5 | 1 | yes | 278 | 954 |
 | release_slug (pool) | 6 | 1 | yes | 311 | 921 |
 | checkpoint_pool | 4 | 1 | yes | 245 | 987 |
+| claim_door_fees | 8 | 1 | yes | 377 | 855 |
+| claim_founder_fees | 7 | 1 | yes | 344 | 888 |
 | graduate | 31 | 1 | yes | 1136 | 96 |
 
 `graduate`: 31 keys, one signature, 8-byte discriminator, one instruction: 1136 bytes, 96 bytes spare. With one ComputeBudget key and limit/price instructions: 1188 bytes, 44 spare.
@@ -29,3 +31,5 @@ Account metas (R read, W write, S signer):
 | damm_pool / identity_holder_damm_pool / previous_holder_damm_pool | R; required for the corresponding graduated room |
 | config | R; authority and the single set of liveness constants |
 | room | W for trades, launch and checkpoints; R for release_slug |
+
+`claim_founder_fees`: founder W,S (must equal Room.founder), Room W, FeeVault W, FeeWsol W, founder's canonical WSOL ATA W, WSOL mint R, SPL Token program R. The ATA must already exist (or be created in a preceding client instruction). No founder account is added to trading account lists: trades accrue counters, and claims perform the payout. The same currency/vault checks apply to door claims.

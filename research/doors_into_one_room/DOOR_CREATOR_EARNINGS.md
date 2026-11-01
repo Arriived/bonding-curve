@@ -4,7 +4,7 @@
 > assume the superseded model: 30% of the fee to the door creator, a 10%
 > founder share, 20% to the reserve and 40% to the protocol. The rewritten
 > [PERMANENT_CURVE_SPEC.md](PERMANENT_CURVE_SPEC.md) uses **60% to the door
-> and 40% to the protocol, with no founder share**. Door fees are now zero, and
+> and 40% to the protocol, with founder share defaulted to 0 bps**. Door fees are now zero, and
 > a door costs only its rent. Current verified figures are in
 > `outputs/fee_model.md` and `outputs/account_sizes.md`.
 > The first-buy multiples in §5 also use the superseded C1 curve. The

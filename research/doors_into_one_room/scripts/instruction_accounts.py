@@ -28,6 +28,10 @@ CREATE_ROOM_TAKEOVER = CREATE_ROOM + ["previous_holder_room", "previous_holder_d
 RELEASE_SLUG = ["caller", "config", "room", "slug_lock", "system_program"]
 RELEASE_SLUG_POOL = RELEASE_SLUG + ["damm_pool"]
 CHECKPOINT_POOL = ["caller", "config", "room", "damm_pool"]
+CLAIM_DOOR_FEES = ["recipient", "room", "door", "fee_vault", "fee_wsol", "recipient_wsol_ata",
+                   "wsol_mint", "spl_token_program"]
+CLAIM_FOUNDER_FEES = ["founder", "room", "fee_vault", "fee_wsol", "founder_wsol_ata",
+                      "wsol_mint", "spl_token_program"]
 GRADUATE = ["cranker", "config", "room", "reserve_vault", "room_vault", "retired_vault", "room_mint", "grad_payer",
             "grad_payer_wsol_tmp", "grad_payer_room_ata", "pool_creator_pda", "position_nft_mint_pda",
             "position_nft_account", "damm_config", "damm_pool_authority", "damm_pool", "damm_position",
@@ -47,6 +51,8 @@ LISTS = {
     "release_slug (curve)": RELEASE_SLUG,
     "release_slug (pool)": RELEASE_SLUG_POOL,
     "checkpoint_pool": CHECKPOINT_POOL,
+    "claim_door_fees": CLAIM_DOOR_FEES,
+    "claim_founder_fees": CLAIM_FOUNDER_FEES,
     "graduate": GRADUATE,
 }
 
@@ -94,6 +100,11 @@ def main():
                       ('config','R; authority and the single set of liveness constants'),
                       ('room','W for trades, launch and checkpoints; R for release_slug')]:
         print(f"| {key} | {role} |")
+    print("\n`claim_founder_fees`: founder W,S (must equal Room.founder), Room W, FeeVault W, "
+          "FeeWsol W, founder's canonical WSOL ATA W, WSOL mint R, SPL Token program R. "
+          "The ATA must already exist (or be created in a preceding client instruction). "
+          "No founder account is added to trading account lists: trades accrue counters, "
+          "and claims perform the payout. The same currency/vault checks apply to door claims.")
 
 
 if __name__ == "__main__":

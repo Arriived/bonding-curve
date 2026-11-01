@@ -69,7 +69,7 @@ def main():
           f'{cost["one_hour_loss_pp_upper"]:.2f} retention points; the true production routing cost is unmeasured. '
           'Halving grace doubles the continuous unfunded-recreation rent rate; mature-room '
           'wash costs are unchanged. Small targeted squats remain affordable; this is not an economic guarantee.')
-    print('\nNo founder share exists. Merely owning door 0 earns nothing; later launches use their own doors. '
+    print('\nFounder-share plumbing is present but defaults to 0 bps, so no founder fees accrue in v1. Merely owning door 0 earns nothing; later launches use their own doors. '
           'The rent-only attacker controls the room token name and image: defacement. '
           'Wash costs assume ownership of the trading door and its fee rebate; exclude transaction fees unless shown, '
           'integer rounding, capital opportunity cost and third-party trading. The attacker does not own the protocol LP. '

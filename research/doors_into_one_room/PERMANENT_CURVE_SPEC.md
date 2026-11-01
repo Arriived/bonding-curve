@@ -1,7 +1,8 @@
 # Room and doors: pre-minted supply, constant-product curve, DAMM v2 graduation — build spec
 
 1 November 2026 revision: age-aware liveness, conservative trailing activity,
-unified SlugLock release and mandatory matcher authorization. The earlier
+unified SlugLock release, mandatory matcher authorization and founder-share
+plumbing defaulted to zero. The earlier
 31 October owner rulings remain:
 
 - launching is free;
@@ -17,7 +18,7 @@ are dead.
 
 - router and terminal fee capture is accepted;
 - doors work for the life of the room and are never closed;
-- there is no founder share;
+- founder-share plumbing is present but defaults to **0 bps**, so no founder fees accrue in v1;
 - the trade fee is 100 bps, split 60% to the door and 40% to the protocol;
 - the room token's 60% goes to the reserve.
 
@@ -65,7 +66,7 @@ Additional size checks are recorded at slots 464,036,284–464,036,304 in `outpu
 
 | quantity | old rate on revised schema | verified rate on revised schema |
 |---|---|---|
-| launch rent, lamports | 37,256,880 | 27,193,240 |
+| launch rent, lamports | 37,604,880 | 27,447,240 |
 | graduation rent, lamports | 24,680,160 | 18,013,680 |
 
 All current rent-dependent spec figures are regenerated. The trigger remains a Config value snapshotted into each Room; a later rent/default change does not rewrite an old room's curve or graduation trigger. Runtime graduation uses the rent sysvar, not this calibration coefficient.
@@ -160,8 +161,8 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 <!-- BEGIN GENERATED ROOM ACCOUNTS -->
 | account | seeds / derivation | data bytes | rent (lamports) |
 |---|---|---|---|
-| Config | `["config"]` | 246 | 1,899,920 |
-| Room | `["room", room_id u64 LE]` | 1265 | 7,076,440 |
+| Config | `["config"]` | 248 | 1,910,080 |
+| Room | `["room", room_id u64 LE]` | 1315 | 7,330,440 |
 | ReserveVault | `["reserve", room]` | 0 | 650,240 |
 | FeeVault | `["fees", room]` | 0 | 650,240 |
 | GradPayer (System-owned) | `["grad_payer", room]` | 0 | 650,240 |
@@ -189,10 +190,10 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 <!-- BEGIN GENERATED RENT TOTALS -->
 | item | lamports | SOL | USD at assumed $150/SOL |
 |---|---|---|---|
-| per room, excluding door accounts | 18,008,600 | 0.018009 | $2.70 |
+| per room, excluding door accounts | 18,262,600 | 0.018263 | $2.74 |
 | per door, max metadata | 9,184,640 | 0.009185 | $1.38 |
 | per door, minimum metadata | 7,919,720 | 0.007920 | $1.19 |
-| launch room + door 0, max metadata | 27,193,240 | 0.027193 | $4.08 |
+| launch room + door 0, max metadata | 27,447,240 | 0.027447 | $4.12 |
 | graduation rent, paid from reserve | 18,013,680 | 0.018014 | $2.70 |
 <!-- END GENERATED RENT TOTALS -->
 
@@ -237,7 +238,7 @@ it with its seeds.
 `["pool_creator"]`, with no account data. It signs DAMM v2 pool creation and
 its address is what the Meteora dynamic config names.
 
-**`Config`** (246 bytes, packed Borsh). Existing curve and fee
+**`Config`** (packed Borsh; generated size and rent above). Existing curve and fee
 fields retain their order. Replace the old reserve bytes with
 `matcher_authority: Pubkey` and the gate thresholds
 `live_min_reserve_lamports`, `live_max_idle_seconds`, `live_new_seconds`,
@@ -247,8 +248,15 @@ Admin key rotation is recorded on-chain. Gate thresholds are shared by
 routing, takeover and release, and changes are admin actions logged on-chain.
 The trailing window and bucket size are fixed by the versioned schema.
 Curve and trade-fee parameters are copied into each room and remain immutable.
+Append `founder_share_bps: u16`, default **0**, without moving existing fields.
+Validate `door_share_bps + founder_share_bps <= 10,000` and each share in
+`0..=10,000`. Changes to these Config values affect newly created rooms only.
+The Config update instruction accepts `founder_share_bps` alongside the
+other fee parameters, requires the admin signature, validates the bounds and
+logs the change on-chain. `create_room` checks the share bounds before
+creating accounts or executing an optional first buy.
 
-**`Room`** (1265 bytes, packed Borsh). Keep the existing curve, vault,
+**`Room`** (packed Borsh; generated size and rent above). Keep the existing curve, vault,
 fee, volume and timestamp fields. Replace launcher slug storage with the
 identity hash. Store `fee_ckpt: u128`, `fee_ckpt_ts: i64` and the tagged
 hourly `liveness_buckets` ring described in detection §4. The bucket amount
@@ -259,6 +267,15 @@ fee history from the pool's actual cumulative counter. Live checks use
 read-only virtual checkpoint evaluation; the permissionless checkpoint
 instruction persists the same result. A stale interval is discarded rather
 than moved into a recent bucket.
+
+Append `founder: Pubkey`, `founder_accrued: u64` (SOL lamports),
+`founder_accrued_wsol: u64` (WSOL base units), and `founder_share_bps: u16`.
+The founder is the immutable `create_room` launcher; both accrued counters
+start at zero, and the share is an immutable snapshot of Config at creation.
+The separate WSOL counter mirrors door fee accounting because graduated
+sells collect program fees into `FeeWsol`; it avoids unwrapping a shared vault.
+All earlier field offsets remain unchanged; exact appended offsets and the
+additional launch rent are regenerated in `outputs/account_sizes.md`.
 
 **`Door`** (328 bytes). Backing, vaults and fee fields are unchanged.
 Use its reserve bytes for `matcher_version: u16`, `rule: u8`, `face: u32`,
@@ -399,7 +416,8 @@ Existing rooms retain their copied trigger, curve constants and sold state. The 
 
 **Common rules.**
 
-- `b = fee_bps` (default 100); `d = door_share_bps` (default 6000).
+- Use the room's snapshots: `b = fee_bps` (default 100),
+  `d = door_share_bps` (default 6000), `f = founder_share_bps` (default **0**).
 - Fees are always charged on top. On a buy the user pays `lamports_in`; the
   curve or pool receives `n = floor(lamports_in · 10⁴ / (10⁴ + b))`, and
   `F = lamports_in − n` is the fee.
@@ -407,9 +425,16 @@ Existing rooms retain their copied trigger, curve constants and sold state. The 
   `g`, after the curve or pool has paid exactly `g`.
 - **Fee split** `split(F, route)`:
   - `door = floor(F · d / 10⁴)`;
-  - `protocol = F − door`;
+  - `founder = floor(F · f / 10⁴)`;
+  - `protocol = F − door − founder` (including all rounding remainder);
   - on the room-token route, `door` goes to `pending_reserve` instead of a
-    door.
+    door; the founder share applies to both program routes and both trade directions.
+  - Credit founder SOL fees to `room.founder_accrued`, and founder WSOL fees
+    to `room.founder_accrued_wsol`. Widen multiplication to u128 and use
+    checked u64 accruals; an overflow fails atomically.
+  - This partitions the existing program fee; it adds no surcharge and takes
+    nothing from the reserve or DAMM LP fees. With `f = 0`, the split is
+    exactly the existing 60/40, including its integer rounding.
 - **Asserting the backing invariant.** Every instruction that touches a door
   ends by asserting B1 (§4) for each door it touched. It reads the two vault
   balances from the token accounts, not from cached fields.
@@ -462,13 +487,18 @@ transaction fees, with room and door fees defaulting to zero.
 3. **Initialise `Room`:**
    - status 0, `sold = 0`, `reserve = 0`;
    - curve and fee parameters copied from `Config`, including
-     `graduation_trigger_lamports`.
+     `graduation_trigger_lamports` and `founder_share_bps`;
+   - `founder = launcher`, `founder_accrued = founder_accrued_wsol = 0`.
+     Founder is not a caller-selected instruction argument. Emit the founder
+     and snapshotted share in `RoomCreated` before the optional first buy.
 4. **Door 0:** the `open_door` steps below, with the same name, symbol and
    URI. The room token and door 0 are twins.
 5. **Optional first buy** through door 0.
 
-There is no founder share or other founder privilege. The launcher's only
-lasting distinction is that their metadata is the room token's.
+Founder fees are present but zero by default. This grants no mint, freeze,
+metadata, matcher, routing or pool-LP authority. The room token still carries
+the launcher's immutable metadata. Door 0's fee recipient may change under
+the existing door instruction without changing the room's founder.
 
 ### `open_door(name, symbol, uri, first_buy_lamports, min_tokens_out, matcher_evidence)`
 
@@ -542,6 +572,7 @@ token-2022 and system programs, and event authority.
    - `room.reserve += n`, `room.sold = q′`;
    - door route: `door.backing += d`, `door.accrued_sol += door share`;
    - room-token route: `room.pending_reserve_sol += door share`;
+    - `room.founder_accrued += founder share`;
    - `room.protocol_accrued_sol += protocol share`;
    - volumes and timestamps.
 7. If `room.reserve == T`: `room.status = 1` (complete). With the chosen
@@ -593,7 +624,7 @@ sells).
 5. `d` = the increase in the output account's balance, read before and after.
 6. Door route: the Door PDA signs `TransferChecked(DoorVault N → user door-N
    ATA, d)`. `door.backing += d`.
-7. Split `F` (SOL counters). Assert B1. Emit.
+7. Split `F` (SOL counters, including `room.founder_accrued`). Assert B1. Emit.
 
 **Sell:**
 
@@ -606,7 +637,8 @@ sells).
    FeeWsol, F)`.
 4. Require `g − F ≥ min_lamports_out`.
 5. Door route: `door.backing −= tokens_in`.
-6. Split `F` into the `_wsol` counters. Assert B1. Emit.
+6. Split `F` into the `_wsol` counters, including
+   `room.founder_accrued_wsol`. Assert B1. Emit.
 7. The client appends `CloseAccount(user WSOL ATA)` to unwrap.
 
 **Notes on the post-graduation flows:**
@@ -750,6 +782,19 @@ can revive it. It never changes room creation time or the lock holder.
   pays `accrued_sol` from `FeeVault` (direct debit) and `accrued_wsol` from
   `FeeWsol` (Room PDA signs a transfer to the recipient's WSOL ATA). Then it
   zeroes both and adds them to the claimed totals.
+- **`claim_founder_fees(room)`.** Mirrors door claims: the signer must equal
+  the immutable `room.founder`. Validate the Room PDA, its `FeeVault` and
+  `FeeWsol`, the WSOL mint and the founder's canonical WSOL ATA. The ATA
+  already exists or is created in a preceding client instruction. Pay
+  `founder_accrued` SOL by directly debiting `FeeVault`, and transfer
+  `founder_accrued_wsol` from `FeeWsol` to that ATA with the Room PDA signing.
+  Zero both counters atomically with the transfers and emit
+  `FounderFeesClaimed(room, founder, sol, wsol)`. A failed transfer rolls back
+  the counters and the other transfer; a repeated empty claim pays zero.
+  Available in every room status, including complete and graduated. It
+  preserves fee-vault rent and all door/protocol/pending-reserve liabilities,
+  never touches `ReserveVault`, and has no authority to change founder or
+  fee snapshots. No extra founder account is required on trading paths.
 - **`set_fee_recipient(door, new)`.** Signed by the current recipient.
 - **`sweep_protocol_fees(room)`.** Permissionless. It pays
   `protocol_accrued_sol/_wsol` to `config.protocol_fee_recipient` and zeroes
@@ -786,8 +831,8 @@ backing a burned door token stay in `DoorRoomVault_N` forever.
 
 ```
 L(ReserveVault) − rent_min ≥ room.reserve
-L(FeeVault) − rent_min ≥ Σ_N door_N.accrued_sol + room.protocol_accrued_sol + room.pending_reserve_sol
-bal(FeeWsol) ≥ Σ_N door_N.accrued_wsol + room.protocol_accrued_wsol + room.pending_reserve_wsol
+L(FeeVault) − rent_min ≥ Σ_N door_N.accrued_sol + room.founder_accrued + room.protocol_accrued_sol + room.pending_reserve_sol
+bal(FeeWsol) ≥ Σ_N door_N.accrued_wsol + room.founder_accrued_wsol + room.protocol_accrued_wsol + room.pending_reserve_wsol
 ```
 
 **Proof by path.** Each row lists the changes; every invariant is preserved.
@@ -983,9 +1028,31 @@ door → room-token conversion.
 ## 6. Fees
 
 The room-token route's door share goes to `pending_reserve` and is retired by
-`retire_pending`; there is no founder share. The intended launch fees remain
-zero. Launchers pay rent and transaction fees; the graduation budget comes
-from the room's reserve. Current room/door rent totals are generated in §1.
+`retire_pending`. **Founder-share plumbing is present but zero:**
+`Config.founder_share_bps` defaults to **0 bps**, preserving the exact v1
+60/40 program-fee split and the room-token route's existing reserve share.
+It is a share of the program fee, not an additional fee on trade volume.
+If only the founder share changes, it comes out of the protocol remainder;
+the door share changes only if its own Config parameter changes. All current
+spam and poisoning tables use the zero-founder v1 defaults.
+
+The reason to include it now is that the measurement in flight may show the
+original creator loses about two-thirds of their narrative's volume to
+copies. Such a result could justify a founder share; it is not yet an
+aggregate finding or a decision to enable one. Including founder identity,
+accruals, the snapshotted share and `claim_founder_fees` in v1 means a future
+admin Config change can reopen the split for **new rooms**, without a program
+rewrite. Existing rooms retain their immutable fee snapshots, including zero;
+there is no retroactive accrual or founder-share override instruction.
+
+The founder receives only the configured slice of program trade fees on
+door and room-token routes. Room/door opening fees, conversion fees,
+graduation slack and rent dust remain protocol-only; direct DAMM swaps and
+LP fees generate no founder accrual. Founder status provides no additional
+control over the room. The intended launch fees remain zero. Launchers pay
+rent and transaction fees; the extra stored fields increase launch rent as
+shown in §1, while the graduation account set, rent budget and trigger are
+unchanged. The graduation budget still comes from the room's reserve.
 
 The spam income model below assumes some buyers choose doors uniformly. It
 is an assumption, not measured behavior. Frontend ranking and actual routed
@@ -995,10 +1062,12 @@ traffic determine whether that assumption holds.
 <!-- generated by scripts/fee_model.py -->
 Trade fee 100 bps on every buy and sell, charged on top of the trade.
 
-| route | to the door | to the reserve | to the protocol | total |
-|---|---|---|---|---|
-| through door N, per $1M | $6.0k | $0 | $4.0k | $10.0k |
-| room token through the program, per $1M | $0 | $6.0k | $4.0k | $10.0k |
+Founder share is present but defaults to 0 bps of the program fee; door and founder shares are snapshotted per room. All spam figures below use these v1 defaults.
+
+| route | to the door | to the reserve | to the founder | to the protocol | total |
+|---|---|---|---|---|---|
+| through door N, per $1M | $6.0k | $0 | $0.00 | $4.0k | $10.0k |
+| room token through the program, per $1M | $0 | $6.0k | $0.00 | $4.0k | $10.0k |
 
 Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.009185 SOL = $1.38. Graduation rent (0.018014 SOL) is paid from the reserve at graduate, not by the launcher.
 
@@ -1065,6 +1134,8 @@ pool/holder accounts it may require):
 | release_slug (curve) | 5 | 1 | yes | 278 | 954 |
 | release_slug (pool) | 6 | 1 | yes | 311 | 921 |
 | checkpoint_pool | 4 | 1 | yes | 245 | 987 |
+| claim_door_fees | 8 | 1 | yes | 377 | 855 |
+| claim_founder_fees | 7 | 1 | yes | 344 | 888 |
 | graduate | 31 | 1 | yes | 1136 | 96 |
 
 `graduate`: 31 keys, one signature, 8-byte discriminator, one instruction: 1136 bytes, 96 bytes spare. With one ComputeBudget key and limit/price instructions: 1188 bytes, 44 spare.
@@ -1081,6 +1152,8 @@ Account metas (R read, W write, S signer):
 | damm_pool / identity_holder_damm_pool / previous_holder_damm_pool | R; required for the corresponding graduated room |
 | config | R; authority and the single set of liveness constants |
 | room | W for trades, launch and checkpoints; R for release_slug |
+
+`claim_founder_fees`: founder W,S (must equal Room.founder), Room W, FeeVault W, FeeWsol W, founder's canonical WSOL ATA W, WSOL mint R, SPL Token program R. The ATA must already exist (or be created in a preceding client instruction). No founder account is added to trading account lists: trades accrue counters, and claims perform the payout. The same currency/vault checks apply to door claims.
 <!-- END GENERATED INSTRUCTION ACCOUNTS -->
 
 Account lock limit: 64 per transaction, or `MAX_TX_ACCOUNT_LOCKS` behind
@@ -1140,8 +1213,10 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
    seed, `T − R*` to `GradPayer`, and slack `room.reserve − T` (0 by
    construction) to the protocol. No other instruction debits
    `ReserveVault`.
-6. **F1:** per trade, `F == door share + protocol share`, and the door share
-   lands in exactly one of `door.accrued_*` or `room.pending_reserve_*`.
+6. **F1:** per trade, `F == door share + founder share + protocol share`.
+    The door share lands in exactly one of `door.accrued_*` or
+    `room.pending_reserve_*`; founder share lands in the matching SOL/WSOL
+    founder counter. A zero founder share reproduces every legacy 60/40 split.
 7. **F2:** both fee vaults cover their counters (I2 above).
 8. **F3:** on a buy, the curve or pool receives exactly `n`, and
    `F = lamports_in − n ≥ n·b/10⁴`.
@@ -1171,6 +1246,11 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
     the routing liveness gate, in any status, and closes only its `SlugLock`.
     It rejects a stale former holder after takeover. Boundary and stale-pool
     tests use the same `is_live` helper as routing.
+17. **F4:** founder and fee snapshots are immutable after room creation.
+    Updating Config affects new rooms only. Only the founder signs its claim;
+    a claim pays and zeroes exactly its two counters atomically, preserves
+    all other liabilities and vault rent, and never debits the reserve.
+    Failed claims roll back, and repeated empty claims pay zero.
 
 ## 9. What a trader sees
 

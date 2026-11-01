@@ -48,7 +48,7 @@ Additional size checks are recorded at slots 464,036,284–464,036,304 in `outpu
 
 | quantity | old rate on revised schema | verified rate on revised schema |
 |---|---|---|
-| launch rent, lamports | 37,256,880 | 27,193,240 |
+| launch rent, lamports | 37,604,880 | 27,447,240 |
 | graduation rent, lamports | 24,680,160 | 18,013,680 |
 
 All current rent-dependent spec figures are regenerated. The trigger remains a Config value snapshotted into each Room; a later rent/default change does not rewrite an old room's curve or graduation trigger. Runtime graduation uses the rent sysvar, not this calibration coefficient.
@@ -665,7 +665,7 @@ This closes persistent poisoning from one registration, while recurring
 poisoning remains possible at the measured cost below.
 
 This is a **defacement attack**: door 0 fixes the room token's name and image.
-There is no founder share. Merely owning the squatted room's door 0 earns
+Founder-share plumbing is present but defaults to 0 bps; no founder fees accrue in v1. Merely owning the squatted room's door 0 earns
 nothing from later doors' trades. These rent-only estimates do not assume a
 position that profits from later buyers. SlugLock rent can be reclaimed by
 the cleanup caller; room and door rent remains locked.
@@ -676,7 +676,7 @@ New-room grace 1 h; mature reserve >= 0.5 SOL, idle <= 6 h; gross trailing volum
 
 | item | lamports | SOL |
 |---|---|---|
-| launch room and door 0, max-metadata rent | 27,193,240 | 0.027193 |
+| launch room and door 0, max-metadata rent | 27,447,240 | 0.027447 |
 | only reclaimable rent: SlugLock, if attacker wins cleanup | 736,600 | 0.000737 |
 | mature curve: reserve held as capital | 500,000,000 | 0.500000 |
 | mature curve: gross volume per day, both legs counted | 5,000,000,000 | 5.000000 |
@@ -689,32 +689,32 @@ New-room grace 1 h; mature reserve >= 0.5 SOL, idle <= 6 h; gross trailing volum
 
 | K identities | rooms created per day | rent/day if each lock recreated (SOL) | steady-state rent/day reusing the lock (SOL) |
 |---|---|---|---|
-| 10 | 240 | 6.526378 | 6.349594 |
-| 100 | 2400 | 65.263776 | 63.495936 |
-| 500 | 12000 | 326.318880 | 317.479680 |
+| 10 | 240 | 6.587338 | 6.410554 |
+| 100 | 2400 | 65.873376 | 64.105536 |
+| 500 | 12000 | 329.366880 | 320.527680 |
 
 **Namespace poisoning by mature rooms held live**:
 
 | K rooms | rent once (SOL) | reserve capital (SOL) | protocol fees lost per day at volume floor (SOL) |
 |---|---|---|---|
-| 10 | 0.271932 | 5 | 0.200000 |
-| 100 | 2.719324 | 50 | 2.000000 |
-| 500 | 13.596620 | 250 | 10.000000 |
+| 10 | 0.274472 | 5 | 0.200000 |
+| 100 | 2.744724 | 50 | 2.000000 |
+| 500 | 13.723620 | 250 | 10.000000 |
 
 **Grace-window sensitivity at the verified rent**:
 
 | grace (h) | copies covered by grace | rent/day for 500 identities with new locks (SOL) | recurring rent/day reusing locks (SOL) |
 |---|---|---|---|
-| 0.25 | 65/94 | 1305.275520 | 1269.918720 |
-| 0.5 | 74/94 | 652.637760 | 634.959360 |
-| 1 | 86/94 | 326.318880 | 317.479680 |
-| 1.5 | 93/94 | 217.545920 | 211.653120 |
-| 2 | 94/94 | 163.159440 | 158.739840 |
-| 6 | 94/94 | 54.386480 | 52.913280 |
+| 0.25 | 65/94 | 1317.467520 | 1282.110720 |
+| 0.5 | 74/94 | 658.733760 | 641.055360 |
+| 1 | 86/94 | 329.366880 | 320.527680 |
+| 1.5 | 93/94 | 219.577920 | 213.685120 |
+| 2 | 94/94 | 164.683440 | 160.263840 |
+| 6 | 94/94 | 54.894480 | 53.421280 |
 
 Choose 1 h instead of the previous 2 h: grace covers 86/94 (91.5%) of the fixed SOL age-proxy targets. The conditional fixed-target curve-sum proxy loss bound is 3.19–8.51 retention points; the true production routing cost is unmeasured. Halving grace doubles the continuous unfunded-recreation rent rate; mature-room wash costs are unchanged. Small targeted squats remain affordable; this is not an economic guarantee.
 
-No founder share exists. Merely owning door 0 earns nothing; later launches use their own doors. The rent-only attacker controls the room token name and image: defacement. Wash costs assume ownership of the trading door and its fee rebate; exclude transaction fees unless shown, integer rounding, capital opportunity cost and third-party trading. The attacker does not own the protocol LP. Atomic takeover reuses the same SlugLock: the steady-state recurring creation cost excludes its rent, which is paid once per identity. Closing and reclaiming a lock before recreating it has the same net rent if the attacker wins cleanup, with extra transaction work. One registration stops working after grace; recurring rent or volume fees can sustain poisoning. Hourly trailing lower bounds may require more volume than this optimistic attack-cost floor. Signature fees and pool fee configuration are assumptions, not current on-chain readings.
+Founder-share plumbing is present but defaults to 0 bps, so no founder fees accrue in v1. Merely owning door 0 earns nothing; later launches use their own doors. The rent-only attacker controls the room token name and image: defacement. Wash costs assume ownership of the trading door and its fee rebate; exclude transaction fees unless shown, integer rounding, capital opportunity cost and third-party trading. The attacker does not own the protocol LP. Atomic takeover reuses the same SlugLock: the steady-state recurring creation cost excludes its rent, which is paid once per identity. Closing and reclaiming a lock before recreating it has the same net rent if the attacker wins cleanup, with extra transaction work. One registration stops working after grace; recurring rent or volume fees can sustain poisoning. Hourly trailing lower bounds may require more volume than this optimistic attack-cost floor. Signature fees and pool fee configuration are assumptions, not current on-chain readings.
 <!-- END GENERATED POISONING COSTS -->
 
 ### 9.3 Penny refreshes and trailing volume
@@ -1125,7 +1125,7 @@ Most frequent values (all values and exact launch members are in JSON):
 
 A post-ID equality observation is close to ground truth **for which post is referenced**, not independent ground truth for irrevocable market absorption. Domain and account equality are weaker still. The original text-selected assistant labels do not justify a precision estimate for unseen social populations. `social_routes_to_review.csv` lists 581 distinct identity pairs requiring semantic judgement, including 516 without an existing assistant label; it is an exhaustive audit queue across the swept policies, not a random calibration sample.
 
-Before reconsidering, label root/candidate narrative meaning independently of the social equality being tested, including all incremental routes and changed-root descendants. Use a representative held-out sample and human review, with U/missing cases disclosed. Capture metadata bytes at decision time and the ordered room-state histories needed for the full gate. No tier has earned a third stage-1 condition or a place in the tie order. If a later tier qualifies, the existing matcher signature already covers its routing decision; this audit needs no on-chain change. Images, including shadow processing, remain excluded; rejected symbol-only/fuzzy rules remain excluded. The launcher never chooses the room or door, and there is no founder share. The shared historical text reader/writer now uses explicit UTF-8/LF for Windows reproduction; its archived calibration figures and copy inputs remain unchanged.
+Before reconsidering, label root/candidate narrative meaning independently of the social equality being tested, including all incremental routes and changed-root descendants. Use a representative held-out sample and human review, with U/missing cases disclosed. Capture metadata bytes at decision time and the ordered room-state histories needed for the full gate. No tier has earned a third stage-1 condition or a place in the tie order. If a later tier qualifies, the existing matcher signature already covers its routing decision; this audit needs no on-chain change. Images, including shadow processing, remain excluded; rejected symbol-only/fuzzy rules remain excluded. The launcher never chooses the room or door, and founder-share plumbing defaults to 0 bps (no founder payout in v1). The shared historical text reader/writer now uses explicit UTF-8/LF for Windows reproduction; its archived calibration figures and copy inputs remain unchanged.
 
 #### Reproduce
 
@@ -1343,7 +1343,7 @@ Reject k-of-n for v1 at every tested threshold. High thresholds can reach perfec
 
 Raw feature availability, equality/mask counts, route counts, theme-density frequencies and which roots change are label-independent conditional benchmark observations. Every semantic precision/recall estimate, expected-copy denominator, weighted co-error and crowded-group precision uses the identity/URI policy and assistant labels or their text-stratum extrapolations. The direct-D table still uses assistant labels; none have human review. Same-post equality is close to ground truth for the referenced post, not independent truth about irreversible narrative absorption; domains are weaker.
 
-The review CSV lists root/candidate mint pairs requiring judgement, existing label/coverage source and affected policies. It does not create or silently load new labels. A future candidate needs independent root-level human review on held-out data and the missing ordered room-state histories before a production precision/recall claim. No new third match condition, tie tier, example route or on-chain change is justified. The existing matcher signature already covers the routing decision. The launcher never chooses the room/door; there is no founder share.
+The review CSV lists root/candidate mint pairs requiring judgement, existing label/coverage source and affected policies. It does not create or silently load new labels. A future candidate needs independent root-level human review on held-out data and the missing ordered room-state histories before a production precision/recall claim. No new third match condition, tie tier, example route or on-chain change is justified. The existing matcher signature already covers the routing decision. The launcher never chooses the room/door; founder-share plumbing defaults to 0 bps (no founder payout in v1).
 
 #### Reproduce
 

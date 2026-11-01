@@ -9,7 +9,7 @@ Additional size checks are recorded at slots 464,036,284–464,036,304 in `outpu
 
 | quantity | old rate on revised schema | verified rate on revised schema |
 |---|---|---|
-| launch rent, lamports | 37,256,880 | 27,193,240 |
+| launch rent, lamports | 37,604,880 | 27,447,240 |
 | graduation rent, lamports | 24,680,160 | 18,013,680 |
 
 All current rent-dependent spec figures are regenerated. The trigger remains a Config value snapshotted into each Room; a later rent/default change does not rewrite an old room's curve or graduation trigger. Runtime graduation uses the rent sysvar, not this calibration coefficient.

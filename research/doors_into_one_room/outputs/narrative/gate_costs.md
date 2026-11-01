@@ -3,7 +3,7 @@ New-room grace 1 h; mature reserve >= 0.5 SOL, idle <= 6 h; gross trailing volum
 
 | item | lamports | SOL |
 |---|---|---|
-| launch room and door 0, max-metadata rent | 27,193,240 | 0.027193 |
+| launch room and door 0, max-metadata rent | 27,447,240 | 0.027447 |
 | only reclaimable rent: SlugLock, if attacker wins cleanup | 736,600 | 0.000737 |
 | mature curve: reserve held as capital | 500,000,000 | 0.500000 |
 | mature curve: gross volume per day, both legs counted | 5,000,000,000 | 5.000000 |
@@ -16,29 +16,29 @@ New-room grace 1 h; mature reserve >= 0.5 SOL, idle <= 6 h; gross trailing volum
 
 | K identities | rooms created per day | rent/day if each lock recreated (SOL) | steady-state rent/day reusing the lock (SOL) |
 |---|---|---|---|
-| 10 | 240 | 6.526378 | 6.349594 |
-| 100 | 2400 | 65.263776 | 63.495936 |
-| 500 | 12000 | 326.318880 | 317.479680 |
+| 10 | 240 | 6.587338 | 6.410554 |
+| 100 | 2400 | 65.873376 | 64.105536 |
+| 500 | 12000 | 329.366880 | 320.527680 |
 
 **Namespace poisoning by mature rooms held live**:
 
 | K rooms | rent once (SOL) | reserve capital (SOL) | protocol fees lost per day at volume floor (SOL) |
 |---|---|---|---|
-| 10 | 0.271932 | 5 | 0.200000 |
-| 100 | 2.719324 | 50 | 2.000000 |
-| 500 | 13.596620 | 250 | 10.000000 |
+| 10 | 0.274472 | 5 | 0.200000 |
+| 100 | 2.744724 | 50 | 2.000000 |
+| 500 | 13.723620 | 250 | 10.000000 |
 
 **Grace-window sensitivity at the verified rent**:
 
 | grace (h) | copies covered by grace | rent/day for 500 identities with new locks (SOL) | recurring rent/day reusing locks (SOL) |
 |---|---|---|---|
-| 0.25 | 65/94 | 1305.275520 | 1269.918720 |
-| 0.5 | 74/94 | 652.637760 | 634.959360 |
-| 1 | 86/94 | 326.318880 | 317.479680 |
-| 1.5 | 93/94 | 217.545920 | 211.653120 |
-| 2 | 94/94 | 163.159440 | 158.739840 |
-| 6 | 94/94 | 54.386480 | 52.913280 |
+| 0.25 | 65/94 | 1317.467520 | 1282.110720 |
+| 0.5 | 74/94 | 658.733760 | 641.055360 |
+| 1 | 86/94 | 329.366880 | 320.527680 |
+| 1.5 | 93/94 | 219.577920 | 213.685120 |
+| 2 | 94/94 | 164.683440 | 160.263840 |
+| 6 | 94/94 | 54.894480 | 53.421280 |
 
 Choose 1 h instead of the previous 2 h: grace covers 86/94 (91.5%) of the fixed SOL age-proxy targets. The conditional fixed-target curve-sum proxy loss bound is 3.19–8.51 retention points; the true production routing cost is unmeasured. Halving grace doubles the continuous unfunded-recreation rent rate; mature-room wash costs are unchanged. Small targeted squats remain affordable; this is not an economic guarantee.
 
-No founder share exists. Merely owning door 0 earns nothing; later launches use their own doors. The rent-only attacker controls the room token name and image: defacement. Wash costs assume ownership of the trading door and its fee rebate; exclude transaction fees unless shown, integer rounding, capital opportunity cost and third-party trading. The attacker does not own the protocol LP. Atomic takeover reuses the same SlugLock: the steady-state recurring creation cost excludes its rent, which is paid once per identity. Closing and reclaiming a lock before recreating it has the same net rent if the attacker wins cleanup, with extra transaction work. One registration stops working after grace; recurring rent or volume fees can sustain poisoning. Hourly trailing lower bounds may require more volume than this optimistic attack-cost floor. Signature fees and pool fee configuration are assumptions, not current on-chain readings.
+Founder-share plumbing is present but defaults to 0 bps, so no founder fees accrue in v1. Merely owning door 0 earns nothing; later launches use their own doors. The rent-only attacker controls the room token name and image: defacement. Wash costs assume ownership of the trading door and its fee rebate; exclude transaction fees unless shown, integer rounding, capital opportunity cost and third-party trading. The attacker does not own the protocol LP. Atomic takeover reuses the same SlugLock: the steady-state recurring creation cost excludes its rent, which is paid once per identity. Closing and reclaiming a lock before recreating it has the same net rent if the attacker wins cleanup, with extra transaction work. One registration stops working after grace; recurring rent or volume fees can sustain poisoning. Hourly trailing lower bounds may require more volume than this optimistic attack-cost floor. Signature fees and pool fee configuration are assumptions, not current on-chain readings.

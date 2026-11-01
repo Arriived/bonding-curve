@@ -611,7 +611,7 @@ def render(report):
         'If a later tier qualifies, the existing matcher signature already covers its routing '
         'decision; this audit needs no on-chain change. Images, including shadow processing, '
         'remain excluded; rejected symbol-only/fuzzy rules remain excluded. The launcher never '
-        'chooses the room or door, and there is no founder share. The shared historical text '
+        'chooses the room or door, and founder-share plumbing defaults to 0 bps (no founder payout in v1). The shared historical text '
         'reader/writer now uses explicit UTF-8/LF for Windows reproduction; its archived calibration '
         'figures and copy inputs remain unchanged.', '',
         '## Reproduce', '', '```bash',

@@ -478,7 +478,7 @@ def render(report):
         'ordered room-state histories before a production precision/recall claim. No new third '
         'match condition, tie tier, example route or on-chain change is justified. The existing '
         'matcher signature already covers the routing decision. The launcher never chooses '
-        'the room/door; there is no founder share.', '',
+        'the room/door; founder-share plumbing defaults to 0 bps (no founder payout in v1).', '',
         '## Reproduce', '', '```bash', 'python3 scripts/narrative/calibrate_consensus.py',
         'python3 scripts/narrative/run_revision.py', '```', '',
         'The standalone experiment uses only the standard library and checked-in JSON/CSV. '
