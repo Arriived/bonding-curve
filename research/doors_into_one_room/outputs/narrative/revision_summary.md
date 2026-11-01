@@ -10,7 +10,7 @@
 - Image scorer, hashes, fetching scripts and calibration outputs remain offline research. A future threshold must reach text-only precision on a held-out sample with human-checked labels. No existing assistant labels have human review.
 - Settled thresholds remain: grace 1 h; reserve 0.5 SOL; idle 6 h; volume 5 SOL/day. Slug release is the exact gate complement.
 - Corrections recorded: incomplete replay inputs; stale full-retention headline; non-trade zero placeholders mistaken for observed reserve; label-dependent URI correctness and empty URI duplication. Bounds replace cross-population products.
-- Validation entry point: run_revision.py; 12 gate/text-only regression cases, 3 evidence-bound cases, 8 social-evidence cases, 4 real-input consensus cases and 14 examples. Exact curve/snapshot checks remain in the regeneration pipeline. No on-chain program is built by this research revision.
+- Validation entry point: run_revision.py; 12 gate/text-only regression cases, 3 evidence-bound cases, 8 social-evidence cases, 4 real-input consensus cases, 6 consolidation cases and 14 examples. Exact curve/snapshot checks remain in the regeneration pipeline. No on-chain program is built by this research revision.
 
 ## Social-link audit
 
@@ -31,3 +31,11 @@
 - Crowded means lexical launch frequency at or above the observed p75 cutoff 30; 765 launches are crowded. Six-signal standalone precision is worse there at k=2 and k=3, but not at every threshold. Full co-error and crowding tables are in consensus_calibration.md.
 - The requested legacy comparison freezes expected copies at 1979.009602, including the documented empty-URI definition bug. A separate nonempty-URI sensitivity removes that credit: denominator 1975.219018; no policy qualifies there either. Missing features never cast votes. Scores without text-stratum or direct-label support are zero by the archived estimator, not confirmed semantic errors.
 - All precision/recall, co-error and crowded precision figures are conditional assistant-label estimates. Production full-gate metrics remain unmeasured. The new review queue preserves the root/candidate mint pairs needing independent judgement without inventing labels.
+
+## Consolidation value measurement
+
+- Snapshot accounting finds 0 additional graduation candidates at the actual spec default 85.018013680 SOL. 62 text groups already have a completed member and are excluded from incremental gain; the other 952 are the headline population. This is a conservative current-reserve accounting result under fixed cashflows/grouping, not a claim that lifetime or causal product gain is zero.
+- Reserve-weighted c across both completion classes: 10.18% among multi-member copy clusters, 6.32% including singletons. Pool reserves are restored for all 81 completed SOL members; waiting protocol/creator fees and virtual boost are excluded. These are current reserve stocks, not a lifetime spend split.
+- All 2956 launch curves were read; 2213 SOL quotes are analysed, 743 non-SOL quotes excluded. Per-group reserves are atomic finalized snapshots with raw account bytes and context slots preserved.
+- The survival-tail estimate is alpha=0.472582 over its selected all-group tail. The same-eligible-cohort multiplier is 1.008353x; the counted multiplier at required high thresholds is undefined because both counts are zero. Counts govern the result; selected-tail fits do not establish a universal power law.
+- Corrections recorded: completed zero curve reserves are baseline success outcomes, not failures; pool money must enter weighted c; raw vault balances contain waiting fees; uncompleted does not imply gate-live; and a conservative historical count need not be strictly higher. Production launch-time gate histories and the true pre-window-root truncation count remain unavailable. See CONSOLIDATION_VALUE.md and consolidation_value.json.

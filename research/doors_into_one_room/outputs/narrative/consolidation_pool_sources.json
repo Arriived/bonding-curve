@@ -1,0 +1,229 @@
+{
+  "fetched_at_utc": "2026-11-01T14:55:06.219057+00:00",
+  "commit": "639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22",
+  "amm_idl_url": "https://raw.githubusercontent.com/pump-fun/pump-public-docs/639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22/idl/pump_amm.json",
+  "amm_idl_sha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+  "pump_idl_sha256": "7616681ea557975f9f623ac211080f22a93060781eaf4765b0a488d980997207",
+  "pool_type": {
+    "name": "Pool",
+    "type": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "pool_bump",
+          "type": "u8"
+        },
+        {
+          "name": "index",
+          "type": "u16"
+        },
+        {
+          "name": "creator",
+          "type": "pubkey"
+        },
+        {
+          "name": "base_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "quote_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "lp_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "pool_base_token_account",
+          "type": "pubkey"
+        },
+        {
+          "name": "pool_quote_token_account",
+          "type": "pubkey"
+        },
+        {
+          "name": "lp_supply",
+          "docs": [
+            "True circulating supply without burns and lock-ups"
+          ],
+          "type": "u64"
+        },
+        {
+          "name": "coin_creator",
+          "type": "pubkey"
+        },
+        {
+          "name": "is_mayhem_mode",
+          "type": "bool"
+        },
+        {
+          "name": "is_cashback_coin",
+          "type": "bool"
+        },
+        {
+          "name": "virtual_quote_reserves",
+          "docs": [
+            "For non-boost pools, value is 0, so the behavior is identical to legacy pools."
+          ],
+          "type": "i128"
+        },
+        {
+          "name": "creator_fee_bps",
+          "type": "u64"
+        },
+        {
+          "name": "can_edit_creator_fee",
+          "type": "bool"
+        },
+        {
+          "name": "is_holder_reward",
+          "type": "bool"
+        },
+        {
+          "name": "protocol_fees",
+          "type": "u64"
+        },
+        {
+          "name": "creator_fees",
+          "type": "u64"
+        }
+      ]
+    }
+  },
+  "discriminator": [
+    241,
+    154,
+    109,
+    4,
+    17,
+    177,
+    109,
+    188
+  ],
+  "field_offsets": {
+    "pool_bump": 8,
+    "index": 9,
+    "creator": 11,
+    "base_mint": 43,
+    "quote_mint": 75,
+    "lp_mint": 107,
+    "pool_base_token_account": 139,
+    "pool_quote_token_account": 171,
+    "lp_supply": 203,
+    "coin_creator": 211,
+    "is_mayhem_mode": 243,
+    "is_cashback_coin": 244,
+    "virtual_quote_reserves": 245,
+    "creator_fee_bps": 261,
+    "can_edit_creator_fee": 269,
+    "is_holder_reward": 270,
+    "protocol_fees": 271,
+    "creator_fees": 279
+  },
+  "migration_accounts": [
+    {
+      "name": "pump_amm",
+      "address": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+    },
+    {
+      "name": "pool",
+      "writable": true,
+      "pda": {
+        "seeds": [
+          {
+            "kind": "const",
+            "value": [
+              112,
+              111,
+              111,
+              108
+            ]
+          },
+          {
+            "kind": "const",
+            "value": [
+              0,
+              0
+            ]
+          },
+          {
+            "kind": "account",
+            "path": "pool_authority"
+          },
+          {
+            "kind": "account",
+            "path": "mint"
+          },
+          {
+            "kind": "account",
+            "path": "wsol_mint"
+          }
+        ],
+        "program": {
+          "kind": "account",
+          "path": "pump_amm"
+        }
+      }
+    },
+    {
+      "name": "pool_authority",
+      "writable": true,
+      "pda": {
+        "seeds": [
+          {
+            "kind": "const",
+            "value": [
+              112,
+              111,
+              111,
+              108,
+              45,
+              97,
+              117,
+              116,
+              104,
+              111,
+              114,
+              105,
+              116,
+              121
+            ]
+          },
+          {
+            "kind": "account",
+            "path": "mint"
+          }
+        ]
+      }
+    },
+    {
+      "name": "pool_quote_token_account",
+      "writable": true,
+      "pda": {
+        "seeds": [
+          {
+            "kind": "account",
+            "path": "pool"
+          },
+          {
+            "kind": "account",
+            "path": "token_program"
+          },
+          {
+            "kind": "account",
+            "path": "wsol_mint"
+          }
+        ],
+        "program": {
+          "kind": "account",
+          "path": "associated_token_program"
+        }
+      }
+    }
+  ],
+  "official_fee_definition_sources": {
+    "https://raw.githubusercontent.com/pump-fun/pump-public-docs/639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22/docs/VIRTUAL_QUOTE_RESERVES_FEE_ADJUSTMENT.md": "76fd3c72d644ee4ce2ba201279beb7e326f71f3954451874e44abfd16812901a",
+    "https://raw.githubusercontent.com/pump-fun/pump-public-docs/639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22/docs/instructions/PUMP_SWAP_TRADE_V2.md": "37a3d42e0e47ed065344b2be7c1194b7a5bc52dc56a18ba2237c1c2d535a932a"
+  },
+  "real_pool_reserve": "WSOL token amount minus protocol_fees minus creator_fees; exclude virtual boost"
+}

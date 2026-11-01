@@ -1,0 +1,12 @@
+{
+  "started_at_utc": "2026-11-01T14:55:10.330578+00:00",
+  "source_outcomes_sha256": "0fd2550dcd1b9dbbf313e2a0b19a7dfe7763cae577cb8c45d4adf4fe0c76990a",
+  "group_count": 1014,
+  "cached_groups": 1014,
+  "atomic_within_each_group": true,
+  "finished_at_utc": "2026-11-01T14:56:13.647233+00:00",
+  "complete": true,
+  "members": 2213,
+  "unknown_member_balances": 0,
+  "verified_pools": 81
+}

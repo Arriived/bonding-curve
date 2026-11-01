@@ -1,0 +1,21 @@
+{
+  "launches": 2956,
+  "statuses": {
+    "decoded": 2956
+  },
+  "sol_quoted": 2213,
+  "non_sol_quoted": 743,
+  "completed_curves": 89,
+  "completed_with_zero_current_real_quote_reserves": 89,
+  "sol_completed_curves": 81,
+  "context_slot_min": 464129076,
+  "context_slot_max": 464129301,
+  "started_at_utc": "2026-11-01T14:40:30.315355+00:00",
+  "finished_at_utc": "2026-11-01T14:41:20.104827+00:00",
+  "historical_peak_reserves_supplied": false,
+  "historical_completion_reserves_supplied": false,
+  "production_liveness_history_complete": false,
+  "prewindow_root_census_available": false,
+  "historical_counterfactual_graduation_count": null,
+  "status": "owner_approved_completed_baseline_and_no_completion_snapshot_accounting"
+}
