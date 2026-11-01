@@ -8,7 +8,7 @@ import time
 from audit_liveness_brief import OUT
 from history_cache import Cache, utc
 from peak_signatures import member_signatures
-from peak_rpc import TX_OPTIONS,transaction_hit
+from peak_rpc import TX_OPTIONS,transaction_hit,recover_missing
 from preregister_peak_consolidation import PATH
 
 SELECTION = OUT / 'peak_search_selection.json'
@@ -92,10 +92,17 @@ def main():
                         if part:pending.add(pool.submit(fetch,part))
             if args.max_batches and batches>=args.max_batches:return
             missing=[s for s in signatures if (transaction_hit(cache,s) or {}).get('result') is None]
+            if missing:
+                print(f'Recovering {len(missing)} null transaction lookups from their finalized blocks.',flush=True)
+                missing=recover_missing(cache,{signature:rows[signature] for signature in missing})
             record={'rank':rank,'root_mint':g['root_mint'],'unique_successful_signatures':len(signatures),
                 'missing_transactions':missing,'complete':not missing,'finished_at_utc':utc()}
             cache.put_study('top20_fetched:'+g['root_mint'],record)
             summary['clusters'].append(record)
+            if missing:
+                from report_peak_consolidation import main as report
+                report()
+                raise SystemExit('STOP: successful signatures still lack transaction bodies after finalized-block recovery; history is unknown.')
             # Only fully fetched clusters are analysed. Missing observations never become zero reserves.
             if not missing:
                 from measure_peak_consolidation import measure_group

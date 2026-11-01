@@ -45,7 +45,9 @@ def main():
     records=[]
     for root in selection['root_mints']:
         result=cache.study('top20_measured:'+root)
-        records.append(result or {'root_mint':root,'status':'not_measured'})
+        fetched=cache.study('top20_fetched:'+root)
+        records.append(result or {'root_mint':root,'status':'missing_history' if fetched and not fetched['complete'] else 'not_measured',
+                                  'missing_transactions':fetched.get('missing_transactions') if fetched else None})
     complete=[g for g in records if g['status']=='complete']
     remainder=[g for g in pr['groups'] if not g['completed'] and g['root_mint'] not in selection['root_mints']]
     all_done=len(complete)==len(records)
@@ -154,6 +156,7 @@ def main():
         '- Signature pages cap at 1,000. Full pagination to the known creation signature is required before ranking; failed signatures affect activity rank but have no executed reserve changes.',
         '- The creation slot is retained in full; signature-list ordering within that slot does not decide which transactions existed after creation. Actual reserve changes use finalized block execution order.',
         '- First-hour inflow uses age strictly below 3,600 seconds, matching the v1 grace gate. USD thresholds round upward to the next whole lamport, matching the stock study; the prototype used nearest-integer rounding.',
+        '- Indexed successful signatures can have null direct transaction lookups. The collector attempts recovery from raw finalized blocks at their advertised slots, records the block and transaction index as provenance, and stops if any body remains missing. Missing signatures are never silently excluded.',
         '- Public RPC returned -32015 for transaction version 1 when the prototype requested version 0. Requests now allow version 1 and reuse usable earlier responses. The [official JSON format documentation](https://solana.com/docs/rpc/json-structures) also specifies this setting. A trial at 3 logical calls/second encountered throttling; collection resumed at 0.8, honoring Retry-After and retrying only unresolved items.',
         '- The bulk-history probe on the official endpoint was throttled, so support is unestablished. A single known historical transaction returned null from the documented keyless Solana Tracker endpoint; it was not used as a replacement history source. Probe details are retained in peak_provider_probe.json and its compressed cache.',
         '- Median lag is not a maximum, and observed drawdown is not a universal cap. Neither requested heuristic is presented as a certified upper bound.',
