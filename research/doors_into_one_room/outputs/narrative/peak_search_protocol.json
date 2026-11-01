@@ -1,0 +1,28 @@
+{
+  "locked_at_utc": "2026-11-01T18:20:29.566079+00:00",
+  "original_protocol_sha256": "f0ab9a12d7cbd7d0ec5246dcae58651a618fd91e2773a380cdb088bcba87bdb9",
+  "authority": "Owner response: top-20 existence search; no archive RPC configured.",
+  "supersedes": [
+    "completed-cluster lifecycle collection",
+    "whole-population c inference",
+    "ascending-size partial-subset scheduling",
+    "original stage time budgets"
+  ],
+  "candidate_clusters": 248,
+  "candidate_members": 1201,
+  "excluded_completed_clusters": 35,
+  "selection_size": 20,
+  "selection": "Descending total signature count across members, fully paginated from cutoff through creation; ties by root mint.",
+  "ranking_includes_failed_transactions": true,
+  "full_reads": "All unique successful signatures of all members of the selected 20, through original fixed stock cutoffs.",
+  "primary_result": "Per-cluster simultaneous peak pooled reserve, and count crossing each threshold when no individual member ever crossed it.",
+  "crossing_action": "Report a verified crossing to owner; no extension beyond selected 20 without new authorization.",
+  "negative_action": "If no selected cluster crosses the spec trigger, report zero in the selected 20 and stop full-transaction collection.",
+  "primary_c": "Peak-pooled-reserve-weighted per-cluster gross-inflow share outside the largest-gross-inflow member; top-activity subset only.",
+  "secondary_c": "Pooled gross-inflow ratio, separately labelled.",
+  "decision_limits": "The original 25% and near-zero rules remain visible, but a selected top-activity subset cannot estimate or reject the full population without valid bounds.",
+  "remainder_envelope": "Report maximum observed peak/current ratio times largest remainder current reserve as a conditional empirical scenario only; no universal drawdown bound is established. Zero-current positive-peak cases have infinite ratios.",
+  "prewindow_catalogue_collection": false,
+  "rpc_environment_variable": "SOLANA_RPC_URL",
+  "raw_history_retention": "Compressed responses, slots, query parameters and request telemetry; resume without refetching successful observations."
+}
