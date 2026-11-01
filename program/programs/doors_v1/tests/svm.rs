@@ -8,6 +8,7 @@ use doors_v1::{accounts as a, instruction as ix, math::U, state::*, vaults::ATA,
 use litesvm::{types::TransactionMetadata, LiteSVM};
 use serde_json::{json, Value};
 use solana_clock::Clock;
+use solana_compute_budget_interface::ComputeBudgetInstruction;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_keypair::Keypair;
 use solana_message::Message;
@@ -109,7 +110,7 @@ impl Fixture {
         // Public, deterministic fixture secrets: never use these keys outside tests.
         let user = Keypair::new_from_array([11;32]);
         let matcher = Keypair::new_from_array([22;32]);
-        let mut svm = LiteSVM::new().with_transaction_history(0);
+        let mut svm = LiteSVM::new().with_transaction_history(0).with_log_bytes_limit(None);
         let elf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/doors_v1.so");
         svm.add_program(ID, &std::fs::read(elf).expect("run cargo build-sbf first"))
             .unwrap();
@@ -158,23 +159,26 @@ impl Fixture {
         f
     }
     fn send(&mut self, ix: Instruction, matcher: bool, name: &str) -> TransactionMetadata {
+        let measure_program=ix.program_id==ID;
         let tx = Transaction::new(
             &if matcher {
                 vec![&self.user, &self.matcher]
             } else {
                 vec![&self.user]
             },
-            Message::new(&[ix], Some(&self.user.pubkey())),
+            Message::new(&[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),ix], Some(&self.user.pubkey())),
             self.svm.latest_blockhash(),
         );
         let meta = self
             .svm
             .send_transaction(tx)
             .unwrap_or_else(|e| panic!("{name}: {e:#?}"));
-        self.cus
-            .entry(name.into())
-            .or_default()
-            .push(meta.compute_units_consumed);
+        // Inclusive CU for this program and its CPIs, excluding the separate
+        // compute-budget instruction. Match the runtime's top-level program log.
+        let prefix=format!("Program {ID} consumed ");
+        let root_cu=meta.logs.iter().find_map(|line|line.strip_prefix(&prefix).and_then(|s|s.split_whitespace().next()).and_then(|n|n.parse::<u64>().ok()));
+        let program_cu=if measure_program {root_cu.expect("runtime must report program-inclusive CU")}else{meta.compute_units_consumed};
+        self.cus.entry(name.into()).or_default().push(program_cu);
         self.operations += 1;
         meta
     }
