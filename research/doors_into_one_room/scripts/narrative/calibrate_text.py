@@ -138,7 +138,7 @@ def probe_keys(r):
 
 
 def load(path):
-    rows = [json.loads(l) for l in open(path)]
+    rows = [json.loads(l) for l in open(path, encoding='utf-8')]
     rows.sort(key=lambda r: (r["slot"], r["signature"]))
     seen, out = set(), []
     for r in rows:
@@ -157,7 +157,7 @@ def main():
     L = load(launches_path)
     labels = {}
     if os.path.exists(labels_path):
-        for row in csv.DictReader(open(labels_path)):
+        for row in csv.DictReader(open(labels_path, encoding='utf-8', newline='')):
             labels[tuple(sorted((row["a"], row["b"])))] = row["label"].strip()
 
     # ---- every earlier launch each launch matches under any rule (candidate generation by inverted index)
@@ -199,8 +199,8 @@ def main():
         for s in STRATA:
             ks = sorted(pk for pk, v in pairs.items() if v[0] == s)
             sampled.update(rng.sample(ks, min(SAMPLE_PER_STRATUM, len(ks))))
-        with open(os.path.join(out_dir, "label_sample.csv"), "w", newline="") as f:
-            w = csv.writer(f)
+        with open(os.path.join(out_dir, "label_sample.csv"), "w", newline="", encoding='utf-8') as f:
+            w = csv.writer(f, lineterminator='\n')
             w.writerow(["a", "b", "stratum", "label", "example_a", "example_b"])
             for pk in sorted(sampled, key=lambda k: (STRATA.index(pairs[k][0]), k)):
                 w.writerow([pk[0], pk[1], pairs[pk][0], "", pairs[pk][1], pairs[pk][2]])
@@ -249,7 +249,7 @@ def main():
         mem = [i for i in earlier[j] if certain(L[i], L[j])]
         copies.append({"copy_sig": L[j]["signature"], "copy_time": L[j]["block_time"],
                        "members": [{"mint": L[i]["mint"], "launch_time": L[i]["block_time"]} for i in mem]})
-    json.dump(copies, open(os.path.join(out_dir, "copies.json"), "w"))
+    json.dump(copies, open(os.path.join(out_dir, "copies.json"), "w", encoding='utf-8', newline='\n'))
 
     # ---- sequential replay per operating point
     results = []
@@ -333,7 +333,7 @@ def main():
           "the same-narrative test against the room's door 0. Identical-URI vamps are the one ground truth that "
           "does not depend on the text at all.",
           "- A route counts as correct only if the launch is the same narrative as the room's door 0."]
-    open(os.path.join(out_dir, "text_calibration.md"), "w").write("\n".join(o) + "\n")
+    open(os.path.join(out_dir, "text_calibration.md"), "w", encoding='utf-8', newline='\n').write("\n".join(o) + "\n")
     print("\n".join(o))
 
 

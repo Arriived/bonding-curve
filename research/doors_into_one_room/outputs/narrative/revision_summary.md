@@ -10,4 +10,15 @@
 - Image scorer, hashes, fetching scripts and calibration outputs remain offline research. A future threshold must reach text-only precision on a held-out sample with human-checked labels. No existing assistant labels have human review.
 - Settled thresholds remain: grace 1 h; reserve 0.5 SOL; idle 6 h; volume 5 SOL/day. Slug release is the exact gate complement.
 - Corrections recorded: incomplete replay inputs; stale full-retention headline; non-trade zero placeholders mistaken for observed reserve; label-dependent URI correctness and empty URI duplication. Bounds replace cross-population products.
-- Validation entry point: run_revision.py; 12 gate/text-only regression cases, 3 evidence-bound cases and 14 examples. Exact curve/snapshot checks remain in the regeneration pipeline. No on-chain program is built by this research revision.
+- Validation entry point: run_revision.py; 12 gate/text-only regression cases, 3 evidence-bound cases, 8 social-evidence cases and 14 examples. Exact curve/snapshot checks remain in the regeneration pipeline. No on-chain program is built by this research revision.
+
+## Social-link audit
+
+- Cached JSON coverage: 2694/2956 launches. Original JSON bytes, hashes and fetch provenance are checked in for offline reproduction. Missing, empty, null, malformed and placeholder social values never form copy clusters.
+- Recommendation: reject all social tiers for v1. No nonredundant cap demonstrates the text precision operating point from the available independent evidence. V1, its tie order and worked examples remain unchanged; this is not a new image or shadow path.
+- x_post: 78 additional routes uncapped; 39 at prefix diversity cap 2 distinct v1 text groups per link. Uncapped combined precision evidence bound 86.41%–99.83%. These are conditional policy/assistant-label bounds, not measured production precision or true recall gain.
+- x_account: 124 additional routes uncapped; 44 at prefix diversity cap 2 distinct v1 text groups per link. Uncapped combined precision evidence bound 73.49%–99.89%. These are conditional policy/assistant-label bounds, not measured production precision or true recall gain.
+- website_domain: 149 additional routes uncapped; 29 at prefix diversity cap 2 distinct v1 text groups per link. Uncapped combined precision evidence bound 69.43%–99.89%. These are conditional policy/assistant-label bounds, not measured production precision or true recall gain.
+- telegram: 4 additional routes uncapped; 4 at prefix diversity cap 2 distinct v1 text groups per link. Uncapped combined precision evidence bound 96.43%–99.88%. These are conditional policy/assistant-label bounds, not measured production precision or true recall gain.
+- Existing labels leave 516/581 distinct review pairs unlabelled across the swept policies. Social equality is never used to label its own semantic correctness; full standalone precision/recall points remain unmeasured.
+- Corrections: historical JSON availability does not imply v1 already fetches it; a shared post proves a common reference, not an authenticated same-narrative market; text-selected label rates cannot be silently transferred to social-only pairs. The report includes root-contamination effects, frequency sweeps, strict URI/post anchors and a review queue. See social_calibration.md for the complete result.

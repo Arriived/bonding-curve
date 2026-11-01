@@ -33,6 +33,7 @@ def main():
     run('audit_replay_inputs.py')
     run('recall_bounds.py')
     run('label_dependency.py')
+    run('calibrate_social.py')
     run('probe_image_hosts.py', '--render-only')
     run('age_window_calibration.py')
     run("liveness_table.py", OUT / "liveness_reads.json", OUT / "liveness_quote_mints.json",
