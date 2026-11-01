@@ -9,6 +9,7 @@ import argparse
 import concurrent.futures
 import gzip
 import json
+from decimal import Decimal,ROUND_CEILING
 
 from audit_liveness_brief import OUT
 from history_cache import utc
@@ -175,11 +176,11 @@ def measure_group(cache,group,histories):
     copy_mints=set(members)-{group['root_mint']};outside=set(members)-{leader}
     def timing(mints):
         den=sum(gross[m] for m in mints)
-        first=sum(e['gross_inflow_lamports'] for e in buys if e['mint'] in mints and 0<=e['timestamp']-root_time<=3600)
+        first=sum(e['gross_inflow_lamports'] for e in buys if e['mint'] in mints and 0<=e['timestamp']-root_time<3600)
         return {'gross_inflow_lamports':den,'first_root_hour_lamports':first,'first_root_hour_share':first/den if den else None}
     thresholds={'spec':json.loads(PATH.read_text(encoding='utf-8'))['trigger_lamports']}
-    price=float(json.loads(PATH.read_text(encoding='utf-8'))['price_source']['response']['data']['amount'])
-    thresholds.update({str(usd)+'_usd':round(usd/price*1e9) for usd in (10000,50000,100000)})
+    price=Decimal(json.loads(PATH.read_text(encoding='utf-8'))['price_source']['response']['data']['amount'])
+    thresholds.update({str(usd)+'_usd':int((Decimal(usd)*Decimal(10**9)/price).to_integral_value(rounding=ROUND_CEILING)) for usd in (10000,50000,100000)})
     max_individual=max(path['individual_peak_lamports'].values(),default=0)
     result.update(path)
     result.update({'largest_gross_member':leader,'largest_stock_member':stock_leader,'total_gross_inflow_lamports':total,
@@ -188,7 +189,7 @@ def measure_group(cache,group,histories):
         'current_pooled_lamports':sum(expected.values()),'current_copy_lamports':sum(expected.values())-expected[stock_leader],
         'max_individual_peak_lamports':max_individual,
         'additional_crossings':{name:path['peak_pooled_lamports']>=threshold and max_individual<threshold for name,threshold in thresholds.items()},
-        'threshold_lamports':thresholds,'funded_at_10k_peak':path['peak_pooled_lamports']*price/1e9>=10000,
+        'threshold_lamports':thresholds,'funded_at_10k_peak':path['peak_pooled_lamports']>=thresholds['10000_usd'],
         'root_timestamp':root_time,'root_timestamp_source':'CreateEvent' if creation.get(group['root_mint']) else 'launch blockTime',
         'copy_launch_lags_seconds':[(creation.get(m) if creation.get(m) is not None else members[m]['launch_time'])-root_time for m in sorted(copy_mints)],
         'creation_event_members':len(creation),
