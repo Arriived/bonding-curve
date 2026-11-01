@@ -24,9 +24,10 @@
 >   is gone.
 > - **§5, `close_door` is removed.** Doors are never closed. Ticker locks are
 >   removed: doors may share names, symbols and images.
-> - **§6, room identity.** SlugLock and its expiry rule are kept (spec
->   `release_slug`, before graduation only). The room token's name, symbol
->   and image are door 0's, fixed permanently.
+> - **§6, room identity.** SlugLock is keyed by the derived door-0 identity.
+>   Release and takeover use exactly the narrative routing liveness gate,
+>   including after graduation (spec `release_slug`). The room token takes
+>   door 0's name, symbol and image permanently.
 > - **§8–9, display.** Every door and the room token show the room FDV, because
 >   every mint has 1B supply (spec §7).
 
@@ -387,32 +388,18 @@ fresh-curve floor in the room. See §9 for why that becomes a problem.
 
 ## 6. The room's identity
 
-The room carries a **narrative slug**, e.g. `drift-hack`, plus a description
-URI with an image and a one-line narrative. Door 0's metadata is the default
-look. **`SlugLock`**, PDA `["slug", normalized_slug]`, makes the slug unique
-among live rooms.
+The room token carries door 0's fixed name, symbol and image. `SlugLock`
+is keyed by the hash of the program-folded name and symbol, derived rather
+than launcher-chosen. A lock is released or taken over exactly when its room
+fails the routing liveness gate, including after graduation. See
+[NARRATIVE_DETECTION.md §4](NARRATIVE_DETECTION.md#4-liveness-gate-hard-rule)
+and `release_slug` in the build spec. The old room keeps trading by id.
 
-**Slugs expire with the room** ("don't design for permanence"). If
-`real_sol < threshold` (e.g. < 1 SOL) and `now − last_trade_at > 7 days`,
-anyone can call `release_slug(room)`. The room keeps trading by id; only the
-name is freed. That prevents dead rooms from squatting narrative names
-forever.
-
-**How a creator picks a room.** In the frontend:
-
-- search by slug or keyword;
-- rooms ranked by reserve, 1h net inflow and unique buyers;
-- each room shows its doors ranked by the same measures, plus the door fee and
-  the price the creator's first buy would pay.
-
-Show that price explicitly. Joining a deep room means buying in at a high
-price. *(sim)* That missing floor was the entire creator-earnings difference
-in the study.
-
-An anonymous room is possible: no slug, only doors pointing at a `room_id`.
-But then nothing distinguishes the "real" narrative room from ten others, and
-discovery depends entirely on frontends. A unique, expiring slug is the
-minimum coordination device.
+**How a launch is routed.** The protocol matcher chooses the target from
+the candidate metadata and co-signs the decision. The frontend previews that
+exact room, its activity, holder concentration and rent. The launcher can
+confirm the preview or back out. They cannot select a room or override the
+routing decision. See the narrative detector and build-spec launch checks.
 
 ## 7. Graduation
 

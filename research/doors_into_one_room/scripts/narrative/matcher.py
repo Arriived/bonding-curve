@@ -4,9 +4,10 @@ Input (JSON): {"now": unix_seconds, "candidate": {...}, "rooms": [...], "params"
   candidate: {"name", "symbol", "uri", "phash": "16 hex chars" | null}
   room: {"room_id": int, "status": 0|1|2,
          "faces": [{"name", "symbol", "phash"}...],   # faces[0] is door 0 (the room token's identity)
-         "reserve": lamports, "last_trade_at": unix,   # status 0/1, maintained by the doors program
-         "pool": {"total_lp_b_fee": int, "ckpt_fee": int, "ckpt_ts": unix,   # status 2, DAMM v2 Pool reads
-                  "last_window_fee": int, "token_b_amount": int}}
+         "created_at": unix, "reserve": lamports, "last_trade_at": unix,
+         "liveness_buckets": [{"start": unix_hour, "amount": int}...],
+         "pool": {"total_lp_b_fee": int, "ckpt_fee": int, "ckpt_ts": unix,
+                  "token_b_amount": int}}
 Output (JSON): the decision, the rule that fired, the evidence, and every room's gate result.
 
 Rules are specified in NARRATIVE_DETECTION.md. All thresholds live in DEFAULTS and are overridable for calibration.
@@ -15,6 +16,7 @@ import json
 import re
 import sys
 import unicodedata
+from functools import lru_cache
 
 DEFAULTS = {
     # combination: route when text_points + image_points >= route_score
@@ -32,12 +34,14 @@ DEFAULTS = {
     "symbol_edit1_min_len": 5,
     "containment_min_len": 3,
     # liveness, pre-graduation (status 0/1); chosen from outputs/narrative/liveness_table.md
-    "live_min_reserve_lamports": 1_000_000_000,
+    "live_min_reserve_lamports": 500_000_000,
     "live_max_idle_seconds": 6 * 3600,
+    "live_new_seconds": 2 * 3600,
+    "live_min_volume_lamports": 5_000_000_000,
+    "live_window_seconds": 86_400,
+    "live_bucket_seconds": 3600,
     # liveness, post-graduation (status 2), from DAMM v2 Pool.metrics.total_lp_b_fee
-    "pool_window_seconds": 86_400,
     "pool_min_window_lp_fee": 80_000_000,       # LP fee per window = 0.8% of 10 SOL volume; NOT calibrated
-    "pool_min_token_b_amount": 0,               # optional floor on Pool.token_b_amount; 0 = off
 }
 
 # Cross-script homoglyphs that NFKC does not fold (Cyrillic and Greek capitals and smalls that render as Latin).
@@ -160,6 +164,7 @@ def image_tier(d, p):
     return "I0"
 
 
+@lru_cache(maxsize=32768)
 def ident(name, symbol):
     nt = name_tokens(name)
     return {"sk": symbol_key(symbol), "nk": "".join(nt), "nt": set(nt)}
@@ -168,25 +173,84 @@ def ident(name, symbol):
 def is_live(room, now, p):
     """Hard gate. Returns (live, reason)."""
     st = room["status"]
+    if st not in (0, 1, 2):
+        return False, "unknown room status"
+    created = room.get("created_at")
+    if created is None or created > now:
+        return False, "missing or future room creation timestamp"
+    if now - created < p["live_new_seconds"]:
+        return True, "new room: age below grace window"
     if st in (0, 1):
         if room["reserve"] < p["live_min_reserve_lamports"]:
             return False, f"reserve {room['reserve']} < {p['live_min_reserve_lamports']}"
         idle = now - room["last_trade_at"]
         if idle > p["live_max_idle_seconds"]:
             return False, f"idle {idle}s > {p['live_max_idle_seconds']}s"
-        return True, "pre-graduation: reserve and recent trade"
+        volume = trailing_amount(room.get("liveness_buckets", []), now, p)
+        if volume < p["live_min_volume_lamports"]:
+            return False, f"trailing volume lower bound {volume} below floor"
+        return True, "pre-graduation: reserve, recent trade and trailing volume"
     pool = room["pool"]
-    if pool["token_b_amount"] < p["pool_min_token_b_amount"]:
-        return False, "pool token_b_amount below floor"
-    age = now - pool["ckpt_ts"]
-    if age > 2 * p["pool_window_seconds"]:
-        return False, f"fee checkpoint stale ({age}s old)"
-    in_window = pool["total_lp_b_fee"] - pool["ckpt_fee"]
-    if in_window >= p["pool_min_window_lp_fee"]:
-        return True, f"pool LP fee since checkpoint {in_window}"
-    if age <= p["pool_window_seconds"] and pool["last_window_fee"] >= p["pool_min_window_lp_fee"]:
-        return True, f"pool LP fee in last window {pool['last_window_fee']}"
-    return False, "pool LP fee below threshold"
+    if pool["ckpt_ts"] > now or pool["total_lp_b_fee"] < pool["ckpt_fee"]:
+        return False, "invalid pool checkpoint"
+    buckets = room.get("liveness_buckets", [])
+    # Conservatively date the unread increment to the *start* of its observation interval.
+    start = pool["ckpt_ts"] // p["live_bucket_seconds"] * p["live_bucket_seconds"]
+    amount = trailing_amount(buckets, now, p)
+    if start >= now - p["live_window_seconds"]:
+        amount += pool["total_lp_b_fee"] - pool["ckpt_fee"]
+    if amount >= p["pool_min_window_lp_fee"]:
+        return True, f"trailing pool LP fee lower bound {amount}"
+    return False, "trailing pool LP fee below threshold"
+
+
+def trailing_amount(buckets, now, p):
+    """A conservative trailing-window total: discard the oldest partially overlapping hour."""
+    h = p["live_bucket_seconds"]
+    return sum(b["amount"] for b in buckets if b["start"] % h == 0
+               and now - p["live_window_seconds"] <= b["start"] <= now)
+
+
+def record_amount(room, start, amount, p):
+    """Reference update for the bounded, tagged hourly ring stored in Room."""
+    if amount < 0:
+        raise ValueError("counter increment cannot be negative")
+    h = p["live_bucket_seconds"]
+    start = start // h * h
+    count = p["live_window_seconds"] // h + 1
+    slot = start // h % count
+    buckets = room.setdefault("liveness_buckets", [])
+    same = next((b for b in buckets if b["start"] == start), None)
+    total = amount + (same["amount"] if same else 0)
+    buckets[:] = [b for b in buckets if b["start"] // h % count != slot]
+    buckets.append({"start": start, "amount": total})
+
+
+def record_curve_trade(room, now, gross_amount, p):
+    if room["status"] not in (0, 1):
+        raise ValueError("curve-volume update after graduation")
+    if gross_amount < 0:
+        raise ValueError("gross trade volume cannot be negative")
+    room["volume_gross"] = room.get("volume_gross", 0) + gross_amount
+    room["last_trade_at"] = now
+    record_amount(room, now, gross_amount, p)
+
+
+def checkpoint_pool(room, now, p):
+    """Fold unread fees into their observation interval's starting hour, never into the current hour."""
+    pool = room["pool"]
+    if now < pool["ckpt_ts"] or pool["total_lp_b_fee"] < pool["ckpt_fee"]:
+        raise ValueError("invalid cumulative pool checkpoint")
+    start = pool["ckpt_ts"] // p["live_bucket_seconds"] * p["live_bucket_seconds"]
+    if start >= now - p["live_window_seconds"]:
+        record_amount(room, start, pool["total_lp_b_fee"] - pool["ckpt_fee"], p)
+    pool["ckpt_fee"] = pool["total_lp_b_fee"]
+    pool["ckpt_ts"] = now
+
+
+def slug_releasable(room, now, p):
+    """Routing and lock release deliberately call the same definition."""
+    return not is_live(room, now, p)[0]
 
 
 def room_weight(room):
@@ -207,7 +271,8 @@ def score_room(c, cph, room, p):
         it = image_tier(d, p)
         s_img = p["text_points"][tier] + p["image_points"][it]
         s = s_img if p["image_routing"] == "on" else p["text_points"][tier]
-        key = (s, TIER_RANK[tier], -(d if d is not None else 99), -i)
+        tie_distance = d if p["image_routing"] == "on" else None
+        key = (s, TIER_RANK[tier], -(tie_distance if tie_distance is not None else 99), -i)
         if best_key is None or key > best_key:
             best, best_key = (s, tier, -1 if d is None else d, i, why, it, s_img), key
     return best
@@ -234,7 +299,7 @@ def decide(inp):
         return {"decision": "new_room", "candidate_keys": {"symbol": c["sk"], "name": c["nk"]}, "evaluated": evaluated}
     # Tie-break: score, then text tier, then image distance, then SOL depth, then lowest room_id.
     matches.sort(key=lambda m: (-m[0]["score"], -TIER_RANK[m[0]["text"]],
-                                m[0]["hamming"] if m[0]["hamming"] is not None else 99,
+                                m[0]["hamming"] if p["image_routing"] == "on" and m[0]["hamming"] is not None else 99,
                                 -room_weight(m[1]), m[1]["room_id"]))
     win = matches[0][0]
     return {"decision": "door", "room_id": win["room_id"], "rule": f"{win['text']}+{win['image']} score {win['score']}",

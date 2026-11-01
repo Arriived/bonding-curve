@@ -21,11 +21,18 @@ from phash import flatten_alpha, phash_bits  # noqa: E402
 
 def main():
     pkg, out = sys.argv[1], sys.argv[2]
-    meta = json.load(open(os.path.join(pkg, "emoji.json")))
-    files = sorted(e["image"] for e in meta if e.get("has_img_twitter"))[:500]
+    if pkg == "--real":
+        from fetch_token_images import CACHE, OUT
+        rows = [json.loads(line) for line in (OUT / "token_images.jsonl").read_text(encoding="utf-8").splitlines()]
+        unique = {row['image_sha256']: row for row in rows if row.get('phash')}
+        files = [str(CACHE / unique[key]['cache_key']) for key in sorted(unique)[:500]]
+    else:
+        meta = json.load(open(os.path.join(pkg, "emoji.json")))
+        files = [os.path.join(pkg, "img", "twitter", "64", name) for name in
+                 sorted(e["image"] for e in meta if e.get("has_img_twitter"))[:500]]
     same, tie_imgs, tie_bits, bad = 0, 0, 0, 0
     for f in files:
-        with Image.open(os.path.join(pkg, "img", "twitter", "64", f)) as im:
+        with Image.open(f) as im:
             img = flatten_alpha(im)
             ours = phash_bits(img).flatten()
             ref = imagehash.phash(img, hash_size=8, highfreq_factor=4).hash.flatten()
@@ -39,7 +46,7 @@ def main():
     msg = (f"imagehash {imagehash.__version__}, {len(files)} images: {same} identical 64-bit hashes; "
            f"{bad} images differ on a non-tie bit; {tie_imgs} images have exact median ties "
            f"({tie_bits} tie bits in total), where imagehash's bit is floating-point noise")
-    open(out, "w").write(msg + "\n")
+    open(out, "w", encoding="utf-8", newline="\n").write(msg + "\n")
     print(msg)
     if bad:
         sys.exit(1)

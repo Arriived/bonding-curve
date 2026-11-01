@@ -1,0 +1,26 @@
+[
+  {
+    "room": "old room, old trigger",
+    "trigger": 85024680160,
+    "q_g": 793160061522864,
+    "reserve": 85024680160,
+    "seed": 206811223802753,
+    "retired": 28714674383,
+    "rent_budget": 24680160,
+    "price_step_percent": 2.7554843406172854e-13,
+    "current_rent": 18013680,
+    "budget_left": 6666480
+  },
+  {
+    "room": "new room, current default",
+    "trigger": 85018013680,
+    "q_g": 793143840548785,
+    "reserve": 85018013680,
+    "seed": 206835198005974,
+    "retired": 20961445241,
+    "rent_budget": 18013680,
+    "price_step_percent": 4.1464323601133146e-13,
+    "current_rent": 18013680,
+    "budget_left": 0
+  }
+]

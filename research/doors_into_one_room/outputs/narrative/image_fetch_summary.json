@@ -1,0 +1,10 @@
+{
+  "fetched_at_utc": "2026-11-01T08:54:09.215536+00:00",
+  "launches": 2956,
+  "unique_metadata_uris": 1922,
+  "unique_image_uris": 1311,
+  "launches_with_phash": 2692,
+  "unique_image_sha256": 1206,
+  "metadata_failures": 262,
+  "image_failures": 2
+}

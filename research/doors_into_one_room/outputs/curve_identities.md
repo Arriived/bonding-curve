@@ -39,16 +39,16 @@
 
 | quantity | value |
 |---|---|
-| graduation rent (DAMM v2 accounts, from account_sizes.py) | 24,680,160 lamports |
-| trigger T = R* + rent | 85,024,680,160 lamports (85.024680160 SOL) |
-| q_g at T (largest q with R(q) ≤ T) | 793,160,061,522,864 base units = 793,160,061.522864 tokens |
-| R(q_g) | 85,024,680,160 lamports (T − R(q_g) = 0) |
-| room tokens left in RoomVault, U − q_g | 206,839,938,477,136 base units |
-| literal reading: seed R* with all remaining tokens, price step | -0.013883% |
-| chosen: seed R* with N = floor(R*·(V_tok − q_g)²/K) tokens | N = 206,811,223,802,753 base units = 206,811,223.802753 tokens |
-| chosen: unsold tokens retired, U − q_g − N | 28,714,674,383 base units = 28,714.674383 tokens |
-| chosen: price step (pool opens at or above the curve's closing price by < 1 base unit) | +2.755e-13% |
-| alternative: re-derive V_sol (V_tok fixed) to seed all remaining tokens | V_sol = 29,992,871,855 lamports; seed 206,784,900,603,504 base units; step +0.000000000046% |
+| graduation rent (DAMM v2 accounts, from account_sizes.py) | 18,013,680 lamports |
+| trigger T = R* + rent | 85,018,013,680 lamports (85.018013680 SOL) |
+| q_g at T (largest q with R(q) ≤ T) | 793,143,840,548,785 base units = 793,143,840.548785 tokens |
+| R(q_g) | 85,018,013,680 lamports (T − R(q_g) = 0) |
+| room tokens left in RoomVault, U − q_g | 206,856,159,451,215 base units |
+| literal reading: seed R* with all remaining tokens, price step | -0.010133% |
+| chosen: seed R* with N = floor(R*·(V_tok − q_g)²/K) tokens | N = 206,835,198,005,974 base units = 206,835,198.005974 tokens |
+| chosen: unsold tokens retired, U − q_g − N | 20,961,445,241 base units = 20,961.445241 tokens |
+| chosen: price step (pool opens at or above the curve's closing price by < 1 base unit) | +4.146e-13% |
+| alternative: re-derive V_sol (V_tok fixed) to seed all remaining tokens | V_sol = 29,995,027,020 lamports; seed 206,815,982,822,911 base units; step -0.000000000342% |
 
 ### Price impact of a buy (marginal price after vs before; fees excluded)
 
@@ -56,14 +56,14 @@ Curve phase below 85 SOL of reserve; pool phase from 85 SOL (the pool's SOL side
 
 | reserve / pool SOL side | buy 0.5 SOL | 5 SOL | 50 SOL | 500 SOL | FDV (SOL) | FDV / reserve |
 |---|---|---|---|---|---|---|
-| 1 SOL | 3.25% | 34.86% | 582.70% | 47,722.91% | 30 | 29.9× |
-| 10 SOL | 2.52% | 26.56% | 406.24% | 29,665.31% | 50 | 5.0× |
-| 50 SOL | 1.25% | 12.89% | 185.99% | 8,554.62% | 199 | 4.0× |
-| 84 SOL | 0.88% | 11.55% | 152.92% | 4,705.33% | 404 | 4.8× |
+| 1 SOL | 3.25% | 34.86% | 582.70% | 47,718.64% | 30 | 29.9× |
+| 10 SOL | 2.52% | 26.56% | 406.24% | 29,662.64% | 50 | 5.0× |
+| 50 SOL | 1.25% | 12.89% | 185.99% | 8,553.82% | 199 | 4.0× |
+| 84 SOL | 0.88% | 11.55% | 152.92% | 4,704.89% | 404 | 4.8× |
 | 85 SOL | 1.18% | 12.11% | 152.25% | 4,636.68% | 411 | 4.8× |
-| 500 SOL | 0.20% | 2.01% | 21.00% | 300.00% | 14,222 | 28.4× |
-| 5,000 SOL | 0.02% | 0.20% | 2.01% | 21.00% | 1,422,155 | 284.4× |
-| 50,000 SOL | 0.00% | 0.02% | 0.20% | 2.01% | 142,215,515 | 2,844.3× |
+| 500 SOL | 0.20% | 2.01% | 21.00% | 300.00% | 14,220 | 28.4× |
+| 5,000 SOL | 0.02% | 0.20% | 2.01% | 21.00% | 1,421,990 | 284.4× |
+| 50,000 SOL | 0.00% | 0.02% | 0.20% | 2.01% | 142,199,031 | 2,844.0× |
 
 ### Depth: SOL needed to move the price (fees excluded)
 

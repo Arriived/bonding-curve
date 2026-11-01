@@ -1,0 +1,19 @@
+{
+  "trigger": 85018013680,
+  "q_g": 793143840548785,
+  "reserve": 85018013680,
+  "seed": 206835198005974,
+  "retired": 20961445241,
+  "rent_budget": 18013680,
+  "price_step_percent": 4.1464323601133146e-13,
+  "v_sol_lamports": 30000852995,
+  "v_tok_base": 1073025606000000,
+  "K": 32191683465476789970000000,
+  "r_star": 85000000000,
+  "graduation_rent": 18013680,
+  "remaining": 206856159451215,
+  "literal_step_percent": -0.010133343525159048,
+  "alternative_v_sol": 29995027020,
+  "alternative_seed": 206815982822911,
+  "alternative_step_percent": -3.416815854134733e-10
+}

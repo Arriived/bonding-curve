@@ -1,6 +1,7 @@
 """Exact byte layouts and rent for the pre-minted room/door design and its DAMM v2 graduation.
 
-Rent-exempt minimum = (128 + data_bytes) * 6,960 lamports.
+Rent-exempt minimum = (128 + data_bytes) * 5,080 lamports, verified by raw
+getMinimumBalanceForRentExemption RPC reads in outputs/narrative/rent_confirmation.json.
 
 Token-2022 layout (solana-program/token-2022 @ 986b3aa5, interface/src/extension/mod.rs):
 accounts with extensions are padded to Account::LEN = 165 bytes, then a 1-byte AccountType,
@@ -16,7 +17,7 @@ Position::INIT_SPACE = 400 (state/position.rs:121), both + 8-byte discriminator.
 mint: decimals 0, MetadataPointer + MintCloseAuthority, TokenMetadata "Meteora Position NFT" /
 "MPN" / fixed URI (instructions/ix_create_position.rs, create_position_nft).
 """
-LAMPORTS_PER_BYTE = 6960
+LAMPORTS_PER_BYTE = 5080
 OVERHEAD = 128
 SOL = 1_000_000_000
 USD_PER_SOL = 150.0       # only to quote SOL figures in dollars
@@ -35,7 +36,10 @@ LAYOUTS = {
         ("v_sol_lamports: u64", 8), ("v_tok: u64 (base units)", 8), ("supply: u64 (base units)", 8),
         ("r_star_lamports: u64 (pool seed)", 8), ("meteora_dynamic_config: Pubkey", 32),
         ("graduation_trigger_lamports: u64 (R* + graduation rent)", 8),
-        ("paused: bool", 1), ("bump: u8", 1), ("reserved: [u8; 64]", 64)],
+        ("paused: bool", 1), ("bump: u8", 1), ("matcher_authority: Pubkey", 32),
+        ("live_min_reserve_lamports: u64", 8), ("live_max_idle_seconds: u64", 8),
+        ("live_new_seconds: u64", 8), ("live_min_volume_lamports: u64", 8),
+        ("pool_min_window_lp_fee: u64", 8)],
     "Room": [
         ("anchor discriminator", 8), ("room_id: u64", 8),
         ("bumps: room, reserve_vault, fee_vault, grad_payer, room_vault, retired_vault, fee_wsol (7 x u8)", 7),
@@ -51,8 +55,10 @@ LAYOUTS = {
         ("pending_reserve_sol: u64", 8), ("pending_reserve_wsol: u64", 8), ("reserve_share_total: u64", 8),
         ("volume_gross: u128", 16), ("trades: u64", 8), ("created_at: i64", 8), ("last_trade_at: i64", 8),
         ("graduated_at: i64", 8), ("damm_pool: Pubkey", 32), ("damm_position: Pubkey", 32),
-        ("position_nft_mint: Pubkey", 32), ("slug_len: u8", 1), ("slug: [u8; 10]", 10),
-        ("uri_len: u8", 1), ("uri: [u8; 200]", 200), ("reserved: [u8; 64]", 64)],
+        ("position_nft_mint: Pubkey", 32), ("identity: [u8; 32] (derived SlugLock key)", 32),
+        ("uri_len: u8", 1), ("uri: [u8; 200]", 200),
+        ("fee_ckpt: u128", 16), ("fee_ckpt_ts: i64", 8),
+        ("liveness_buckets: [(start: i64, amount: u128); 25] (packed Borsh)", 25 * 24)],
     "ReserveVault (program-owned, no data; SOL reserve)": [],
     "FeeVault (program-owned, no data; SOL fees)": [],
     "GradPayer (SYSTEM-owned PDA, no data; holds DAMM v2 rent, signs as payer)": [],
@@ -64,7 +70,8 @@ LAYOUTS = {
         ("backing: u64 (room tokens in room_token_vault = door tokens circulating)", 8),
         ("accrued_sol: u64", 8), ("accrued_wsol: u64", 8), ("claimed_sol: u64", 8), ("claimed_wsol: u64", 8),
         ("buy_volume: u128 (gross lamports)", 16), ("sell_volume: u128", 16), ("trades: u64", 8),
-        ("created_at: i64", 8), ("reserved: [u8; 32]", 32)],
+        ("created_at: i64", 8), ("matcher_version: u16", 2), ("rule: u8", 1),
+        ("face: u32 (door index)", 4), ("phash: u64", 8), ("reserved: [u8; 17]", 17)],
 }
 
 
@@ -94,6 +101,12 @@ def graduation_rent_lamports():
 def per_door_rent_lamports():
     door = sum(b for _, b in LAYOUTS["Door"])
     return rent(door)+rent(meme_mint(32, 10, 200, [(4, 44), (4, 10)]))+2*rent(165)
+
+
+def per_room_rent_lamports():
+    return (rent(sum(b for _, b in LAYOUTS["Room"])) + 3 * rent(0)
+            + rent(sum(b for _, b in LAYOUTS["SlugLock"]))
+            + rent(meme_mint(32, 10, 200, [(4, 44)])) + 3 * rent(165))
 
 
 def main():

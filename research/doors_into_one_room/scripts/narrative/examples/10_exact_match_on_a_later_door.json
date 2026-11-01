@@ -23,7 +23,15 @@
     }
    ],
    "reserve": 8000000000,
-   "last_trade_at": 1793469400
+   "last_trade_at": 1793469400,
+   "created_at": 1793210800,
+   "volume_gross": 5000000000,
+   "liveness_buckets": [
+    {
+     "start": 1793469600,
+     "amount": 5000000000
+    }
+   ]
   }
  ],
  "expect": {

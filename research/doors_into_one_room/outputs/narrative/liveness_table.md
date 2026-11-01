@@ -58,3 +58,46 @@ Curve reserve (SOL): median 0.000, p75 0.000, p90 0.004, max 0.126.
 | 10 | 0.0% | 0.0% | 0.0% | 0.0% |
 
 Curve reserve (SOL): median 0.000, p75 0.000, p90 0.001, max 0.179.
+
+### C. Reserve-and-idle baseline, before age and volume clauses
+
+Defaults from matcher.py: reserve >= 0.5 SOL; idle <= 6 h.
+
+| population | passing | total | share |
+|---|---|---|---|
+| sampled copies, selected floor | 44 | 94 | 46.8% |
+| sampled copies, previous 1 SOL floor | 42 | 94 | 44.7% |
+| launched in the sample window | 6 | 209 | 2.9% |
+| launched about 1d before the read (anchor slot 463,382,303) | 0 | 71 | 0.0% |
+| launched about 7d before the read (anchor slot 460,960,575) | 0 | 73 | 0.0% |
+
+Approximate text-findable-vamp recall: 87.4% (rounded all-live text replay) x 44/94 (sampled gate retention) = 40.9%; previous floor: 39.1%. This is a proxy product across different populations, not an end-to-end routing replay.
+
+### D. Age-aware gate calibration
+
+Recorded SOL-member age at copy time: median 187.5 s; p90 3119 s; p99 5560 s; maximum 5560 s. Quantiles use sorted[min(n-1, floor(p*n))]. Age is measured from the earliest earlier member with a recorded SOL quote; it is a proxy for room creation.
+
+| T_new | young copies | copies live, reserve+idle+age | with volume floor, lower–upper bound |
+|---|---|---|---|
+| 0 h | 0/94 | 44/94 (46.8%) | 0.0%–46.8% |
+| 0.0166667 h | 34/94 | 58/94 (61.7%) | 36.2%–61.7% |
+| 0.0833333 h | 54/94 | 62/94 (66.0%) | 57.4%–66.0% |
+| 0.166667 h | 60/94 | 67/94 (71.3%) | 63.8%–71.3% |
+| 0.25 h | 65/94 | 72/94 (76.6%) | 69.1%–76.6% |
+| 0.5 h | 74/94 | 78/94 (83.0%) | 78.7%–83.0% |
+| 1 h | 86/94 | 86/94 (91.5%) | 91.5%–91.5% |
+| 1.5 h | 93/94 | 93/94 (98.9%) | 98.9%–98.9% |
+| 2 h | 94/94 | 94/94 (100.0%) | 100.0%–100.0% |
+| 6 h | 94/94 | 94/94 (100.0%) | 100.0%–100.0% |
+
+Selected T_new = 2 h: the smallest tested whole-hour window keeping every sampled copy, with the same sample retention as the brief's starting window. This short collection window cannot establish long-run recall; all its targets are young.
+
+| population at read time | young | age+reserve+idle passing | with volume floor, lower–upper bound |
+|---|---|---|---|
+| launched in the sample window | 93/209 | 95/209 | 44.5%–45.5% |
+| launched about 1d before the read (anchor slot 463,382,303) | 0/71 | 0/71 | 0.0%–0.0% |
+| launched about 7d before the read (anchor slot 460,960,575) | 0/73 | 0/73 | 0.0%–0.0% |
+
+Same 94-copy population, with volume floor: without age, retention is only bounded at 0–46.8%; with the chosen age clause it is 100.0%. Gain is at least 53.2 percentage points. Historical trailing volume was not collected, so the no-age value is an upper bound, not a measured full-gate recall.
+
+The old text-recall product would become 87.4% with age, but remains an extrapolation across populations. No combined text+image end-to-end result is implied.

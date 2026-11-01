@@ -8,6 +8,8 @@ virtual reserves, K = V_sol * V_tok. Curve: x = V_sol + R, y = V_tok - s, x*y = 
 Pool after graduation: (R*, (1 - f) S), constant product K' = R* (1 - f) S.
 """
 from fractions import Fraction as F
+import json
+from pathlib import Path
 import math
 import os
 import sys
@@ -58,6 +60,22 @@ def integer_curve(v_sol_lamports, v_tok_base):
     pool_p = F(R(q_g), seed_tokens)
     return dict(K=K, q_g=q_g, R_qg=R(q_g), seed_tokens=seed_tokens, step=pool_p/curve_p-1,
                 unspent=r_star-R(q_g))
+
+
+def graduation_quantities(v_sol, v_tok, r_star, trigger):
+    """Per-room graduation: use the copied trigger and curve, never a later Config default."""
+    if trigger < r_star:
+        raise ValueError("trigger cannot be below pool seed")
+    k = v_sol * v_tok
+    q = v_tok - k // (trigger + v_sol + 1) - 1
+    reserve = lambda sold: k // (v_tok - sold) - v_sol
+    assert reserve(q) <= trigger < reserve(q + 1)
+    seed = r_star * (v_tok - q) ** 2 // k
+    step = F(r_star, seed) / F(k, (v_tok - q) ** 2) - 1
+    assert 0 <= step
+    return {'trigger': trigger, 'q_g': q, 'reserve': reserve(q), 'seed': seed,
+            'retired': 10**15 - q - seed, 'rent_budget': trigger - r_star,
+            'price_step_percent': float(step) * 100}
 
 
 def main():
@@ -142,6 +160,14 @@ def main():
     k_alt = vs_alt*v_tok_base
     q_alt = v_tok_base-k_alt//(T+vs_alt+1)-1
     alt_final = F(85*LAMPORTS, U-q_alt)/F(k_alt, (v_tok_base-q_alt)**2)-1
+    if '--json' in sys.argv:
+        values = graduation_quantities(v_sol_lamports, v_tok_base, 85*LAMPORTS, T)
+        values.update(v_sol_lamports=v_sol_lamports, v_tok_base=v_tok_base, K=Kc,
+                      r_star=85*LAMPORTS, graduation_rent=rent, remaining=remaining,
+                      literal_step_percent=float(lit_step)*100, alternative_v_sol=vs_alt,
+                      alternative_seed=U-q_alt, alternative_step_percent=float(alt_final)*100)
+        Path(sys.argv[sys.argv.index('--json')+1]).write_text(json.dumps(values,indent=2)+'\n',
+                                                          encoding='utf-8',newline='\n')
     out += ["### Graduation trigger raised to R* + graduation rent", "",
             "| quantity | value |", "|---|---|",
             f"| graduation rent (DAMM v2 accounts, from account_sizes.py) | {rent:,} lamports |",

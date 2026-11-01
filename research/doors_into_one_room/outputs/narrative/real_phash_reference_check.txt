@@ -1,0 +1,1 @@
+imagehash 4.3.2, 500 images: 500 identical 64-bit hashes; 0 images differ on a non-tie bit; 1 images have exact median ties (64 tie bits in total), where imagehash's bit is floating-point noise

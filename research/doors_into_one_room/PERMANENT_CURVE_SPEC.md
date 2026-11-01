@@ -1,6 +1,8 @@
 # Room and doors: pre-minted supply, constant-product curve, DAMM v2 graduation — build spec
 
-31 October 2026, revised the same day for five owner rulings:
+1 November 2026 revision: age-aware liveness, conservative trailing activity,
+unified SlugLock release and mandatory matcher authorization. The earlier
+31 October owner rulings remain:
 
 - launching is free;
 - graduation rent comes out of the curve;
@@ -51,45 +53,48 @@ instruction this spec uses (§5).
 
 ## 0. Corrections
 
+<!-- BEGIN GENERATED RENT CORRECTION -->
+**Approved rent correction.** The old `(128 + bytes) × 6,960` model is stale. The owner approved `(128 + bytes) × 5,080` after direct rent-exemption RPC confirmation. These are `getMinimumBalanceForRentExemption` results, not account balances. The method has no context slot; finalized slot reads bracket each request.
+
+| data bytes | raw minimum (lamports) | finalized slot before | finalized slot after |
+|---|---|---|---|
+| 0 | 650,240 | 464,037,171 | 464,037,172 |
+| 165 | 1,488,440 | 464,037,175 | 464,037,178 |
+
+Additional size checks are recorded at slots 464,036,284–464,036,304 in `outputs/narrative/current_rent.json`; the confirmation is in `rent_confirmation.json`. The current schema's derived totals are:
+
+| quantity | old rate on revised schema | verified rate on revised schema |
+|---|---|---|
+| launch rent, lamports | 37,256,880 | 27,193,240 |
+| graduation rent, lamports | 24,680,160 | 18,013,680 |
+
+All current rent-dependent spec figures are regenerated. The trigger remains a Config value snapshotted into each Room; a later rent/default change does not rewrite an old room's curve or graduation trigger. Runtime graduation uses the rent sysvar, not this calibration coefficient.
+<!-- END GENERATED RENT CORRECTION -->
+
 ### 0.A Conflicts found in this revision's rulings
 
 Rulings 1 (free launch), 3 (no ticker locks) and 4 (room token inherits
 door 0) conflict with nothing verified. Two rulings needed an explicit
 choice.
 
-1. **Ruling 2 as literally written reintroduces a price step at the handoff:
-   −0.013883%, twice pump.fun's −0.0068%.**
-   - The trigger is raised to T = R* + graduation rent =
-     85,024,680,160 lamports. At T the curve has sold 793,160,061.522864
-     tokens, leaving 206,839,938.477136 in `RoomVault`.
-   - Seeding the pool with exactly R* and all of those tokens prices it at
-     `R*/(U − q_g)`. That is below the curve's closing price
-     `K/(V_tok − q_g)²`.
-   - The continuity identity behind V_tok = 1,073,025,606 holds only at the
-     reserve level V_sol was derived for (R*), not at T.
-   - **This spec keeps every stated requirement:** no step, a seed of exactly
-     R*, T as a `Config` value, and rent from the reserve. It does so by
-     seeding the pool with only the room tokens that match the closing price,
-     `N = floor(R* · (V_tok − q_g)² / K)` = 206,811,223.802753 tokens, and
-     retiring the remaining 28,714.674383 unsold tokens into `RetiredVault`.
-   - The measured step is +2.755×10⁻¹³ %: the pool opens at or above the
-     curve's closing price by less than one base unit. V_sol, V_tok and the
-     curve are unchanged.
-   - **Alternative, not adopted:** re-derive V_sol so that all remaining tokens
-     can be seeded. That gives V_sol = 29,992,871,855 lamports, a seed of
-     206,784,900.6 tokens and a step of +4.6×10⁻¹¹ %. It makes the curve depend
-     on DAMM v2's rent, which can change.
-   - All figures: `outputs/curve_identities.md`.
-2. **Ruling 5 says "with the existing expiry rule", but the previous revision
-   of this spec had no SlugLock expiry rule.** The rule lived only in
-   DESIGN.md §6: release the slug when the room's real reserve is below 1 SOL
-   and it has had no trade for 7 days. This revision adds it as
-   `release_slug` (§3), with one adaptation:
-   - it applies only before graduation (status 0 and 1);
-   - after graduation the program cannot see direct DAMM v2 trades, so
-     `last_trade_at` would misreport an actively traded room as idle.
-   - The 1 SOL and 7-day thresholds are DESIGN.md's values, carried over
-     unchanged as program constants.
+1. **Rent-funded graduation changes the handoff reserve.** Seeding R* with
+   every unsold token after taking out rent creates a price drop. Preserve
+   continuity by seeding only `N = floor(R* · (V_tok − room.sold)² / K)` and
+   retiring the remaining unsold tokens. The curve parameters stay unchanged.
+   Current figures, including the rejected all-remaining-tokens alternative,
+   are generated in §2. Trigger and seed quantities are room-specific.
+2. **SlugLock expiry is unified with narrative routing.** A room's lock can
+   be released or taken over exactly when the holder fails the gate in
+   [NARRATIVE_DETECTION.md §4](NARRATIVE_DETECTION.md#4-liveness-gate-hard-rule).
+   This applies in every room status, including graduated pools; direct pool
+   trading is observed through the cumulative LP-fee counter. There is no
+   independent SlugLock timer or reserve threshold.
+3. **Trailing activity needs history.** Lifetime `volume_gross` and a single
+   last-trade timestamp cannot establish a trailing window. The previous
+   current/previous-window fallback could retain activity beyond the window.
+   The gate now uses a conservative hourly history and dates pool increments
+   to the start of their observation interval. The generated account sizes
+   include this bounded history; it does not fit in the original reserve bytes.
 
 ### 0.B Corrections to the original brief (previous revision, still in force)
 
@@ -112,9 +117,9 @@ brief everywhere else.
      0.4046 tokens.
    - If the owner prefers V_sol = exactly 30 SOL, that is a one-parameter
      change. The seed then becomes "all remaining room tokens", 206,894,117.3.
-   - **Updated by 0.A.1:** the trigger is now T = R* + graduation rent. The
-     pool seed is R* plus N = 206,811,223.802753 tokens, matched to the
-     closing price, rather than 206.9M. V_sol and V_tok are unchanged.
+   - **Updated by 0.A.1:** the trigger is a room snapshot of the Config
+     graduation budget. The current default and matched seed are generated
+     in §2; older rooms retain the old trigger and use their own sold state.
 3. **After graduation the room token is cheaper than any door, on the pool
    itself.**
    - Through the program, the room token and every door pay the same 100 bps,
@@ -144,44 +149,52 @@ brief everywhere else.
 
 ## 1. Account layout
 
-Rent is `(128 + data_bytes) × 6,960` lamports. Check: a classic 165-byte SPL
-token account comes out at 2,039,280 lamports. Field offsets are in
-`outputs/account_sizes.md`.
+<!-- BEGIN GENERATED RENT FORMULA -->
+Rent model verified in `outputs/narrative/rent_confirmation.json`: `(128 + data_bytes) × 5,080` lamports. Runtime instructions use the rent sysvar; this coefficient is a recorded calibration.
+<!-- END GENERATED RENT FORMULA -->
 
-**Accounts created with each room:**
+Exact packed field offsets are in `outputs/account_sizes.md`.
 
-| account | owner / type | seeds | data bytes | rent (lamports) |
-|---|---|---|---|---|
-| `Config` | program | `["config"]` | 238 | 2,547,360 |
-| `Room` | program | `["room", room_id u64 LE]` | 684 | 5,651,520 |
-| `ReserveVault` | program, holds reserve lamports | `["reserve", room]` | 0 | 890,880 |
-| `FeeVault` | program, holds SOL fees | `["fees", room]` | 0 | 890,880 |
-| `GradPayer` | **System Program** (lamport-only PDA the program signs for; receives the graduation rent from the reserve at `graduate`) | `["grad_payer", room]` | 0 | 890,880 |
-| `SlugLock` | program | `["slug", normalized_slug]` | 17 | 1,009,200 |
-| `RoomMint` | Token-2022: MetadataPointer + TokenMetadata (name 32 / symbol 10 / uri 200) | `["room_mint", room]` | 616 | 5,178,240 |
-| `RoomVault` | Token-2022 account, authority Room PDA; **1B room tokens pre-minted here** | `["room_vault", room]` | 165 | 2,039,280 |
-| `RetiredVault` | Token-2022 account, authority Room PDA | `["retired", room]` | 165 | 2,039,280 |
-| `FeeWsol` | SPL Token WSOL account, authority Room PDA | `["fee_wsol", room]` | 165 | 2,039,280 |
+**Accounts created with each room** (except the shared `Config`):
+
+<!-- BEGIN GENERATED ROOM ACCOUNTS -->
+| account | seeds / derivation | data bytes | rent (lamports) |
+|---|---|---|---|
+| Config | `["config"]` | 246 | 1,899,920 |
+| Room | `["room", room_id u64 LE]` | 1265 | 7,076,440 |
+| ReserveVault | `["reserve", room]` | 0 | 650,240 |
+| FeeVault | `["fees", room]` | 0 | 650,240 |
+| GradPayer (System-owned) | `["grad_payer", room]` | 0 | 650,240 |
+| SlugLock | `["slug", derived_identity_hash]` | 17 | 736,600 |
+| RoomMint | `["room_mint", room]` | 616 | 3,779,520 |
+| RoomVault | `["room_vault", room]` | 165 | 1,488,440 |
+| RetiredVault | `["retired", room]` | 165 | 1,488,440 |
+| FeeWsol | `["fee_wsol", room]` | 165 | 1,488,440 |
+<!-- END GENERATED ROOM ACCOUNTS -->
 
 **Accounts created with each door:**
 
-| account | owner / type | seeds | data bytes | rent (lamports) |
-|---|---|---|---|---|
-| `Door` | program | `["door", room, index u32 LE]` | 328 | 3,173,760 |
-| `DoorMint` | Token-2022: MetadataPointer + TokenMetadata, max metadata | `["door_mint", room, index]` | 638 | 5,331,360 (minimum metadata 389 bytes: 3,598,320) |
-| `DoorVault` | Token-2022 account for the door mint, authority Door PDA; **1B door tokens pre-minted here** | `["door_vault", door]` | 165 | 2,039,280 |
-| `DoorRoomVault` | Token-2022 account for the room mint, authority Door PDA; **the backing** | `["door_room_vault", door]` | 165 | 2,039,280 |
-| trader's ATA (door or room token) | Token-2022 + ImmutableOwner, paid by the trader | ATA program | 170 | 2,074,080 |
-
-**Totals** (USD at an assumed SOL = $150, for quoting only):
-
-| item | lamports | SOL | USD |
+<!-- BEGIN GENERATED DOOR ACCOUNTS -->
+| account | seeds / derivation | data bytes | rent (lamports) |
 |---|---|---|---|
-| per room, excluding door accounts | 20,629,440 | 0.020629 | $3.09 |
-| per door, max metadata (Door + DoorMint + DoorVault + DoorRoomVault) | 12,583,680 | 0.012584 | $1.89 |
-| per door, minimum metadata | 10,850,640 | 0.010851 | $1.63 |
-| **launching a room** (room accounts + door 0, max metadata; no fees) | **33,213,120** | **0.033213** | **$4.98** |
-| graduation rent for the DAMM v2 accounts (§5), paid from the reserve | 24,680,160 | 0.024680 | — |
+| Door | `["door", room, index u32 LE]` | 328 | 2,316,480 |
+| DoorMint (max metadata) | `["door_mint", room, index]` | 638 | 3,891,280 |
+| DoorVault | `["door_vault", door]` | 165 | 1,488,440 |
+| DoorRoomVault | `["door_room_vault", door]` | 165 | 1,488,440 |
+| trader's Token-2022 ATA | `ATA program` | 170 | 1,513,840 |
+<!-- END GENERATED DOOR ACCOUNTS -->
+
+**Generated totals** (USD uses an explicit quoting assumption):
+
+<!-- BEGIN GENERATED RENT TOTALS -->
+| item | lamports | SOL | USD at assumed $150/SOL |
+|---|---|---|---|
+| per room, excluding door accounts | 18,008,600 | 0.018009 | $2.70 |
+| per door, max metadata | 9,184,640 | 0.009185 | $1.38 |
+| per door, minimum metadata | 7,919,720 | 0.007920 | $1.19 |
+| launch room + door 0, max metadata | 27,193,240 | 0.027193 | $4.08 |
+| graduation rent, paid from reserve | 18,013,680 | 0.018014 | $2.70 |
+<!-- END GENERATED RENT TOTALS -->
 
 Launching is free: `room_fee_lamports` and `door_fee_lamports` default to 0.
 The launcher pays rent and transaction fees and nothing else. Doors are never
@@ -224,166 +237,112 @@ it with its seeds.
 `["pool_creator"]`, with no account data. It signs DAMM v2 pool creation and
 its address is what the Meteora dynamic config names.
 
-**`Config`** (238 bytes). Field order:
+**`Config`** (246 bytes, packed Borsh). Existing curve and fee
+fields retain their order. Replace the old reserve bytes with
+`matcher_authority: Pubkey` and the gate thresholds
+`live_min_reserve_lamports`, `live_max_idle_seconds`, `live_new_seconds`,
+`live_min_volume_lamports`, `pool_min_window_lp_fee` (all u64).
+The matcher key is mandatory; there is no unsigned or `None` bypass.
+Admin key rotation is recorded on-chain. Gate thresholds are shared by
+routing, takeover and release, and changes are admin actions logged on-chain.
+The trailing window and bucket size are fixed by the versioned schema.
+Curve and trade-fee parameters are copied into each room and remain immutable.
 
-`admin, protocol_fee_recipient, fee_bps, door_share_bps, door_fee_lamports
-(default 0), room_fee_lamports (default 0), convert_fee_lamports,
-v_sol_lamports, v_tok, supply, r_star_lamports (the pool seed),
-meteora_dynamic_config, graduation_trigger_lamports (R* + graduation rent;
-default 85,024,680,160), paused, bump, reserved[64]`.
+**`Room`** (1265 bytes, packed Borsh). Keep the existing curve, vault,
+fee, volume and timestamp fields. Replace launcher slug storage with the
+identity hash. Store `fee_ckpt: u128`, `fee_ckpt_ts: i64` and the tagged
+hourly `liveness_buckets` ring described in detection §4. The bucket amount
+is u128 and start is i64; account_sizes.py gives the exact packed offsets.
+There is no last-window fallback. Curve trades increment both `volume_gross`
+and the current bucket; on graduation clear volume buckets and initialize
+fee history from the pool's actual cumulative counter. Live checks use
+read-only virtual checkpoint evaluation; the permissionless checkpoint
+instruction persists the same result. A stale interval is discarded rather
+than moved into a recent bucket.
 
-A non-zero door or room fee, if ever configured, goes entirely to the
-protocol; there is no reserve split.
-
-Curve and fee fields are copied into `Room` at creation and are immutable for
-that room.
-
-**`Room`** (684 bytes):
-
-- identity, bumps and `status` (0 curve, 1 complete, 2 graduated);
-- `room_mint`, `room_vault`, `retired_vault`, `fee_wsol`;
-- curve parameters, including `graduation_trigger_lamports` copied from
-  `Config`;
-- `fee_bps`, `door_share_bps`;
-- **`reserve`**: lamports credited to `ReserveVault` by the program;
-- **`sold`**: curve position q;
-- `retired`, `door_count`;
-- `protocol_accrued_sol/_wsol`;
-- `pending_reserve_sol/_wsol`: the room-token route's 60% share, not yet
-  retired. This is its only source now that door fees are zero.
-- `reserve_share_total`, `volume_gross`, `trades`, timestamps;
-- `damm_pool`, `damm_position`, `position_nft_mint`;
-- slug, URI, reserved.
-
-**`Door`** (328 bytes):
-
-- `room`, `index`, `mint`, `door_vault`, `room_token_vault`, `creator`,
-  `fee_recipient`, bumps;
-- **`backing`**: room tokens in `DoorRoomVault`;
-- `accrued_sol/_wsol`, `claimed_sol/_wsol`;
-- `buy_volume`, `sell_volume`, `trades`, `created_at`, reserved.
+**`Door`** (328 bytes). Backing, vaults and fee fields are unchanged.
+Use its reserve bytes for `matcher_version: u16`, `rule: u8`, `face: u32`,
+`phash: u64`, leaving the remainder reserved. `RoomCreated` and `DoorOpened`
+include these fields and `image_sha256` in their events. The matcher signs
+these instruction arguments along with the whole routing transaction.
 
 ## 2. Curve
 
-### Parameters
+The following is the **current default calibration**, regenerated from the
+verified rent model. `Config.graduation_trigger_lamports` is configurable;
+`create_room` copies it and the curve constants into the new Room. Updating
+Config affects future rooms only. No running instruction substitutes the
+newest default for a room's copied trigger.
+
+<!-- BEGIN GENERATED CURVE FIGURES -->
+<!-- generated by scripts/curve_identities.py -->
+
+### Identities (exact rational arithmetic)
+
+| identity | value | check |
+|---|---|---|
+| V_tok = f²S/(2f−1) | 1,073,025,605.5954 | brief's 1,073,025,606 is this rounded up by 0.4046 |
+| V_sol = R*(2f−1)/(1−f) (as written in the brief) | 240.826486 SOL | **does not give 30 SOL: inverted** |
+| V_sol = R*(1−f)/(2f−1) (correct form) | 30.000853 SOL | gives 30.0009 SOL |
+| FDV at graduation = R*/(1−f) | 410.8265 SOL | holds |
+| market cap / reserve at graduation = 1/(1−f) | 4.8333× | holds |
+| opening → graduation price multiple = (f/(1−f))² | 14.6938× | holds when V_sol and V_tok satisfy both closed forms |
+| cost to lift the pool price +10% = (√1.1 − 1)·x | 4.8809% of the pool's SOL side x | holds for any constant-product pool; independent of f |
+
+### Junction between curve and pool, by parameter set
+
+| parameters | tokens sold at switch | reserve at switch (SOL) | tokens left for the pool | price step |
+|---|---|---|---|---|
+| pump.fun published: V_sol 30, V_tok 1,073,000,000, switch at s = fS | 793,100,000.000 | 85.005359 | 206,900,000.000 | -0.0067611486% |
+| V_sol 30, V_tok 1,073,025,606, switch at s = fS | 793,100,000.000 | 84.997583 | 206,900,000.000 | +0.0000001068% |
+| V_sol 30, V_tok 1,073,025,606, switch at R = 85 SOL (brief's trigger) | 793,105,882.696 | 85.000000 | 206,894,117.304 | +0.0014836023% |
+| V_sol 30.000852995 (derived so R = 85 at s = fS), V_tok 1,073,025,606, switch at R = 85 | 793,100,000.000 | 85.000000 | 206,900,000.000 | +0.0000001068% |
+| exact closed forms (V_sol, V_tok both exact), switch at R = 85 | 793,100,000.000 | 85.000000 | 206,900,000.000 | +0.0000000000% |
+
+### Chosen integer parameters (program units)
 
 | parameter | value |
 |---|---|
-| total supply `S` | 1,000,000,000 tokens = 10¹⁵ base units |
-| fraction sold on the curve `f` | 0.7931: the calibration point used to derive V_sol (R = R* at s = fS = 793,100,000 tokens). With the raised trigger the curve actually sells 793,160,061.522864 tokens by T. |
-| virtual tokens `V_tok` | 1,073,025,606 tokens = 1,073,025,606,000,000 base units |
-| virtual SOL `V_sol` | **30,000,852,995 lamports** (derived; see §0.2) |
-| `K = V_sol · V_tok` | 32,191,683,465,476,789,970,000,000 (fits u128) |
-| pool seed SOL `R*` | 85,000,000,000 lamports |
-| graduation rent (DAMM v2 accounts) | 24,680,160 lamports (`outputs/account_sizes.md`) |
-| graduation trigger `T = R* + rent` (`Config.graduation_trigger_lamports`) | **85,024,680,160 lamports** |
-| pool seed tokens `N` | 206,811,223,802,753 base units (206,811,223.802753 tokens), matched to the curve's closing price |
-| unsold room tokens retired at graduation | 28,714,674,383 base units (28,714.674383 tokens) |
+| V_sol | 30,000,852,995 lamports (30.000852995 SOL) |
+| V_tok | 1,073,025,606,000,000 base units (1,073,025,606 tokens, 6 decimals) |
+| K = V_sol·V_tok | 32,191,683,465,476,789,970,000,000 (fits u128: True) |
+| R* | 85,000,000,000 lamports |
+| q_g (largest q with R(q) ≤ R*) | 793,099,999,999,525 base units = 793,099,999.999525 tokens |
+| R(q_g) | 85,000,000,000 lamports (R* − R(q_g) = 0 lamports) |
+| room tokens left to seed the pool, S − q_g | 206,900,000,000,475 base units = 206,900,000.000475 tokens |
+| price step at the switch (integer rounding) | +0.000000105546% |
 
-### Identities
-
-All checked in exact rational arithmetic:
-
-| identity | value | status |
-|---|---|---|
-| `V_tok = f²S/(2f−1)` | 1,073,025,605.5954 | holds; the brief's 1,073,025,606 is this rounded up by 0.4046 |
-| `V_sol = R*(2f−1)/(1−f)` (as written in the brief) | 240.826486 SOL | **wrong: inverted** |
-| `V_sol = R*(1−f)/(2f−1)` | 30.000853 SOL | correct form |
-| `FDV at graduation = R*/(1−f)` | 410.8265 SOL | holds |
-| `market cap / reserve at graduation = 1/(1−f)` | 4.8333× | holds |
-| opening → graduation price multiple `= (f/(1−f))²` | 14.6938× | holds when both closed forms hold |
-| cost to lift the graduated pool's price +10% `= (√1.1 − 1)·x` | 4.8809% of the pool's SOL side | holds for any constant-product pool; independent of f |
-
-### Continuity at the junction
-
-| parameter set | tokens sold at switch | reserve at switch | tokens left for the pool | price step |
-|---|---|---|---|---|
-| pump.fun published: V_sol 30, V_tok 1,073,000,000, switch at s = fS | 793,100,000 | 85.005359 SOL | 206,900,000 | **−0.0067611%** |
-| V_sol 30, V_tok 1,073,025,606, switch at R = 85 SOL | 793,105,882.696 | 85 SOL | 206,894,117.304 | +0.0014836% |
-| **chosen:** V_sol 30.000852995, V_tok 1,073,025,606, switch at R = 85 SOL | 793,100,000 | 85 SOL | 206,900,000 | +0.0000001068% |
-| exact closed forms for both V_sol and V_tok | 793,100,000 | 85 SOL | 206,900,000 | **0 exactly** |
-
-**pump.fun's rounding of V_tok to 1,073,000,000 is the whole source of the
-−0.0068% step** that the previous version of this spec measured. With V_tok at
-its closed form the step is exactly zero. With the brief's rounded
-1,073,025,606 it is +1.07×10⁻⁷ %. These rows describe a switch at R = R*; the
-raised trigger is handled next.
-
-### Graduation trigger raised by the graduation rent (ruling 2)
+### Graduation trigger raised to R* + graduation rent
 
 | quantity | value |
 |---|---|
-| trigger T = R* + 24,680,160 | 85,024,680,160 lamports |
-| q_g (largest q with R(q) ≤ T) | 793,160,061,522,864 base units; R(q_g) = T exactly |
-| room tokens left in `RoomVault`, U − q_g | 206,839,938,477,136 base units |
-| **literal reading:** seed R* with all remaining tokens | price step **−0.013883%** |
-| **chosen:** seed R* with N = floor(R*·(V_tok − q_g)²/K) | N = 206,811,223,802,753 base units; step **+2.755×10⁻¹³ %** |
-| unsold tokens retired, U − q_g − N | 28,714,674,383 base units |
-| alternative: re-derive V_sol to seed all remaining tokens | V_sol 29,992,871,855; seed 206,784,900,603,504; step +4.6×10⁻¹¹ % |
+| graduation rent (DAMM v2 accounts, from account_sizes.py) | 18,013,680 lamports |
+| trigger T = R* + rent | 85,018,013,680 lamports (85.018013680 SOL) |
+| q_g at T (largest q with R(q) ≤ T) | 793,143,840,548,785 base units = 793,143,840.548785 tokens |
+| R(q_g) | 85,018,013,680 lamports (T − R(q_g) = 0) |
+| room tokens left in RoomVault, U − q_g | 206,856,159,451,215 base units |
+| literal reading: seed R* with all remaining tokens, price step | -0.010133% |
+| chosen: seed R* with N = floor(R*·(V_tok − q_g)²/K) tokens | N = 206,835,198,005,974 base units = 206,835,198.005974 tokens |
+| chosen: unsold tokens retired, U − q_g − N | 20,961,445,241 base units = 20,961.445241 tokens |
+| chosen: price step (pool opens at or above the curve's closing price by < 1 base unit) | +4.146e-13% |
+| alternative: re-derive V_sol (V_tok fixed) to seed all remaining tokens | V_sol = 29,995,027,020 lamports; seed 206,815,982,822,911 base units; step -0.000000000342% |
 
-**Why seeding all remaining tokens fails.** The reserve holds T at the switch,
-but only R* goes to the pool, so the SOL side shrinks by the rent while the
-token side stays the same. The price drops.
+### Price impact of a buy (marginal price after vs before; fees excluded)
 
-**Why seeding N tokens works.** Giving the pool only the tokens that the
-curve's closing price buys with R* keeps the price, and the unsold remainder
-is locked. It holds no claim on any SOL: those tokens were never sold.
-
-### Exact integer definition (phase 0, the curve)
-
-Units are lamports and base units. The reserve owed for curve position q is:
-
-```
-R(q) = floor( K / (V_tok − q) ) − V_sol
-```
-
-- R(0) = 0 exactly, because K/V_tok = V_sol.
-- R is non-decreasing.
-- **Price is computed from `room.sold` only**, never from any account balance.
-- **Buy of net lamports n:** find the largest q′ with R(q′) ≤ R(q) + n:
-  `q′ = V_tok − floor(K/(R(q) + n + V_sol + 1)) − 1`.
-  This is exact, because `floor(K/(V_tok−q′)) ≤ T + V_sol` ⇔
-  `V_tok − q′ > K/(T + V_sol + 1)`. Then d = q′ − q tokens.
-- **Sell of t tokens:** pays `g = R(q) − R(q − t)`.
-- **Graduation point.** q_g is the largest q with R(q) ≤ T. With these
-  parameters:
-  - q_g = 793,160,061,522,864 base units;
-  - R(q_g) = T = 85,024,680,160 lamports exactly;
-  - N = 206,811,223,802,753 base units go to the pool with R*;
-  - U − q_g − N go to `RetiredVault`.
-- **Marginal price**, used for display and events only:
-  `K/(V_tok − q)²` lamports per base unit.
-
-### Phase 1, the pool
-
-After graduation the price is set by the DAMM v2 pool. It is seeded at the
-curve's closing price (step above) with full-range liquidity, which behaves as
-constant product with K′ = R* × N = 85 SOL × 206,811,223.802753 tokens.
-
-**Price impact of a buy** (marginal price after vs before; program and pool
-fees excluded):
-
-Rows below 85 SOL are curve phase. A buy that crosses T fills the curve to T;
-then R* goes to the pool and the rent to `GradPayer`, so the pool's SOL side
-ends at the buy's reserve level minus the rent. Rows from 85 SOL up are pool
-phase, where x is the pool's SOL side.
+Curve phase below 85 SOL of reserve; pool phase from 85 SOL (the pool's SOL side x starts at R* = 85 and grows with net buying; K' = R* x N). Rows at and above 85 SOL are pool-phase. Pool fee excluded.
 
 | reserve / pool SOL side | buy 0.5 SOL | 5 SOL | 50 SOL | 500 SOL | FDV (SOL) | FDV / reserve |
 |---|---|---|---|---|---|---|
-| 1 SOL | 3.25% | 34.86% | 582.70% | 47,722.91% | 30 | 29.9× |
-| 10 SOL | 2.52% | 26.56% | 406.24% | 29,665.31% | 50 | 5.0× |
-| 50 SOL | 1.25% | 12.89% | 185.99% | 8,554.62% | 199 | 4.0× |
-| 84 SOL | 0.88% | 11.55% | 152.92% | 4,705.33% | 404 | 4.8× |
-| 85 SOL (pool) | 1.18% | 12.11% | 152.25% | 4,636.68% | 411 | 4.8× |
-| 500 SOL | 0.20% | 2.01% | 21.00% | 300.00% | 14,222 | 28.4× |
-| 5,000 SOL | 0.02% | 0.20% | 2.01% | 21.00% | 1,422,155 | 284.4× |
-| 50,000 SOL | 0.00% | 0.02% | 0.20% | 2.01% | 142,215,515 | 2,844.3× |
+| 1 SOL | 3.25% | 34.86% | 582.70% | 47,718.64% | 30 | 29.9× |
+| 10 SOL | 2.52% | 26.56% | 406.24% | 29,662.64% | 50 | 5.0× |
+| 50 SOL | 1.25% | 12.89% | 185.99% | 8,553.82% | 199 | 4.0× |
+| 84 SOL | 0.88% | 11.55% | 152.92% | 4,704.89% | 404 | 4.8× |
+| 85 SOL | 1.18% | 12.11% | 152.25% | 4,636.68% | 411 | 4.8× |
+| 500 SOL | 0.20% | 2.01% | 21.00% | 300.00% | 14,220 | 28.4× |
+| 5,000 SOL | 0.02% | 0.20% | 2.01% | 21.00% | 1,421,990 | 284.4× |
+| 50,000 SOL | 0.00% | 0.02% | 0.20% | 2.01% | 142,199,031 | 2,844.0× |
 
-**Depth is not continuous at graduation, even though price is.** A 0.5 SOL buy
-moves price 0.88% at 84 SOL of reserve, but 1.18% just after graduation,
-because the 30 virtual SOL disappear.
-
-**Depth** (SOL needed to move the price; fees excluded):
+### Depth: SOL needed to move the price (fees excluded)
 
 | reserve / pool SOL side | +1% | +5% | +10% | −1% sale | −5% sale | −10% sale |
 |---|---|---|---|---|---|---|
@@ -392,10 +351,47 @@ because the 30 virtual SOL disappear.
 | 85 SOL | 0.424 | 2.099 | 4.149 | 0.426 | 2.152 | 4.362 |
 | 500 SOL | 2.494 | 12.348 | 24.404 | 2.506 | 12.660 | 25.658 |
 | 5,000 SOL | 24.938 | 123.475 | 244.044 | 25.063 | 126.603 | 256.584 |
+| 50,000 SOL | 249.378 | 1,234.754 | 2,440.442 | 250.628 | 1,266.028 | 2,565.835 |
 
-In the curve phase, depth includes the 30 virtual SOL, which are not backed.
+In the curve phase x = V_sol + R includes the virtual SOL, so depth there is not backed by real SOL beyond R.
+<!-- END GENERATED CURVE FIGURES -->
 
----
+### Exact integer definition and the per-room handoff
+
+Units are lamports and base units. With the room's copied constants:
+
+```
+K = room.v_sol_lamports * room.v_tok
+R(q) = floor(K / (room.v_tok - q)) - room.v_sol_lamports
+T = room.graduation_trigger_lamports
+```
+
+- `R(0) = 0`; R is non-decreasing. Price is computed from sold state, never
+  an account's raw balance.
+- A buy of net fee-base lamports n computes the largest q' with
+  `R(q') <= R(q) + n`:
+  `q' = V_tok - floor(K / (R(q) + n + V_sol + 1)) - 1`.
+- A sell of t tokens pays `g = R(q) - R(q-t)` before program fees.
+- The crossing buy caps at the room's T. At completion the room stops curve
+  trading until its permissionless graduation.
+- Compute the matched pool token amount from **that room's actual sold
+  state**: `N = floor(room.r_star * (room.v_tok - room.sold)^2 / K)`.
+  Seed the pool with `room.r_star` and N; retire `U - room.sold - N`.
+- The pool price matches the closing curve price to integer rounding. Depth
+  changes because virtual SOL disappears. The generated tables show the
+  current example; none of their default quantities are program constants.
+
+<!-- BEGIN GENERATED GRADUATION SNAPSHOTS -->
+<!-- generated by scripts/graduation_scenarios.py -->
+# Config trigger snapshots survive a rent/default change
+
+| room snapshot | trigger (lamports) | sold base units | pool seed base units | retired base units | rent budget | current rent | budget left after rent |
+|---|---|---|---|---|---|---|---|
+| old room, old trigger | 85,024,680,160 | 793,160,061,522,864 | 206,811,223,802,753 | 28,714,674,383 | 24,680,160 | 18,013,680 | 6,666,480 |
+| new room, current default | 85,018,013,680 | 793,143,840,548,785 | 206,835,198,005,974 | 20,961,445,241 | 18,013,680 | 18,013,680 | 0 |
+
+Existing rooms retain their copied trigger, curve constants and sold state. The seed is computed from that state, never from the newest Config default. Lower runtime rent leaves budget dust for the existing graduation dust path. If future rent exceeds a room's budget, protocol-accrued fees/top-up cover the shortfall or the transaction fails atomically for retry; no trigger rewrite or extra reserve debit is allowed. These are exact model checks, not program execution tests.
+<!-- END GENERATED GRADUATION SNAPSHOTS -->
 
 ## 3. Instructions
 
@@ -416,17 +412,33 @@ In the curve phase, depth includes the 30 virtual SOL, which are not backed.
   ends by asserting B1 (§4) for each door it touched. It reads the two vault
   balances from the token accounts, not from cached fields.
 
-### `create_room(slug, door0_name, door0_symbol, door0_uri, first_buy_lamports, min_tokens_out)`
+### `create_room(door0_name, door0_symbol, door0_uri, first_buy_lamports, min_tokens_out, matcher_evidence)`
 
-**Signer:** launcher. By default they pay rent only: 0.033213 SOL ($4.98) for
-the room accounts and door 0. `room_fee_lamports` defaults to 0; if it is ever
-set, it goes to the protocol.
+**Signers:** launcher and the exact `Config.matcher_authority`. The matcher
+co-signs the whole transaction message: instruction choice, target accounts,
+metadata, first-buy and slippage limits, evidence and recent blockhash. Changing
+any of these invalidates authorization; blockhash expiry bounds replay. The
+launcher signs the same previewed transaction. Launching charges rent and
+transaction fees, with room and door fees defaulting to zero.
+
+**Identity and routing checks, before account creation:**
+
+- There is no slug argument. Derive
+  `identity = sha256(floor_fold(symbol) || 0x00 || floor_fold(name))` from
+  door 0's raw metadata, using the deterministic ASCII byte fold in detection
+  §3.1. `SlugLock` seeds are `["slug", identity]`.
+- Validate an existing lock and its holder `Room` from the stored id/PDA.
+  If the holder passes the single liveness gate, reject creation: the launch
+  must be a door of that holder. If the holder fails, take over atomically.
+  Read and validate its DAMM pool when graduated. If no lock exists, create it.
+- Initialize a genuinely new room with the execution clock; never reset the
+  previous holder's `created_at`. A failed creation rolls back lock changes.
 
 **Creates:**
 
 - `Room`, `ReserveVault`, `FeeVault`;
 - `GradPayer`, funded with its own rent-exempt minimum only;
-- `SlugLock` (fails if the normalised slug is held by a live room);
+- `SlugLock` (derived identity; create if absent, otherwise re-point only from a dead holder);
 - `RoomMint`, `RoomVault`, `RetiredVault`, `FeeWsol`;
 - **door 0**, which is always created.
 
@@ -456,7 +468,7 @@ set, it goes to the protocol.
 There is no founder share or other founder privilege. The launcher's only
 lasting distinction is that their metadata is the room token's.
 
-### `open_door(room, name, symbol, uri, first_buy_lamports, min_tokens_out)`
+### `open_door(name, symbol, uri, first_buy_lamports, min_tokens_out, matcher_evidence)`
 
 **Allowed:** any status: before graduation, while complete, and after
 graduation.
@@ -465,9 +477,20 @@ graduation.
 is no uniqueness check:** names, symbols and images may repeat freely within a
 room.
 
-**Signer:** opener, who pays rent only: 0.012584 SOL ($1.89).
-`door_fee_lamports` defaults to 0; if it is ever set, it goes to the
-protocol.
+**Signers:** opener and the exact `Config.matcher_authority`, co-signing
+its routing decision in the transaction message. The target `Room` is an
+instruction account selected by that signed decision; the opener cannot choose
+or substitute another room. The opener pays rent and transaction fees; the
+door fee defaults to zero.
+
+**Routing checks:** evaluate the shared liveness gate on the target at
+execution. Derive the candidate identity and read its SlugLock. If a distinct
+holder is live, reject the route: exact floor wins. Verify and read a distinct
+holder's room, and each corresponding DAMM pool when graduated. All metadata
+may repeat within the selected room. These checks precede the optional first
+buy and roll back atomically if it fails. `create_room`'s internal door-0
+initialization uses the already verified creation decision, rather than
+recursively requiring the new lock to have an older holder.
 
 1. **Door mint.**
    1. Create `DoorMint`, the same sequence as the room mint, with metadata
@@ -646,7 +669,7 @@ is in §7).
    `room.reserve`:
    - **seed:** exactly R* = 85,000,000,000 lamports into a temporary WSOL
      account owned by `GradPayer`, then `SyncNative`;
-   - **graduation rent:** `T − R*` = 24,680,160 lamports to `GradPayer`, a
+   - **graduation budget:** the room's `T − R*` lamports to `GradPayer`, a
      direct credit, which the runtime allows to any writable account;
    - **slack:** `room.reserve − T` to `FeeVault` as `protocol_accrued_sol`.
      It is zero by construction (the cap in buy step 3); the term is kept so
@@ -654,16 +677,18 @@ is in §7).
    - `room.reserve = 0`.
 3. **Check rent sufficiency.** `GradPayer` must hold the rent-exempt minimums
    of the accounts DAMM v2 will create, from the rent sysvar at call time.
-   - If DAMM v2 account sizes have grown since this room's
+   - If runtime rent or DAMM v2 account sizes have grown since this room's
      `graduation_trigger_lamports` was snapshotted, the shortfall is taken
      from `room.protocol_accrued_sol`.
-   - If that is not enough, `graduate` fails and can be retried after the
-     protocol tops it up. The reserve is never touched for it.
+   - If that is not enough, the transaction fails atomically and can be
+     retried after a protocol top-up. Do not rewrite the room trigger or
+     take extra from its reserve. If current rent is lower, unused budget
+     follows the existing GradPayer dust path in step 8.
 4. **Prepare the tokens.**
-   - Compute `N = floor(R* · (V_tok − room.sold)² / K)` (206,811,223,802,753
-     base units with the chosen parameters).
+   - Compute `N = floor(R* · (V_tok − room.sold)² / K)` from this room's
+     copied constants and actual sold state, including for older triggers.
    - Transfer N room tokens `RoomVault → GradPayer`'s room-token account.
-   - Transfer the rest, `U − room.sold − N` (28,714,674,383 base units),
+   - Transfer the rest, `U − room.sold − N`,
      `RoomVault → RetiredVault`, and add it to `room.retired`.
    - The seed of exactly R* and N opens the pool at the curve's closing
      price (§2).
@@ -686,23 +711,36 @@ is in §7).
    - Leftover room tokens in `GradPayer`'s account go to `RetiredVault`.
 9. **State:** `room.status = 2`; store `damm_pool`, `damm_position`,
    `position_nft_mint`, `graduated_at`.
+   Clear curve-volume buckets; initialize `fee_ckpt` from the new pool's
+   actual `total_lp_b_fee` and `fee_ckpt_ts` from the execution clock. Curve
+   volume must never be interpreted as LP fees.
 10. **Emit** `Graduated`.
+
+### `checkpoint_pool(room)`, permissionless
+
+Read the validated DAMM v2 pool and update the room's tagged fee history using
+the conservative interval-start rule in detection §4. This may run for a dead
+room too; stale growth is discarded, and fresh subsequent observed activity
+can revive it. It never changes room creation time or the lock holder.
 
 ### `release_slug(room)`, permissionless
 
-Ruling 5 keeps SlugLock with the expiry rule from DESIGN.md §6.
-
-- **Allowed when all hold:**
-  - `room.status < 2`;
-  - `room.reserve < 1,000,000,000` lamports (1 SOL);
-  - `now − room.last_trade_at > 604,800` seconds (7 days).
-- **Effect:** closes `SlugLock`, with its rent going to the caller as a cleanup
-  incentive. A new room may then register the slug.
-- **Nothing else changes for the released room.** It keeps trading by
-  `room_id`. Its room token's metadata does not depend on the slug, its doors
-  are untouched, and it is not closed.
-- **Graduated rooms never release their slug.** Their direct pool trading is
-  invisible to `last_trade_at` (§0.A.2).
+- Load `Config`, `Room` and the room's identity-derived `SlugLock`. Verify
+  the lock still names this exact room; a former holder cannot close a lock
+  already transferred to a replacement room.
+- **Allowed exactly when `NOT live(room)`**, using the same function as launch
+  routing and takeover (detection §4), at the execution clock. No separate
+  status restriction, reserve rule or idle timer applies.
+- For a graduated room, validate its DAMM v2 pool and evaluate the cumulative
+  LP-fee increment with the same conservative checkpoint history. Unknown-age
+  counter growth is never refreshed into a new recent window. The result
+  agrees before and after checkpointing.
+- Close only `SlugLock`; its rent goes to the cleanup caller. The room keeps
+  trading by id, its metadata and every door remain unchanged.
+- An existing dead holder may instead be replaced atomically by `create_room`;
+  re-point the same lock without closing it. Check the previous holder and its
+  pool (when graduated) before takeover. Creation time belongs to the newly
+  created room and cannot be reset on the old holder.
 
 ### Fee instructions
 
@@ -773,9 +811,9 @@ debit lowers `room.reserve` by exactly the lamports moved, so I2
 
 | step | lamports moved out of `ReserveVault` | `room.reserve` after | where they go |
 |---|---|---|---|
-| entry | — | T = 85,024,680,160 | — |
-| a. seed | R* = 85,000,000,000 | T − R* = 24,680,160 | temporary WSOL → DAMM v2 token B vault |
-| b. graduation rent | T − R* = 24,680,160 | 0 + slack | `GradPayer` → DAMM v2 account rent |
+| entry | — | room snapshot T | — |
+| a. seed | room pool seed R* | T − R* | temporary WSOL → DAMM v2 token B vault |
+| b. graduation budget | T − R* | 0 + slack | `GradPayer` → DAMM v2 account rent |
 | c. slack | `room.reserve − T` (0 by construction) | 0 | `FeeVault`, `protocol_accrued_sol` |
 | exit | total = `room.reserve` at entry | 0 | status 2: I1 and S1 retire |
 
@@ -786,11 +824,11 @@ and N tokens at the curve's closing price, and every outstanding room token
 (in users' wallets, in `DoorRoomVault`s and in `RetiredVault`) can sell into
 it.
 
-**The rent is paid by the curve, not by holders.** It came from buyers who
-lifted the reserve from R* to T. Those 24,680,160 lamports bought tokens at
-the curve price (q went from 793,099,999,999,525 to 793,160,061,522,864 base
-units) and leave as rent. That is the cost ruling 2 chose to place on the
-curve.
+**The graduation budget comes from the curve's reserve.** Buyers lift it
+from the pool seed R* to the room's T, buying additional curve tokens. The
+budget leaves through GradPayer and any unused portion follows the existing
+dust rule. The copied trigger remains valid across later rent changes; the
+old/new snapshot scenario above checks both handoffs.
 
 **Review rule.** Any instruction that debits `ReserveVault` by anything other
 than exactly `R(q) − R(q − t)` on a sell, or by the three `graduate` debits
@@ -814,8 +852,10 @@ There must also be a property test of I1 over random operation sequences.
 Graduation triggers on the **reserve reaching
 `T = room.graduation_trigger_lamports`**, never on market cap.
 
-- T is R* plus the DAMM v2 graduation rent: 85,000,000,000 + 24,680,160 =
-  **85,024,680,160 lamports**.
+<!-- BEGIN GENERATED DEFAULT TRIGGER -->
+Current **Config default**: `85,018,013,680` lamports, pool seed `85,000,000,000` plus graduation rent `18,013,680`. Existing rooms retain their copied trigger and calculate the seed from their own sold state.
+<!-- END GENERATED DEFAULT TRIGGER -->
+
 - It is a `Config` value, because the rent depends on DAMM v2's account sizes.
   `Config` changes affect new rooms only, since each room snapshots T. A room
   whose snapshotted rent falls short at graduation tops up from
@@ -851,7 +891,7 @@ The parameters use the same struct as the customizable pool,
 |---|---|---|
 | `sqrt_min_price`, `sqrt_max_price` | `MIN_SQRT_PRICE = 4295048016`, `MAX_SQRT_PRICE = 79226673521066979257578248091` | `constants.rs` L4, L10: full range, so the pool behaves as constant product |
 | `sqrt_price` | Q64.64 square root of `R* / N`, in lamports per base unit; equals the curve's closing price `K/(V_tok − q_g)²` to under one base unit | continuity with the curve |
-| `liquidity` | the largest L whose required amounts (`liquidity_handler/concentrated_liquidity.rs` L19, `get_delta_amount_a/b_unsigned` L288, L324) fit within N = 206,811,223,802,753 base units and R* = 85,000,000,000 lamports | rounding dust per graduate step 8; dust size not computed here (needs the Q64 math implemented) |
+| `liquidity` | the largest L whose required amounts (`liquidity_handler/concentrated_liquidity.rs` L19, `get_delta_amount_a/b_unsigned` L288, L324) fit within the N computed from this room's sold state and its copied R* | rounding dust per graduate step 8; dust size not computed here (needs the Q64 math implemented) |
 | `collect_fee_mode` | `OnlyB`, so fees are collected in WSOL | `state/pool.rs` L49–57. `Compounding` must **not** be used: it folds fees into liquidity and leaves nothing to claim. |
 | `pool_fees` base fee | `pool_base_fee_bps`, **a parameter (assumed default 100 bps)** | Lower bound `MIN_FEE_BPS = 1`. The upper bound depends on the fee version: `MAX_FEE_BPS_V0 = 5000` or `MAX_FEE_BPS_V1 = 9900` (`constants.rs` L112–127); 100 bps is within both. Meteora keeps `PROTOCOL_FEE_PERCENT = 20` (L146), so 80% goes to positions. |
 | `has_alpha_vault`, `activation_point` | false, none (activate immediately) | — |
@@ -940,61 +980,56 @@ door → room-token conversion.
 
 ## 6. Fees
 
-`outputs/fee_model.md`:
+The room-token route's door share goes to `pending_reserve` and is retired by
+`retire_pending`; there is no founder share. The intended launch fees remain
+zero. Launchers pay rent and transaction fees; the graduation budget comes
+from the room's reserve. Current room/door rent totals are generated in §1.
 
-| route (pre- or post-graduation, program fee only) | door | reserve | protocol | total, per $1M |
+The spam income model below assumes some buyers choose doors uniformly. It
+is an assumption, not measured behavior. Frontend ranking and actual routed
+traffic determine whether that assumption holds.
+
+<!-- BEGIN GENERATED FEE FIGURES -->
+<!-- generated by scripts/fee_model.py -->
+Trade fee 100 bps on every buy and sell, charged on top of the trade.
+
+| route | to the door | to the reserve | to the protocol | total |
 |---|---|---|---|---|
-| through door N | $6,000 | $0 | $4,000 | $10,000 |
-| room token through the program | $0 | $6,000 | $4,000 | $10,000 |
+| through door N, per $1M | $6.0k | $0 | $4.0k | $10.0k |
+| room token through the program, per $1M | $0 | $6.0k | $4.0k | $10.0k |
 
-**Where the room token's 60% goes.** It goes to `pending_reserve` and is
-retired by `retire_pending`: bought on the curve, or on the pool after
-graduation, into `RetiredVault`. That raises the price for every holder.
+Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.009185 SOL = $1.38. Graduation rent (0.018014 SOL) is paid from the reserve at graduate, not by the launcher.
 
-**Launch fees are zero.** `door_fee_lamports = room_fee_lamports = 0` is the
-intended configuration.
+Room lifetime volume at which one more no-traffic door repays its rent, V = rent × (D + 1) / (door_rate × rho):
 
-| what the launcher pays | SOL | USD at $150 |
-|---|---|---|
-| a door (rent only, max metadata) | 0.012584 | $1.89 |
-| a room with door 0 (rent only) | 0.033213 | $4.98 |
-| graduation rent | 0, paid from the reserve at `graduate` | — |
-
-If either fee is ever set above zero, it goes entirely to the protocol.
-`pending_reserve_*` now receives only the room-token route's 60% share.
-
-**Spam.** The spam model is an assumption: a door with no traffic of its own
-earns only from the share ρ of volume that picks doors uniformly, at 0.60% of
-that volume. The only cost of a door is its 0.012584 SOL ($1.89) of rent,
-which is never refunded.
-
-One more no-traffic door repays its rent once the room's lifetime volume
-reaches `V = rent × (D + 1) / (0.60% × ρ)`:
-
-| ρ | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
+| rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
 |---|---|---|---|---|
-| 0.01 | $346.1k | $3.18M | $31.49M | $314.62M |
-| 0.05 | $69.2k | $635.5k | $6.30M | $62.92M |
-| 0.3 | $11.5k | $105.9k | $1.05M | $10.49M |
+| 0.01 | $252.6k | $2.32M | $22.98M | $229.64M |
+| 0.05 | $50.5k | $463.8k | $4.60M | $45.93M |
+| 0.3 | $8.4k | $77.3k | $766.2k | $7.65M |
 
-10,000 spam doors in a room with 10 doors already (rent cost $18.9k):
+Income of one more no-traffic door over the room's life, net of its rent, door_rate × rho × V / (D + 1) − rent:
 
-| V | ρ = 0.05 | ρ = 0.3 |
-|---|---|---|
-| $1M | net −$18.6k | net −$17.1k |
-| $10M | net −$15.9k | net −$893.50 |
-| $50M | net −$3.9k | **net +$71.0k** |
+| room lifetime volume V | rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
+|---|---|---|---|---|---|
+| $1.00M | 0.05 | $25.90 | $1.59 | $-1.08 | $-1.35 |
+| $1.00M | 0.3 | $162.26 | $16.44 | $0.42 | $-1.20 |
+| $10.00M | 0.05 | $271.35 | $28.33 | $1.62 | $-1.08 |
+| $10.00M | 0.3 | $1.6k | $176.84 | $16.60 | $0.42 |
+| $50.00M | 0.05 | $1.4k | $147.14 | $13.61 | $0.12 |
+| $50.00M | 0.3 | $8.2k | $889.71 | $88.53 | $7.62 |
 
-**No fee defends this any more.** With free doors, a no-traffic door is
-profitable in any room whose volume clears the threshold above. A mass spam
-attack is profitable in large rooms where enough flow picks doors uniformly.
+10,000 spam doors in a room with 10 doors already (cost = rent only):
 
-**The defence moves to frontend ranking.** Rank by unique buyers and net
-inflow, never by door count or raw volume, so uniform-picking flow shrinks
-toward zero (§7, clones). This is a frontend requirement; the program does not
-enforce it.
-
----
+| V | rho | spam income | spam cost (rent) | net |
+|---|---|---|---|---|
+| $1.00M | 0.05 | $299.70 | $13.8k | $-13.5k |
+| $1.00M | 0.3 | $1.8k | $13.8k | $-12.0k |
+| $10.00M | 0.05 | $3.0k | $13.8k | $-10.8k |
+| $10.00M | 0.3 | $18.0k | $13.8k | $4.2k |
+| $50.00M | 0.05 | $15.0k | $13.8k | $1.2k |
+| $50.00M | 0.3 | $89.9k | $13.8k | $76.1k |
+<!-- END GENERATED FEE FIGURES -->
 
 ## 7. Limits
 
@@ -1009,24 +1044,42 @@ enforce it.
 
 **Compute per instruction.** Not measured; no program has been built.
 
-**Accounts touched per instruction** (`outputs/instruction_accounts.md`;
-constant in the number of doors):
+**Accounts touched and packet model** (generated; each variant includes the
+pool/holder accounts it may require):
 
-| instruction | accounts |
+<!-- BEGIN GENERATED INSTRUCTION ACCOUNTS -->
+<!-- generated by scripts/instruction_accounts.py -->
+| instruction | accounts | signatures | under 64-lock limit | modelled legacy bytes | packet margin (bytes) |
+|---|---|---|---|---|---|
+| buy/sell, door route, curve | 16 | 1 | yes | 641 | 591 |
+| buy/sell, room-token route, curve | 12 | 1 | yes | 509 | 723 |
+| buy/sell, door route, pool | 26 | 1 | yes | 971 | 261 |
+| buy/sell, room-token route, pool | 22 | 1 | yes | 839 | 393 |
+| convert | 17 | 1 | yes | 674 | 558 |
+| open_door (curve, distinct identity holder; no first buy) | 16 | 2 | yes | 1023 | 209 |
+| open_door (both pools, distinct identity holder; no first buy) | 18 | 2 | yes | 1089 | 143 |
+| create_room (fresh identity, door 0; no first buy) | 22 | 2 | yes | 1221 | 11 |
+| create_room (graduated dead-holder takeover; no first buy) | 24 | 2 | yes | 1287 | -55 |
+| release_slug (curve) | 5 | 1 | yes | 278 | 954 |
+| release_slug (pool) | 6 | 1 | yes | 311 | 921 |
+| checkpoint_pool | 4 | 1 | yes | 245 | 987 |
+| graduate | 31 | 1 | yes | 1136 | 96 |
+
+`graduate`: 31 keys, one signature, 8-byte discriminator, one instruction: 1136 bytes, 96 bytes spare. With one ComputeBudget key and limit/price instructions: 1188 bytes, 44 spare.
+
+These are serialized-size models, not a compiled-program measurement. Each root instruction passes every listed key; aliases are deduplicated in a real message. Launches have two distinct signers and max metadata/evidence. Other instructions use an assumed 8-byte discriminator only. Optional first-buy account unions, ATA creation and extra instructions require a new packet check. Negative margins require a v0 message and lookup table (or instruction splitting where atomicity permits). Use v0/ALT for launch and graduation transactions to leave compute-budget and composition margin.
+
+Account metas (R read, W write, S signer):
+
+| launch/release addition | role |
 |---|---|
-| curve-phase buy or sell, door route | 16 |
-| curve-phase buy or sell, room-token route | 12 |
-| pool-phase buy or sell, door route | 26 |
-| pool-phase buy or sell, room-token route | 22 |
-| convert | 17 |
-| `open_door` (without first buy) | 13 |
-| `create_room` (with door 0, without first buy) | 21 |
-| `release_slug` | 4 |
-| `graduate` | 31 |
-
-All are under the 64-account lock limit. `graduate`'s 31 keys (992 bytes) fit
-a legacy 1,232-byte packet with only 36 bytes to spare, under assumed
-overheads, so it uses a v0 transaction with an address lookup table.
+| matcher_authority | R,S; mandatory for both launch instructions |
+| slug_lock | R for open_door; W for create_room/release_slug |
+| identity_holder_room / previous_holder_room | R; verify key/id from lock, optional only if no distinct holder |
+| damm_pool / identity_holder_damm_pool / previous_holder_damm_pool | R; required for the corresponding graduated room |
+| config | R; authority and the single set of liveness constants |
+| room | W for trades, launch and checkpoints; R for release_slug |
+<!-- END GENERATED INSTRUCTION ACCOUNTS -->
 
 Account lock limit: 64 per transaction, or `MAX_TX_ACCOUNT_LOCKS` behind
 `increase_tx_account_lock_limit` (agave `runtime/src/bank.rs` L3847). Measure
@@ -1112,9 +1165,10 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
     - `RetiredVault` gained `U − sold − N`.
 15. **G2:** `graduate` debits `ReserveVault` by exactly `room.reserve` at
     entry: R* + (T − R*) + slack.
-16. **S2:** `release_slug` succeeds only if `status < 2`,
-    `reserve < 1 SOL` and the room has been idle for more than 7 days. It
-    closes only the `SlugLock`.
+16. **S2:** `release_slug` succeeds exactly when the current holder fails
+    the routing liveness gate, in any status, and closes only its `SlugLock`.
+    It rejects a stale former holder after takeover. Boundary and stale-pool
+    tests use the same `is_live` helper as routing.
 
 ## 9. What a trader sees
 

@@ -1,0 +1,72 @@
+{
+  "checked_at_utc": "2026-11-01T08:50:05.428544+00:00",
+  "method": "GET original sample metadata URIs and same-CID IPFS gateways",
+  "metadata_json_responses": 5,
+  "rows": [
+    {
+      "host": "ipfs.io",
+      "url": "https://ipfs.io/ipfs/QmXQWa4q43PA7LQjZqj4H51DFB7MpAuQZRrAV9Bu3Kgo6x",
+      "error": "<urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>"
+    },
+    {
+      "host": "metadata.j7tracker.io",
+      "url": "https://metadata.j7tracker.io/metadata/5ab6749cb8974882.json",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 400,
+      "metadata_json": true,
+      "image_uri": "https://axiomtrading-v2.axiom-cdn.io/5LTtHn32CUCGSJRDoAx4jnqoqDzrNT6pMPeBh7cgpump.webp"
+    },
+    {
+      "host": "gateway.pinata.cloud",
+      "url": "https://gateway.pinata.cloud/ipfs/QmUGRcweYJwZgMoRQ4iaofNirh5CMZYsxqJMijc2FumXGv",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 424,
+      "metadata_json": true,
+      "image_uri": "https://gateway.pinata.cloud/ipfs/QmYeoLBEdJ1YoKu9vqJkZqy1e7NG7Xw21r6UkpUyx1fhRs"
+    },
+    {
+      "host": "pump.mypinata.cloud",
+      "url": "https://pump.mypinata.cloud/ipfs/bafkreifog34x2hd43znnyxkjrfbs5rjxjyhxfcegnkd3kgngzuda2vn66i",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 324,
+      "metadata_json": true,
+      "image_uri": "https://pump.mypinata.cloud/ipfs/bafybeieqrmzlaxu7qdkooqyts6vukpdv47c2u4tf2r4walukvpnuzu6jl4"
+    },
+    {
+      "host": "storage.googleapis.com",
+      "url": "https://storage.googleapis.com/padre-user-content-store/coin-launch-metadata-tg_6030243923-377e68eb-49dd-425e-8bfb-c551ae75d278",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 284,
+      "metadata_json": true,
+      "image_uri": "https://thumbnails.padre.gg/SOLANA-2w5cMuyrfRfK74meoTZ8jcAFzFDytc5wug3CdUDnpump"
+    },
+    {
+      "host": "meta.uxento.io",
+      "url": "https://meta.uxento.io/data/d70db100-005c-43dd-a6e7-da4f4488d8d7",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 221,
+      "metadata_json": true,
+      "image_uri": "https://edge.uxento.io/image/FmjFCPF7SeUgfkMej6n1NrLyoWT35enLvz9StE4spump"
+    },
+    {
+      "host": "dweb.link",
+      "url": "https://dweb.link/ipfs/QmXQWa4q43PA7LQjZqj4H51DFB7MpAuQZRrAV9Bu3Kgo6x",
+      "error": "<urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>"
+    },
+    {
+      "host": "w3s.link",
+      "url": "https://w3s.link/ipfs/QmXQWa4q43PA7LQjZqj4H51DFB7MpAuQZRrAV9Bu3Kgo6x",
+      "error": "<urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>"
+    },
+    {
+      "host": "cloudflare-ipfs.com",
+      "url": "https://cloudflare-ipfs.com/ipfs/QmXQWa4q43PA7LQjZqj4H51DFB7MpAuQZRrAV9Bu3Kgo6x",
+      "error": "<urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>"
+    }
+  ]
+}

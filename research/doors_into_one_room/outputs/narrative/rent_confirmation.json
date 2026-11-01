@@ -1,0 +1,31 @@
+{
+  "checked_at_utc": "2026-11-01T09:12:35.878651+00:00",
+  "rpc": "https://api.mainnet-beta.solana.com",
+  "note": "Raw rent-exemption RPC results, not account balances; method has no context slot.",
+  "reads": [
+    {
+      "method": "getMinimumBalanceForRentExemption",
+      "params": [
+        0,
+        {
+          "commitment": "finalized"
+        }
+      ],
+      "result": 650240,
+      "finalized_slot_before": 464037171,
+      "finalized_slot_after": 464037172
+    },
+    {
+      "method": "getMinimumBalanceForRentExemption",
+      "params": [
+        165,
+        {
+          "commitment": "finalized"
+        }
+      ],
+      "result": 1488440,
+      "finalized_slot_before": 464037175,
+      "finalized_slot_after": 464037178
+    }
+  ]
+}
