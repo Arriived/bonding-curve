@@ -1,6 +1,7 @@
 """Reproduce the approved revision without editing generated tables by hand.
 
-Default: regenerate mathematical/gate/cost/doc tables from checked-in observations.
+Default: regenerate math/gate/cost/docs and offline social/consensus studies from
+         checked-in observations and recorded hashes; no image fetch or decoding.
 --images: also redo image replay, entropy, real-image edits and reference comparison;
           requires byte caches from fetch_token_images.py and pinned requirements_images.txt.
 --fetch: fetch original sample metadata/images first (network); implies --images.
@@ -32,6 +33,7 @@ def main():
     run(Path('narrative/test_liveness.py'))
     run(Path('narrative/test_recall_evidence.py'))
     run(Path('narrative/test_social.py'))
+    run(Path('narrative/test_consensus.py'))
     run(Path('narrative/run_examples.py'),SCRIPTS/'narrative/examples')
     run(Path('narrative/revision_summary.py'))
 

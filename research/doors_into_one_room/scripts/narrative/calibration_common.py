@@ -16,27 +16,36 @@ def verify_image_labels(images, path):
                 raise ValueError('Image bytes changed; re-review image label for '+row[prefix+'_mint'])
 
 
-def ground_truth(rows, labels_path, extra_labels_path=None):
+def ground_truth(rows, labels_path, extra_labels_path=None, *, exclude_missing_uri=False, details=False):
+    """Default preserves the archival estimator exactly.
+
+    The explicit nonempty-URI sensitivity excludes the known missing-URI bug;
+    it never changes the historical comparison silently. Optional details expose
+    the fixed per-launch denominator, not newly inferred social/image labels.
+    """
     labels = {}
     for path in (labels_path, extra_labels_path):
         if path and Path(path).exists():
-            for row in csv.DictReader(Path(path).open(encoding="utf-8", newline="")):
-                if row['label'] in ('S', 'D', 'U'):
-                    labels[tuple(sorted((row['a'], row['b'])))] = row['label']
+            with Path(path).open(encoding="utf-8", newline="") as handle:
+                for row in csv.DictReader(handle):
+                    if row['label'] in ('S', 'D', 'U'):
+                        labels[tuple(sorted((row['a'], row['b'])))] = row['label']
     index = collections.defaultdict(list)
     uris = collections.defaultdict(list)
     earlier = []
     pairs = {}
+    def same_uri(a,b):
+        return a['uri'] == b['uri'] and (bool(a['uri']) or not exclude_missing_uri)
     for j, r in enumerate(rows):
         candidates = set(uris.get(r['uri'], ()))
         for key in T.probe_keys(r):
             candidates.update(index.get(key, ()))
-        matches = sorted(i for i in candidates if rows[i]['uri'] == r['uri'] or
+        matches = sorted(i for i in candidates if same_uri(rows[i],r) or
                          T.matches(r, rows[i], 'T1') or T.matches(r, rows[i], 'floor') or
                          T.matches(r, rows[i], 'raw-symbol'))
         earlier.append(matches)
         for i in matches:
-            if rows[i]['uri'] != r['uri'] and T.vkey(rows[i]) != T.vkey(r):
+            if not same_uri(rows[i],r) and T.vkey(rows[i]) != T.vkey(r):
                 stratum = T.stratum(rows[i], r)
                 if stratum:
                     pairs.setdefault(T.pair_key(rows[i], r), stratum)
@@ -51,7 +60,7 @@ def ground_truth(rows, labels_path, extra_labels_path=None):
                            T.wilson(same, same + different)[0])
 
     def certain(a, b):
-        return a['uri'] == b['uri'] or T.vkey(a) == T.vkey(b)
+        return same_uri(a,b) or T.vkey(a) == T.vkey(b)
 
     def probability(a, b, lower=False):
         if certain(a, b):
@@ -64,8 +73,10 @@ def ground_truth(rows, labels_path, extra_labels_path=None):
             return 0.0
         return rates[stratum][int(lower)]
 
-    population = sum(max((probability(rows[i], rows[j]) for i in members), default=0)
-                     for j, members in enumerate(earlier))
+    copy_probabilities = [max((probability(rows[i], rows[j]) for i in members), default=0)
+                          for j, members in enumerate(earlier)]
+    population = sum(copy_probabilities)
     certain_vamps = {j for j, members in enumerate(earlier)
                      if any(certain(rows[i], rows[j]) for i in members)}
-    return probability, certain_vamps, population, labels
+    result = probability, certain_vamps, population, labels
+    return (*result, {'copy_probabilities':copy_probabilities,'rates':rates}) if details else result

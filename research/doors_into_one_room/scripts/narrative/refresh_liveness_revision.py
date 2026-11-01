@@ -1,4 +1,4 @@
-"""Regenerate the reserve-floor revision and its document tables from stored evidence.
+"""Regenerate gate, social/consensus studies and document tables from stored evidence.
 
 Usage (any working directory): python3 <path>/refresh_liveness_revision.py
 No on-chain reads. Run the existing collector scripts separately to replace source evidence.
@@ -34,6 +34,7 @@ def main():
     run('recall_bounds.py')
     run('label_dependency.py')
     run('calibrate_social.py')
+    run('calibrate_consensus.py')
     run('probe_image_hosts.py', '--render-only')
     run('age_window_calibration.py')
     run("liveness_table.py", OUT / "liveness_reads.json", OUT / "liveness_quote_mints.json",

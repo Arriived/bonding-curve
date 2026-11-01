@@ -138,7 +138,8 @@ def probe_keys(r):
 
 
 def load(path):
-    rows = [json.loads(l) for l in open(path, encoding='utf-8')]
+    with open(path, encoding='utf-8') as handle:
+        rows = [json.loads(l) for l in handle]
     rows.sort(key=lambda r: (r["slot"], r["signature"]))
     seen, out = set(), []
     for r in rows:

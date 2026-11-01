@@ -10,7 +10,7 @@
 - Image scorer, hashes, fetching scripts and calibration outputs remain offline research. A future threshold must reach text-only precision on a held-out sample with human-checked labels. No existing assistant labels have human review.
 - Settled thresholds remain: grace 1 h; reserve 0.5 SOL; idle 6 h; volume 5 SOL/day. Slug release is the exact gate complement.
 - Corrections recorded: incomplete replay inputs; stale full-retention headline; non-trade zero placeholders mistaken for observed reserve; label-dependent URI correctness and empty URI duplication. Bounds replace cross-population products.
-- Validation entry point: run_revision.py; 12 gate/text-only regression cases, 3 evidence-bound cases, 8 social-evidence cases and 14 examples. Exact curve/snapshot checks remain in the regeneration pipeline. No on-chain program is built by this research revision.
+- Validation entry point: run_revision.py; 12 gate/text-only regression cases, 3 evidence-bound cases, 8 social-evidence cases, 4 real-input consensus cases and 14 examples. Exact curve/snapshot checks remain in the regeneration pipeline. No on-chain program is built by this research revision.
 
 ## Social-link audit
 
@@ -22,3 +22,12 @@
 - telegram: 4 additional routes uncapped; 4 at prefix diversity cap 2 distinct v1 text groups per link. Uncapped combined precision evidence bound 96.43%–99.88%. These are conditional policy/assistant-label bounds, not measured production precision or true recall gain.
 - Existing labels leave 516/581 distinct review pairs unlabelled across the swept policies. Social equality is never used to label its own semantic correctness; full standalone precision/recall points remain unmeasured.
 - Corrections: historical JSON availability does not imply v1 already fetches it; a shared post proves a common reference, not an authenticated same-narrative market; text-selected label rates cannot be silently transferred to social-only pairs. The report includes root-contamination effects, frequency sweeps, strict URI/post anchors and a review queue. See social_calibration.md for the complete result.
+
+## K-of-n audit
+
+- Recommendation: reject k-of-n for v1. No tested setting adds estimated recall while retaining the unrounded text precision point, either with all six signals or in the image-free ablation. Images remain research only; no matcher, tie-order or example route changes.
+- Text OR six-signal k=4 adds 6 routes and 0.0494 estimated recall points, but precision is 99.54%. Standalone k=5 reaches 100.00% precision at 26.78% recall, adding 0 routes over text.
+- Weighted estimator co-errors exceed independence for 13/15 signal pairs. The direct-D check shows positive association for 2/10 computable signal-pair correlations and lacks image-negative coverage. The evidence does not uniformly establish the broad correlation hypothesis.
+- Crowded means lexical launch frequency at or above the observed p75 cutoff 30; 765 launches are crowded. Six-signal standalone precision is worse there at k=2 and k=3, but not at every threshold. Full co-error and crowding tables are in consensus_calibration.md.
+- The requested legacy comparison freezes expected copies at 1979.009602, including the documented empty-URI definition bug. A separate nonempty-URI sensitivity removes that credit: denominator 1975.219018; no policy qualifies there either. Missing features never cast votes. Scores without text-stratum or direct-label support are zero by the archived estimator, not confirmed semantic errors.
+- All precision/recall, co-error and crowded precision figures are conditional assistant-label estimates. Production full-gate metrics remain unmeasured. The new review queue preserves the root/candidate mint pairs needing independent judgement without inventing labels.
