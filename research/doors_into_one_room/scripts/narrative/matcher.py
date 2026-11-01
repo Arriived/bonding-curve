@@ -36,7 +36,7 @@ DEFAULTS = {
     # liveness, pre-graduation (status 0/1); chosen from outputs/narrative/liveness_table.md
     "live_min_reserve_lamports": 500_000_000,
     "live_max_idle_seconds": 6 * 3600,
-    "live_new_seconds": 2 * 3600,
+    "live_new_seconds": 3600,
     "live_min_volume_lamports": 5_000_000_000,
     "live_window_seconds": 86_400,
     "live_bucket_seconds": 3600,

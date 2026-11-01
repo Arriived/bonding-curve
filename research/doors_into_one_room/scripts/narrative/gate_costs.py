@@ -54,16 +54,19 @@ def main():
     ages=[row['age'] for row in load_samples()]
     print('\n**Grace-window sensitivity at the verified rent**:\n')
     print('| grace (h) | copies covered by grace | rent/day for 500 identities with new locks (SOL) | recurring rent/day reusing locks (SOL) |\n|---|---|---|---|')
-    for seconds in (1800,3600,5400,7200,21600):
+    for seconds in (900,1800,3600,5400,7200,21600):
         count=sum(age<seconds for age in ages)
         print(f'| {seconds/3600:g} | {count}/{len(ages)} | '
               f'{500*86400/seconds*ROOM_RENT/SOL:.6f} | '
               f'{500*86400/seconds*(ROOM_RENT-SLUGLOCK_RENT)/SOL:.6f} |')
-    print(f'\nKeep the measured {t/3600:g} h default: it is the shortest tested whole-hour window '
-          'covering every copy. The reduced rent still makes unfunded repeated creation materially '
-          'more expensive than the mature funded strategy in the table. A tighter window would '
-          'drop measured copies without raising the mature strategy cost; it is not justified by '
-          'this sample. Small targeted squats remain affordable; this is not an economic guarantee.')
+    count=sum(age<t for age in ages)
+    previous=sum(age<7200 for age in ages)
+    print(f'\nChoose {t/3600:g} h instead of the previous 2 h: grace covers {count}/{len(ages)} '
+          f'({count/len(ages):.1%}) of the SOL calibration targets, costing '
+          f'{100*(previous-count)/len(ages):.2f} percentage points of grace coverage. '
+          'The window is inside the observed sample and retains more than nine in ten targets. '
+          'Halving grace doubles the continuous unfunded-recreation rent rate; mature-room '
+          'wash costs are unchanged. Small targeted squats remain affordable; this is not an economic guarantee.')
     print('\nNo founder share exists. Merely owning door 0 earns nothing; later launches use their own doors. '
           'The rent-only attacker controls the room token name and image: defacement. '
           'Wash costs assume ownership of the trading door and its fee rebate; exclude transaction fees unless shown, '

@@ -15,6 +15,7 @@ def main():
     entropy=json.loads((OUT/'image_entropy_calibration.json').read_text(encoding='utf-8'))
     fetch=json.loads((OUT/'image_fetch_summary.json').read_text(encoding='utf-8'))
     curve=json.loads((ROOT/'outputs/curve_quantities.json').read_text(encoding='utf-8'))
+    ages=json.loads((OUT/'age_window_calibration.json').read_text(encoding='utf-8'))['cohorts']
     base=images['results'][0]
     h0=next(r for r in images['results'] if r['strong']==0)
     narrow=next(r for r in entropy['results'] if r['hamming']==0 and r['minimum_entropy_bits']==7.5)
@@ -29,6 +30,11 @@ def main():
            f"{statistics.median(r['idle'] for r in age if r['idle'] is not None):g}-second idle proxy. "
            f"The chosen grace covers {sum(r['age']<t for r in age)}/{len(age)} sampled targets; "
            'without age the full volume-aware gate has bounds because historical volume was not collected.',
+           f"- Across all {ages['All certain copies']['n']} certain copies, grace covers "
+           f"{ages['All certain copies']['current_grace_copies']/ages['All certain copies']['n']:.1%}; "
+           f"loss versus 2 h is {ages['All certain copies']['grace_coverage_loss_pp']:.2f} percentage points. "
+           f"The SOL subset loses {ages['SOL liveness calibration subset']['grace_coverage_loss_pp']:.2f} points. "
+           'These are grace-coverage comparisons, not a measured full-cohort routing-recall loss.',
            f"- At verified rent, repeatedly recreating 500 unfunded identities costs {daily*ROOM_RENT/SOL:.6f} "
            f"SOL/day with recreated locks, or {daily*(ROOM_RENT-SLUGLOCK_RENT)/SOL:.6f} recurring rent "
            'with atomic lock reuse (plus initial lock rent). '
@@ -36,7 +42,7 @@ def main():
            f"- Corrected mature wash-cost floor: {D['live_min_volume_lamports']*FEE*(1-DOOR_SHARE)/SOL:.3f} "
            'SOL per room/day before transaction fees; gross volume counts both trade legs.',
            f"- Real images decoded for {fetch['launches_with_phash']}/{fetch['launches']} launches. "
-           f"At Hamming 0, combined recall {h0['recall']:.2%} versus {base['recall']:.2%} text-only "
+           f"In the all-live benchmark, Hamming-0 recall is {h0['recall']:.2%} versus {base['recall']:.2%} text-only "
            f"(gain {(h0['recall']-base['recall'])*100:.2f} points), but precision "
            f"{h0['precision']:.2%} versus {base['precision']:.2%}. Owner-approved shadow mode remains.",
            f"- Entropy >= 7.5 bits leaves {narrow['assisted']} assisted routes and "

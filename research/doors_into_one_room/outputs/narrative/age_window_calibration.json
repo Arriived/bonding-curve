@@ -1,0 +1,149 @@
+{
+  "sample_seconds": 6203,
+  "sample_slots": [
+    463738720,
+    463767697
+  ],
+  "selected_grace_seconds": 3600,
+  "previous_grace_seconds": 7200,
+  "cohorts": {
+    "All certain copies": {
+      "n": 1674,
+      "percentiles_seconds": {
+        "p50": 315.5,
+        "p75": 1558,
+        "p90": 3188,
+        "p99": 5351
+      },
+      "windows": [
+        {
+          "seconds": 900,
+          "copies": 1095,
+          "fraction": 0.6541218637992832,
+          "inclusive_copies": 1095,
+          "inclusive_fraction": 0.6541218637992832,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 1800,
+          "copies": 1328,
+          "fraction": 0.7933094384707288,
+          "inclusive_copies": 1329,
+          "inclusive_fraction": 0.7939068100358423,
+          "exactly_at_boundary": 1
+        },
+        {
+          "seconds": 3600,
+          "copies": 1544,
+          "fraction": 0.9223416965352449,
+          "inclusive_copies": 1544,
+          "inclusive_fraction": 0.9223416965352449,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 7200,
+          "copies": 1674,
+          "fraction": 1.0,
+          "inclusive_copies": 1674,
+          "inclusive_fraction": 1.0,
+          "exactly_at_boundary": 0
+        }
+      ],
+      "current_grace_copies": 1544,
+      "previous_grace_copies": 1674,
+      "grace_coverage_loss_pp": 7.765830346475508
+    },
+    "Different-creator certain copies": {
+      "n": 1201,
+      "percentiles_seconds": {
+        "p50": 187,
+        "p75": 1572,
+        "p90": 3370,
+        "p99": 5451
+      },
+      "windows": [
+        {
+          "seconds": 900,
+          "copies": 789,
+          "fraction": 0.6569525395503747,
+          "inclusive_copies": 789,
+          "inclusive_fraction": 0.6569525395503747,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 1800,
+          "copies": 954,
+          "fraction": 0.794338051623647,
+          "inclusive_copies": 954,
+          "inclusive_fraction": 0.794338051623647,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 3600,
+          "copies": 1100,
+          "fraction": 0.9159034138218152,
+          "inclusive_copies": 1100,
+          "inclusive_fraction": 0.9159034138218152,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 7200,
+          "copies": 1201,
+          "fraction": 1.0,
+          "inclusive_copies": 1201,
+          "inclusive_fraction": 1.0,
+          "exactly_at_boundary": 0
+        }
+      ],
+      "current_grace_copies": 1100,
+      "previous_grace_copies": 1201,
+      "grace_coverage_loss_pp": 8.409658617818485
+    },
+    "SOL liveness calibration subset": {
+      "n": 94,
+      "percentiles_seconds": {
+        "p50": 187.5,
+        "p75": 1583,
+        "p90": 3119,
+        "p99": 5560
+      },
+      "windows": [
+        {
+          "seconds": 900,
+          "copies": 65,
+          "fraction": 0.6914893617021277,
+          "inclusive_copies": 65,
+          "inclusive_fraction": 0.6914893617021277,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 1800,
+          "copies": 74,
+          "fraction": 0.7872340425531915,
+          "inclusive_copies": 74,
+          "inclusive_fraction": 0.7872340425531915,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 3600,
+          "copies": 86,
+          "fraction": 0.9148936170212766,
+          "inclusive_copies": 86,
+          "inclusive_fraction": 0.9148936170212766,
+          "exactly_at_boundary": 0
+        },
+        {
+          "seconds": 7200,
+          "copies": 94,
+          "fraction": 1.0,
+          "inclusive_copies": 94,
+          "inclusive_fraction": 1.0,
+          "exactly_at_boundary": 0
+        }
+      ],
+      "current_grace_copies": 86,
+      "previous_grace_copies": 94,
+      "grace_coverage_loss_pp": 8.51063829787234
+    }
+  }
+}

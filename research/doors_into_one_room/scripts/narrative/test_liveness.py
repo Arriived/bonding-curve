@@ -26,6 +26,14 @@ class LivenessTests(unittest.TestCase):
         r['created_at'] -= 1
         self.assertFalse(self.live(r))
 
+    def test_one_hour_grace_replaces_two_hours(self):
+        r = room(); r.update(reserve=0, liveness_buckets=[], created_at=NOW - 45 * 60)
+        self.assertTrue(self.live(r))
+        r['created_at'] = NOW - 75 * 60
+        self.assertFalse(self.live(r))
+        r.update(reserve=500_000_000, liveness_buckets=[{'start': NOW, 'amount': 5_000_000_000}])
+        self.assertTrue(self.live(r))
+
     def test_mature_reserve_idle_volume_boundaries(self):
         for status in (0, 1):
             r = room(status)

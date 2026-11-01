@@ -75,7 +75,7 @@ Approximate text-findable-vamp recall: 87.4% (rounded all-live text replay) x 44
 
 ### D. Age-aware gate calibration
 
-Recorded SOL-member age at copy time: median 187.5 s; p90 3119 s; p99 5560 s; maximum 5560 s. Quantiles use sorted[min(n-1, floor(p*n))]. Age is measured from the earliest earlier member with a recorded SOL quote; it is a proxy for room creation.
+Recorded SOL-member age at copy time: median 187.5 s; p75 1583 s; p90 3119 s; p99 5560 s; maximum 5560 s. Quantiles use sorted[min(n-1, floor(p*n))]. Age is measured from the earliest earlier member with a recorded SOL quote; it is a proxy for room creation.
 
 | T_new | young copies | copies live, reserve+idle+age | with volume floor, lower–upper bound |
 |---|---|---|---|
@@ -90,14 +90,14 @@ Recorded SOL-member age at copy time: median 187.5 s; p90 3119 s; p99 5560 s; ma
 | 2 h | 94/94 | 94/94 (100.0%) | 100.0%–100.0% |
 | 6 h | 94/94 | 94/94 (100.0%) | 100.0%–100.0% |
 
-Selected T_new = 2 h: the smallest tested whole-hour window keeping every sampled copy, with the same sample retention as the brief's starting window. This short collection window cannot establish long-run recall; all its targets are young.
+Selected T_new = 1 h: covers 86/94 sampled targets (91.5%), costing 8.51 percentage points of grace coverage versus the previous 2 h. It lies inside the observed collection window and retains more than nine in ten sampled targets. Full-copy-cohort counts and age percentiles are in age_window_calibration.md. Long-run recall remains unmeasured.
 
 | population at read time | young | age+reserve+idle passing | with volume floor, lower–upper bound |
 |---|---|---|---|
-| launched in the sample window | 93/209 | 95/209 | 44.5%–45.5% |
+| launched in the sample window | 0/209 | 6/209 | 0.0%–2.9% |
 | launched about 1d before the read (anchor slot 463,382,303) | 0/71 | 0/71 | 0.0%–0.0% |
 | launched about 7d before the read (anchor slot 460,960,575) | 0/73 | 0/73 | 0.0%–0.0% |
 
-Same 94-copy population, with volume floor: without age, retention is only bounded at 0–46.8%; with the chosen age clause it is 100.0%. Gain is at least 53.2 percentage points. Historical trailing volume was not collected, so the no-age value is an upper bound, not a measured full-gate recall.
+Same 94-copy population, with volume floor: without age, retention is only bounded at 0–46.8%; with the chosen age clause it is bounded at 91.5%–91.5%. Gain is at least 44.7 percentage points. Historical trailing volume was not collected, so the no-age value is an upper bound, not a measured full-gate recall.
 
-The old text-recall product would become 87.4% with age, but remains an extrapolation across populations. No combined text+image end-to-end result is implied.
+The old text-recall product would become 80.0% with age, but remains an extrapolation across populations. No combined text+image end-to-end result is implied.

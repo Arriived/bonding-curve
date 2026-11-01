@@ -30,6 +30,7 @@ def replace_block(document, name, content):
 
 def main():
     run('audit_rent_model.py')
+    run('age_window_calibration.py')
     run("liveness_table.py", OUT / "liveness_reads.json", OUT / "liveness_quote_mints.json",
         OUT / "liveness_table.md")
     costs = run("gate_costs.py")
@@ -44,6 +45,9 @@ def main():
     rent=(OUT/'rent_correction.md').read_text(encoding='utf-8')
     document=replace_block(document,'RENT CORRECTION',rent)
     document = replace_block(document, "SELECTED GATE", selected)
+    age=(OUT/'age_window_calibration.md').read_text(encoding='utf-8')
+    age='\n'.join(line for line in age.splitlines() if not line.startswith('# '))
+    document=replace_block(document,'AGE DISTRIBUTION',age)
     document = replace_block(document, "POISONING COSTS", costs)
     for name,path in [('IMAGE CALIBRATION','image_calibration.md'),('IMAGE ENTROPY','image_entropy_calibration.md'),
                       ('REAL PHASH CHECK','real_phash_reference_check.txt')]:

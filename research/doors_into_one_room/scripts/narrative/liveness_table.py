@@ -119,7 +119,7 @@ def main():
     young = DEFAULTS["live_new_seconds"]
     L += ["", "### D. Age-aware gate calibration", "",
           f"Recorded SOL-member age at copy time: median {statistics.median(ages):g} s; "
-          f"p90 {q(ages, .9)} s; p99 {q(ages, .99)} s; maximum {max(ages)} s. "
+          f"p75 {q(ages, .75)} s; p90 {q(ages, .9)} s; p99 {q(ages, .99)} s; maximum {max(ages)} s. "
           "Quantiles use sorted[min(n-1, floor(p*n))]. Age is measured from the earliest "
           "earlier member with a recorded SOL quote; it is a proxy for room creation.", "",
           "| T_new | young copies | copies live, reserve+idle+age | with volume floor, lower–upper bound |",
@@ -130,9 +130,14 @@ def main():
         passes = sum(a["age"] < seconds or baseline(a) for a in all_a)
         L.append(f"| {seconds / 3600:g} h | {k}/{n} | {passes}/{n} ({passes / n:.1%}) | "
                  f"{k / n:.1%}–{passes / n:.1%} |")
-    L += ["", f"Selected T_new = {young / 3600:g} h: the smallest tested whole-hour window keeping "
-          "every sampled copy, with the same sample retention as the brief's starting window. "
-          "This short collection window cannot establish long-run recall; all its targets are young.", "",
+    grace_count = sum(a["age"] < young for a in all_a)
+    old_grace_count = sum(a["age"] < 7200 for a in all_a)
+    selected_upper = sum(a["age"] < young or baseline(a) for a in all_a)
+    L += ["", f"Selected T_new = {young / 3600:g} h: covers {grace_count}/{n} sampled targets "
+          f"({grace_count/n:.1%}), costing {100*(old_grace_count-grace_count)/n:.2f} percentage points "
+          "of grace coverage versus the previous 2 h. It lies inside the observed collection window "
+          "and retains more than nine in ten sampled targets. Full-copy-cohort counts and age "
+          "percentiles are in age_window_calibration.md. Long-run recall remains unmeasured.", "",
           "| population at read time | young | age+reserve+idle passing | with volume floor, lower–upper bound |",
           "|---|---|---|---|"]
     for title, rows in selected_groups:
@@ -145,7 +150,8 @@ def main():
     k = sum(a["age"] < young for a in all_a)
     upper = sum(baseline(a) for a in all_a)
     L += ["", f"Same {n}-copy population, with volume floor: without age, retention is only bounded "
-          f"at 0–{upper / n:.1%}; with the chosen age clause it is {k / n:.1%}. "
+          f"at 0–{upper / n:.1%}; with the chosen age clause it is bounded at "
+          f"{k / n:.1%}–{selected_upper / n:.1%}. "
           f"Gain is at least {100 * (k - upper) / n:.1f} percentage points. Historical trailing volume "
           "was not collected, so the no-age value is an upper bound, not a measured full-gate recall.", "",
           f"The old text-recall product would become {text_recall * k / n:.1%} with age, but remains "

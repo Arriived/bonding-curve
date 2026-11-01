@@ -3,6 +3,7 @@
   "images_available": 2692,
   "fixed_expected_vamps": 1979.0096021000277,
   "certain_vamps": 1674,
+  "liveness_assumption": "all rooms live; image-only benchmark, not current-gate recall",
   "results": [
     {
       "strong": null,
