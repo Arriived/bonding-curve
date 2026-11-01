@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 import calibrate_text as T
-import matcher as M
+from image_experiment import decide_experiment
 from calibration_common import ground_truth, verify_image_labels
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,7 +37,7 @@ def replay(rows, threshold, weak=None):
         inp = {'now': r['block_time'], 'candidate': {'name': r['name'], 'symbol': r['symbol'],
                'phash': r.get('phash') if threshold is not None else None},
                'rooms': [rooms[k] for k in sorted(candidates)], 'params': params}
-        decision = M.decide(inp)
+        decision = decide_experiment(inp)
         face = {'name': r['name'], 'symbol': r['symbol'],
                 'phash': r.get('phash') if threshold is not None else None, 'launch_index': j}
         if decision['decision'] == 'new_room':
@@ -131,7 +131,7 @@ def main():
         counts=r['assisted_labels'];den=counts['S']+counts['D']
         lines.append(f"| {r['strong']} / {r['weak']} | {counts['S']} | {counts['D']} | {counts['U']} | "
                      f"{counts['unlabelled']} | {counts['S']/max(1,den):.2%} |")
-    lines+=['','Replayed in launch order through matcher.decide, including multi-face scoring and ties. '
+    lines+=['','Replayed in launch order through the archived image_experiment.decide_experiment, including multi-face scoring and ties. '
             'Every room is explicitly treated as live to isolate image quality, as in the text benchmark. '
             'This uses a calibration-only age override covering the sample, independently of the production '
             'grace window. Mature-room reserve/volume histories are unavailable; placeholder reserves '
@@ -149,7 +149,7 @@ def main():
               f"{base['recall']:.2%}, a {(strict['recall']-base['recall'])*100:.2f} percentage-point gain; "
               f"precision falls from {base['precision']:.2%} to {strict['precision']:.2%}. "
               "No tested threshold reaches the text point's precision. The justified production choice "
-              "is to retain shadow mode; its active image-recall gain is zero. Enabling the measured "
+              "is to exclude image matching entirely from v1, including shadow processing. Enabling the measured "
               "points would require accepting more permanent false-positive routes or revising the image rule."]
     (OUT/'image_calibration.md').write_text('\n'.join(lines)+'\n',encoding='utf-8', newline="\n")
 

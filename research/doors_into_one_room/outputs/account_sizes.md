@@ -144,6 +144,5 @@ Field layouts:
 | 296 | 2 | matcher_version: u16 |
 | 298 | 1 | rule: u8 |
 | 299 | 4 | face: u32 (door index) |
-| 303 | 8 | phash: u64 |
-| 311 | 17 | reserved: [u8; 17] |
+| 303 | 25 | reserved: [u8; 25] |
 

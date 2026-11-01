@@ -1,16 +1,18 @@
 """Narrative matcher prototype: route a launch to a door in a live room, or to a new room.
 
 Input (JSON): {"now": unix_seconds, "candidate": {...}, "rooms": [...], "params": {...optional overrides}}
-  candidate: {"name", "symbol", "uri", "phash": "16 hex chars" | null}
+  candidate: {"name", "symbol", "uri"}; URI is metadata only and is never fetched
   room: {"room_id": int, "status": 0|1|2,
-         "faces": [{"name", "symbol", "phash"}...],   # faces[0] is door 0 (the room token's identity)
+         "faces": [{"name", "symbol"}...],   # faces[0] is door 0
          "created_at": unix, "reserve": lamports, "last_trade_at": unix,
          "liveness_buckets": [{"start": unix_hour, "amount": int}...],
          "pool": {"total_lp_b_fee": int, "ckpt_fee": int, "ckpt_ts": unix,
                   "token_b_amount": int}}
 Output (JSON): the decision, the rule that fired, the evidence, and every room's gate result.
 
-Rules are specified in NARRATIVE_DETECTION.md. All thresholds live in DEFAULTS and are overridable for calibration.
+V1 routes only on folded identity or folded name. It performs no image work,
+including shadow work. Image experiments are isolated in image_experiment.py.
+Liveness overrides represent configuration; the calibrated text rule is fixed.
 """
 import json
 import re
@@ -19,17 +21,7 @@ import unicodedata
 from functools import lru_cache
 
 DEFAULTS = {
-    # combination: route when text_points + image_points >= route_score
-    "route_score": 3,
-    # T3 symbol and name equal; T2n name equal; T2s symbol equal; T1 fuzzy (outputs/narrative/text_calibration.md)
-    "text_points": {"T3": 3, "T2n": 3, "T2s": 2, "T1": 1, "T0": 0},
-    "image_points": {"I2": 2, "I1": 1, "I0": 0},
-    # "shadow": image points are computed and reported (would_route_with_image) but do not change the decision,
-    # until the image rule is calibrated on real token images. "on": they count.
-    "image_routing": "shadow",
     "name_equal_min_len": 4,
-    "image_strong_max_hamming": 10,   # I2: pHash distance <= this
-    "image_weak_max_hamming": 16,     # I1
     "jaccard_min": 0.5,
     "symbol_edit1_min_len": 5,
     "containment_min_len": 3,
@@ -148,22 +140,6 @@ def text_tier(c, f, p, fuzzy=True):
     return "T0", ""
 
 
-def hamming(h1, h2):
-    if not h1 or not h2:
-        return None
-    return bin(int(h1, 16) ^ int(h2, 16)).count("1")
-
-
-def image_tier(d, p):
-    if d is None:
-        return "I0"
-    if d <= p["image_strong_max_hamming"]:
-        return "I2"
-    if d <= p["image_weak_max_hamming"]:
-        return "I1"
-    return "I0"
-
-
 @lru_cache(maxsize=32768)
 def ident(name, symbol):
     nt = name_tokens(name)
@@ -261,54 +237,48 @@ def room_weight(room):
 TIER_RANK = {"T3": 4, "T2n": 3, "T2s": 2, "T1": 1, "T0": 0}
 
 
-def score_room(c, cph, room, p):
-    """Best (score, text tier, hamming or -1, face index, reason, image tier) over the room's faces."""
+def score_room(c, room, p):
+    """Apply the fixed v1 equality rule to every door face, with no image path."""
     best, best_key = None, None
     for i, face in enumerate(room["faces"]):
         f = ident(face["name"], face["symbol"])
-        tier, why = text_tier(c, f, p, fuzzy=(i == 0))  # fuzzy text only against door 0; exact against any door
-        d = hamming(cph, face.get("phash"))
-        it = image_tier(d, p)
-        s_img = p["text_points"][tier] + p["image_points"][it]
-        s = s_img if p["image_routing"] == "on" else p["text_points"][tier]
-        tie_distance = d if p["image_routing"] == "on" else None
-        key = (s, TIER_RANK[tier], -(tie_distance if tie_distance is not None else 99), -i)
+        tier, why = text_tier(c, f, p, fuzzy=False)
+        s = 3 if tier in ("T3", "T2n") else 0
+        key = (s, TIER_RANK[tier], -i)
         if best_key is None or key > best_key:
-            best, best_key = (s, tier, -1 if d is None else d, i, why, it, s_img), key
+            best, best_key = (s, tier, i, why), key
     return best
 
 
 def decide(inp):
     p = dict(DEFAULTS)
-    p.update(inp.get("params", {}))
+    p.update({key: value for key, value in inp.get("params", {}).items()
+              if key.startswith("live_") or key == "pool_min_window_lp_fee"})
     now = inp["now"]
     cand = inp["candidate"]
     c = ident(cand["name"], cand["symbol"])
-    cph = cand.get("phash")
     evaluated, matches = [], []
     for room in inp["rooms"]:
-        s, tier, d, face, why, it, s_img = score_room(c, cph, room, p)
+        s, tier, face, why = score_room(c, room, p)
         live, lreason = is_live(room, now, p)
-        row = {"room_id": room["room_id"], "score": s, "text": tier, "text_reason": why, "image": it,
-               "hamming": None if d < 0 else d, "face": face, "live": live, "live_reason": lreason,
-               "would_route_with_image": bool(live and s_img >= p["route_score"])}
+        row = {"room_id": room["room_id"], "score": s, "text": tier, "text_reason": why,
+               "face": face, "live": live, "live_reason": lreason}
         evaluated.append(row)
-        if s >= p["route_score"] and live:
+        if tier in ("T3", "T2n") and live:
             matches.append((row, room))
     if not matches:
         return {"decision": "new_room", "candidate_keys": {"symbol": c["sk"], "name": c["nk"]}, "evaluated": evaluated}
-    # Tie-break: score, then text tier, then image distance, then SOL depth, then lowest room_id.
+    # Tie-break: text tier, SOL depth, then lowest room_id. Images are never read.
     matches.sort(key=lambda m: (-m[0]["score"], -TIER_RANK[m[0]["text"]],
-                                m[0]["hamming"] if p["image_routing"] == "on" and m[0]["hamming"] is not None else 99,
                                 -room_weight(m[1]), m[1]["room_id"]))
     win = matches[0][0]
-    return {"decision": "door", "room_id": win["room_id"], "rule": f"{win['text']}+{win['image']} score {win['score']}",
+    return {"decision": "door", "room_id": win["room_id"], "rule": f"{win['text']} score {win['score']}",
             "candidate_keys": {"symbol": c["sk"], "name": c["nk"]}, "tied_live_matches": len(matches),
             "evaluated": evaluated}
 
 
 def main():
-    inp = json.load(open(sys.argv[1]) if len(sys.argv) > 1 else sys.stdin)
+    inp = json.load(open(sys.argv[1], encoding="utf-8") if len(sys.argv) > 1 else sys.stdin)
     print(json.dumps(decide(inp), indent=2, ensure_ascii=False))
 
 

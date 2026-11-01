@@ -30,6 +30,7 @@ def main():
     run(Path('refresh_spec_tables.py'))
     run(Path('narrative/refresh_liveness_revision.py'))
     run(Path('narrative/test_liveness.py'))
+    run(Path('narrative/test_recall_evidence.py'))
     run(Path('narrative/run_examples.py'),SCRIPTS/'narrative/examples')
     run(Path('narrative/revision_summary.py'))
 

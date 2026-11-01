@@ -30,8 +30,8 @@
   }
  ],
  "expect": {
-  "decision": "door",
-  "room_id": 1
+  "decision": "new_room",
+  "room_id": null
  },
  "params": {
   "image_routing": "on"

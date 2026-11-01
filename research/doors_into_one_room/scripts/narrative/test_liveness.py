@@ -99,7 +99,7 @@ class LivenessTests(unittest.TestCase):
         r = room(2); r['pool']['ckpt_fee'] = 1
         self.assertFalse(self.live(r))
 
-    def test_shadow_image_hash_does_not_change_route_ties(self):
+    def test_legacy_image_inputs_do_not_change_route_ties_or_emit_shadow_results(self):
         rooms=[]
         for rid, reserve, phash in [(1,500_000_000,'0000000000000000'),
                                      (2,1_000_000_000,'ffffffffffffffff')]:
@@ -108,6 +108,17 @@ class LivenessTests(unittest.TestCase):
         out=M.decide({'now':NOW,'candidate':{'name':'Testcoin','symbol':'TEST','phash':'0000000000000000'},
                       'rooms':rooms,'params':{'image_routing':'shadow'}})
         self.assertEqual(out['room_id'],2)
+        for row in out['evaluated']:
+            self.assertNotIn('image',row)
+            self.assertNotIn('hamming',row)
+            self.assertNotIn('would_route_with_image',row)
+
+    def test_legacy_flags_cannot_enable_image_symbol_or_fuzzy_routing(self):
+        r=room();r.update(room_id=1,faces=[{'name':'The Boring Company','symbol':'TBC','phash':'invalid hash'}])
+        out=M.decide({'now':NOW,'candidate':{'name':'Thick Booty Coin','symbol':'TBC',
+                       'uri':'https://unreachable.invalid/image','phash':'also invalid'},'rooms':[r],
+                       'params':{'image_routing':'on','route_score':1,'text_points':{'T2s':3}}})
+        self.assertEqual(out['decision'],'new_room')
 
 
 if __name__ == '__main__':

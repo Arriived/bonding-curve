@@ -15,4 +15,4 @@ Checked at 2026-11-01T08:50:05.428544+00:00. 5/9 endpoints returned metadata JSO
 | w3s.link | <urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host> |
 | cloudflare-ipfs.com | <urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host> |
 
-Probe URLs and exact errors are in image_host_probe.json. If inaccessible, the brief requires stopping image calibration. Image routing stays in shadow mode; real-image precision, robustness and combined recall are not measured.
+Probe URLs and exact errors are in image_host_probe.json. These are offline research access observations. V1 excludes image processing entirely, including shadow work; host accessibility has no v1 launch-routing role.

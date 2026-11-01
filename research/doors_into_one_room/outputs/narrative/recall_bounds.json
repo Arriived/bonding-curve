@@ -1,0 +1,2265 @@
+{
+  "scope": "fixed earliest-observed SOL target; pre-graduation curve-sum proxy only",
+  "production_end_to_end": {
+    "status": "unmeasured",
+    "precision": null,
+    "recall": null,
+    "one_vs_two_hour_routing_recall_cost": null
+  },
+  "n": 94,
+  "young": 86,
+  "older": 8,
+  "bounds": [
+    {
+      "variant": "without_volume",
+      "one_hour": {
+        "pass_lower": 86,
+        "pass_upper": 91,
+        "fail_lower": 3,
+        "fail_upper": 8
+      },
+      "two_hour": {
+        "pass_lower": 94,
+        "pass_upper": 94,
+        "fail_lower": 0,
+        "fail_upper": 0
+      },
+      "one_hour_loss_copies_lower": 3,
+      "one_hour_loss_copies_upper": 8,
+      "one_hour_loss_pp_lower": 3.1914893617021276,
+      "one_hour_loss_pp_upper": 8.51063829787234,
+      "outside_grace_recoveries_lower": 0,
+      "outside_grace_recoveries_upper": 5
+    },
+    {
+      "variant": "with_volume",
+      "one_hour": {
+        "pass_lower": 86,
+        "pass_upper": 91,
+        "fail_lower": 3,
+        "fail_upper": 8
+      },
+      "two_hour": {
+        "pass_lower": 94,
+        "pass_upper": 94,
+        "fail_lower": 0,
+        "fail_upper": 0
+      },
+      "one_hour_loss_copies_lower": 3,
+      "one_hour_loss_copies_upper": 8,
+      "one_hour_loss_pp_lower": 3.1914893617021276,
+      "one_hour_loss_pp_upper": 8.51063829787234,
+      "outside_grace_recoveries_lower": 0,
+      "outside_grace_recoveries_upper": 5
+    }
+  ],
+  "targets": [
+    {
+      "copy_signature": "67dQYCcYiCwmeajmz7fSBUiALcE8RQidoKfFjDSy4u9tNexwNJxt3sGTRofqJFZN3hz3X9ptZjdNp4D3gdbKbY7Y",
+      "copy_time": 1793464026,
+      "target_first_sol_mint": "GW4dSaj4ZBseE3HFo1dUF7ZQZRxj9TGzviw6bn3Ypump",
+      "age": 2576,
+      "stored_read_slots": [
+        463743394,
+        463755407
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "24FaTzWm6sAED8mZUZkc2XkmNEGfQVe1ewXLyaY87sv4EUMPQwE6UrFLJMKfwMVSB7zMStfz7mwG2HGaT5eEi9Vt",
+      "copy_time": 1793463225,
+      "target_first_sol_mint": "6Rfwin3fsWZ6BWr36WjHJCrfqSfGp1JHgJ1FppmSpump",
+      "age": 5,
+      "stored_read_slots": [
+        463751670
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 14803025840,
+        "last_confirmed_trade_time": 1793463225,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5hk65ayHQee2fMFSuXp7Y6fM3EnzAMDMm4Ln6h6YSYBYTQAoE43jZHgXJXySjLpwjdh4qjrwDBw7n7nqRg4kPtEd",
+      "copy_time": 1793464748,
+      "target_first_sol_mint": "CXMAhE7fBJpPTMqcBZRsf2fEorRPtXgc4fQLwrPYpump",
+      "age": 2743,
+      "stored_read_slots": [
+        463750046,
+        463751714
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 371148,
+        "last_confirmed_trade_time": 1793463234,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3BP8iGQSN2SKPynUZz5vhrAcy7afwB5DAFNkoAMuhRk9CALPuNM9KbQMc67QWXuA5DC6XJPm1bU42nWfj7Gn2VYu",
+      "copy_time": 1793461430,
+      "target_first_sol_mint": "4QooTdbmPPsc3TNB4D4PEsHNcmtAFrADKf1cmC1tpump",
+      "age": 546,
+      "stored_read_slots": [
+        463740933,
+        463743301
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 73315714,
+        "last_confirmed_trade_time": 1793461430,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2nFsVySsuj94hmUuPkJ9WKhqtuf3CP1GTjtggn2HeZqbynySeyFPW2kMzyDsvbqrngHkTeEoB1VVBiVp7eoqWmKu",
+      "copy_time": 1793465927,
+      "target_first_sol_mint": "3VMUX4RYDVQMc96jBvUtPmqzovWFESr8bz8RVTLAyqj3",
+      "age": 185,
+      "stored_read_slots": [
+        463763703,
+        463763819,
+        463763869,
+        463764212,
+        463764313
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 5,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 4941954890,
+        "last_confirmed_trade_time": 1793465927,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "bf125A76rQFk9MXPikhtvfjqALEZwv5BJX7gc2SShiCAXPyN6MxqZXtY4TxNGBXSAYAx38j51pipYTfd5ckA6Zb",
+      "copy_time": 1793460974,
+      "target_first_sol_mint": "85dJZz32xDZhXCY6Q67C2ETyJcYbEcy6hVWQAUpspump",
+      "age": 509,
+      "stored_read_slots": [
+        463738925
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1,
+        "last_confirmed_trade_time": 1793460493,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3cuAodXPkJUTRcL17UfnLzGgCVVffo1D7ancq7pUWvdZn3ahfs1qzwc1SM2NmEAAMRKSAF5HiJEdBNXEoSLHLPJ5",
+      "copy_time": 1793462833,
+      "target_first_sol_mint": "5r3t1FsvdvpkFPtYGay7sfE5RWgmY1k9R8awKzirpump",
+      "age": 140,
+      "stored_read_slots": [
+        463749843
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 67465739362,
+        "last_confirmed_trade_time": 1793462833,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "43XcPG2gCdPia5isy1myemK7MoTDYJgkByhnW1QUZFXi6nymRbbw6kxitjh7Lc5DaKb4d4PEYjUN1ypey48x1Wnj",
+      "copy_time": 1793463268,
+      "target_first_sol_mint": "BnZWZHbcDXePwGvxkV391zWKs2Gny4Q53jLyu5F1pump",
+      "age": 2326,
+      "stored_read_slots": [
+        463741092,
+        463744687,
+        463750887
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 3,
+        "last_confirmed_trade_time": 1793463057,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2oEvpakizCSvxQFz8WoD9iybcinsKqNuVWuDAKh5Jgstwjn6Vmdje6DPYi4twvbNkhHRsYVbpsuCvaUvy5y1ACca",
+      "copy_time": 1793465672,
+      "target_first_sol_mint": "E1HMe1NNLd1XEtL3nnbMSt1C8wLa9mSoBgHc1fqPpump",
+      "age": 1132,
+      "stored_read_slots": [
+        463761944,
+        463762719,
+        463762815,
+        463763089
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 9,
+        "unknown_quote_members": [
+          "4EfLgfh7uvRG4Xs3VsWgzdVbhE4mcR9TUnC6du2Zpump",
+          "9TeN3GDP4aFWE7PmxAKH2vY3BzreyKqkwxxM9Au67Kjg",
+          "FRqMvhrqyVnsQLj79GY5dp5US9sH6QLxiQJHH4tXx59G"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 69,
+        "last_confirmed_trade_time": 1793465664,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3dMKXrfB83tqYY6ybc1vrWBNL6wUkCNCqbwZtiLYGLvHXh6NeqoxVbZfPT1yJhtydnaJARau5VGfDYeEfGzJKDTu",
+      "copy_time": 1793463038,
+      "target_first_sol_mint": "42yUJZF3AarkppccT6MFQqgvh1LnL47GnQezetWipump",
+      "age": 844,
+      "stored_read_slots": [
+        463750075
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "bQVKEPU2w36k2XnJ6izzVN1BNiJhrkyW3yhBfDAEQjWVTRLkhE1P9av9aAGyrFY4CiRm8kuxpm55Hxv3W4NL1xc",
+      "copy_time": 1793462428,
+      "target_first_sol_mint": "ABjZ69KNeYXguUVyJnm1RcX8deLc2LDBYjpC6FPypump",
+      "age": 1,
+      "stored_read_slots": [
+        463747963
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 14561194155,
+        "last_confirmed_trade_time": 1793462428,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "evUHtnzvj5dWx9THCsb19iD4yFbVGPMBRzDgB3R89ddqsbgbgw6wqnxzwukftQK2uQfw1eQJSe71gnY3uMFMq8q",
+      "copy_time": 1793461827,
+      "target_first_sol_mint": "AYUBtPqT2vPMEH1T973V7ja2LSWHdRzZYLxiyG2CYBN",
+      "age": 197,
+      "stored_read_slots": [
+        463744981,
+        463745013,
+        463745153,
+        463745157
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 14,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 44374893602,
+        "last_confirmed_trade_time": 1793461827,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "ApwUpnucPbmKNbpM3xTeVZxCFQsLZjBhwPJPfo4RS5zkBMAimYXMFjL4HNMGJc5VsYkPXZdo8h5ySP8KfCQ6Nix",
+      "copy_time": 1793466478,
+      "target_first_sol_mint": "6cHeGodRhn9k8zUxborsNc8CtJ3vwY9x4AoPoSvcpump",
+      "age": 1780,
+      "stored_read_slots": [
+        463766853,
+        463766861,
+        463766881,
+        463766882,
+        463766883
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 9,
+        "unknown_quote_members": [
+          "4WudwLefdjZq5UQLc9Ww5TBG4yyAcbcQB3HrVyqcpump",
+          "4oGF9reSJHrgyFWkX1w2brxhSWCzm2b22G8fgPvwpump",
+          "52CRvimZWhMGWsPa97y71G3u6JDEEyveJMg5bPx6pump"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 37464204801,
+        "last_confirmed_trade_time": 1793466478,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3gT6AfhZWsfjWrjGbHZiCzyAp7Ar6Zw6DpaMWCVupemtPK3FJnsvzSYNVQ37acm8Q4XPr33L3ZNrEpBmvXmJVf4B",
+      "copy_time": 1793460783,
+      "target_first_sol_mint": "GYnDqRvvPLyJzeJmCfwHxjVhdzyC1CZbhi61mM8hpump",
+      "age": 0,
+      "stored_read_slots": [
+        463740282
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "28EqqupbdJXeLArcGdksfDMxAd3zVQvDxMSVjNHNzyVZ4oK9WMLdBALQiCnWDrTrYLP4EHHHnKpuF13cDoVmJPoQ",
+      "copy_time": 1793463657,
+      "target_first_sol_mint": "6RmPC7ia7CKHBcTFQMzyERnM3GgimrZhh3y1BQWypump",
+      "age": 43,
+      "stored_read_slots": [
+        463753689
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 21295303623,
+        "last_confirmed_trade_time": 1793463657,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5zJLkskRCDECxSYNXLfjWgLAXMpZ2VUDgRM4yEAgj9qabbvsZXNZors2iouFK4jDh96iYuKx8dH6vJhQvVNF4XXD",
+      "copy_time": 1793463105,
+      "target_first_sol_mint": "4VV8rntQfCT1bQifbVWnqhPTpy9a7c2n4MAaW71Fpump",
+      "age": 2,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "49KnPc2NTa2f5kdZ9YAwGmVPqHw3hEnvDe75LRymkAxYTGY4CGo41bg1bqR1CX3HhHcYUKEtQhDX2a8Bqerq6vXa",
+      "copy_time": 1793461512,
+      "target_first_sol_mint": "5Ls7g6BBhQWu46tcJTxaxQNi9onbSY8Y8xGwKwXypump",
+      "age": 998,
+      "stored_read_slots": [
+        463741760,
+        463741769,
+        463741963,
+        463742288,
+        463742542,
+        463743055,
+        463743292
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 7,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1184546,
+        "last_confirmed_trade_time": 1793461428,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4urknqFKDteaamjsWskKiMQRVg1jBQCsf1k2Z9kjaTcaf7zbV2BGcx3NbrJgX1udbiXb9fSzSg5VvENvGM4ET2or",
+      "copy_time": 1793466388,
+      "target_first_sol_mint": "4FQSNhDz4UyoFJSNNvuWtpq1BMHft7XPb963YKeTpump",
+      "age": 5560,
+      "stored_read_slots": [
+        463743735,
+        463762883,
+        463766419
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 34773273,
+        "last_confirmed_trade_time": 1793466379,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "8TgvWCY2x5sCcoT6xEK6nuzeVddaauhAzsu3ShypFvbv5WJmto4WwZTvHNfazfoeQHqfGTVU5qg6vPruGE1uGJF",
+      "copy_time": 1793465654,
+      "target_first_sol_mint": "6SA4aimXvukYYY2XGGVvUasS2T3XByyZMEe64H2ypump",
+      "age": 74,
+      "stored_read_slots": [
+        463762873,
+        463762895,
+        463762920,
+        463763045
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 4,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 25940178780,
+        "last_confirmed_trade_time": 1793465654,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5crNB8Q86yPJGzyzQFMQVqkvgeQ2uEgypspuZV5y7ReBFuhJXj4EAiUGpGgNfq6qwFN1sLednepht7hd3dSM2zzP",
+      "copy_time": 1793462610,
+      "target_first_sol_mint": "K3sAnLJtcPDmY9zqDiuABfqHCckpCNUQ2R5FqqJpump",
+      "age": 1343,
+      "stored_read_slots": [
+        463742627,
+        463745875,
+        463745893,
+        463747180,
+        463747397,
+        463748727
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 7,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1502379,
+        "last_confirmed_trade_time": 1793462592,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5MoPdDbvtnhoaaeKHNntn4uJ45A6yT9q5q7d1P3464pyTHyivUm1a25e2VYSfN5Us6w34srX8nn6LwCnxcD3ox1w",
+      "copy_time": 1793464762,
+      "target_first_sol_mint": "61w5eB8ZyAJNktSDQkdMpvY6TCZ1YwDj1ZhCP9mvpump",
+      "age": 756,
+      "stored_read_slots": [
+        463758536
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4KoB1V6RMLhHh3MTA7vVyf8jd4mnNZF5L9BDrgdzXSCybeUWSYsiyyKsGBDp3cQmCRu3wZHWNnX7D1JmRuYAgMh",
+      "copy_time": 1793464541,
+      "target_first_sol_mint": "E1HMe1NNLd1XEtL3nnbMSt1C8wLa9mSoBgHc1fqPpump",
+      "age": 1,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5ZMXchdjLBQvAS2kewdCjhXSkrsyJ4jQPoqCpCNs5QMw5krP1n7nVDEL5Wb7RQqxed1vrfdgeRYSH9tFkkxyBcwk",
+      "copy_time": 1793463197,
+      "target_first_sol_mint": "H3rjbUieQKfAEioaKkxQ4zUhUmuV529yrGDiDBDJfomo",
+      "age": 112,
+      "stored_read_slots": [
+        463751258,
+        463751393,
+        463751543
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 6,
+        "unknown_quote_members": [
+          "34vvpuJfAsWSvtJ7L31Tcx9QdEgUFiZV8U1j4sK5pump",
+          "6RbWGaKcHeP5UUtKgZFn7iLxQ2Hnfy7JvVmkY5xZpump",
+          "6RdETD5tMMbWys6Z9vk4MxGCxDmz3UuY8X6gSWoPpump",
+          "7euhRci6UPQjjG877VSiSymErY4fty4hDCP94TS1pump",
+          "8k2JtnCVZeFrJcK9anVRrUDmhEm4YFbxxKipLztVeuLE",
+          "AiCSbnaRKX9wCSucAX44NXRx6N8xNzvYjp2MYWuUFx54",
+          "FzTgZgMghnCHCseEj4vjQqJ2gG4sgmwKWughx7qcRpR5"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 69570841215,
+        "last_confirmed_trade_time": 1793463197,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2HqsPuZfnCNk4KuLr2hND2ENdXeJp8ZZ4N9J8FLREhGSQx9a9S3yTmNcQ6RZ6T4bLCUanjgaawN2KJcbk2YxfwJK",
+      "copy_time": 1793461817,
+      "target_first_sol_mint": "AYUBtPqT2vPMEH1T973V7ja2LSWHdRzZYLxiyG2CYBN",
+      "age": 187,
+      "stored_read_slots": [
+        463744892,
+        463744981,
+        463745013,
+        463745055,
+        463745107,
+        463745108
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 6,
+        "known_sol_members": 12,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 446039656,
+        "last_confirmed_trade_time": 1793461816,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "By2StcdeEtpvifB1oegy6ckmj18cMBCuD4xMNzMzuF2dMNnxqbdPYwPNCcrpKYKVn1cstThGssmZPVXtQpAK2uS",
+      "copy_time": 1793461012,
+      "target_first_sol_mint": "B7XGHg5x8jTKdVRAf7b3v5mjw3uMPgB7oefQCAGspump",
+      "age": 533,
+      "stored_read_slots": [
+        463739064,
+        463739574,
+        463740248
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 22888170,
+        "last_confirmed_trade_time": 1793460776,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4aNofmDXyvzBWQuX5u7kG6EYyuJmKPQHkq3uFSPxcTXGt64jTtzmKGjrWAuURdLZVdVDFxrH1PdWR49GRPtTMEEe",
+      "copy_time": 1793465228,
+      "target_first_sol_mint": "6ynJmrnHSFGXTa8cYUeMJcmaXB1rNKTh3e3N71y2pump",
+      "age": 4360,
+      "stored_read_slots": [
+        463741496,
+        463760142
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 2,
+        "last_confirmed_trade_time": 1793465037,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5P4hUVc5KN5cRk1VMmuiSVt6M1fh4ATkRyfWceLdSS8N3gmGpxC3uJY8nyHdbdQJ9SXYPSPc53KiTNhtiQ22SmXr",
+      "copy_time": 1793462430,
+      "target_first_sol_mint": "VVe4rzPt4zKcZwdJCC5rZfD8QacQmzXzeAJytXSpump",
+      "age": 1830,
+      "stored_read_slots": [
+        463739757
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1,
+        "last_confirmed_trade_time": 1793460672,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "6exdRJ3hTSUmTS1c4ZLDfBdwnudPdZJo8HWtaPDorsSZ4jTxzTwGbtrQh5d59GoiGZVfyW9bx4QgKa92ZwDXxCe",
+      "copy_time": 1793465129,
+      "target_first_sol_mint": "87296riVbqmLPWM3nXP4MJN2PzYwWYwhGawhEW5xpump",
+      "age": 188,
+      "stored_read_slots": [
+        463760496,
+        463760537,
+        463760571,
+        463760573
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 12,
+        "unknown_quote_members": [
+          "3B1DPc6ZKRhgSPGDA5gmFG6CeZe8uEaMuhJHnvibpump",
+          "3DoDr3fivj1zuoD9GAYgDLQA4iHNjHxwk8CHb9j1pump",
+          "4iB2vc2adFygSYjVttniVWbuBsemUWuBGDh2rcqZpump",
+          "59QaK1mkVjxG5RwPGpAKf4sDfHwPzkjraW6ydjHzpump",
+          "5SqqW3vBR1WKmSiXjSxuZWi2um6PH6ssVFC1RZeCpump",
+          "5oZtZNFFDWHZ8GGYANTanp5LLC9krQgKQkJh9ZiyAUXo",
+          "5wjNXH2Gvy5CL5a1iYJo3QZQCvkD8SbVgMZ4Nnmgpump",
+          "6S4wFgePiULe7gjpf7k2cDyCzEL9z6142Mky2dpcpump",
+          "9ouvoQtaztLsk18dGsf96L7h8bDQCMC7MXyUi181xCVV",
+          "BXRrv8BvNaV7zf4aVKs13dW8raKQnbWWwvRS2hr7pump",
+          "Dph4uWCuxr3gKevgjQBsgnLLs8ZgdvLKLZ1rAkwb9vPC",
+          "FjrrnQ6pk37z9d6Gy9sUJfDcjALsnWnczLL71asipump",
+          "ZbSXUS2qfeHXiQ3YpReVUM8WtXNfERCsRJVTpvRE8UP",
+          "vndjRQh86gaHGChv6KwmvQMAs9jUHassNoxRnzuJ8Y5"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 21957731575,
+        "last_confirmed_trade_time": 1793465129,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "tjp53f5PpQQAZMNQVyJEBaTL9FMhb7vjYnXMyX2wSL1jsTP4W52ykQo6vseVo6pGADSWwxGYcS1za3hjWrtrisr",
+      "copy_time": 1793465766,
+      "target_first_sol_mint": "H4ZUidDZhuN8CwsWgmPiySnm7dGT58D8XweGzT4epump",
+      "age": 34,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5rF5kqpEbdwtbGBZSQ3HkTuiXpsMS65ABXzQ3cFCNxqx7bjxTWYuoFjSjdgLoR2GZ1MTgLbq5j2pDBrZE9T8AeQE",
+      "copy_time": 1793466167,
+      "target_first_sol_mint": "FFfZJ1yWeWUFnRzaNBMghQfekhofvEXEyjaY1fPApump",
+      "age": 2726,
+      "stored_read_slots": [
+        463753985,
+        463760676,
+        463762883
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 2,
+        "last_confirmed_trade_time": 1793465152,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4eeUoWDQmsZohz9176CRnfGf6qkGeBnKqcF3Dy9LjhQkpy3auiqDaGuPJLffQWnthi9RXNQTTsY88SvW6nprY9g3",
+      "copy_time": 1793464349,
+      "target_first_sol_mint": "GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH",
+      "age": 9,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "259j2knD74eBRBB8cXrDef9gkTwjMrQYFYuJxhZaHdCSyb37qptW7WHAjysQN1hZfnRfpMPt74J6JvdNBWF5C48A",
+      "copy_time": 1793465476,
+      "target_first_sol_mint": "hX9roB86rCK1hrj4ntqPNKN2CmX69rR2mehJR5Apump",
+      "age": 3373,
+      "stored_read_slots": [
+        463750111,
+        463762209
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 12300342176,
+        "last_confirmed_trade_time": 1793465476,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5g7ixqoJDanhNeNJAaSQrYiSvcSKH7DzWqFK7Pr8qAKT3NGBWhPia9NXjPmnj4E169df9b7yvgrK8PnWzjpwzwts",
+      "copy_time": 1793464616,
+      "target_first_sol_mint": "E1HMe1NNLd1XEtL3nnbMSt1C8wLa9mSoBgHc1fqPpump",
+      "age": 76,
+      "stored_read_slots": [
+        463758158
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 154294990,
+        "last_confirmed_trade_time": 1793464614,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5urVVvuY6ipnxxNkEaEJH4SpAQv5UHY9NTdbiYbrG89ouALeZfHAwAYURY95R8hEgSjTJsFEZexUGt8s9HUTTuAP",
+      "copy_time": 1793464730,
+      "target_first_sol_mint": "8xaKZLtbkzYjKG5HN2vFLXmE7uot2Defh5SM1Sbpump",
+      "age": 4215,
+      "stored_read_slots": [
+        463741769,
+        463747162,
+        463750155,
+        463750164,
+        463758639
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 5,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 17047988,
+        "last_confirmed_trade_time": 1793464717,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "mEHL4YHNy8FYdbfaAnRuSu11wnbn7dyw5F5snsZKgwpKtEcTREYcJ4WqEoqCnStJQXiwxNBhXWwt4pvSoQGKdHu",
+      "copy_time": 1793464947,
+      "target_first_sol_mint": "87296riVbqmLPWM3nXP4MJN2PzYwWYwhGawhEW5xpump",
+      "age": 6,
+      "stored_read_slots": [
+        463759722
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 3,
+        "unknown_quote_members": [
+          "3B1DPc6ZKRhgSPGDA5gmFG6CeZe8uEaMuhJHnvibpump",
+          "3DoDr3fivj1zuoD9GAYgDLQA4iHNjHxwk8CHb9j1pump",
+          "59QaK1mkVjxG5RwPGpAKf4sDfHwPzkjraW6ydjHzpump",
+          "5wjNXH2Gvy5CL5a1iYJo3QZQCvkD8SbVgMZ4Nnmgpump",
+          "9ouvoQtaztLsk18dGsf96L7h8bDQCMC7MXyUi181xCVV",
+          "ZbSXUS2qfeHXiQ3YpReVUM8WtXNfERCsRJVTpvRE8UP"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 20719354808,
+        "last_confirmed_trade_time": 1793464946,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3akcjuNQFFrYaYUjPUZ7aNh9GUh669c5FHhaLv4rQYGtbjJGBNVULkH1BFfc2puoCdpUHcHmgjtU1eQomBJhrRBR",
+      "copy_time": 1793464661,
+      "target_first_sol_mint": "9dULEpfg7CrCnzuyLtsXpMuTjd43sAQaNUzdtMWQpump",
+      "age": 2746,
+      "stored_read_slots": [
+        463750111,
+        463750119,
+        463758372
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 20573827156,
+        "last_confirmed_trade_time": 1793464659,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "557csKr5ww5SmjTuG7qPEJ9gHPyLKXWEAtCKKRkzGb9dJARhUGRykyLbQyvLGhXpN2S3EDDMuhsHSHdWSTyanirC",
+      "copy_time": 1793461916,
+      "target_first_sol_mint": "9dULEpfg7CrCnzuyLtsXpMuTjd43sAQaNUzdtMWQpump",
+      "age": 1,
+      "stored_read_slots": [
+        463745571
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 20384180334,
+        "last_confirmed_trade_time": 1793461916,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "7iW2KXDveMpkk8i384Eek6h1h1eA77PnLo7mwsHxxgiE8KYUtLctnpEAEKD9VAew5MWBMgYbLcvYYwRZxf9YqZi",
+      "copy_time": 1793466249,
+      "target_first_sol_mint": "ABjZ69KNeYXguUVyJnm1RcX8deLc2LDBYjpC6FPypump",
+      "age": 3822,
+      "stored_read_slots": [
+        463750046
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3atmxVbZ3UzNyqacBvFrBV6HbCCKrV2uRQJaqR6Brf9C57aa3oxxSZzwbw58gc6YRW5ZrQn3mMzkeua9Zxt7oSUw",
+      "copy_time": 1793463338,
+      "target_first_sol_mint": "3acwk6ZUs2HvPHZ3Pnt6GiuzzV16rXCCMLw4MY5Jpump",
+      "age": 369,
+      "stored_read_slots": [
+        463751634
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1,
+        "last_confirmed_trade_time": 1793463217,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "44tJ4UvaZhTqaxCYQHkJ5PA4scgMZb4nnXQkVHuNKLx8uy9hJ4A6s7E6kYfm449pAGvj6VuFFBsrFNBjzsFyKQHV",
+      "copy_time": 1793462647,
+      "target_first_sol_mint": "7jRJRXjAWAEcsHeMafk18LPF5aZk3vg9UpiJvgJqpump",
+      "age": 26,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "37bCTPXrJHEbo4TDjxZXbguSWoFKA3psdDnMbsFDffFRj7x5avQ6z1fbyfeD4A3fEb5PvnQE4hVcVpnMxqFwUYu7",
+      "copy_time": 1793461052,
+      "target_first_sol_mint": "AXNSUi8GRFWooXwLmN4NuuvufJbMaS8mSwbbJ4HTpump",
+      "age": 301,
+      "stored_read_slots": [
+        463741075,
+        463741475
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 124257364,
+        "last_confirmed_trade_time": 1793461039,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3dHBwqsM9CLzSFR7kwzZb3KB2m7AqKgpzjRJBr9fYCE9incqPMejWf5tgiaSaB9EAn1d9X1bZJ4jeccmuz2Zi3wy",
+      "copy_time": 1793465310,
+      "target_first_sol_mint": "E1HMe1NNLd1XEtL3nnbMSt1C8wLa9mSoBgHc1fqPpump",
+      "age": 770,
+      "stored_read_slots": [
+        463761045,
+        463761210,
+        463761237
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 6,
+        "unknown_quote_members": [
+          "4EfLgfh7uvRG4Xs3VsWgzdVbhE4mcR9TUnC6du2Zpump",
+          "9TeN3GDP4aFWE7PmxAKH2vY3BzreyKqkwxxM9Au67Kjg",
+          "FRqMvhrqyVnsQLj79GY5dp5US9sH6QLxiQJHH4tXx59G"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 200263760,
+        "last_confirmed_trade_time": 1793465270,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4eDW6BKoRfBT6gb8rv2mVdCGQP9otpDNMMMdwQgoXbpsqAEzWiM8KCeNXH8Qd81GMC56jvPcdoYr8j5UU6xKj3Xd",
+      "copy_time": 1793461467,
+      "target_first_sol_mint": "5aHpKLHUFFkELDZFYymn4XS3K4dMb344wefBuQggpump",
+      "age": 57,
+      "stored_read_slots": [
+        463743214
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 5,
+        "unknown_quote_members": [
+          "5BSBoTVS98FdZgpshhW6jAqH9HwgVG7TncmnbRqjpump",
+          "6G4EFEBtGmZERHat1A5v6FAp8KxLFrYL73uMqTaspump",
+          "ASvGb4jyvjGWnjPbj52qTKgp6bgo7VM1JPT5kcvXT2CF",
+          "AxKVyBStR72V5CiWvYh5gXbbKN9jSbGgDwN64DMSpump",
+          "BEwNzzv5bqn4z46yH2GMUSAeKKLAUDwfcwQdvf7BYzqN",
+          "CUhjH6DRfPCTHMVXwvZKkKYD7V2AtFoeCJxpB958t8Ri",
+          "DKeHEf4XmHFX8mHZQgpo5dTWQF6uKP7mCHBxG2nVRQsQ"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "59PtoWCSNMKNkNdRMpZnt8htiZTiTj3vmesbJrvSi4wRFYXBWHvghhMZKHa3Q64jkmKSJYpzUAps7S6B8oWTci18",
+      "copy_time": 1793463870,
+      "target_first_sol_mint": "AXNSUi8GRFWooXwLmN4NuuvufJbMaS8mSwbbJ4HTpump",
+      "age": 3119,
+      "stored_read_slots": [
+        463754241,
+        463754412,
+        463754413,
+        463754423,
+        463754574
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 13,
+        "unknown_quote_members": [
+          "27NiiXpcnXAHbo3ZBQFTd8WePvrNMmGaArjwFCK5pump",
+          "27NjQRvN12EvzsAQTGnNndXFicr7jsgBnejq61tVpump",
+          "27NjVt6ZEunVdcEUHyG3PC7tcaunnuk7Jz79hP3Mpump",
+          "27Nt1FMU31A6kDZSPoNSouNS2SKXmBZfE1Nv2Lnnpump",
+          "27NtjvdaJqKFZe1L8SE19TErAXFbr7AShxSNfVTupump",
+          "27NujFF6frzYBtmHs2HyXPPKcwTVbxe8pmsYB9BUpump",
+          "27NvQGcWwhhbGaQsUyAuK7UoFQRoTRT4Enj5C3zHpump",
+          "27NvxLBoWLViuvgwKrvLDx7J8CeN88VcAF6HTSCZpump",
+          "27NwfjhoexPpUFCupBUWzE3ePYNoVvFedeRxSD5Upump",
+          "27NwzYKinHTkjm9T4E8E3u8Stcjcj78Xf7CsGRo4pump",
+          "27Nx1GbF78TeRYPWdf47Yz87rteiTu43teefJQzLpump",
+          "27NxTDcxXSdMCaMnfSAT1zubEuVHxY4dqh2yWEx6pump",
+          "27NxicXa5uJpdsh6oHG2fJ6VCC38SyXQmNkPjsZppump",
+          "F9Pt2gBLSo77HpQoHbvMVxux8C9NtBpyJeTsMtZ8pump"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 6,
+        "last_confirmed_trade_time": 1793463846,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "AN4ZqCeZ7FDVhoozRg74buFju888oVUA4Y9i1LRfPLNUyDvnps5MjkYpJfHa3SPw797c47aAiLREcgm9wm4ZiPH",
+      "copy_time": 1793464759,
+      "target_first_sol_mint": "CXMAhE7fBJpPTMqcBZRsf2fEorRPtXgc4fQLwrPYpump",
+      "age": 2754,
+      "stored_read_slots": [
+        463750046,
+        463751714,
+        463758834
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 23470249104,
+        "last_confirmed_trade_time": 1793464759,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3BfM4SMtPn1DR9ewXd4yJbRuM5HLDeDAvqkbahtvwccmqMpT7GuqmhrBBLK85YGn3wXpV3NuD1nzPYYo7z5YqmL",
+      "copy_time": 1793461914,
+      "target_first_sol_mint": "AYUBtPqT2vPMEH1T973V7ja2LSWHdRzZYLxiyG2CYBN",
+      "age": 284,
+      "stored_read_slots": [
+        463745177,
+        463745226,
+        463745319,
+        463745414,
+        463745540,
+        463745564,
+        463745565
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 7,
+        "known_sol_members": 19,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 84447836970,
+        "last_confirmed_trade_time": 1793461914,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "641EM13QVahkrYzqC5qTRmPzPM922g8YqQNa5PGv6DLeomu81YcaCmAh9bhQTDR4MeCNjy5W5Ss6Ss2io8u81r7S",
+      "copy_time": 1793462695,
+      "target_first_sol_mint": "5r3t1FsvdvpkFPtYGay7sfE5RWgmY1k9R8awKzirpump",
+      "age": 2,
+      "stored_read_slots": [
+        463749208
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 24669611804,
+        "last_confirmed_trade_time": 1793462695,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4Ut5xqMJGNV5LBrQHy6RwCs5Kkvj4QGNfvBApnR6hTTC9bY6tLUkcUgRnwgMYB2hRhrfpk6rz7oDCGRTtXbBu6s4",
+      "copy_time": 1793462036,
+      "target_first_sol_mint": "2AzF3HBEujhy1TM2QLCuFncrwtf2xmCGkC1oKouHpump",
+      "age": 606,
+      "stored_read_slots": [
+        463743576
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1,
+        "last_confirmed_trade_time": 1793461489,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "FtPjy7YQpVcsQCgLYEpEgkmfmJcL9MEkfveszGMDfNJpyNA4cg2YXLpJCvpECeG4Yj7gNbLJxHVoF49FzoqTyzp",
+      "copy_time": 1793461935,
+      "target_first_sol_mint": "9dULEpfg7CrCnzuyLtsXpMuTjd43sAQaNUzdtMWQpump",
+      "age": 20,
+      "stored_read_slots": [
+        463745620
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 491628868,
+        "last_confirmed_trade_time": 1793461926,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2BtG5NJATanwyNTRZaz5QHGjPhG49PXfL1tNMadjapDDeWQY7ecHWzmVbbjGDsguNKTQLu6q9hLrsoSjtqkJ4fHo",
+      "copy_time": 1793466279,
+      "target_first_sol_mint": "5eREVNdEhBi8jGH9W57PuXdixCxWDPZd2kC1vhKMpump",
+      "age": 136,
+      "stored_read_slots": [
+        463765595,
+        463765711,
+        463765892,
+        463765915
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 4,
+        "unknown_quote_members": [
+          "5ubGwjGzMDRdCkLUp8xdnSXsFkzhC9ZvW9BGTCN5sMmd"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 563942387,
+        "last_confirmed_trade_time": 1793466271,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5fKWSCApvvBAXGg2eVCmu5vgRQ51y9kDnTVANRa2CGrm6u5LRZ2pUgVE5LzsGpyBzNF3u8mQDeU6UBKcaYu5ZSaJ",
+      "copy_time": 1793461562,
+      "target_first_sol_mint": "byLT8aLnu3hZE5XRGH6W9HzpVEM2hjU6cnjL9VLpump",
+      "age": 58,
+      "stored_read_slots": [
+        463743911,
+        463743916
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 62678928858,
+        "last_confirmed_trade_time": 1793461561,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5gWKLs6a7qrxCqN6FmMytiPugTcxxSn5cCBQthY4coecDkVTXaB5aWC8LgXsMqjL1A4RhxfMggmEHmoxhPoxjmaU",
+      "copy_time": 1793462475,
+      "target_first_sol_mint": "D7h89Q6oZBmh1aCqGcac7eHz8E4B1tsWya4kDvVkpump",
+      "age": 13,
+      "stored_read_slots": [
+        463748178
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 7063923249,
+        "last_confirmed_trade_time": 1793462475,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2mPkqvutzN8CwTtQP4eDCwmu16WAv34MSbR3RxgAY6qUbx2k2Z3F8uv9SiRP4w6k6jdMnEDWKikUKVaY7tfW4Zfd",
+      "copy_time": 1793465928,
+      "target_first_sol_mint": "4m7QjbmDaBSJzMz4soYbDoW13nGt9AGGdcdhqmbipump",
+      "age": 3908,
+      "stored_read_slots": [
+        463746253,
+        463752941,
+        463753207
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 14559402,
+        "last_confirmed_trade_time": 1793463553,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2bhBnf7LPFDNoysR5uVtWFuouFwiSoJQyz4RhWXPtm1yr88NC2jfDqb3ZCrnbDtbgUfGs3bwNcZxNXWP2S5d2JEE",
+      "copy_time": 1793463260,
+      "target_first_sol_mint": "H5EZ59zYmLBWGaZSwVBKa3Goy6XKSujJsKMLoj3gpump",
+      "age": 257,
+      "stored_read_slots": [
+        463751558,
+        463751808,
+        463751830,
+        463751837
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 6,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 495036863,
+        "last_confirmed_trade_time": 1793463260,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4iWaGkUn9AeyFXo1vHAfGvfnBzxogMv6F3L42DnpuRExjzHhx3XzGuzeNhoMM4CsDsCFAubp3AmgXuQ8Ve7Dh4W4",
+      "copy_time": 1793461668,
+      "target_first_sol_mint": "7MaXi5g2SQokmKxZJBzg7CxaK4yccZ7QtU5gFHB6pump",
+      "age": 948,
+      "stored_read_slots": [
+        463740021,
+        463741799,
+        463743774
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 4,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 3,
+        "last_confirmed_trade_time": 1793461531,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4UjVuUEtkTk3hBTSiXQkwrupFzWH6BZdXBuZDZ7gXx8ukyQENYQhop9mHQuj1kFVZdcQKSSEUqRKkBP8EaqrXXdm",
+      "copy_time": 1793460647,
+      "target_first_sol_mint": "GwcWfM1yFLLn8xwVCENuqmP2c42yqXGs6saCP6XJpump",
+      "age": 148,
+      "stored_read_slots": [
+        463739174
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 223812725,
+        "last_confirmed_trade_time": 1793460547,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2ur7uVegjen3vkYnnvT7Q3wNJC9tw5YsR5TGWaA1hNc3aUtu8jp5dSGwBwKLabp6d2grk8HcrAXkbUSuUE6DoYq2",
+      "copy_time": 1793463277,
+      "target_first_sol_mint": "H3rjbUieQKfAEioaKkxQ4zUhUmuV529yrGDiDBDJfomo",
+      "age": 192,
+      "stored_read_slots": [
+        463751393,
+        463751545,
+        463751679,
+        463751866,
+        463751912
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 9,
+        "unknown_quote_members": [
+          "34vvpuJfAsWSvtJ7L31Tcx9QdEgUFiZV8U1j4sK5pump",
+          "6RbWGaKcHeP5UUtKgZFn7iLxQ2Hnfy7JvVmkY5xZpump",
+          "6RdETD5tMMbWys6Z9vk4MxGCxDmz3UuY8X6gSWoPpump",
+          "7euhRci6UPQjjG877VSiSymErY4fty4hDCP94TS1pump",
+          "8k2JtnCVZeFrJcK9anVRrUDmhEm4YFbxxKipLztVeuLE",
+          "AiCSbnaRKX9wCSucAX44NXRx6N8xNzvYjp2MYWuUFx54",
+          "FzTgZgMghnCHCseEj4vjQqJ2gG4sgmwKWughx7qcRpR5"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 82278266131,
+        "last_confirmed_trade_time": 1793463277,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3aLXD6QxpJXzLVLwe1tTBJgkGGnV8thms5tFRzTgpWRrBwvpnaGYLGFXG5M6bUZ52iSHMbd5kf5WGGYXGo9dQuq2",
+      "copy_time": 1793464698,
+      "target_first_sol_mint": "9dULEpfg7CrCnzuyLtsXpMuTjd43sAQaNUzdtMWQpump",
+      "age": 2783,
+      "stored_read_slots": [
+        463750111,
+        463758546,
+        463758547
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 4,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 21185171518,
+        "last_confirmed_trade_time": 1793464698,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2qwAKon3jRRKH6LpFtZPsQf9sXqW6rkPZ4FCyUtCQUFofDAK47zwqbngFZEdvYmyKR6MLanjMapFZw1Abgvc2ALz",
+      "copy_time": 1793465019,
+      "target_first_sol_mint": "Du9aiYMDTztQ5ee7Xg1RfEXsqPBuqgUszxMfA3YYpump",
+      "age": 1735,
+      "stored_read_slots": [
+        463755745
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 3,
+        "last_confirmed_trade_time": 1793464098,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5AM9N9E34rbSCERkrGvtTmzgtd4FCBpmkZJj1JyJdQ1zqNcDd73jM3sykUQzwejrHKDWG5pUocA6uwVSTGamksUG",
+      "copy_time": 1793466055,
+      "target_first_sol_mint": "GhvNVZTXrtScmNLifcBzSgbDxEtuZLdZc2GC2pPFpump",
+      "age": 30,
+      "stored_read_slots": [
+        463764837,
+        463764912
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 22194934929,
+        "last_confirmed_trade_time": 1793466055,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4U9V56QH5tRzjZF418ACm2NDnv7RxqnHXxWP6BwtkcUk3HDqRr7WqbTJVGtEUb2wXiXpY4zjegdmWHHj34thBT8Y",
+      "copy_time": 1793466282,
+      "target_first_sol_mint": "5eREVNdEhBi8jGH9W57PuXdixCxWDPZd2kC1vhKMpump",
+      "age": 139,
+      "stored_read_slots": [
+        463765711,
+        463765892,
+        463765915,
+        463765967
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 5,
+        "unknown_quote_members": [
+          "5ubGwjGzMDRdCkLUp8xdnSXsFkzhC9ZvW9BGTCN5sMmd"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 24776746619,
+        "last_confirmed_trade_time": 1793466282,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5EavcHBR7DRyHQvYFa6TrBZCtfh4XqQssVfwaQGPaufgcWZnNVHPn8ndN2krvrCT3jULazD3iHh1ZBBT9Qdfw8JW",
+      "copy_time": 1793463051,
+      "target_first_sol_mint": "H5EZ59zYmLBWGaZSwVBKa3Goy6XKSujJsKMLoj3gpump",
+      "age": 48,
+      "stored_read_slots": [
+        463750726
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 165417941,
+        "last_confirmed_trade_time": 1793463023,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4sLDAFSoDeE8d2Rzzeyfzt3M9kY2PMR1brxvRLSX8exFYmg52mq1yfJD5rK2KY2xvbHBMtLmpdesVu6xgQZ66stX",
+      "copy_time": 1793461638,
+      "target_first_sol_mint": "CZsKkmJ5KcjAV8M4F8D9LAmVDBGzCH3PxLToeJ2cpump",
+      "age": 165,
+      "stored_read_slots": [
+        463743501,
+        463744011,
+        463744133,
+        463744261
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 4,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1394081963,
+        "last_confirmed_trade_time": 1793461635,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "DVxySybeiZ3ERQKe434ok5TyTvBvXUxv6RK2bXCqtq84NUeZN582M8bbkvHWBEvezGTrF5JqRUDSWdZi9fe3qiX",
+      "copy_time": 1793464328,
+      "target_first_sol_mint": "H3rjbUieQKfAEioaKkxQ4zUhUmuV529yrGDiDBDJfomo",
+      "age": 1243,
+      "stored_read_slots": [
+        463753026,
+        463753915,
+        463754299,
+        463754346,
+        463754987,
+        463755107,
+        463756621,
+        463756806
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 17,
+        "unknown_quote_members": [
+          "34vvpuJfAsWSvtJ7L31Tcx9QdEgUFiZV8U1j4sK5pump",
+          "6RbWGaKcHeP5UUtKgZFn7iLxQ2Hnfy7JvVmkY5xZpump",
+          "6RdETD5tMMbWys6Z9vk4MxGCxDmz3UuY8X6gSWoPpump",
+          "7euhRci6UPQjjG877VSiSymErY4fty4hDCP94TS1pump",
+          "8k2JtnCVZeFrJcK9anVRrUDmhEm4YFbxxKipLztVeuLE",
+          "9iVG55V9rNiqJBRXDg3eDiJseQTA3yLe1ZjgLV9vpump",
+          "AiCSbnaRKX9wCSucAX44NXRx6N8xNzvYjp2MYWuUFx54",
+          "FzTgZgMghnCHCseEj4vjQqJ2gG4sgmwKWughx7qcRpR5"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 6998027,
+        "last_confirmed_trade_time": 1793464325,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4BWvbrUtmg5Y5dqBeEcib5CdvWoSJf4BVDQcaacNVnYkrHNeErKqgBMcjtXWVYpC9u1ZbZpb1ot3bfH5qgYy6Jrd",
+      "copy_time": 1793466460,
+      "target_first_sol_mint": "D86oTEbwL3VomLuhqfCEGA6FoxYLYPdDAS4H11dppump",
+      "age": 5163,
+      "stored_read_slots": [
+        463745818,
+        463750092,
+        463763458
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 4,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2eZRYhLnR8Qx9YUDDq85wDm3xT3ZGXGKshyFbY29QLec37fKhg4CegdUeLmuGxxPigRsQbrebtrjUY3xkY1urNJL",
+      "copy_time": 1793466182,
+      "target_first_sol_mint": "E898FheWJg2fndg8uuQrodCg226fgBEmbxyzyNjBpump",
+      "age": 53,
+      "stored_read_slots": [
+        463765403,
+        463765495,
+        463765500
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 11229170207,
+        "last_confirmed_trade_time": 1793466182,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5xs6iMmyynpeXTLUWfTSPxCT6h8zjhffsavnETRLH5Ms2wNJkM3u1GWtpzrXEKX92vuDdFWQvF9DoCZhJpsr8KkN",
+      "copy_time": 1793462982,
+      "target_first_sol_mint": "CkoSfNEvtBQCTPvcxyUnScdw4gaLBTKfz19azZfApump",
+      "age": 1947,
+      "stored_read_slots": [
+        463741501,
+        463741730,
+        463743962,
+        463748278,
+        463749785,
+        463750164
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 6,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 7,
+        "last_confirmed_trade_time": 1793462821,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "pFkziX3Wv5LT5N8LSdLYR5abETpTYfRBnbGCJcevDFuimfjLM79cr8TWp2wcyVMS53eioLk8RA5hTcFQ9yr1qHS",
+      "copy_time": 1793465506,
+      "target_first_sol_mint": "Hwn9ZoNK34sVvZbTo412UwDfLUq79H7GVdL9JJsApump",
+      "age": 41,
+      "stored_read_slots": [
+        463762352
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 18774984465,
+        "last_confirmed_trade_time": 1793465506,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3dBJPwDCj19MBeseMT5h6dpukj5xxMy8bSjs94KvUjKi6jRN7fwTYcQ4at3s1xFdsMVfAa9D8eDovMXTrQVR6Pys",
+      "copy_time": 1793465361,
+      "target_first_sol_mint": "2AzF3HBEujhy1TM2QLCuFncrwtf2xmCGkC1oKouHpump",
+      "age": 3931,
+      "stored_read_slots": [
+        463743576,
+        463750155,
+        463761589
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 4,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 463655,
+        "last_confirmed_trade_time": 1793465345,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "9deRXjEdQ7UaTqFoum2opU7ZALW3UiTWgC93FrRJFVRfK4tQMyjpxPPc9mLQvVPggad9RjnnGyD8YHiZu1uGkLG",
+      "copy_time": 1793466332,
+      "target_first_sol_mint": "AyJHALWoAdH6ZggPQKLSuvz2RXeaFA5NcFiYJetpump",
+      "age": 2824,
+      "stored_read_slots": [
+        463758490
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3BkBwRcn2w3WRPiJQhpFR8Ub6vdDy42dZhPs5z6mRyVXSnc9svT75rcM5rEpPo3psgRRYkDSKYvbanibposUB64i",
+      "copy_time": 1793462113,
+      "target_first_sol_mint": "B2RKvSUTh5dKeQmMFonERRQjfphJ9xtXk42C8XYapump",
+      "age": 557,
+      "stored_read_slots": [
+        463744211,
+        463745309,
+        463745517,
+        463745732,
+        463746089,
+        463746356,
+        463746478,
+        463746489
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 8,
+        "known_sol_members": 8,
+        "unknown_quote_members": [
+          "3E6WZiRNMHLjAm9bp6AUTkqW8zEfWpBB7pgBP12opump",
+          "6YyvW4sWCTkX3uBbXygotw8h8fA6rdPtqQudTE6Jpump",
+          "DS3g3zWqFpgoY2Pywd3Y59kdHHYcmLwJu8kmEEb9pump",
+          "FY3KbqSrtKbAuL8rSBpJmRLGRGc1PjnJQ3G79coBpump"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 5766173561,
+        "last_confirmed_trade_time": 1793462112,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "NNuViXdZvifePyWJidEdtJX5FmK8Y5jCK2y5Mi86tNNmtj5JhicWJWHnazKAzMbwMoF33fSs36vXFaoRwmnB8WM",
+      "copy_time": 1793465836,
+      "target_first_sol_mint": "7VLX4hSVAFVw43R5wFRUEogv5rfpp2GQsbgXjuZ3pump",
+      "age": 5200,
+      "stored_read_slots": [
+        463739676,
+        463748365,
+        463762338
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 10321447,
+        "last_confirmed_trade_time": 1793465503,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2K5C2xuMaMhsKyCtYpWnc56LAzKz1zWd6UK4cpUkN3NZKYqpszfSzeumunaccwGzixsuspjUna6QBuF84MCFuVMj",
+      "copy_time": 1793466558,
+      "target_first_sol_mint": "6G9MJ8M5WEdoai4VuUZCFaXtimaL2BCKrrjk8EXSpump",
+      "age": 1,
+      "stored_read_slots": [
+        463767259
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 23588270246,
+        "last_confirmed_trade_time": 1793466558,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5da27mSXwKEo6KFdz8xxcfzAKJVmHE9copDxxt7j2symFsCEBikFR99YBumR9XDZ1Y88McUSvKzfzvdeYvY3tSFb",
+      "copy_time": 1793466631,
+      "target_first_sol_mint": "BZXY2SGzugzjvBRMQiDDycSDP6VFpMNewbBwV8cRpump",
+      "age": 1583,
+      "stored_read_slots": [
+        463762883,
+        463767593
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 1081833388,
+        "last_confirmed_trade_time": 1793466630,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4yNJ55vgB3TdMnPDpLmWSerZBkwYPcBKzqo2s9a9LksCawyqfhXjTf4ez5wSbvnrU8EPpxz1dHK5aRPFGEraFatr",
+      "copy_time": 1793461195,
+      "target_first_sol_mint": "94dWpSjDSduEFqTSDTyZzagyj94ig9kDvytdJ2Zjpump",
+      "age": 34,
+      "stored_read_slots": [
+        463742199
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 21121252922,
+        "last_confirmed_trade_time": 1793461195,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2rSW6cRhUL8zQ9GkHAiGMaTbxL3V8jJQ7UJBK6obxhnPUH3h4zTeWo4s6zJq2yQjU3xC7i4sEq9n3eW5ZQdtnA6d",
+      "copy_time": 1793465162,
+      "target_first_sol_mint": "87296riVbqmLPWM3nXP4MJN2PzYwWYwhGawhEW5xpump",
+      "age": 221,
+      "stored_read_slots": [
+        463760537,
+        463760678,
+        463760701,
+        463760723,
+        463760724
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 5,
+        "known_sol_members": 15,
+        "unknown_quote_members": [
+          "3B1DPc6ZKRhgSPGDA5gmFG6CeZe8uEaMuhJHnvibpump",
+          "3DoDr3fivj1zuoD9GAYgDLQA4iHNjHxwk8CHb9j1pump",
+          "4iB2vc2adFygSYjVttniVWbuBsemUWuBGDh2rcqZpump",
+          "59QaK1mkVjxG5RwPGpAKf4sDfHwPzkjraW6ydjHzpump",
+          "5SqqW3vBR1WKmSiXjSxuZWi2um6PH6ssVFC1RZeCpump",
+          "5oZtZNFFDWHZ8GGYANTanp5LLC9krQgKQkJh9ZiyAUXo",
+          "5wjNXH2Gvy5CL5a1iYJo3QZQCvkD8SbVgMZ4Nnmgpump",
+          "6S4wFgePiULe7gjpf7k2cDyCzEL9z6142Mky2dpcpump",
+          "9ouvoQtaztLsk18dGsf96L7h8bDQCMC7MXyUi181xCVV",
+          "BXRrv8BvNaV7zf4aVKs13dW8raKQnbWWwvRS2hr7pump",
+          "Dph4uWCuxr3gKevgjQBsgnLLs8ZgdvLKLZ1rAkwb9vPC",
+          "FjrrnQ6pk37z9d6Gy9sUJfDcjALsnWnczLL71asipump",
+          "ZbSXUS2qfeHXiQ3YpReVUM8WtXNfERCsRJVTpvRE8UP",
+          "vndjRQh86gaHGChv6KwmvQMAs9jUHassNoxRnzuJ8Y5"
+        ],
+        "confirmed_proxy_reserve_lower_bound": 54392502895,
+        "last_confirmed_trade_time": 1793465162,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "49fxTfsxUmnUeB3U2Rr21XPwJm3pV9EUe7XhDWPhALaKkCMRUpGNnem38ThtNBkPdZsrbikqzQbU2WopQgXhqxde",
+      "copy_time": 1793462346,
+      "target_first_sol_mint": "45fVVhitRDuJhs5otnxvV8o698cpBUzNqhA21U4spump",
+      "age": 0,
+      "stored_read_slots": [
+        463747577
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 15777321570,
+        "last_confirmed_trade_time": 1793462346,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2A6qqB8vozETtti5NKhrUt8PBywqSECiEUPqvLu9M94WeNEqwYTyGHW6XA9TMgCWUJqH5s9H12ueiTVagfpptPH5",
+      "copy_time": 1793461296,
+      "target_first_sol_mint": "FNqtasma5mG5NDY3KtBC55ZEr3Dz8iqvqX7aauzEpump",
+      "age": 612,
+      "stored_read_slots": [
+        463741637,
+        463742646
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 157936130,
+        "last_confirmed_trade_time": 1793461290,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5KS56ESrK6eAh17SrHvcSoEzFv15n7rXXbS6wApaDpi9s6Kff4sLF9FJ59wqdtiPrC9xNoDbrANbYVaLVuMdkgzn",
+      "copy_time": 1793461219,
+      "target_first_sol_mint": "94dWpSjDSduEFqTSDTyZzagyj94ig9kDvytdJ2Zjpump",
+      "age": 58,
+      "stored_read_slots": [
+        463742258,
+        463742307
+      ],
+      "mature": {
+        "without_volume": false,
+        "with_volume": false,
+        "reason": "complete confirmed snapshots: proxy reserve below floor",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 238508090,
+        "last_confirmed_trade_time": 1793461217,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2HvRPEB1N19CotdbX8FM2fFiNNC4uLtDS943sMVTbvnvxKMDZxSwhkmGuA477rSznFMiF4st6gBgSiH6t8KVQchu",
+      "copy_time": 1793461758,
+      "target_first_sol_mint": "AYUBtPqT2vPMEH1T973V7ja2LSWHdRzZYLxiyG2CYBN",
+      "age": 128,
+      "stored_read_slots": [
+        463744796,
+        463744800,
+        463744833
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 6,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 45378491498,
+        "last_confirmed_trade_time": 1793461758,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4HhS34apyQyzec7aBJUDhj5VgCk3Fz5557fncmsFTbczTjC14MBA1rjiYP1aF6AMLRhhu2WkHqyQFRiztFkw1mGn",
+      "copy_time": 1793460454,
+      "target_first_sol_mint": "4SXaob3NZkQzaRsvAS3VQFatbHCqMjbraRPeyHNNpump",
+      "age": 3,
+      "stored_read_slots": [
+        463738738
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "Sn5RR8dRatipuL7ERE1tvVkbWRV3Gj7sVYxogmJi2zj7iXQh2YWkSkLVvb9W4qYvAvxRxzHb29yyLgVNbsznfSg",
+      "copy_time": 1793461334,
+      "target_first_sol_mint": "8LXuKQCMw5kjyCevhV791GTXqLZieN1ZfRhUPbhwpump",
+      "age": 10,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2QG9zxgCBAeFMecXC5t7zGy62qYNUuLgJrVTAC8HEQGS4b9TFX2pD7y2g4HtjFZtLaH3d4Bd6BNYdRTvFg7LiSo7",
+      "copy_time": 1793463838,
+      "target_first_sol_mint": "6RmPC7ia7CKHBcTFQMzyERnM3GgimrZhh3y1BQWypump",
+      "age": 224,
+      "stored_read_slots": [
+        463754097,
+        463754346
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 978907802,
+        "last_confirmed_trade_time": 1793463745,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3oVyNjNcqS9ZnsgWSyhGK9kyqdWi3dxX4VQWkSghvjYogi98ZEzAiJTC1ujmR7aSoLufchUHFU1s82t51uwFvJD3",
+      "copy_time": 1793462728,
+      "target_first_sol_mint": "5aVf16nKdzFd1X56bCN6oMH5SNwgAd2nxG9kMtsppaid",
+      "age": 128,
+      "stored_read_slots": [
+        463749351
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 21311270577,
+        "last_confirmed_trade_time": 1793462727,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "dMCHWKz4a9chS5Lw3Z2czGFXppd6pmYecxvsvhjdP14QXUMPp9c8jBdP8yHaHnr2FE1SCNSgFRjcJvKqQxBfrBs",
+      "copy_time": 1793464698,
+      "target_first_sol_mint": "EZRMTX2eJUhvvEWL3hfkgy3kZWSYCfBmx35zRhJepump",
+      "age": 0,
+      "stored_read_slots": [
+        463758550
+      ],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4jsUpimK3zRs3W3svAFq89Unvnm9F1yK6q8kd7BAdrsUJh86vX6ayfKyLGW34JMcXcePDdRzJ4L1sYTzePup6YVc",
+      "copy_time": 1793466053,
+      "target_first_sol_mint": "GhvNVZTXrtScmNLifcBzSgbDxEtuZLdZc2GC2pPFpump",
+      "age": 28,
+      "stored_read_slots": [
+        463764837,
+        463764906
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 21421481485,
+        "last_confirmed_trade_time": 1793466053,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2HJuhvHeAJ9geZyKyWJkbsdaikZdVriRdtw4dZBW4a2CCJXZ3ppBTZ5yK33VMrJj9EV72si4DknY9kbEzwW3oLDv",
+      "copy_time": 1793464540,
+      "target_first_sol_mint": "E1HMe1NNLd1XEtL3nnbMSt1C8wLa9mSoBgHc1fqPpump",
+      "age": 0,
+      "stored_read_slots": [
+        463757815
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 16414166660,
+        "last_confirmed_trade_time": 1793464540,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "3kThwYYp1VJWCySTUpqUPUQ6KJPsmRKMvVmfKCqpkWzVMJPvnAMR1XUt4EVGD5AC7fN4S8vXNYB2E6C7D9VLE4Dj",
+      "copy_time": 1793462739,
+      "target_first_sol_mint": "5r3t1FsvdvpkFPtYGay7sfE5RWgmY1k9R8awKzirpump",
+      "age": 46,
+      "stored_read_slots": [
+        463749302,
+        463749408
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 2,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 46217579480,
+        "last_confirmed_trade_time": 1793462739,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5QL3HicviiNX7GfXANLtVZkVMCfNPyiC1nRhbG6LnaEysoRCXMqj8C4bvqbt7V7DKjYEAByS68MKz639BMjewHbG",
+      "copy_time": 1793463979,
+      "target_first_sol_mint": "HH1Tc8kGmaTCPrRx3uQp74ZZzdh1iY6qtRtorrH8XrC1",
+      "age": 7,
+      "stored_read_slots": [],
+      "mature": {
+        "without_volume": null,
+        "with_volume": null,
+        "reason": "incomplete confirmed trade snapshots; reserve/idle not established",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 0,
+        "known_sol_members": 2,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 0,
+        "last_confirmed_trade_time": null,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2fkVekhs8Yn8KqWQPWop2S4m1PH9PmYyk4u2ny96yLEc12WnD4ofR2WWfidEXrb8EchbmsgERHuoHjf9b6Scr91x",
+      "copy_time": 1793463133,
+      "target_first_sol_mint": "4VV8rntQfCT1bQifbVWnqhPTpy9a7c2n4MAaW71Fpump",
+      "age": 30,
+      "stored_read_slots": [
+        463751237
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 25827020165,
+        "last_confirmed_trade_time": 1793463132,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "4gDrgFzdgLwhLWnGzWJb6YSgwxaHmUDWR1Bn2wBCW33x5r1svCYXvXT94Wq9XPkGANVgkkQK6BEbfUGJK3bqmYmK",
+      "copy_time": 1793466362,
+      "target_first_sol_mint": "6cHeGodRhn9k8zUxborsNc8CtJ3vwY9x4AoPoSvcpump",
+      "age": 1664,
+      "stored_read_slots": [
+        463766188,
+        463766280,
+        463766341
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 55577908739,
+        "last_confirmed_trade_time": 1793466362,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "129tCcbESXfQE2YGUPwQzzVGm1GCx2m3LsoW54ghq8nU5EhcFNDuHZKGteVBVbK6UCsaEb5keKuHHqENuU58BZ6Y",
+      "copy_time": 1793464445,
+      "target_first_sol_mint": "GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH",
+      "age": 105,
+      "stored_read_slots": [
+        463757027,
+        463757365
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 3,
+        "known_sol_members": 3,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 77123700452,
+        "last_confirmed_trade_time": 1793464445,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "5UTJpvTpknECtTU3tetBmvFRmnPzHi7FQ5A7QvaoQcVrnmMoXNtENpsqRerKWMSP8LSgc561pBUxPoZiWwxiSMsE",
+      "copy_time": 1793464279,
+      "target_first_sol_mint": "Fibp7U9vgPDRDWKHfQd8t5P2JwJWY79zf4Qfz3Kwpump",
+      "age": 0,
+      "stored_read_slots": [
+        463756593
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": true,
+        "confirmed_sol_reads": 1,
+        "known_sol_members": 1,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 9304232761,
+        "last_confirmed_trade_time": 1793464279,
+        "volume_history_supplied": false
+      }
+    },
+    {
+      "copy_signature": "2x9xmvwW6MJa4RmyCkqW35YyeJR94YA2nf12jXjWEz9THVtWtxPBsusSqe4ys5boNDgzc6Pz4HB6bZxCdEH6e7Hz",
+      "copy_time": 1793462513,
+      "target_first_sol_mint": "D7h89Q6oZBmh1aCqGcac7eHz8E4B1tsWya4kDvVkpump",
+      "age": 51,
+      "stored_read_slots": [
+        463748294,
+        463748303,
+        463748356,
+        463748360
+      ],
+      "mature": {
+        "without_volume": true,
+        "with_volume": null,
+        "reason": "confirmed reserve lower bound and recent trade pass without volume",
+        "complete_confirmed_sol_snapshots": false,
+        "confirmed_sol_reads": 4,
+        "known_sol_members": 7,
+        "unknown_quote_members": [],
+        "confirmed_proxy_reserve_lower_bound": 58830646700,
+        "last_confirmed_trade_time": 1793462513,
+        "volume_history_supplied": false
+      }
+    }
+  ]
+}

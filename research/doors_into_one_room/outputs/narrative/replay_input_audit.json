@@ -1,0 +1,26 @@
+{
+  "launches": 2956,
+  "launch_fields": [
+    "block_time",
+    "creator",
+    "ix",
+    "mint",
+    "name",
+    "signature",
+    "slot",
+    "symbol",
+    "uri"
+  ],
+  "launch_rows_with_any_room_state_field": 0,
+  "historical_copy_snapshots": 100,
+  "historical_member_reads": 420,
+  "confirmed_trade_member_reads": 219,
+  "non_trade_member_reads": 155,
+  "member_reads_without_signature": 46,
+  "current_snapshot_rows": 300,
+  "current_snapshot_unix": 1793471257,
+  "last_launch_unix": 1793466652,
+  "post_window_snapshot_delay_seconds": 4605,
+  "complete_trade_event_time_series_supplied": false,
+  "measurement_status": "insufficient_for_full_production_state_replay"
+}

@@ -3,11 +3,12 @@ Gross volume counts BOTH legs; net cost is 40 bps per gross-volume SOL, not 80 b
 Usage: python3 gate_costs.py > outputs/narrative/gate_costs.md
 """
 import sys
+import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from account_sizes import per_door_rent_lamports, per_room_rent_lamports, rent
 from matcher import DEFAULTS as D
-from audit_liveness_brief import load_samples
+from audit_liveness_brief import load_samples, OUT
 SOL = 1_000_000_000
 FEE = 0.01
 DOOR_SHARE = 0.60
@@ -60,11 +61,12 @@ def main():
               f'{500*86400/seconds*ROOM_RENT/SOL:.6f} | '
               f'{500*86400/seconds*(ROOM_RENT-SLUGLOCK_RENT)/SOL:.6f} |')
     count=sum(age<t for age in ages)
-    previous=sum(age<7200 for age in ages)
+    recall=json.loads((OUT/'recall_bounds.json').read_text(encoding='utf-8'))
+    cost=next(b for b in recall['bounds'] if b['variant']=='with_volume')
     print(f'\nChoose {t/3600:g} h instead of the previous 2 h: grace covers {count}/{len(ages)} '
-          f'({count/len(ages):.1%}) of the SOL calibration targets, costing '
-          f'{100*(previous-count)/len(ages):.2f} percentage points of grace coverage. '
-          'The window is inside the observed sample and retains more than nine in ten targets. '
+          f'({count/len(ages):.1%}) of the fixed SOL age-proxy targets. The conditional fixed-target '
+          f'curve-sum proxy loss bound is {cost["one_hour_loss_pp_lower"]:.2f}–'
+          f'{cost["one_hour_loss_pp_upper"]:.2f} retention points; the true production routing cost is unmeasured. '
           'Halving grace doubles the continuous unfunded-recreation rent rate; mature-room '
           'wash costs are unchanged. Small targeted squats remain affordable; this is not an economic guarantee.')
     print('\nNo founder share exists. Merely owning door 0 earns nothing; later launches use their own doors. '

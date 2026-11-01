@@ -95,7 +95,8 @@ def main():
             f"percentage-point gain over the same text baseline; overall precision is {narrow['precision']:.2%}. "
             "This is a small, post-selection result without held-out or human validation. "
             "It motivates validation on a new sample rather than switching on the rule. "
-            "The approved production choice remains shadow mode."]
+            "V1 excludes image matching entirely, including shadow processing. A future rule needs "
+            "a threshold reaching the text operating point's precision on a held-out sample with human-checked labels."]
     fp0=[r for r in false_rows if r['hamming_setting']==0]
     if fp0:
         lines += ['',f"Among known unfiltered Hamming-0 errors, {sum(r['matched_face']>0 for r in fp0)}/{len(fp0)} "

@@ -1,0 +1,25 @@
+{
+  "scope": "conditional metadata-only benchmark, all rooms assumed live; no financial state supplied",
+  "launches": 2956,
+  "routes": 1732,
+  "new_rooms": 1224,
+  "legacy_expected_vamps": 1979.0096021000277,
+  "legacy_definition_certain_vamps": 1674,
+  "semantic_precision_estimate": 0.9982678983833718,
+  "semantic_recall_estimate": 0.873669333471283,
+  "empty_uri_launches": 8,
+  "legacy_uri_copy_denominator": 1034,
+  "nonempty_uri_copy_denominator": 1027,
+  "legacy_uri_estimated_correct_recall": 0.9910023487151147,
+  "nonempty_uri_copies_routed": 1025,
+  "root_same_uri_successes": 768,
+  "same_uri_in_room_successes": 1025,
+  "root_identity_or_uri_definition_successes": 972,
+  "uri_routes_requiring_semantic_judgement": 53,
+  "uri_route_judgements": {
+    "S": 35,
+    "D": 1,
+    "U": 0,
+    "unlabelled": 17
+  }
+}

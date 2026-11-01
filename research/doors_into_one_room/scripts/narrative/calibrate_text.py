@@ -7,8 +7,8 @@ match each room's door 0 only, as in matcher.py. Ties: stronger text tier, then 
 A route is correct if the launch is the same narrative as the room's door 0 (the room token's identity), so
 loose rules that chain unrelated launches into one room are charged for every launch that follows.
 
-Ground truth for a pair of launches (A earlier, B later):
-  certain same - byte-identical metadata URI (identical metadata JSON, so identical image), or identical folded
+Legacy benchmark label policy for a pair of launches (A earlier, B later):
+  certain same - equal metadata URI strings (including missing URIs in this historical definition), or identical folded
                  name AND symbol (the label rule treats one identity as one narrative);
   labelled     - pairs with different identities are labelled S (same narrative), D (different) or U (unsure)
                  in scripts/narrative/labels_assistant.csv. The labels were written by the assistant (Claude)
@@ -24,6 +24,9 @@ the image are invisible here, so recall is measured over text-findable copies an
 
 Usage: python3 calibrate_text.py <launches.jsonl> <labels.csv> <out_dir>
 Writes text_calibration.md, label_sample.csv (the pairs to label), copies.json (input to liveness_reads.py).
+These historical definitions are retained for reproduction. label_dependency.py
+separately excludes missing URIs and distinguishes exact URI metrics from semantic
+correctness: mutable URI equality does not prove identical historical metadata bytes.
 """
 import collections
 import csv

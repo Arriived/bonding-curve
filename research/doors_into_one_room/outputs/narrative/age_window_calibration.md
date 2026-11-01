@@ -27,4 +27,6 @@ Choose T_new = 1 h. It lies inside the observed window and covers more than nine
 
 All-certain-copy and different-creator ages use the earliest earlier identity/URI-matching launch, regardless of quote currency. The SOL subset uses the earlier recorded SOL-quoted members, matching the original gate calibration. Copy identity and ordering are exactly the text calibration rules. p50 is the sample median; other quantiles use sorted[min(n-1, floor(p*n))]. The runtime age clause is strict (<); boundary counts are recorded in the JSON.
 
+The copy cohorts retain the historical identity/URI definition for comparison, including its treatment of missing URI strings. They are definition-positive cohorts, not human-verified narrative ground truth; label_dependency.md gives nonempty-URI metrics.
+
 Grace coverage is not full routing recall: older funded/active rooms can pass the mature branch. The SOL reserve/idle data bound that branch in liveness_table.md. Full-cohort mature-room histories and historical trailing volume are unavailable. Room creation is an earliest-observed-member proxy; pre-window ancestors are unobserved, so this short sample cannot establish long-run recall.

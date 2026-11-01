@@ -30,45 +30,48 @@ def replace_block(document, name, content):
 
 def main():
     run('audit_rent_model.py')
+    run('audit_replay_inputs.py')
+    run('recall_bounds.py')
+    run('label_dependency.py')
+    run('probe_image_hosts.py', '--render-only')
     run('age_window_calibration.py')
     run("liveness_table.py", OUT / "liveness_reads.json", OUT / "liveness_quote_mints.json",
         OUT / "liveness_table.md")
     costs = run("gate_costs.py")
     (OUT / "gate_costs.md").write_text(costs, encoding="utf-8", newline="\n")
     audit = run("audit_liveness_brief.py")
-    selected = (OUT / "liveness_table.md").read_text(encoding="utf-8").split(
-        "### C. Reserve-and-idle baseline, before age and volume clauses\n", 1)[1]
     correction = audit.split("# Liveness brief correction: room age differs from idle time\n", 1)[1]
     doc_path = ROOT / "NARRATIVE_DETECTION.md"
     document = doc_path.read_text(encoding="utf-8")
     document = replace_block(document, "BRIEF CORRECTION", correction)
     rent=(OUT/'rent_correction.md').read_text(encoding='utf-8')
     document=replace_block(document,'RENT CORRECTION',rent)
-    document = replace_block(document, "SELECTED GATE", selected)
     age=(OUT/'age_window_calibration.md').read_text(encoding='utf-8')
     age='\n'.join(line for line in age.splitlines() if not line.startswith('# '))
     document=replace_block(document,'AGE DISTRIBUTION',age)
     document = replace_block(document, "POISONING COSTS", costs)
-    for name,path in [('IMAGE CALIBRATION','image_calibration.md'),('IMAGE ENTROPY','image_entropy_calibration.md'),
-                      ('REAL PHASH CHECK','real_phash_reference_check.txt')]:
-        content=(OUT/path).read_text(encoding='utf-8')
+    for name, filename in [('RECALL BOUNDS','recall_bounds.md'), ('LABEL DEPENDENCY','label_dependency.md')]:
+        content=(OUT/filename).read_text(encoding='utf-8')
         content='\n'.join(line for line in content.splitlines() if not line.startswith('# '))
         document=replace_block(document,name,content)
-    robustness=json.loads((OUT/'real_image_robustness.json').read_text(encoding='utf-8'))
-    fetch=json.loads((OUT/'image_fetch_summary.json').read_text(encoding='utf-8'))
-    lines=[f"Real-image corpus: {fetch['unique_image_sha256']} distinct byte hashes; "
-           f"{len(robustness['sample_sha256'])} edit-positive sources; seed {robustness['seed']}. "
-           f"Images decoded for {fetch['launches_with_phash']}/{fetch['launches']} launches; "
-           f"{fetch['metadata_failures']} metadata failures and {fetch['image_failures']} image failures.",'',
-           '| edit | within Hamming 10 | within Hamming 16 |','|---|---|---|']
-    for name in ('re-encode JPEG q85','JPEG q40','rescale to 128 px','rescale to 512 px',
-                 'hue rotate 60 deg','hue rotate 180 deg','grayscale','centre crop 5%',
-                 'centre crop 10%','centre crop 20%','caption bar (bottom 15%)',
-                 'sticker in corner (1/16 area)','mirror (left-right)'):
-        distances=robustness['distances'][name]
-        lines.append(f"| {name} | {sum(d<=10 for d in distances)/len(distances):.1%} | "
-                     f"{sum(d<=16 for d in distances)/len(distances):.1%} |")
-    document=replace_block(document,'REAL ROBUSTNESS','\n'.join(lines))
+    images=json.loads((OUT/'image_calibration.json').read_text(encoding='utf-8'))
+    entropy=json.loads((OUT/'image_entropy_calibration.json').read_text(encoding='utf-8'))
+    base=images['results'][0]
+    h0=next(row for row in images['results'] if row['strong']==0)
+    narrow=next(row for row in entropy['results'] if row['hamming']==0 and row['minimum_entropy_bits']==7.5)
+    false_base=base['routed']-base['correct']
+    false_image=h0['routed']-h0['correct']
+    decision=(f"Archived all-live benchmark estimates, using assistant labels: at Hamming 0, "
+              f"image-assisted recall rises from {base['recall']:.2%} to {h0['recall']:.2%} "
+              f"(+{100*(h0['recall']-base['recall']):.2f} points), while precision falls from "
+              f"{base['precision']:.2%} to {h0['precision']:.2%}. Estimated false routes rise from "
+              f"{false_base:.2f} to {false_image:.2f} ({false_image/false_base:.2f}x). "
+              f"The entropy-filtered candidate has only {narrow['assisted']} assisted routes in-sample. "
+              "These are conditional historical research estimates, not production end-to-end results. "
+              "They do not justify permanently absorbing a genuine launch through an image-assisted route.\n\n"
+              "See `outputs/narrative/image_calibration.md`, `image_entropy_calibration.md`, "
+              "`real_image_robustness.md` and the byte-hash manifests for the retained research evidence.")
+    document=replace_block(document,'IMAGE DECISION',decision)
     doc_path.write_text(document, encoding="utf-8",newline='\n')
     spec_path=ROOT/'PERMANENT_CURVE_SPEC.md'
     spec=replace_block(spec_path.read_text(encoding='utf-8'),'RENT CORRECTION',rent)

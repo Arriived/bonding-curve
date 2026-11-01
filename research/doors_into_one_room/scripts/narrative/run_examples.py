@@ -16,13 +16,13 @@ def main():
     for f in sorted(os.listdir(d)):
         if not f.endswith(".json"):
             continue
-        inp = json.load(open(os.path.join(d, f)))
+        inp = json.load(open(os.path.join(d, f), encoding="utf-8"))
         exp = inp.pop("expect")
         out = decide(inp)
         got = (out["decision"], out.get("room_id"))
         ok = got == (exp["decision"], exp["room_id"])
         bad += not ok
-        detail = out.get("rule") or "; ".join(f"room {e['room_id']}: {e['text']}+{e['image']}, "
+        detail = out.get("rule") or "; ".join(f"room {e['room_id']}: {e['text']}, "
                                               f"{'live' if e['live'] else 'not live: ' + e['live_reason']}"
                                               for e in out["evaluated"])
         print(f"{'ok  ' if ok else 'FAIL'} {f[:-5]}: {got[0]}{'' if got[1] is None else ' ' + str(got[1])}  ({detail})")
