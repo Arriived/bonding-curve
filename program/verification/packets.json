@@ -1,12 +1,12 @@
 {
   "edge_cu_samples": {
     "buy_door": [
-      64746,
-      76745,
-      64643
+      64108,
+      76107,
+      64005
     ],
     "buy_room": [
-      48886
+      48567
     ],
     "convert": [
       85556,
@@ -29,11 +29,11 @@
       126194
     ],
     "sell_door": [
-      61701,
-      73735
+      61697,
+      73731
     ],
     "sell_room": [
-      46508
+      46506
     ]
   },
   "first_buy_lamports": 1010000000,
@@ -44,6 +44,6 @@
     "uri": 200
   },
   "packet_limit": 1232,
-  "transaction_cu": 254901,
+  "transaction_cu": 254263,
   "v0_bytes": 678
 }

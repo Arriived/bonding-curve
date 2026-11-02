@@ -11,10 +11,10 @@ Writable-account cap: 24,000,000 CU, verified from Agave v4.4.0 source.
 
 | instruction / route | samples | min CU | max CU | execution-only ceiling per room/block |
 |---|---:|---:|---:|---:|
-| buy_door | 3,351 | 64,112 | 76,745 | 312 |
-| sell_door | 1,675 | 61,102 | 73,735 | 325 |
-| buy_room | 841 | 48,672 | 48,886 | 490 |
-| sell_room | 852 | 46,289 | 46,508 | 516 |
+| buy_door | 3,351 | 63,474 | 76,107 | 315 |
+| sell_door | 1,675 | 61,098 | 73,731 | 325 |
+| buy_room | 841 | 48,353 | 48,567 | 494 |
+| sell_room | 852 | 46,287 | 46,506 | 516 |
 | convert | 802 | 77,019 | 89,075 | 269 |
 | open_door | 4 | 111,766 | 134,384 | 178 |
 
@@ -27,13 +27,13 @@ observed in these fixtures, not a proof of worst-case CU for every address.
 
 Maximum-metadata creation with an atomic first buy: legacy 1,262 bytes
 exceeds the 1,232-byte packet limit; the executed v0 transaction
-uses 678 bytes. Its whole-transaction CU is 254,901.
+uses 678 bytes. Its whole-transaction CU is 254,263.
 
 The ceiling is floor(cap / maximum measured execution CU). Actual scheduling
 also charges signatures, write locks, instruction data and the transaction’s
 requested compute budget. Clients must size that budget; these ceilings are
 not a promise of accepted transactions per block. Pool-phase CU is unmeasured.
 
-Build commit: `e998bdbb865775b2c49cd92e0bc8e50462edcd61`; ELF SHA-256: `04af90d811fb4f31dd81473ac117863115849ffa5c653debea97e5a7d75ddfe8`.
+Build commit: `3ac349b45a2aaf3397704d7a36301b8e9fd7e8dd`; ELF SHA-256: `4c9df69098ac9ed01bbf06db563d2b5e99cdd76ad8441718257ea4f21ee40d93`.
 Raw samples/statistics, tool versions and source hashes are in
 `program/verification/svm_report.json` and `program/verification/build.json`.

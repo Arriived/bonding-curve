@@ -109,3 +109,6 @@ execution. This does not deploy a program or send devnet/mainnet transactions.
 
 The research measurement remains in the original worktree and is not modified
 by this isolated program branch.
+
+The follow-up [program review](BUG_SWEEP.md) records the buy-fee volume
+correction, stronger rejection/rollback tests and CI source-integrity fix.

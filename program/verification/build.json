@@ -1,5 +1,5 @@
 {
-  "git_commit": "e998bdbb865775b2c49cd92e0bc8e50462edcd61",
+  "git_commit": "3ac349b45a2aaf3397704d7a36301b8e9fd7e8dd",
   "versions": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
@@ -18,9 +18,9 @@
     "programs/doors_v1/src/lib.rs": "782bed271b0271b8823692c555b2fc5270cb4a527c4736c573a9ca1171f971bd",
     "programs/doors_v1/src/math.rs": "7978d64989eaf03b4b2233e91f9e8784722a1be955c94fcf0e7b93108c75ff7e",
     "programs/doors_v1/src/state.rs": "676dfeb1070d7e298cdf18e4a904bdddaa9f7d9f97bf56e254cb7c068bd7839a",
-    "programs/doors_v1/src/trading.rs": "d3e0aad26c9ee495fd5a29d045762076c0deccaa8f87d885b48396be0a1a1054",
+    "programs/doors_v1/src/trading.rs": "00050cbec974c93b8cc4b2d1bd29e86daca753f74b577fc0abfc089664331bad",
     "programs/doors_v1/src/vaults.rs": "6c4c801a1595eb46adb91730b96487b85ab9ad9eafee33c0afeff854dd647c51",
-    "programs/doors_v1/tests/svm.rs": "bc65d78d69ab879738d258a0e1ab344d66170002a280245565e01fb941e3fed5",
+    "programs/doors_v1/tests/svm.rs": "66ada86a32a795afb67fc13688d6050ff652f766d10317a7f99c486500055f2d",
     "programs/doors_v1/Cargo.toml": "93fba8c1ce66791aa186d4a4fcf72f074bb09c2ef157e4b8babede985112226f",
     "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
     "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",
@@ -29,7 +29,7 @@
     "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
     "Anchor.toml": "8474001e1e41cb201e5a83af2b47abbb8c4bbbd4e8155e555bdde2b5f96ab68b"
   },
-  "elf_sha256": "04af90d811fb4f31dd81473ac117863115849ffa5c653debea97e5a7d75ddfe8",
+  "elf_sha256": "4c9df69098ac9ed01bbf06db563d2b5e99cdd76ad8441718257ea4f21ee40d93",
   "idl_sha256": "ac3e65e593a080cecb585e8742df40f11cf3efe3b52cbde2c871ca59fc8f0609",
   "vm": {
     "litesvm": "0.18.1",
