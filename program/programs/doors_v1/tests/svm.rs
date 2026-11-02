@@ -624,6 +624,34 @@ fn creates_exact_layouts_immutable_mints_and_signed_optional_first_buy() {
 }
 
 #[test]
+fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
+    let mut f = Fixture::empty(0);
+    let mut l = launch("Prefunded room");
+    l.first_buy_lamports = 1_010_000_000;
+    let ix = f.create_ix(l.clone(), None);
+    let rent = f.svm.minimum_balance_for_rent_exemption(0);
+    // Anyone can fund a PDA before its program allocates it. Use real
+    // System transfers, including the user's future canonical ATA.
+    for account in &ix.accounts {
+        if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+            f.svm.airdrop(&account.pubkey, rent).unwrap();
+        }
+    }
+    f.create(l, None);
+    assert_eq!(f.r().reserve, 1_000_000_000);
+    let mut l = launch("Prefunded door");
+    l.first_buy_lamports = 101_000_000;
+    let ix = f.open_ix(l.clone(), None);
+    for account in &ix.accounts {
+        if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+            f.svm.airdrop(&account.pubkey, rent).unwrap();
+        }
+    }
+    f.open(l);
+    assert!(f.d(1).backing > 0);
+}
+
+#[test]
 fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
     use solana_address_lookup_table_interface::instruction::{
         create_lookup_table, extend_lookup_table,
