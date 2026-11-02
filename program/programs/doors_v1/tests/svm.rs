@@ -1583,3 +1583,104 @@ fn audit_external_authorities_cannot_transfer_vault_tokens() {
         }
     }
 }
+
+fn audit_send_as(f: &mut Fixture, signer: &Keypair, ix: Instruction) {
+    let tx = Transaction::new(
+        &[signer],
+        Message::new(
+            &[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000), ix],
+            Some(&signer.pubkey()),
+        ),
+        f.svm.latest_blockhash(),
+    );
+    f.svm.send_transaction(tx).unwrap();
+}
+
+#[test]
+fn audit_admin_fee_change_can_charge_an_already_signed_conversion() {
+    let mut f = Fixture::new(0);
+    f.open(launch("Second face"));
+    f.trade(Some(0), true, 1_010_000_000);
+    let attacker = Keypair::new_from_array([33; 32]);
+    f.svm.airdrop(&attacker.pubkey(), 100_000_000).unwrap();
+    let mut s = defaults(f.matcher.pubkey(), attacker.pubkey());
+    f.send(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings: s.clone(),
+                new_admin: attacker.pubkey(),
+            },
+        ),
+        false,
+        "audit_config",
+    );
+    // The victim signs while the conversion fee is still zero.
+    assert_eq!(s.convert_fee_lamports, 0);
+    let pending = Transaction::new(
+        &[&f.user],
+        Message::new(
+            &[
+                ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+                f.convert_ix(0, 1, 1),
+            ],
+            Some(&f.user.pubkey()),
+        ),
+        f.svm.latest_blockhash(),
+    );
+    let signed_message = pending.message_data();
+    let fee = 1_000_000_000;
+    s.convert_fee_lamports = fee;
+    audit_send_as(
+        &mut f,
+        &attacker,
+        instr(
+            a::UpdateConfig {
+                admin: attacker.pubkey(),
+                config: p(&[b"config"]),
+            },
+            ix::UpdateConfig {
+                settings: s,
+                new_admin: attacker.pubkey(),
+            },
+        ),
+    );
+    pending.verify().unwrap();
+    assert_eq!(pending.message_data(), signed_message);
+    let victim_before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+    let fees = p(&[b"fees", f.room.as_ref()]);
+    let fees_before = f.svm.get_account(&fees).unwrap().lamports;
+    let reserve_before = f.r().reserve;
+    f.svm.send_transaction(pending).unwrap();
+    let victim_debit = victim_before - f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+    assert!(victim_debit >= fee);
+    assert_eq!(f.svm.get_account(&fees).unwrap().lamports, fees_before + fee);
+    assert_eq!(f.r().reserve, reserve_before);
+    f.audit();
+    // The attacker can collect the protocol accrual, including the extra fee.
+    let owner = std::mem::replace(&mut f.user, attacker);
+    f.make_ata(spl_token_interface::native_mint::ID, spl_token_interface::ID);
+    let attacker_before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+    let swept = f.r().protocol_accrued_sol;
+    f.claim(2, 0);
+    let attacker_gain = f.svm.get_account(&f.user.pubkey()).unwrap().lamports - attacker_before;
+    assert!(attacker_gain >= fee);
+    assert_eq!(f.r().protocol_accrued_sol, 0);
+    assert_eq!(f.r().reserve, reserve_before);
+    let output = json!({
+        "kind": "executed SBF witness of an open privileged fee-authorization finding",
+        "victim": owner.pubkey().to_string(),
+        "prepared_fee_lamports": 0,
+        "execution_fee_lamports": fee,
+        "victim_debit_lamports": victim_debit,
+        "protocol_swept_lamports": swept,
+        "attacker_net_gain_on_sweep_lamports": attacker_gain,
+        "signed_message_unchanged": true,
+        "reserve_unchanged": true
+    });
+    let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/audit_fee_race.json");
+    std::fs::write(out, serde_json::to_string_pretty(&output).unwrap() + "\n").unwrap();
+}
