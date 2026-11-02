@@ -221,23 +221,33 @@ impl Fixture {
         meta
     }
     fn fail(&mut self, ix: Instruction, matcher: bool) {
-        let before = self.svm.get_account(&self.room);
-        let reserve = self.svm.get_account(&p(&[b"reserve", self.room.as_ref()]));
+        let before: BTreeMap<_, _> = ix.accounts.iter().map(|a| {
+            (a.pubkey, self.svm.get_account(&a.pubkey))
+        }).collect();
         let tx = Transaction::new(
             &if matcher {
                 vec![&self.user, &self.matcher]
             } else {
                 vec![&self.user]
             },
-            Message::new(&[ix], Some(&self.user.pubkey())),
+            Message::new(
+                &[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000), ix],
+                Some(&self.user.pubkey()),
+            ),
             self.svm.latest_blockhash(),
         );
-        assert!(self.svm.send_transaction(tx).is_err());
-        assert_eq!(before, self.svm.get_account(&self.room));
-        assert_eq!(
-            reserve,
-            self.svm.get_account(&p(&[b"reserve", self.room.as_ref()]))
+        let failure = self.svm.send_transaction(tx).expect_err("must reject invalid instruction");
+        let reason = format!("{:?}", failure.err);
+        assert!(
+            !reason.contains("ComputationalBudgetExceeded") && !reason.contains("MaxInstructionTraceLengthExceeded"),
+            "resource exhaustion must not stand in for the expected validation failure: {failure:#?}"
         );
+        for (key, account) in before {
+            // The fee payer still pays the network fee on a failed transaction.
+            if key != self.user.pubkey() {
+                assert_eq!(account, self.svm.get_account(&key), "failed instruction changed {key}");
+            }
+        }
     }
     fn create_ix(&self, l: Launch, holder: Option<Pubkey>) -> Instruction {
         let d = DoorKeys::new(self.room, 0, self.user.pubkey());
@@ -626,6 +636,17 @@ fn creates_exact_layouts_immutable_mints_and_signed_optional_first_buy() {
 #[test]
 fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
     let mut f = Fixture::empty(0);
+    let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
+    settings.room_fee_lamports = 7;
+    settings.door_fee_lamports = 11;
+    f.send(
+        instr(
+            a::UpdateConfig { admin: f.user.pubkey(), config: f.cfg },
+            ix::UpdateConfig { settings, new_admin: f.user.pubkey() },
+        ),
+        false,
+        "update_config",
+    );
     let mut l = launch("Prefunded room");
     l.first_buy_lamports = 1_010_000_000;
     let ix = f.create_ix(l.clone(), None);
@@ -635,6 +656,7 @@ fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
     for account in &ix.accounts {
         if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
             f.svm.airdrop(&account.pubkey, rent).unwrap();
+            assert_eq!(f.svm.get_account(&account.pubkey).unwrap().lamports, rent);
         }
     }
     f.create(l, None);
@@ -773,6 +795,42 @@ fn trade_event_reports_the_exact_counter_based_price_and_position() {
         event.price_after.denominator,
         ((r.v_tok - r.sold) as u128) * ((r.v_tok - r.sold) as u128)
     );
+}
+
+#[test]
+fn substituted_trade_accounts_and_same_door_conversion_are_rejected_atomically() {
+    let mut f = Fixture::new(0);
+    f.open(launch("Second face"));
+    f.trade(Some(0), true, 1_010_000_000);
+    let c = f.core();
+    let x = f.doors[0].clone();
+    let y = f.doors[1].clone();
+    for (valid, substituted) in [
+        (c.reserve, c.fees),
+        (c.fees, c.reserve),
+        (c.room_mint, y.mint),
+        (c.room_vault, x.backing),
+        (c.retired, c.room_vault),
+        (x.door, y.door),
+        (x.mint, y.mint),
+        (x.vault, y.vault),
+        (x.backing, y.backing),
+        (x.user, y.user),
+        (spl_token_2022_interface::ID, spl_token_interface::ID),
+    ] {
+        for buy in [true, false] {
+            let mut instruction = f.trade_ix(Some(0), buy, 101, 0);
+            for meta in &mut instruction.accounts {
+                if meta.pubkey == valid {
+                    meta.pubkey = substituted;
+                }
+            }
+            f.fail(instruction, false);
+            f.audit();
+        }
+    }
+    f.fail(f.convert_ix(0, 0, 1), false);
+    f.audit();
 }
 #[test]
 fn signatures_cover_the_entire_message_and_nonce() {
