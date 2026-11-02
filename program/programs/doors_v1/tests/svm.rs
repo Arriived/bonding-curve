@@ -1491,3 +1491,96 @@ fn mixed_10000_sbf_operations_and_cu_report() {
     .unwrap();
     println!("CU_REPORT property_iterations=10000 executed_transactions={} max_door_buy={} max_door_sell={} max_convert={} max_open_door={}",f.operations,f.cus["buy_door"].iter().max().unwrap(),f.cus["sell_door"].iter().max().unwrap(),f.cus["convert"].iter().max().unwrap(),f.cus["open_door"].iter().max().unwrap());
 }
+
+// Audit witnesses preserve the existing program behavior; passing these tests
+// confirms the finding rather than asserting that it has been remediated.
+fn audit_settings(f: &mut Fixture, settings: Settings) {
+    f.send(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        "audit_config",
+    );
+}
+
+#[test]
+fn audit_config_accepts_a_curve_with_no_purchasable_base_unit() {
+    let mut f = Fixture::empty(0);
+    let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+    s.v_tok = U + 1;
+    s.v_sol_lamports = 2 * (U + 1);
+    s.r_star_lamports = 1;
+    s.graduation_trigger_lamports = 1;
+    audit_settings(&mut f, s);
+    f.create(launch("No tradable unit"), None);
+    assert_eq!(f.r().advance(1).unwrap(), 0);
+    assert_eq!(f.r().curve(1).unwrap(), 2);
+    f.fail(f.trade_ix(Some(0), true, 101, 0), false);
+    assert_eq!(f.r().sold, 0);
+    assert_eq!(f.r().reserve, 0);
+}
+
+#[test]
+fn audit_config_accepts_a_curve_whose_intermediate_quote_overflows() {
+    let mut f = Fixture::empty(0);
+    let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+    s.v_tok = U + 1;
+    s.v_sol_lamports = u64::MAX;
+    s.r_star_lamports = 1;
+    s.graduation_trigger_lamports = 1_000_000;
+    audit_settings(&mut f, s);
+    f.create(launch("Intermediate overflow"), None);
+    let r = f.r();
+    let exact = (r.v_sol_lamports as u128) * (r.v_tok as u128)
+        / ((r.v_tok - 1) as u128)
+        - (r.v_sol_lamports as u128);
+    assert!(exact > 0 && exact <= u64::MAX as u128);
+    assert!(r.curve(1).is_err());
+    f.fail(f.trade_ix(Some(0), true, 101_000, 0), false);
+    assert_eq!(f.r().sold, 0);
+    assert_eq!(f.r().reserve, 0);
+}
+
+#[test]
+fn audit_external_authorities_cannot_transfer_vault_tokens() {
+    let mut f = Fixture::new(1000);
+    f.trade(Some(0), true, 1_010_000_000);
+    f.trade(None, true, 1_010_000_000);
+    f.retire();
+    let r = f.r();
+    let d = f.doors[0].clone();
+    let user_room = ata(f.user.pubkey(), r.room_mint, spl_token_2022_interface::ID);
+    for authority in [f.user.pubkey(), f.matcher.pubkey()] {
+        for (source, mint, destination) in [
+            (r.room_vault, r.room_mint, user_room),
+            (r.retired_vault, r.room_mint, user_room),
+            (d.vault, d.mint, d.user),
+            (d.backing, r.room_mint, user_room),
+        ] {
+            assert!(f.balance(source) > 0);
+            f.fail(
+                spl_token_2022_interface::instruction::transfer_checked(
+                    &spl_token_2022_interface::ID,
+                    &source,
+                    &mint,
+                    &destination,
+                    &authority,
+                    &[],
+                    1,
+                    6,
+                )
+                .unwrap(),
+                authority == f.matcher.pubkey(),
+            );
+            f.audit();
+        }
+    }
+}
