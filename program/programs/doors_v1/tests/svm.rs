@@ -1539,9 +1539,8 @@ fn audit_config_accepts_a_curve_whose_intermediate_quote_overflows() {
     audit_settings(&mut f, s);
     f.create(launch("Intermediate overflow"), None);
     let r = f.r();
-    let exact = (r.v_sol_lamports as u128) * (r.v_tok as u128)
-        / ((r.v_tok - 1) as u128)
-        - (r.v_sol_lamports as u128);
+    let k = (r.v_sol_lamports as u128) * (r.v_tok as u128);
+    let exact = k / ((r.v_tok - 1) as u128) - (r.v_sol_lamports as u128);
     assert!(exact > 0 && exact <= u64::MAX as u128);
     assert!(r.curve(1).is_err());
     f.fail(f.trade_ix(Some(0), true, 101_000, 0), false);
