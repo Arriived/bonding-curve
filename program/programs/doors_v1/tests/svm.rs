@@ -566,7 +566,7 @@ impl Fixture {
     fn audit_mint(&self, mint: Pubkey) {
         let account = self.svm.get_account(&mint).unwrap();
         let m = StateWithExtensions::<Mint>::unpack(&account.data).unwrap();
-        assert_eq!(m.get_extension_types().unwrap().len(),2);
+        assert_eq!(m.get_extension_types().unwrap().len(), 2);
         assert_eq!(m.base.mint_authority, COption::None);
         assert_eq!(m.base.freeze_authority, COption::None);
         assert!(m.base.supply <= U);
@@ -634,8 +634,8 @@ fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
     let mut l = launch(&"x".repeat(32));
     l.symbol = "Y".repeat(10);
     l.uri = "u".repeat(200);
-    l.first_buy_lamports=1_010_000_000;
-    l.min_tokens_out=1;
+    l.first_buy_lamports = 1_010_000_000;
+    l.min_tokens_out = 1;
     let main = f.create_ix(l, None);
     let instructions = [
         ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
@@ -689,14 +689,27 @@ fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
     f.audit();
     // Measure maximum-length room/door metadata as well as larger curve
     // positions and the capped crossing path. The random run uses short URIs.
-    let mut face=launch(&"x".repeat(32));face.symbol="Y".repeat(10);face.uri="u".repeat(200);f.open(face);
-    f.trade(Some(0),true,70_700_000_000);
-    f.trade(Some(1),true,1_010_000);
-    f.trade(Some(0),false,1);
-    let amount=f.balance(f.doors[0].user)/2;f.convert(0,1,amount);f.trade(Some(1),false,amount/2);
-    f.make_ata(f.r().room_mint,spl_token_2022_interface::ID);f.trade(None,true,1_010_000);
-    let amount=f.balance(ata(f.user.pubkey(),f.r().room_mint,spl_token_2022_interface::ID));f.trade(None,false,amount/2);
-    f.trade(Some(0),true,u64::MAX/100);assert_eq!(f.r().status,1);f.convert(0,1,1);
+    let mut face = launch(&"x".repeat(32));
+    face.symbol = "Y".repeat(10);
+    face.uri = "u".repeat(200);
+    f.open(face);
+    f.trade(Some(0), true, 70_700_000_000);
+    f.trade(Some(1), true, 1_010_000);
+    f.trade(Some(0), false, 1);
+    let amount = f.balance(f.doors[0].user) / 2;
+    f.convert(0, 1, amount);
+    f.trade(Some(1), false, amount / 2);
+    f.make_ata(f.r().room_mint, spl_token_2022_interface::ID);
+    f.trade(None, true, 1_010_000);
+    let amount = f.balance(ata(
+        f.user.pubkey(),
+        f.r().room_mint,
+        spl_token_2022_interface::ID,
+    ));
+    f.trade(None, false, amount / 2);
+    f.trade(Some(0), true, u64::MAX / 100);
+    assert_eq!(f.r().status, 1);
+    f.convert(0, 1, 1);
     let output = json!({"packet_limit":1232,"legacy_bytes":legacy_bytes,"v0_bytes":v0_bytes,"metadata_bytes":{"name":32,"symbol":10,"uri":200},"first_buy_lamports":1_010_000_000u64,"transaction_cu":result.compute_units_consumed,"edge_cu_samples":f.cus});
     let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/packets.json");
     std::fs::write(out, serde_json::to_string_pretty(&output).unwrap() + "\n").unwrap();
@@ -704,16 +717,34 @@ fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
 
 #[test]
 fn trade_event_reports_the_exact_counter_based_price_and_position() {
-    use anchor_lang::{AnchorDeserialize,Discriminator};
-    use base64::{Engine,engine::general_purpose::STANDARD};
-    let mut f=Fixture::new(0);
-    let meta=f.checked(f.trade_ix(Some(0),true,1_010_000_000,0),false,"buy_door");f.audit();
-    let bytes=meta.logs.iter().filter_map(|line|line.strip_prefix("Program data: "))
-        .filter_map(|text|STANDARD.decode(text).ok()).find(|data|data.starts_with(doors_v1::Trade::DISCRIMINATOR)).expect("Trade event");
-    let event=doors_v1::Trade::try_from_slice(&bytes[8..]).unwrap();let r=f.r();
-    assert_eq!(event.sold_after,r.sold);assert_eq!(event.reserve,r.reserve);
-    assert_eq!(event.price_after.numerator,(r.v_sol_lamports as u128)*(r.v_tok as u128));
-    assert_eq!(event.price_after.denominator,((r.v_tok-r.sold) as u128)*((r.v_tok-r.sold) as u128));
+    use anchor_lang::{AnchorDeserialize, Discriminator};
+    use base64::{engine::general_purpose::STANDARD, Engine};
+    let mut f = Fixture::new(0);
+    let meta = f.checked(
+        f.trade_ix(Some(0), true, 1_010_000_000, 0),
+        false,
+        "buy_door",
+    );
+    f.audit();
+    let bytes = meta
+        .logs
+        .iter()
+        .filter_map(|line| line.strip_prefix("Program data: "))
+        .filter_map(|text| STANDARD.decode(text).ok())
+        .find(|data| data.starts_with(doors_v1::Trade::DISCRIMINATOR))
+        .expect("Trade event");
+    let event = doors_v1::Trade::try_from_slice(&bytes[8..]).unwrap();
+    let r = f.r();
+    assert_eq!(event.sold_after, r.sold);
+    assert_eq!(event.reserve, r.reserve);
+    assert_eq!(
+        event.price_after.numerator,
+        (r.v_sol_lamports as u128) * (r.v_tok as u128)
+    );
+    assert_eq!(
+        event.price_after.denominator,
+        ((r.v_tok - r.sold) as u128) * ((r.v_tok - r.sold) as u128)
+    );
 }
 #[test]
 fn signatures_cover_the_entire_message_and_nonce() {
@@ -799,14 +830,17 @@ fn buy_sell_convert_full_redemption_and_zero_balance_edges() {
     assert_eq!(f.r().sold, 0);
     assert_eq!(f.d(0).backing, 0);
     assert_eq!(f.d(1).backing, 0);
-    let expected_room_tokens=n;
+    let expected_room_tokens = n;
     f.trade(None, true, 1_010_000_000);
     let n = f.balance(ata(
         f.user.pubkey(),
         f.r().room_mint,
         spl_token_2022_interface::ID,
     ));
-    assert_eq!(n,expected_room_tokens,"P1: identical state/input quotes identically across routes");
+    assert_eq!(
+        n, expected_room_tokens,
+        "P1: identical state/input quotes identically across routes"
+    );
     f.trade(None, false, n);
     assert_eq!(f.r().sold, 0);
     f.fail(f.trade_ix(Some(0), true, 100_000, u64::MAX), false);

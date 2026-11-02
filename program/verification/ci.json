@@ -1,0 +1,8 @@
+{
+  "run_id": 41419277143,
+  "url": "https://github.com/Arriived/bonding-curve/actions/runs/41419277143",
+  "build_commit": "e998bdbb865775b2c49cd92e0bc8e50462edcd61",
+  "result": "success",
+  "sbf_tests_passed": 16,
+  "mixed_operation_iterations": 10000
+}

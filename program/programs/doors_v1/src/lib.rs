@@ -906,7 +906,7 @@ pub struct Trade {
     pub sold_after: u64,
     pub reserve: u64,
     pub status: u8,
-    pub price_after:Price,
+    pub price_after: Price,
 }
 #[event]
 pub struct Converted {

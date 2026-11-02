@@ -1,0 +1,6 @@
+rustc 1.99.0 (b940084d7 2026-09-28)
+cargo 1.99.0 (5f94df478 2026-08-27)
+cargo-build-sbf 4.5.0
+Default platform-tools: v1.57
+Default Rust: 1.95.0
+anchor-cli 1.2.2

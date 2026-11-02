@@ -195,7 +195,7 @@ pub fn mint_check(ai: &AccountInfo, initial: bool) -> Result<()> {
         },
         Error::Invariant
     ); // M1: burns only decrease supply
-    require!(m.get_extension_types()?.len()==2,Error::Invariant);
+    require!(m.get_extension_types()?.len() == 2, Error::Invariant);
     let pointer = m.get_extension::<MetadataPointer>()?;
     require!(
         Option::<Pubkey>::from(pointer.authority).is_none()
