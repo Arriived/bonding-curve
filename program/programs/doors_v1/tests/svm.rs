@@ -1786,7 +1786,7 @@ fn fee_increases_reject_unchanged_signed_launches_and_conversions() {
             f.audit();
         }
         evidence.push(
-            json!({"operation": ["create_room", "open_door", "convert"][kind],
+            json!({"operation": (["create_room", "open_door", "convert"][kind]),
             "signed_max_fee_lamports": 0, "execution_fee_lamports": fee,
             "signed_message_unchanged": true, "rejected_with": "FeeLimit",
             "victim_debit_lamports": debit, "network_fee_lamports": network_fee,
