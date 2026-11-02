@@ -102,6 +102,10 @@ execution. This does not deploy a program or send devnet/mainnet transactions.
   was reduced. LiteSVM loads token programs without creating the canonical
   native WSOL mint account; the fixture now supplies that initialized account.
   No production mint or economics was changed to accommodate a missing fixture.
+- The final spec audit caught an implementation API mismatch: the draft emitted
+  TradeEvent with sold and omitted price_after. The event is now the specified
+  Trade with sold_after and an exact u128 numerator/denominator price. This
+  adds no floating-point calculation and reads only room counters/constants.
 
 The research measurement remains in the original worktree and is not modified
 by this isolated program branch.

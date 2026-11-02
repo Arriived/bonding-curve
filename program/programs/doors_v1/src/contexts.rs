@@ -108,7 +108,7 @@ pub struct Core<'info> {
     pub retired: UncheckedAccount<'info>,
 }
 #[derive(Accounts)]
-pub struct Trade<'info> {
+pub struct TradeAccounts<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     pub core: Core<'info>,

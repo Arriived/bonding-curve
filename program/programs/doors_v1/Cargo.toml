@@ -36,6 +36,7 @@ solana-compute-budget-interface = "3"
 serde_json = "1"
 solana-clock = "~3.2.0"
 solana-address-lookup-table-interface = { version = "=3.2.0", features = ["bincode"] }
+base64 = "0.22"
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

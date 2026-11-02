@@ -368,7 +368,7 @@ impl Fixture {
             },
             |d| d.user,
         );
-        let ac = a::Trade {
+        let ac = a::TradeAccounts {
             user: self.user.pubkey(),
             core: c,
             door: d.map(|d| d.door),
@@ -699,6 +699,20 @@ fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
     let output = json!({"packet_limit":1232,"legacy_bytes":legacy_bytes,"v0_bytes":v0_bytes,"metadata_bytes":{"name":32,"symbol":10,"uri":200},"first_buy_lamports":1_010_000_000u64,"transaction_cu":result.compute_units_consumed,"edge_cu_samples":f.cus});
     let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/packets.json");
     std::fs::write(out, serde_json::to_string_pretty(&output).unwrap() + "\n").unwrap();
+}
+
+#[test]
+fn trade_event_reports_the_exact_counter_based_price_and_position() {
+    use anchor_lang::{AnchorDeserialize,Discriminator};
+    use base64::{Engine,engine::general_purpose::STANDARD};
+    let mut f=Fixture::new(0);
+    let meta=f.checked(f.trade_ix(Some(0),true,1_010_000_000,0),false,"buy_door");f.audit();
+    let bytes=meta.logs.iter().filter_map(|line|line.strip_prefix("Program data: "))
+        .filter_map(|text|STANDARD.decode(text).ok()).find(|data|data.starts_with(doors_v1::Trade::DISCRIMINATOR)).expect("Trade event");
+    let event=doors_v1::Trade::try_from_slice(&bytes[8..]).unwrap();let r=f.r();
+    assert_eq!(event.sold_after,r.sold);assert_eq!(event.reserve,r.reserve);
+    assert_eq!(event.price_after.numerator,(r.v_sol_lamports as u128)*(r.v_tok as u128));
+    assert_eq!(event.price_after.denominator,((r.v_tok-r.sold) as u128)*((r.v_tok-r.sold) as u128));
 }
 #[test]
 fn signatures_cover_the_entire_message_and_nonce() {

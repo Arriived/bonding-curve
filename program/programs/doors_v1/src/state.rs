@@ -114,6 +114,11 @@ pub struct Bucket {
     pub amount: u128,
 }
 
+// Exact marginal curve price in lamports per token base unit. No division or
+// floating-point conversion is needed to report it to terminals and indexers.
+#[derive(AnchorSerialize,AnchorDeserialize,Clone,Copy)]
+pub struct Price { pub numerator:u128,pub denominator:u128 }
+
 #[account]
 pub struct Room {
     pub room_id: u64,
@@ -162,6 +167,12 @@ impl Room {
     pub const LEN: usize = 1315;
     pub fn curve(&self, q: u64) -> Result<u64> {
         reserve(self.v_sol_lamports, self.v_tok, q)
+    }
+    pub fn price(&self)->Result<Price> {
+        let numerator=(self.v_sol_lamports as u128).checked_mul(self.v_tok as u128).ok_or(Error::Overflow)?;
+        let remaining=sub(self.v_tok,self.sold)? as u128;
+        let denominator=remaining.checked_mul(remaining).ok_or(Error::Overflow)?;
+        require!(denominator>0,Error::Invariant);Ok(Price{numerator,denominator})
     }
     pub fn advance(&self, n: u64) -> Result<u64> {
         inverse(

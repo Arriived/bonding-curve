@@ -1,4 +1,4 @@
-use crate::{math::*, state::*, vaults::*, Error, TradeEvent};
+use crate::{math::*, state::*, vaults::*, Error, Trade};
 use anchor_lang::prelude::*;
 pub struct DoorRoute<'a, 'info> {
     pub d: &'a mut Door,
@@ -187,7 +187,7 @@ pub fn execute_trade<'a>(
         fk,
         known(r, &route.as_ref().map(|d| vec![&*d.d]).unwrap_or_default()),
     )?;
-    emit!(TradeEvent {
+    emit!(Trade {
         room: rk,
         door: route.as_ref().map(|d| d.authority.key()),
         user: user.key(),
@@ -195,9 +195,10 @@ pub fn execute_trade<'a>(
         tokens,
         curve_lamports: n,
         fee: f,
-        sold: r.sold,
+        sold_after: r.sold,
         reserve: r.reserve,
-        status: r.status
+        status: r.status,
+        price_after: r.price()?,
     });
     Ok(())
 }

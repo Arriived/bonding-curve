@@ -1340,12 +1340,16 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
 
 - **Before graduation:** one price per room, from `room.sold`, identical
   through every door and through the room token. `Trade` events carry
-  `price_after` and `sold_after`.
+  `price_after` and `sold_after`. Price is an exact integer ratio
+  `{ numerator: K, denominator: (V_tok - sold_after)^2 }`, both u128,
+  in lamports per token base unit. It is computed from the copied constants
+  and sold counter, never a vault balance.
 - **After graduation:** the price is the DAMM v2 pool's. Doors and the room
   token trade through the program at that price plus fees, and the room token
   also trades directly on the pool.
 - **Door tokens look like normal memecoins:**
-  - fixed 1B supply, no mint or freeze authority, metadata with name, ticker
+  - a fixed 1B premint whose supply can only decrease through holder burns,
+    no mint or freeze authority, metadata with name, ticker
     and image;
   - a door is verified by checking its `("room", "door")` metadata against
     the PDA `["door", room, index]`.

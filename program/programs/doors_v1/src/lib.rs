@@ -372,10 +372,10 @@ pub mod doors_v1 {
         )?;
         Ok(())
     }
-    pub fn buy(ctx: Context<Trade>, lamports_in: u64, min_tokens_out: u64) -> Result<()> {
+    pub fn buy(ctx: Context<TradeAccounts>, lamports_in: u64, min_tokens_out: u64) -> Result<()> {
         trade(ctx, true, lamports_in, min_tokens_out)
     }
-    pub fn sell(ctx: Context<Trade>, tokens_in: u64, min_lamports_out: u64) -> Result<()> {
+    pub fn sell(ctx: Context<TradeAccounts>, tokens_in: u64, min_lamports_out: u64) -> Result<()> {
         trade(ctx, false, tokens_in, min_lamports_out)
     }
     pub fn convert(ctx: Context<Convert>, amount: u64) -> Result<()> {
@@ -678,7 +678,7 @@ fn require_top_level_launch() -> Result<()> {
     );
     Ok(())
 }
-fn trade(ctx: Context<Trade>, buy: bool, amount: u64, min: u64) -> Result<()> {
+fn trade(ctx: Context<TradeAccounts>, buy: bool, amount: u64, min: u64) -> Result<()> {
     let a = ctx.accounts;
     require!(!a.core.config.paused, Error::Paused);
     let ri = a.core.room.to_account_info();
@@ -895,7 +895,7 @@ pub struct DoorOpened {
     pub face: u32,
 }
 #[event]
-pub struct TradeEvent {
+pub struct Trade {
     pub room: Pubkey,
     pub door: Option<Pubkey>,
     pub user: Pubkey,
@@ -903,9 +903,10 @@ pub struct TradeEvent {
     pub tokens: u64,
     pub curve_lamports: u64,
     pub fee: u64,
-    pub sold: u64,
+    pub sold_after: u64,
     pub reserve: u64,
     pub status: u8,
+    pub price_after:Price,
 }
 #[event]
 pub struct Converted {
