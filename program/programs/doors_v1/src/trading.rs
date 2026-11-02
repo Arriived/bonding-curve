@@ -1,4 +1,4 @@
-use crate::{math::*, state::*, vaults::*, Error, Trade};
+use crate::{math::*, state::*, vaults::*, Error, PendingRetired, Trade};
 use anchor_lang::prelude::*;
 pub struct DoorRoute<'a, 'info> {
     pub d: &'a mut Door,
@@ -25,6 +25,54 @@ impl<'a, 'info> DoorRoute<'a, 'info> {
     }
 }
 #[allow(clippy::too_many_arguments)]
+pub fn settle_pending<'a>(
+    r: &mut Room,
+    ri: &AccountInfo<'a>,
+    reserve: &AccountInfo<'a>,
+    fees: &AccountInfo<'a>,
+    room_vault: &AccountInfo<'a>,
+    room_mint: &AccountInfo<'a>,
+    retired: &AccountInfo<'a>,
+    tp: &AccountInfo<'a>,
+) -> Result<()> {
+    require!(r.status <= 1, Error::PhaseTwo);
+    require_keys_eq!(retired.key(), r.retired_vault, Error::Account);
+    let n = r
+        .pending_reserve_sol
+        .min(sub(r.graduation_trigger_lamports, r.reserve)?);
+    if n == 0 {
+        return Ok(());
+    }
+    let q = r.advance(n)?;
+    let d = sub(q, r.sold)?;
+    let rid = r.room_id.to_le_bytes();
+    let rb = [r.bumps[0]];
+    debit(fees, reserve, n)?;
+    transfer(
+        room_vault,
+        room_mint,
+        retired,
+        ri,
+        tp,
+        d,
+        Some(&[b"room", &rid, &rb]),
+        6,
+    )?;
+    r.reserve = add(r.reserve, n)?;
+    r.pending_reserve_sol = sub(r.pending_reserve_sol, n)?;
+    r.sold = q;
+    r.retired = add(r.retired, d)?;
+    if r.reserve == r.graduation_trigger_lamports {
+        r.status = 1;
+    }
+    emit!(PendingRetired {
+        room: ri.key(),
+        lamports: n,
+        retired: r.retired
+    });
+    Ok(())
+}
+#[allow(clippy::too_many_arguments)]
 pub fn execute_trade<'a>(
     r: &mut Room,
     ri: &AccountInfo<'a>,
@@ -33,6 +81,7 @@ pub fn execute_trade<'a>(
     fees: &AccountInfo<'a>,
     room_vault: &AccountInfo<'a>,
     room_mint: &AccountInfo<'a>,
+    retired: &AccountInfo<'a>,
     user: &AccountInfo<'a>,
     user_token: &AccountInfo<'a>,
     tp: &AccountInfo<'a>,
@@ -64,6 +113,13 @@ pub fn execute_trade<'a>(
     let rid = r.room_id.to_le_bytes();
     let rb = [r.bumps[0]];
     let rs: &[&[u8]] = &[b"room", &rid, &rb];
+    // Existing fees must affect price before a new position is acquired,
+    // including door routes and an open_door first buy. Otherwise a temporary
+    // buyer can retire the backlog and immediately redeem at the higher price.
+    if buy {
+        settle_pending(r, ri, reserve, fees, room_vault, room_mint, retired, tp)?;
+        require!(r.status == 0, Error::PhaseTwo);
+    }
     let (tokens, n, f) = if buy {
         let (n, f) = buy_amounts(
             input,

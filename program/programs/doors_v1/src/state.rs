@@ -95,6 +95,22 @@ pub struct Config {
 }
 impl Config {
     pub const LEN: usize = 248;
+    // Only immutable room economics are bound here. Flat fees have their own
+    // signed maximum, and operational settings remain administratively mutable.
+    pub fn launch_terms_hash(&self) -> [u8; 32] {
+        solana_sha256_hasher::hashv(&[
+            b"doors-v1:launch-terms:v1",
+            &self.v_sol_lamports.to_le_bytes(),
+            &self.v_tok.to_le_bytes(),
+            &self.supply.to_le_bytes(),
+            &self.r_star_lamports.to_le_bytes(),
+            &self.graduation_trigger_lamports.to_le_bytes(),
+            &self.fee_bps.to_le_bytes(),
+            &self.door_share_bps.to_le_bytes(),
+            &self.founder_share_bps.to_le_bytes(),
+        ])
+        .to_bytes()
+    }
     pub fn apply(&mut self, s: Settings) -> Result<()> {
         s.validate()?;
         self.protocol_fee_recipient = s.protocol_fee_recipient;
@@ -308,6 +324,8 @@ pub struct Launch {
     // Total flat protocol fee, excluding the separately bounded first buy
     // and account rent. Included in both launcher and matcher signatures.
     pub max_fee_lamports: u64,
+    // Required by create_room; open_door uses its room's immutable snapshot.
+    pub expected_terms_hash: [u8; 32],
 }
 impl Launch {
     pub fn validate(&self) -> Result<()> {

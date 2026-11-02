@@ -104,7 +104,7 @@ pub struct Core<'info> {
     #[account(mut,address=room.room_vault)]
     pub room_vault: UncheckedAccount<'info>,
     /// CHECK: fixed address plus mint, owner and balance validated by invariants.
-    #[account(address=room.retired_vault)]
+    #[account(mut,address=room.retired_vault)]
     pub retired: UncheckedAccount<'info>,
 }
 #[derive(Accounts)]

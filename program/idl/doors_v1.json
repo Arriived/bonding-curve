@@ -120,7 +120,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -280,7 +281,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -437,7 +439,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -595,7 +598,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -1014,7 +1018,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -1283,7 +1288,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -1412,7 +1418,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -1572,7 +1579,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -1710,7 +1718,8 @@
               "writable": true
             },
             {
-              "name": "retired"
+              "name": "retired",
+              "writable": true
             }
           ]
         },
@@ -2096,6 +2105,11 @@
       "code": 6019,
       "name": "FeeLimit",
       "msg": "Flat protocol fee exceeds the signed maximum"
+    },
+    {
+      "code": 6020,
+      "name": "LaunchTerms",
+      "msg": "Room economics differ from the signed launch terms"
     }
   ],
   "types": [
@@ -2509,6 +2523,15 @@
           {
             "name": "max_fee_lamports",
             "type": "u64"
+          },
+          {
+            "name": "expected_terms_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           }
         ]
       }

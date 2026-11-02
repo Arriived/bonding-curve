@@ -48,6 +48,7 @@ fn launch(name: &str) -> Launch {
         rule: 0,
         face: 0,
         max_fee_lamports: 0,
+        expected_terms_hash: [0; 32],
     }
 }
 fn defaults(matcher: Pubkey, recipient: Pubkey) -> Settings {
@@ -278,7 +279,11 @@ impl Fixture {
             }
         }
     }
-    fn create_ix(&self, l: Launch, holder: Option<Pubkey>) -> Instruction {
+    fn create_ix(&self, mut l: Launch, holder: Option<Pubkey>) -> Instruction {
+        let config = self.svm.get_account(&self.cfg).unwrap();
+        l.expected_terms_hash = Config::try_deserialize(&mut &config.data[..])
+            .unwrap()
+            .launch_terms_hash();
         let d = DoorKeys::new(self.room, 0, self.user.pubkey());
         instr(
             a::CreateRoom {

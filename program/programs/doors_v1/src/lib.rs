@@ -52,6 +52,10 @@ pub mod doors_v1 {
         require!(!a.config.paused, Error::Paused);
         let fee = add(a.config.room_fee_lamports, a.config.door_fee_lamports)?;
         require!(fee <= launch.max_fee_lamports, Error::FeeLimit);
+        require!(
+            launch.expected_terms_hash == a.config.launch_terms_hash(),
+            Error::LaunchTerms
+        );
         let now = Clock::get()?.unix_timestamp;
         // Validate exact-identity floor before any persistent side effect (all CPIs atomic).
         let identity = launch.identity();
@@ -236,6 +240,7 @@ pub mod doors_v1 {
                 &a.fees,
                 &a.room_vault,
                 &a.room_mint,
+                &a.retired,
                 &user,
                 &a.user_token,
                 &tp,
@@ -345,6 +350,7 @@ pub mod doors_v1 {
                 &a.core.fees,
                 &a.core.room_vault,
                 &a.core.room_mint,
+                &a.core.retired,
                 &user,
                 &a.user_token,
                 &tp,
@@ -516,42 +522,20 @@ pub mod doors_v1 {
         let br = a.core.room.reserve;
         let fl = a.core.fees.lamports();
         let fk = known(&a.core.room, &[]);
-        let r = &mut a.core.room;
-        let n = r
-            .pending_reserve_sol
-            .min(sub(r.graduation_trigger_lamports, r.reserve)?);
-        if n > 0 {
-            let q = r.advance(n)?;
-            let d = sub(q, r.sold)?;
-            let rid = r.room_id.to_le_bytes();
-            let rb = [r.bumps[0]];
-            debit(&a.core.fees, &a.core.reserve, n)?;
-            transfer(
-                &a.core.room_vault,
-                &a.core.room_mint,
-                &a.retired_output,
-                &r.to_account_info(),
-                &a.token_program,
-                d,
-                Some(&[b"room", &rid, &rb]),
-                6,
-            )?;
-            r.reserve = add(r.reserve, n)?;
-            r.pending_reserve_sol = sub(r.pending_reserve_sol, n)?;
-            r.sold = q;
-            r.retired = add(r.retired, d)?;
-            if r.reserve == r.graduation_trigger_lamports {
-                r.status = 1;
-            }
-        }
+        let ri = a.core.room.to_account_info();
+        settle_pending(
+            &mut a.core.room,
+            &ri,
+            &a.core.reserve,
+            &a.core.fees,
+            &a.core.room_vault,
+            &a.core.room_mint,
+            &a.retired_output,
+            &a.token_program,
+        )?;
         core_check(&a.core, 0)?;
         reserve_delta(bl, br, &a.core)?;
         fee_delta(fl, a.core.fees.lamports(), fk, known(&a.core.room, &[]))?;
-        emit!(PendingRetired {
-            room: a.core.room.key(),
-            lamports: n,
-            retired: a.core.room.retired
-        });
         Ok(())
     }
     pub fn claim_door_fees(ctx: Context<Claim>) -> Result<()> {
@@ -709,6 +693,7 @@ fn trade(ctx: Context<TradeAccounts>, buy: bool, amount: u64, min: u64) -> Resul
         &a.core.fees,
         &a.core.room_vault,
         &a.core.room_mint,
+        &a.core.retired,
         &a.user,
         &a.user_token,
         &a.token_program,
@@ -992,4 +977,6 @@ pub enum Error {
     LaunchCpi,
     #[msg("Flat protocol fee exceeds the signed maximum")]
     FeeLimit,
+    #[msg("Room economics differ from the signed launch terms")]
+    LaunchTerms,
 }

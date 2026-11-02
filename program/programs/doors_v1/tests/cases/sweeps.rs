@@ -1,5 +1,5 @@
 // Included by svm.rs to share the real-SBF fixture. These are adversarial
-// audit witnesses; passing a finding witness confirms the finding is open.
+// regressions against the compiled program, including the two confirmed findings.
 
 #[test]
 fn sweep_cross_room_conversion_and_claim_substitution_rolls_back() {
@@ -265,7 +265,7 @@ fn sweep_inverse_matches_independent_binary_search_for_20000_inputs() {
 }
 
 #[test]
-fn sweep_witness_signed_launch_does_not_bind_curve_or_trade_fee_snapshot() {
+fn sweep_signed_launch_rejects_changed_curve_and_trade_fee_snapshot() {
     let mut f = Fixture::empty(0);
     let attacker = Keypair::new_from_array([33; 32]);
     f.svm.airdrop(&attacker.pubkey(), 100_000_000).unwrap();
@@ -321,34 +321,30 @@ fn sweep_witness_signed_launch_does_not_bind_curve_or_trade_fee_snapshot() {
     );
     tx.verify().unwrap();
     assert_eq!(tx.message_data(), signed_message);
-    f.svm.send_transaction(tx).unwrap();
-    f.doors.push(DoorKeys::new(f.room, 0, f.user.pubkey()));
-    let tokens = f.balance(f.doors[0].user);
-    assert!(tokens >= min_tokens);
-    assert_eq!(f.r().fee_bps, 9999);
-    assert_eq!(f.r().protocol_accrued_sol, 504_974_749);
-    let before_sell = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
-    f.trade(Some(0), false, tokens);
-    let redemption = f.svm.get_account(&f.user.pubkey()).unwrap().lamports + 5000 - before_sell;
-    assert!(redemption < 100_000);
-    let protocol_accrual = f.r().protocol_accrued_sol;
-    let victim = std::mem::replace(&mut f.user, attacker);
-    f.make_ata(
-        spl_token_interface::native_mint::ID,
-        spl_token_interface::ID,
+    let before: BTreeMap<_, _> = tx
+        .message
+        .account_keys
+        .iter()
+        .map(|key| (*key, f.svm.get_account(key)))
+        .collect();
+    let failure = f.svm.send_transaction(tx).unwrap_err();
+    assert!(
+        failure
+            .meta
+            .logs
+            .iter()
+            .any(|line| line.contains("Error Code: LaunchTerms.")),
+        "{failure:#?}"
     );
-    let before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
-    f.claim(2, 0);
-    let gain = f.svm.get_account(&f.user.pubkey()).unwrap().lamports + 5000 - before;
-    assert_eq!(gain, protocol_accrual);
-    assert!(gain > 1_000_000_000);
-    let output = json!({"finding": "launch Config snapshot race", "requires": "Config admin signature; no upgrade",
-        "victim": victim.pubkey().to_string(), "signed_message_unchanged": true,
-        "signed_flat_fee_maximum": 0, "first_buy_lamports": 1_010_000_000u64,
-        "signed_min_tokens": min_tokens, "received_tokens": tokens,
-        "expected_trade_fee_bps": 100, "actual_trade_fee_bps": 9999,
-        "victim_redemption_before_network_fee": redemption,
-        "attacker_collected_protocol_fees": gain});
+    for (key, account) in before {
+        if key != f.user.pubkey() {
+            assert_eq!(f.svm.get_account(&key), account);
+        }
+    }
+    assert!(f.svm.get_account(&f.room).is_none());
+    let output = json!({"finding": "launch Config snapshot race", "fixed": true,
+        "signed_message_unchanged": true, "signed_min_tokens": min_tokens,
+        "rejected_with": "LaunchTerms", "all_other_accounts_unchanged": true});
     std::fs::write(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/sweep_config_race.json"),
         serde_json::to_string_pretty(&output).unwrap() + "\n",
@@ -356,67 +352,175 @@ fn sweep_witness_signed_launch_does_not_bind_curve_or_trade_fee_snapshot() {
     .unwrap();
 }
 
-#[test]
-fn sweep_witness_permissionless_retirement_can_reward_an_atomic_temporary_holder() {
+// Valid legacy state produced by 100 fee-paying room-route round trips in
+// the pre-fix SBF witness (436c002). Seed it explicitly because new buys now
+// settle pending fees and cannot reproduce that old accumulation schedule.
+fn sweep_legacy_backlog() -> Fixture {
     let mut f = Fixture::new(0);
-    let room_mint = f.r().room_mint;
-    let victim_ata = ata(f.user.pubkey(), room_mint, spl_token_2022_interface::ID);
-    // Accumulate pending fees through legitimate victim trades, without
-    // injecting state or using any admin update after initialization.
-    for _ in 0..100 {
-        f.trade(None, true, 10_100_000_000);
-        f.trade(None, false, f.balance(victim_ata));
-    }
-    assert_eq!(f.r().reserve, 0);
-    assert_eq!(f.r().pending_reserve_sol, 12_000_000_000);
-    let victim = std::mem::replace(&mut f.user, Keypair::new_from_array([33; 32]));
-    f.svm.airdrop(&f.user.pubkey(), 100_000_000_000).unwrap();
-    f.make_ata(room_mint, spl_token_2022_interface::ID);
-    let attacker_ata = ata(f.user.pubkey(), room_mint, spl_token_2022_interface::ID);
-    let tokens = f.r().advance(60_000_000_000).unwrap() - f.r().sold;
-    let core = f.core();
-    let retired_output = core.retired;
-    let retire = instr(
-        a::Retire {
-            core,
-            retired_output,
-            token_program: spl_token_2022_interface::ID,
-        },
-        ix::RetirePending {},
+    let fees = f.core().fees;
+    f.send(
+        solana_system_interface::instruction::transfer(&f.user.pubkey(), &fees, 20_000_000_000),
+        false,
+        "legacy_fee_funding",
     );
-    let tx = Transaction::new(
-        &[&f.user],
-        Message::new(
-            &[
-                ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
-                f.trade_ix(None, true, 60_600_000_000, tokens),
-                retire,
-                f.trade_ix(None, false, tokens, 0),
-            ],
-            Some(&f.user.pubkey()),
-        ),
-        f.svm.latest_blockhash(),
-    );
-    let before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
-    let old_pending = f.r().pending_reserve_sol;
-    f.svm.send_transaction(tx).unwrap();
-    let profit = f.svm.get_account(&f.user.pubkey()).unwrap().lamports - before;
-    assert!(profit > 9_000_000_000);
-    assert_eq!(f.balance(attacker_ata), 0);
-    assert_eq!(f.balance(victim_ata), 0);
-    assert_eq!(f.r().sold, f.r().retired);
+    let mut r = f.r();
+    r.pending_reserve_sol = 12_000_000_000;
+    r.protocol_accrued_sol = 8_000_000_000;
+    let mut account = f.svm.get_account(&f.room).unwrap();
+    r.try_serialize(&mut &mut account.data[..]).unwrap();
+    f.svm.set_account(f.room, account).unwrap();
     f.audit();
-    let output = json!({"finding": "atomic capture of delayed retirement value",
-        "admin_or_matcher_signature_in_attack": false, "single_transaction": true,
-        "setup_victim": victim.pubkey().to_string(), "victim_round_trips": 100,
-        "pending_before_lamports": old_pending, "temporary_buy_lamports": 60_600_000_000u64,
-        "attacker_profit_after_network_fee": profit, "attacker_tokens_after": 0,
-        "reserve_after": f.r().reserve, "pending_after": f.r().pending_reserve_sol,
-        "all_accounting_invariants_hold": true});
+    f
+}
+
+fn sweep_post_retirement_tokens(r: &Room, net: u64) -> u64 {
+    let q = r
+        .advance(
+            r.pending_reserve_sol
+                .min(r.graduation_trigger_lamports - r.reserve),
+        )
+        .unwrap();
+    doors_v1::math::inverse(r.v_sol_lamports, r.v_tok, r.curve(q).unwrap() + net).unwrap() - q
+}
+
+#[test]
+fn sweep_atomic_temporary_holder_cannot_capture_legacy_pending_on_either_route() {
+    let mut evidence = Vec::new();
+    for route in [None, Some(0)] {
+        let mut f = sweep_legacy_backlog();
+        f.user = Keypair::new_from_array([33; 32]);
+        f.svm.airdrop(&f.user.pubkey(), 100_000_000_000).unwrap();
+        let mint = route.map_or(f.r().room_mint, |i| f.doors[i].mint);
+        let attacker_ata = ata(f.user.pubkey(), mint, spl_token_2022_interface::ID);
+        f.make_ata(mint, spl_token_2022_interface::ID);
+        f.doors[0].user = ata(
+            f.user.pubkey(),
+            f.doors[0].mint,
+            spl_token_2022_interface::ID,
+        );
+        let tokens = sweep_post_retirement_tokens(&f.r(), 60_000_000_000);
+        let core = f.core();
+        let retired_output = core.retired;
+        let retire = instr(
+            a::Retire {
+                core,
+                retired_output,
+                token_program: spl_token_2022_interface::ID,
+            },
+            ix::RetirePending {},
+        );
+        let tx = Transaction::new(
+            &[&f.user],
+            Message::new(
+                &[
+                    ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+                    f.trade_ix(route, true, 60_600_000_000, tokens),
+                    retire,
+                    f.trade_ix(route, false, tokens, 0),
+                ],
+                Some(&f.user.pubkey()),
+            ),
+            f.svm.latest_blockhash(),
+        );
+        let before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+        f.svm.send_transaction(tx).unwrap();
+        let profit = f.svm.get_account(&f.user.pubkey()).unwrap().lamports as i128 - before as i128;
+        assert!(profit < 0, "temporary holder profit {profit}");
+        assert_eq!(f.balance(attacker_ata), 0);
+        assert_eq!(f.r().sold, f.r().retired);
+        assert!(f.r().retired > 0);
+        // Legacy protocol fees remain fully accrued to their beneficiary.
+        assert!(f.r().protocol_accrued_sol >= 8_000_000_000);
+        f.audit();
+        evidence.push(json!({"route": if route.is_some() {"door"} else {"room"},
+            "legacy_pending_before": 12_000_000_000u64, "fixed": true,
+            "single_transaction": true, "attacker_tokens_after": 0,
+            "attacker_profit_after_network_fee": profit,
+            "all_accounting_invariants_hold": true}));
+    }
     std::fs::write(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("../../verification/sweep_retirement_mev.json"),
-        serde_json::to_string_pretty(&output).unwrap() + "\n",
+        serde_json::to_string_pretty(&evidence).unwrap() + "\n",
     )
     .unwrap();
+}
+
+#[test]
+fn sweep_open_first_buy_settles_legacy_pending_and_slippage_rolls_it_back() {
+    let mut f = sweep_legacy_backlog();
+    let tokens = sweep_post_retirement_tokens(&f.r(), 1_000_000_000);
+    let mut l = launch("Retirement first buy");
+    l.first_buy_lamports = 1_010_000_000;
+    l.min_tokens_out = tokens + 1;
+    f.fail_error(f.open_ix(l.clone(), None), true, Some("Slippage"));
+    assert_eq!(f.r().pending_reserve_sol, 12_000_000_000);
+    assert_eq!(f.r().retired, 0);
+    l.min_tokens_out = tokens;
+    f.open(l);
+    assert_eq!(f.r().pending_reserve_sol, 0);
+    assert_eq!(f.balance(f.doors[1].user), tokens);
+    assert_eq!(f.r().reserve, 13_000_000_000);
+    f.audit();
+}
+
+#[test]
+fn sweep_room_and_door_buy_slippage_roll_back_automatic_retirement() {
+    for route in [None, Some(0)] {
+        let mut f = sweep_legacy_backlog();
+        let tokens = sweep_post_retirement_tokens(&f.r(), 1_000_000_000);
+        f.fail_error(
+            f.trade_ix(route, true, 1_010_000_000, tokens + 1),
+            false,
+            Some("Slippage"),
+        );
+        assert_eq!(f.r().pending_reserve_sol, 12_000_000_000);
+        assert_eq!(f.r().retired, 0);
+        f.checked(
+            f.trade_ix(route, true, 1_010_000_000, tokens),
+            false,
+            "buy_with_retirement",
+        );
+        f.audit();
+        assert_eq!(f.r().retired + tokens, f.r().sold);
+    }
+}
+
+#[test]
+fn sweep_new_trades_cannot_build_the_legacy_delayed_fee_backlog() {
+    let mut f = Fixture::new(0);
+    let user_ata = ata(
+        f.user.pubkey(),
+        f.r().room_mint,
+        spl_token_2022_interface::ID,
+    );
+    for _ in 0..100 {
+        f.trade(None, true, 10_100_000_000);
+        f.trade(None, false, f.balance(user_ata));
+        assert!(f.r().pending_reserve_sol < 200_000_000);
+    }
+    assert!(f.r().retired > 0);
+    f.audit();
+}
+
+#[test]
+fn sweep_every_mutable_room_economic_term_is_bound_to_signed_launches() {
+    for kind in 0..7 {
+        let mut f = Fixture::empty(0);
+        let signed = f.create_ix(launch("All launch terms"), None);
+        let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+        match kind {
+            0 => s.v_sol_lamports /= 2,
+            1 => s.v_tok += 1_000_000,
+            2 => s.r_star_lamports -= 1,
+            3 => s.graduation_trigger_lamports += 1,
+            4 => s.fee_bps += 1,
+            5 => s.door_share_bps -= 1,
+            _ => s.founder_share_bps += 1,
+        }
+        audit_settings(&mut f, s);
+        f.fail_error(signed, true, Some("LaunchTerms"));
+        // A refreshed instruction binds and copies the new terms successfully.
+        f.create(launch("All launch terms"), None);
+    }
 }
