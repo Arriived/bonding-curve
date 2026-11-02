@@ -82,6 +82,17 @@ reserve-counter change; creation separately accounts for its initial rent
 funding. `retire_pending` caps the amount before any transfer and marks
 completion when the copied trigger is reached.
 
+### 0.D Program review: volume excludes program fees
+
+The first program build counted the buy's wallet spend, including its program
+fee, in `Room.volume_gross` and the liveness buckets. This contradicted detection
+section 8's fee-base definition and could make a mature room pass the volume
+floor prematurely. Both Room and Door volume counters now count the buy's
+actual net curve input `n` and the sell's gross curve proceeds `g`, excluding
+program fees. The boundary regression is
+`buy_fees_do_not_make_a_below_threshold_room_live` in the executed SBF suite.
+Conversion, retirement, claims and donations contribute no trading volume.
+
 <!-- BEGIN GENERATED RENT CORRECTION -->
 **Approved rent correction.** The old `(128 + bytes) × 6,960` model is stale. The owner approved `(128 + bytes) × 5,080` after direct rent-exemption RPC confirmation. These are `getMinimumBalanceForRentExemption` results, not account balances. The method has no context slot; finalized slot reads bracket each request.
 

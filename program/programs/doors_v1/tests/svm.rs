@@ -832,6 +832,45 @@ fn substituted_trade_accounts_and_same_door_conversion_are_rejected_atomically()
     f.fail(f.convert_ix(0, 0, 1), false);
     f.audit();
 }
+
+#[test]
+fn independent_holders_share_backing_without_access_to_each_others_fees() {
+    let mut f = Fixture::new(0);
+    f.open(launch("Second face"));
+    f.trade(Some(0), true, 1_010_000_000);
+    let first_ata = f.doors[0].user;
+    let first_balance = f.balance(first_ata);
+    let first_holder = std::mem::replace(&mut f.user, Keypair::new_from_array([33; 32]));
+    f.svm.airdrop(&f.user.pubkey(), 10_000_000_000).unwrap();
+    for i in 0..f.doors.len() {
+        let mint = f.doors[i].mint;
+        f.doors[i].user = ata(f.user.pubkey(), mint, spl_token_2022_interface::ID);
+        f.make_ata(mint, spl_token_2022_interface::ID);
+    }
+    f.make_ata(spl_token_interface::native_mint::ID, spl_token_interface::ID);
+    f.trade(Some(1), true, 1_010_000_000);
+    let half = f.balance(f.doors[1].user) / 2;
+    f.convert(1, 0, half);
+    assert_eq!(f.balance(first_ata), first_balance);
+    f.fail(f.claim_ix(0, 0, first_holder.pubkey()), false);
+    f.fail(f.claim_ix(1, 0, first_holder.pubkey()), false);
+    for i in 0..f.doors.len() {
+        let amount = f.balance(f.doors[i].user);
+        f.trade(Some(i), false, amount);
+    }
+    assert_eq!(f.balance(first_ata), first_balance);
+    assert_eq!(f.r().sold, first_balance);
+    f.user = first_holder;
+    for d in &mut f.doors {
+        d.user = ata(f.user.pubkey(), d.mint, spl_token_2022_interface::ID);
+    }
+    f.trade(Some(0), false, first_balance);
+    assert_eq!(f.r().sold, 0);
+    assert_eq!(f.d(0).backing, 0);
+    assert_eq!(f.d(1).backing, 0);
+    f.claim(0, 0);
+    f.claim(0, 1);
+}
 #[test]
 fn signatures_cover_the_entire_message_and_nonce() {
     let mut f = Fixture::empty(0);
@@ -1127,6 +1166,26 @@ fn mature_gate_is_the_same_for_routing_and_release() {
         .unwrap());
     f.fail(f.open_ix(launch("Stale target"), None), true);
     f.checked(release, false, "release_slug");
+}
+
+#[test]
+fn buy_fees_do_not_make_a_below_threshold_room_live() {
+    let mut f = Fixture::new(0);
+    let c = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    // Wallet spend equals V_min, but the curve receives less after fees.
+    f.trade(Some(0), true, c.live_min_volume_lamports);
+    f.time(c.live_new_seconds as i64);
+    let r = f.r();
+    assert!(r.reserve >= c.live_min_reserve_lamports);
+    assert!(r.volume_gross < c.live_min_volume_lamports as u128);
+    assert_eq!(r.volume_gross, r.reserve as u128);
+    assert_eq!(f.d(0).buy_volume, r.volume_gross);
+    assert!(!r.live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
+    f.fail(f.open_ix(launch("Below volume floor"), None), true);
+    // At the true fee-base threshold routing becomes eligible again.
+    f.trade(Some(0), true, 101_000_000);
+    assert!(f.r().live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
+    f.open(launch("Above volume floor"));
 }
 
 #[test]

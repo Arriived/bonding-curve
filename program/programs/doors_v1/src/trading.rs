@@ -160,12 +160,12 @@ pub fn execute_trade<'a>(
         } else {
             &mut d.d.sell_volume
         };
-        *v = v
-            .checked_add(if buy { add(n, f)? } else { n } as u128)
-            .ok_or(Error::Overflow)?;
+        // Quote volume is the buy fee base or gross sell proceeds. Program
+        // fees do not count as activity (matcher spec section 8, Room).
+        *v = v.checked_add(n as u128).ok_or(Error::Overflow)?;
         d.d.trades = add(d.d.trades, 1)?;
     }
-    r.record(now, if buy { add(n, f)? } else { n })?;
+    r.record(now, n)?;
     if let Some(d) = route.as_ref() {
         door_check(d.d, &d.authority, r, rk, &d.mint, &d.vault, &d.backing)?;
     }
