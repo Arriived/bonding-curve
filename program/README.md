@@ -118,6 +118,11 @@ An off-chain audit must ingest Token-2022 transfers into vaults and holder
 burns as well as launchpad events. Excess balance or reduced supply alone is
 not a program bug. See [the approved corrections](docs/CORRECTIONS.md).
 
+The `Trade` event includes `sold_after` and `price_after`. Price is an exact
+`{numerator, denominator}` pair of u128 integers, in lamports per token base
+unit: K divided by `(v_tok - sold_after)^2`. Terminals can format that ratio
+without deriving a price from vault balances or losing integer precision.
+
 Measured CU is VM execution cost, not a cluster throughput benchmark. The
 spec reports the compute-only ceiling from the actual writable-account cap.
 Signature, lock, data and requested compute-budget costs also constrain

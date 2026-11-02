@@ -566,6 +566,7 @@ impl Fixture {
     fn audit_mint(&self, mint: Pubkey) {
         let account = self.svm.get_account(&mint).unwrap();
         let m = StateWithExtensions::<Mint>::unpack(&account.data).unwrap();
+        assert_eq!(m.get_extension_types().unwrap().len(),2);
         assert_eq!(m.base.mint_authority, COption::None);
         assert_eq!(m.base.freeze_authority, COption::None);
         assert!(m.base.supply <= U);
@@ -798,12 +799,14 @@ fn buy_sell_convert_full_redemption_and_zero_balance_edges() {
     assert_eq!(f.r().sold, 0);
     assert_eq!(f.d(0).backing, 0);
     assert_eq!(f.d(1).backing, 0);
+    let expected_room_tokens=n;
     f.trade(None, true, 1_010_000_000);
     let n = f.balance(ata(
         f.user.pubkey(),
         f.r().room_mint,
         spl_token_2022_interface::ID,
     ));
+    assert_eq!(n,expected_room_tokens,"P1: identical state/input quotes identically across routes");
     f.trade(None, false, n);
     assert_eq!(f.r().sold, 0);
     f.fail(f.trade_ix(Some(0), true, 100_000, u64::MAX), false);
