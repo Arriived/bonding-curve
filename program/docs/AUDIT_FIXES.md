@@ -1,4 +1,4 @@
-# Contract audit remediation — 2 November 2026
+# Contract audit remediation - 2 November 2026
 
 This change remediates the outstanding findings from the prior contract review.
 No program deployment is part of this work. The normal upgrade authority and
@@ -92,4 +92,8 @@ The Linux CI workflow checks formatting, locked host compilation, both SBF
 builds, generated IDL equality, account layouts, the SBF regression suite,
 10,000 mixed-operation iterations and immutable build inputs. Execution evidence
 is emitted to `verification/audit_fee_race.json`, `svm_report.json`, `packets.json`
-and `build.json`; final run details are recorded after CI completes.
+and `build.json`.
+
+Verified code commit: `f6eb007627d30fdf74d5df2847c0feed1241c535`. [CI run 41472716224](https://github.com/Arriived/bonding-curve/actions/runs/41472716224) passed every required step: **27 tests**, **10,000 mixed iterations** and **10,862 executed mixed-run transactions**. Both fee-race rejection/rollback and post-completion holder-exit regressions passed. The local source files, IDL, both lockfiles and downloaded ELF were checked against their recorded build hashes before saving this evidence.
+
+The final evidence commit changes reports and documentation only; the verified program source and instruction interface remain those of the code commit above.

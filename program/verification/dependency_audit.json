@@ -1,5 +1,5 @@
 {
-  "scan_at_utc": "2026-11-02T15:23:45.679584+00:00",
+  "scan_at_utc": "2026-11-02T15:34:06.437257+00:00",
   "service": "https://api.osv.dev/v1",
   "method": "OSV querybatch, exact crates.io versions; all lockfile dependencies including dev/host",
   "lock_sha256": {
@@ -104,16 +104,16 @@
           "ecosystem_specific": {
             "affected_functions": null,
             "affects": {
+              "os": [],
               "arch": [],
-              "functions": [],
-              "os": []
+              "functions": []
             }
           },
           "database_specific": {
+            "source": "https://github.com/rustsec/advisory-db/blob/osv/crates/RUSTSEC-2021-0139.json",
             "categories": [],
             "cvss": null,
-            "informational": "unmaintained",
-            "source": "https://github.com/rustsec/advisory-db/blob/osv/crates/RUSTSEC-2021-0139.json"
+            "informational": "unmaintained"
           }
         }
       ],
@@ -160,18 +160,18 @@
             }
           ],
           "ecosystem_specific": {
+            "affected_functions": null,
             "affects": {
+              "os": [],
               "arch": [],
-              "functions": [],
-              "os": []
-            },
-            "affected_functions": null
+              "functions": []
+            }
           },
           "database_specific": {
-            "categories": [],
-            "cvss": null,
             "informational": "unmaintained",
-            "source": "https://github.com/rustsec/advisory-db/blob/osv/crates/RUSTSEC-2024-0388.json"
+            "source": "https://github.com/rustsec/advisory-db/blob/osv/crates/RUSTSEC-2024-0388.json",
+            "categories": [],
+            "cvss": null
           }
         }
       ],
@@ -220,9 +220,9 @@
           "ecosystem_specific": {
             "affected_functions": null,
             "affects": {
+              "arch": [],
               "functions": [],
-              "os": [],
-              "arch": []
+              "os": []
             }
           },
           "database_specific": {
@@ -278,9 +278,9 @@
           "ecosystem_specific": {
             "affected_functions": null,
             "affects": {
-              "os": [],
               "arch": [],
-              "functions": []
+              "functions": [],
+              "os": []
             }
           },
           "database_specific": {
@@ -342,10 +342,10 @@
             }
           },
           "database_specific": {
+            "source": "https://github.com/rustsec/advisory-db/blob/osv/crates/RUSTSEC-2025-0161.json",
             "categories": [],
             "cvss": null,
-            "informational": "unmaintained",
-            "source": "https://github.com/rustsec/advisory-db/blob/osv/crates/RUSTSEC-2025-0161.json"
+            "informational": "unmaintained"
           }
         }
       ],

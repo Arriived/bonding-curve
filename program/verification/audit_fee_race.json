@@ -1,0 +1,32 @@
+[
+  {
+    "all_other_accounts_unchanged": true,
+    "execution_fee_lamports": 1000000000,
+    "network_fee_lamports": 10000,
+    "operation": "create_room",
+    "rejected_with": "FeeLimit",
+    "signed_max_fee_lamports": 0,
+    "signed_message_unchanged": true,
+    "victim_debit_lamports": 10000
+  },
+  {
+    "all_other_accounts_unchanged": true,
+    "execution_fee_lamports": 1000000000,
+    "network_fee_lamports": 10000,
+    "operation": "open_door",
+    "rejected_with": "FeeLimit",
+    "signed_max_fee_lamports": 0,
+    "signed_message_unchanged": true,
+    "victim_debit_lamports": 10000
+  },
+  {
+    "all_other_accounts_unchanged": true,
+    "execution_fee_lamports": 1000000000,
+    "network_fee_lamports": 5000,
+    "operation": "convert",
+    "rejected_with": "FeeLimit",
+    "signed_max_fee_lamports": 0,
+    "signed_message_unchanged": true,
+    "victim_debit_lamports": 5000
+  }
+]
