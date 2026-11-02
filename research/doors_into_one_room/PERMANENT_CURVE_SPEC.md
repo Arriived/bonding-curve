@@ -93,6 +93,23 @@ program fees. The boundary regression is
 `buy_fees_do_not_make_a_below_threshold_room_live` in the executed SBF suite.
 Conversion, retirement, claims and donations contribute no trading volume.
 
+### 0.E Audit remediation: v1 exits and signed flat fees
+
+Until the graduation adapter is implemented, status 1 is a reversible buy cap.
+Both sell routes remain available; any redemption below the copied trigger
+restores status 0 and buys. This overrides the wait-for-graduation freeze in
+the phase-2 design below for the current v1 program. Retirement still caps at
+the trigger and retired tokens remain locked. Status-2 operations fail closed.
+
+Launch arguments include a signed `max_fee_lamports`: it caps room + initial
+door fees on creation, and the door fee on opening. Conversion takes
+`convert(amount, max_fee_lamports)`. Config fees above the ceiling reject
+atomically; old payloads without a ceiling reject during deserialization.
+First-buy spend, min-out, account rent and network fees have separate budgets.
+Config also rejects a zero-purchasable trigger, combined launch-fee overflow,
+and trading fees of 100% or more. Reserve quotes narrow only after calculating
+the exact real-reserve amount in u128. See `program/docs/AUDIT_FIXES.md`.
+
 <!-- BEGIN GENERATED RENT CORRECTION -->
 **Approved rent correction.** The old `(128 + bytes) × 6,960` model is stale. The owner approved `(128 + bytes) × 5,080` after direct rent-exemption RPC confirmation. These are `getMinimumBalanceForRentExemption` results, not account balances. The method has no context slot; finalized slot reads bracket each request.
 
@@ -430,8 +447,8 @@ T = room.graduation_trigger_lamports
   `R(q') <= R(q) + n`:
   `q' = V_tok - floor(K / (R(q) + n + V_sol + 1)) - 1`.
 - A sell of t tokens pays `g = R(q) - R(q-t)` before program fees.
-- The crossing buy caps at the room's T. At completion the room stops curve
-  trading until its permissionless graduation.
+- The crossing buy caps at the room's T. Current v1 preserves curve sells
+  and reopens buying below T (§0.E). Pool graduation below remains phase 2.
 - Compute the matched pool token amount from **that room's actual sold
   state**: `N = floor(room.r_star * (room.v_tok - room.sold)^2 / K)`.
   Seed the pool with `room.r_star` and N; retire `U - room.sold - N`.
@@ -650,9 +667,10 @@ Same accounts.
    - split F as for buy.
 6. **Assert:** I1, I2, S1, and B1 for door N. **Emit.**
 
-**While complete (status 1),** `buy` and `sell` refuse. The reserve must stay
-at T until `graduate` runs. `open_door`, `convert` and the claim
-instructions stay available.
+**While complete (status 1),** current v1 refuses buys and permits sells.
+A sell reducing reserve below T restores status 0 (§0.E). `open_door`,
+`convert` and claims stay available. The future graduation adapter must
+validate the current reserve and sold state atomically before migration.
 
 ### `buy` / `sell`, status 2 (graduated)
 
@@ -972,7 +990,8 @@ Current **Config default**: `85,018,013,680` lamports, pool seed `85,000,000,000
   whose snapshotted rent falls short at graduation tops up from
   `protocol_accrued_sol` (§3 `graduate` step 3).
 - The crossing buy is capped so the reserve ends at exactly T.
-- The room becomes complete (status 1); trading pauses until `graduate`.
+- The room becomes complete (status 1). Current v1 retains sells and reopens
+  buys below T (§0.E); this section describes the future graduation adapter.
 - `graduate` is permissionless, so the protocol's crank or anyone can call it.
 
 ### 5.2 What the program calls

@@ -42,7 +42,9 @@ pub fn execute_trade<'a>(
     min: u64,
     now: i64,
 ) -> Result<()> {
-    require!(r.status == 0, Error::PhaseTwo);
+    // Until graduation exists, completion is a reversible buy cap. Holders
+    // can always redeem on the curve; unsupported pool states still fail.
+    require!(r.status <= 1 && (!buy || r.status == 0), Error::PhaseTwo);
     require!(input > 0, Error::Amount);
     let rk = ri.key();
     if let Some(d) = route.as_ref() {
@@ -151,6 +153,9 @@ pub fn execute_trade<'a>(
         require!(bl - reserve.lamports() == g, Error::Invariant); // I3, no fee is extracted in addition to g
         r.reserve = sub(r.reserve, g)?;
         r.sold = sub(r.sold, input)?;
+        if r.reserve < r.graduation_trigger_lamports {
+            r.status = 0;
+        }
         (input, g, f)
     };
     r.split(f, route.as_mut().map(|d| &mut *d.d))?;

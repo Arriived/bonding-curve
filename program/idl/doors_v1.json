@@ -650,6 +650,10 @@
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "max_fee_lamports",
+          "type": "u64"
         }
       ]
     },
@@ -2066,7 +2070,7 @@
     {
       "code": 6014,
       "name": "PhaseTwo",
-      "msg": "Phase 2 is not implemented or curve is complete"
+      "msg": "Phase 2 is not implemented or the buy cap has been reached"
     },
     {
       "code": 6015,
@@ -2087,6 +2091,11 @@
       "code": 6018,
       "name": "LaunchCpi",
       "msg": "Launch routing and metadata must be a top-level co-signed instruction"
+    },
+    {
+      "code": 6019,
+      "name": "FeeLimit",
+      "msg": "Flat protocol fee exceeds the signed maximum"
     }
   ],
   "types": [
@@ -2496,6 +2505,10 @@
           {
             "name": "face",
             "type": "u32"
+          },
+          {
+            "name": "max_fee_lamports",
+            "type": "u64"
           }
         ]
       }

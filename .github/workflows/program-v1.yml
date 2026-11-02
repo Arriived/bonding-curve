@@ -8,6 +8,7 @@ on:
       - 'program/scripts/**'
       - 'program/Cargo.toml'
       - 'program/Cargo.lock'
+      - 'program/dependency-policy.json'
       - 'program/Anchor.toml'
       - 'program/idl/**'
       - '.github/workflows/program-v1.yml'
@@ -42,6 +43,8 @@ jobs:
         run: |
           cargo fmt -- --check
           cargo check --locked --tests
+      - name: Check dependency advisories
+        run: python3 scripts/audit_dependencies.py --check
       - name: Install current SBF builder and Anchor
         run: |
           if ! command -v cargo-build-sbf; then cargo install cargo-build-sbf --version 4.5.0 --locked; fi

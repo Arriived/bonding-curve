@@ -12,14 +12,7 @@ pub fn narrow(v: u128) -> Result<u64> {
 }
 pub fn reserve(vs: u64, vt: u64, q: u64) -> Result<u64> {
     require!(q <= U && vt > q, Error::Balance);
-    narrow(
-        (vs as u128)
-            .checked_mul(vt as u128)
-            .ok_or(Error::Overflow)?
-            / (vt - q) as u128,
-    )?
-    .checked_sub(vs)
-    .ok_or(error!(Error::Overflow))
+    narrow((vs as u128).checked_mul(q as u128).ok_or(Error::Overflow)? / (vt - q) as u128)
 }
 pub fn inverse(vs: u64, vt: u64, r: u64) -> Result<u64> {
     let k = (vs as u128)

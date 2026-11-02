@@ -50,6 +50,8 @@ pub mod doors_v1 {
         let a = ctx.accounts;
         launch.validate()?;
         require!(!a.config.paused, Error::Paused);
+        let fee = add(a.config.room_fee_lamports, a.config.door_fee_lamports)?;
+        require!(fee <= launch.max_fee_lamports, Error::FeeLimit);
         let now = Clock::get()?.unix_timestamp;
         // Validate exact-identity floor before any persistent side effect (all CPIs atomic).
         let identity = launch.identity();
@@ -199,7 +201,6 @@ pub mod doors_v1 {
             &tp,
             now,
         )?;
-        let fee = add(a.config.room_fee_lamports, a.config.door_fee_lamports)?;
         deposit(&user, &a.fees, &system, fee)?;
         r.protocol_accrued_sol = add(r.protocol_accrued_sol, fee)?;
         emit!(RoomCreated {
@@ -280,6 +281,8 @@ pub mod doors_v1 {
         launch.validate()?;
         let now = Clock::get()?.unix_timestamp;
         require!(!a.core.config.paused, Error::Paused);
+        let fee = a.core.config.door_fee_lamports;
+        require!(fee <= launch.max_fee_lamports, Error::FeeLimit);
         require!(a.core.room.live(&a.core.config, now)?, Error::Dead);
         let identity = launch.identity();
         if let Some(lock) = read_slug(&a.slug, &identity)? {
@@ -317,7 +320,6 @@ pub mod doors_v1 {
             &tp,
             now,
         )?;
-        let fee = a.core.config.door_fee_lamports;
         deposit(&user, &a.core.fees, &system, fee)?;
         a.core.room.protocol_accrued_sol = add(a.core.room.protocol_accrued_sol, fee)?;
         if launch.first_buy_lamports > 0 {
@@ -378,10 +380,12 @@ pub mod doors_v1 {
     pub fn sell(ctx: Context<TradeAccounts>, tokens_in: u64, min_lamports_out: u64) -> Result<()> {
         trade(ctx, false, tokens_in, min_lamports_out)
     }
-    pub fn convert(ctx: Context<Convert>, amount: u64) -> Result<()> {
+    pub fn convert(ctx: Context<Convert>, amount: u64, max_fee_lamports: u64) -> Result<()> {
         let a = ctx.accounts;
         require!(!a.core.config.paused, Error::Paused);
         require!(amount > 0, Error::Amount);
+        let fee = a.core.config.convert_fee_lamports;
+        require!(fee <= max_fee_lamports, Error::FeeLimit);
         let ri = a.core.room.to_account_info();
         let rk = ri.key();
         let ai = a.door_a.to_account_info();
@@ -464,7 +468,6 @@ pub mod doors_v1 {
         )?;
         a.door_a.backing = sub(a.door_a.backing, amount)?;
         a.door_b.backing = add(a.door_b.backing, amount)?;
-        let fee = a.core.config.convert_fee_lamports;
         deposit(&a.user, &a.core.fees, &a.system_program, fee)?;
         a.core.room.protocol_accrued_sol = add(a.core.room.protocol_accrued_sol, fee)?;
         door_check(
@@ -977,7 +980,7 @@ pub enum Error {
     Identity,
     #[msg("Identity holder is required and must match lock")]
     Holder,
-    #[msg("Phase 2 is not implemented or curve is complete")]
+    #[msg("Phase 2 is not implemented or the buy cap has been reached")]
     PhaseTwo,
     #[msg("Invalid zero amount")]
     Amount,
@@ -987,4 +990,6 @@ pub enum Error {
     Clock,
     #[msg("Launch routing and metadata must be a top-level co-signed instruction")]
     LaunchCpi,
+    #[msg("Flat protocol fee exceeds the signed maximum")]
+    FeeLimit,
 }

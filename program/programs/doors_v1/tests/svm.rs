@@ -45,6 +45,7 @@ fn launch(name: &str) -> Launch {
         matcher_version: 1,
         rule: 0,
         face: 0,
+        max_fee_lamports: 0,
     }
 }
 fn defaults(matcher: Pubkey, recipient: Pubkey) -> Settings {
@@ -221,6 +222,9 @@ impl Fixture {
         meta
     }
     fn fail(&mut self, ix: Instruction, matcher: bool) {
+        self.fail_error(ix, matcher, None);
+    }
+    fn fail_error(&mut self, ix: Instruction, matcher: bool, code: Option<&str>) {
         let before: BTreeMap<_, _> = ix
             .accounts
             .iter()
@@ -247,6 +251,16 @@ impl Fixture {
             .expect_err("must reject invalid instruction");
         let reason = format!("{:?}", failure.err);
         assert!(reason.contains("Custom("), "{failure:#?}");
+        if let Some(code) = code {
+            assert!(
+                failure
+                    .meta
+                    .logs
+                    .iter()
+                    .any(|line| line.contains(&format!("Error Code: {code}."))),
+                "{failure:#?}"
+            );
+        }
         assert!(
             !reason.contains("ComputationalBudgetExceeded") && !reason.contains("MaxInstructionTraceLengthExceeded"),
             "resource exhaustion must not stand in for the expected validation failure: {failure:#?}"
@@ -463,7 +477,10 @@ impl Fixture {
                 token_program: spl_token_2022_interface::ID,
                 system_program: anchor_lang::system_program::ID,
             },
-            ix::Convert { amount: n },
+            ix::Convert {
+                amount: n,
+                max_fee_lamports: 0,
+            },
         )
     }
     fn convert(&mut self, from: usize, to: usize, n: u64) {
@@ -667,6 +684,7 @@ fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
         "update_config",
     );
     let mut l = launch("Prefunded room");
+    l.max_fee_lamports = 18;
     l.first_buy_lamports = 1_010_000_000;
     let ix = f.create_ix(l.clone(), None);
     let rent = f.svm.minimum_balance_for_rent_exemption(0);
@@ -681,6 +699,7 @@ fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
     f.create(l, None);
     assert_eq!(f.r().reserve, 1_000_000_000);
     let mut l = launch("Prefunded door");
+    l.max_fee_lamports = 11;
     l.first_buy_lamports = 101_000_000;
     let ix = f.open_ix(l.clone(), None);
     for account in &ix.accounts {
@@ -994,7 +1013,7 @@ fn buy_sell_convert_full_redemption_and_zero_balance_edges() {
     f.fail(f.trade_ix(None, false, 1, 0), false);
 }
 #[test]
-fn crossing_buy_caps_on_accounted_reserve_and_stops_at_complete() {
+fn crossing_buy_caps_but_completion_preserves_door_and_room_exits() {
     let mut f = Fixture::new(0);
     f.trade(Some(0), true, 101); // integer dust/slack
     let before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
@@ -1010,9 +1029,23 @@ fn crossing_buy_caps_on_accounted_reserve_and_stops_at_complete() {
         n + fee + 5000
     );
     f.fail(f.trade_ix(Some(0), true, 101, 0), false);
-    f.fail(f.trade_ix(Some(0), false, 1, 0), false);
     f.open(launch("Complete door"));
-    f.convert(0, 1, 1);
+    let half = f.balance(f.doors[0].user) / 2;
+    f.convert(0, 1, half);
+    f.trade(Some(1), false, half);
+    assert_eq!(f.r().status, 0);
+    f.trade(None, true, u64::MAX / 100);
+    assert_eq!(f.r().status, 1);
+    let room_tokens = f.balance(ata(
+        f.user.pubkey(),
+        f.r().room_mint,
+        spl_token_2022_interface::ID,
+    ));
+    f.trade(None, false, room_tokens);
+    f.trade(Some(0), false, f.balance(f.doors[0].user));
+    assert_eq!(f.r().sold, 0);
+    assert_eq!(f.r().status, 0);
+    f.trade(Some(0), true, 101);
     f.claim(0, 0);
     f.claim(1, 0);
     f.claim(2, 0);
@@ -1109,6 +1142,15 @@ fn retirement_is_capped_and_does_not_retire_surplus() {
     assert_eq!(g.r().status, 1);
     assert_eq!(g.r().reserve, g.r().graduation_trigger_lamports);
     assert!(g.r().pending_reserve_sol > 0);
+    let held = g.balance(ata(
+        g.user.pubkey(),
+        g.r().room_mint,
+        spl_token_2022_interface::ID,
+    ));
+    g.trade(None, false, held);
+    assert_eq!(g.r().status, 0);
+    assert_eq!(g.r().sold, g.r().retired);
+    g.trade(Some(0), true, 1_010_000);
 }
 #[test]
 fn wsol_fee_plumbing_claims_only_accounted_fees_and_leaves_donations_locked() {
@@ -1386,7 +1428,7 @@ fn liveness_boundary_release_takeover_and_exact_floor() {
 fn fold_and_integer_math_match_reference_vectors() {
     use doors_v1::{math::*, state::fold};
     assert_eq!(fold(b"rn-vv 0134578"), b"MWOIEASTB");
-    assert_eq!(fold("érn-vv 0".as_bytes()), "éRNVVO".as_bytes());
+    assert_eq!(fold("Ã©rn-vv 0".as_bytes()), "Ã©RNVVO".as_bytes());
     let vs = 30_000_852_995;
     let vt = 1_073_025_606_000_000;
     let mut seed = 0x381f_b84b_b9e7_2e01u64;
@@ -1492,8 +1534,7 @@ fn mixed_10000_sbf_operations_and_cu_report() {
     println!("CU_REPORT property_iterations=10000 executed_transactions={} max_door_buy={} max_door_sell={} max_convert={} max_open_door={}",f.operations,f.cus["buy_door"].iter().max().unwrap(),f.cus["sell_door"].iter().max().unwrap(),f.cus["convert"].iter().max().unwrap(),f.cus["open_door"].iter().max().unwrap());
 }
 
-// Audit witnesses preserve the existing program behavior; passing these tests
-// confirms the finding rather than asserting that it has been remediated.
+// Regression tests for the audit findings. Every instruction executes SBF.
 fn audit_settings(f: &mut Fixture, settings: Settings) {
     f.send(
         instr(
@@ -1512,24 +1553,33 @@ fn audit_settings(f: &mut Fixture, settings: Settings) {
 }
 
 #[test]
-fn audit_config_accepts_a_curve_with_no_purchasable_base_unit() {
+fn config_rejects_a_curve_with_no_purchasable_base_unit() {
     let mut f = Fixture::empty(0);
     let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
     s.v_tok = U + 1;
     s.v_sol_lamports = 2 * (U + 1);
     s.r_star_lamports = 1;
     s.graduation_trigger_lamports = 1;
-    audit_settings(&mut f, s);
-    f.create(launch("No tradable unit"), None);
-    assert_eq!(f.r().advance(1).unwrap(), 0);
-    assert_eq!(f.r().curve(1).unwrap(), 2);
-    f.fail(f.trade_ix(Some(0), true, 101, 0), false);
-    assert_eq!(f.r().sold, 0);
-    assert_eq!(f.r().reserve, 0);
+    f.fail_error(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings: s,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        Some("BadConfig"),
+    );
+    f.create(launch("Valid config preserved"), None);
+    f.trade(Some(0), true, 101);
 }
 
 #[test]
-fn audit_config_accepts_a_curve_whose_intermediate_quote_overflows() {
+fn large_virtual_reserve_quotes_and_redemptions_do_not_overflow() {
     let mut f = Fixture::empty(0);
     let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
     s.v_tok = U + 1;
@@ -1542,10 +1592,31 @@ fn audit_config_accepts_a_curve_whose_intermediate_quote_overflows() {
     let k = (r.v_sol_lamports as u128) * (r.v_tok as u128);
     let exact = k / ((r.v_tok - 1) as u128) - (r.v_sol_lamports as u128);
     assert!(exact > 0 && exact <= u64::MAX as u128);
-    assert!(r.curve(1).is_err());
-    f.fail(f.trade_ix(Some(0), true, 101_000, 0), false);
+    assert_eq!(r.curve(1).unwrap() as u128, exact);
+    f.trade(Some(0), true, 101_000);
+    let held = f.balance(f.doors[0].user);
+    assert!(held > 0);
+    let slack = f.r().reserve - f.r().curve(held).unwrap();
+    f.trade(Some(0), false, held);
     assert_eq!(f.r().sold, 0);
-    assert_eq!(f.r().reserve, 0);
+    assert_eq!(f.r().reserve, slack);
+}
+
+#[test]
+fn curve_quotes_match_the_exact_reference_at_integer_boundaries() {
+    for vs in [1, 30_000_000_000, u64::MAX / 2, u64::MAX] {
+        for vt in [U + 1, 2 * U, u64::MAX] {
+            for q in [0, 1, U / 2, U - 1, U] {
+                let exact = (vs as u128) * (vt as u128) / ((vt - q) as u128) - vs as u128;
+                let actual = doors_v1::math::reserve(vs, vt, q);
+                if exact > u64::MAX as u128 {
+                    assert!(actual.is_err());
+                } else {
+                    assert_eq!(actual.unwrap() as u128, exact);
+                }
+            }
+        }
+    }
 }
 
 #[test]
@@ -1588,7 +1659,10 @@ fn audit_send_as(f: &mut Fixture, signer: &Keypair, ix: Instruction) {
     let tx = Transaction::new(
         &[signer],
         Message::new(
-            &[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000), ix],
+            &[
+                ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+                ix,
+            ],
             Some(&signer.pubkey()),
         ),
         f.svm.latest_blockhash(),
@@ -1597,90 +1671,225 @@ fn audit_send_as(f: &mut Fixture, signer: &Keypair, ix: Instruction) {
 }
 
 #[test]
-fn audit_admin_fee_change_can_charge_an_already_signed_conversion() {
-    let mut f = Fixture::new(0);
-    f.open(launch("Second face"));
+fn fee_increases_reject_unchanged_signed_launches_and_conversions() {
+    let mut evidence = Vec::new();
+    for kind in 0..3 {
+        let mut f = Fixture::empty(0);
+        if kind != 0 {
+            f.create(launch("Fee race room"), None);
+        }
+        if kind == 2 {
+            f.open(launch("Fee race door"));
+            f.trade(Some(0), true, 1_010_000_000);
+        }
+        let attacker = Keypair::new_from_array([33; 32]);
+        f.svm.airdrop(&attacker.pubkey(), 100_000_000).unwrap();
+        let mut s = defaults(f.matcher.pubkey(), attacker.pubkey());
+        f.send(
+            instr(
+                a::UpdateConfig {
+                    admin: f.user.pubkey(),
+                    config: f.cfg,
+                },
+                ix::UpdateConfig {
+                    settings: s.clone(),
+                    new_admin: attacker.pubkey(),
+                },
+            ),
+            false,
+            "audit_config",
+        );
+        // These exact bytes are signed while the flat fee and maximum are zero.
+        let operation = match kind {
+            0 => f.create_ix(launch("Signed fee race room"), None),
+            1 => f.open_ix(launch("Signed fee race door"), None),
+            _ => f.convert_ix(0, 1, 1),
+        };
+        let signers = if kind == 2 {
+            vec![&f.user]
+        } else {
+            vec![&f.user, &f.matcher]
+        };
+        let pending = Transaction::new(
+            &signers,
+            Message::new(
+                &[
+                    ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+                    operation,
+                ],
+                Some(&f.user.pubkey()),
+            ),
+            f.svm.latest_blockhash(),
+        );
+        let signed_message = pending.message_data();
+        let fee = 1_000_000_000;
+        match kind {
+            0 => {
+                s.room_fee_lamports = fee - 1;
+                s.door_fee_lamports = 1;
+            }
+            1 => s.door_fee_lamports = fee,
+            _ => s.convert_fee_lamports = fee,
+        }
+        audit_send_as(
+            &mut f,
+            &attacker,
+            instr(
+                a::UpdateConfig {
+                    admin: attacker.pubkey(),
+                    config: p(&[b"config"]),
+                },
+                ix::UpdateConfig {
+                    settings: s,
+                    new_admin: attacker.pubkey(),
+                },
+            ),
+        );
+        pending.verify().unwrap();
+        assert_eq!(pending.message_data(), signed_message);
+        let before: BTreeMap<_, _> = pending
+            .message
+            .account_keys
+            .iter()
+            .map(|key| (*key, f.svm.get_account(key)))
+            .collect();
+        let victim_before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+        let network_fee = 5000 * pending.signatures.len() as u64;
+        let failure = f
+            .svm
+            .send_transaction(pending)
+            .expect_err("fee increase must reject unchanged signed bytes");
+        assert!(
+            format!("{:?}", failure.err).contains("Custom("),
+            "{failure:#?}"
+        );
+        assert!(
+            failure
+                .meta
+                .logs
+                .iter()
+                .any(|line| line.contains("Error Code: FeeLimit.")),
+            "{failure:#?}"
+        );
+        for (key, account) in before {
+            if key != f.user.pubkey() {
+                assert_eq!(
+                    account,
+                    f.svm.get_account(&key),
+                    "fee rejection changed {key}"
+                );
+            }
+        }
+        let debit = victim_before - f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+        assert_eq!(debit, network_fee, "only network fees may be debited");
+        if kind != 0 {
+            f.audit();
+        }
+        evidence.push(
+            json!({"operation": ["create_room", "open_door", "convert"][kind],
+            "signed_max_fee_lamports": 0, "execution_fee_lamports": fee,
+            "signed_message_unchanged": true, "rejected_with": "FeeLimit",
+            "victim_debit_lamports": debit, "network_fee_lamports": network_fee,
+            "all_other_accounts_unchanged": true}),
+        );
+    }
+    let out =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/audit_fee_race.json");
+    std::fs::write(out, serde_json::to_string_pretty(&evidence).unwrap() + "\n").unwrap();
+}
+
+#[test]
+fn flat_fee_limits_include_combined_launch_fees_and_allow_equal_or_lower_fees() {
+    let mut f = Fixture::empty(0);
+    let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+    s.room_fee_lamports = 7;
+    s.door_fee_lamports = 11;
+    s.convert_fee_lamports = 13;
+    audit_settings(&mut f, s.clone());
+    let mut l = launch("Flat fee room");
+    l.max_fee_lamports = 17;
+    f.fail_error(f.create_ix(l.clone(), None), true, Some("FeeLimit"));
+    // Legacy instruction data has no cap and must fail deserialization.
+    let mut legacy = f.create_ix(l.clone(), None);
+    legacy.data.truncate(legacy.data.len() - 8);
+    f.fail_error(legacy, true, Some("InstructionDidNotDeserialize"));
+    l.max_fee_lamports = 18;
+    f.create(l, None);
+    assert_eq!(f.r().protocol_accrued_sol, 18);
+    let mut l = launch("Flat fee door");
+    l.max_fee_lamports = 10;
+    f.fail_error(f.open_ix(l.clone(), None), true, Some("FeeLimit"));
+    let mut legacy = f.open_ix(l.clone(), None);
+    legacy.data.truncate(legacy.data.len() - 8);
+    f.fail_error(legacy, true, Some("InstructionDidNotDeserialize"));
+    l.max_fee_lamports = 11;
+    f.open(l);
+    assert_eq!(f.r().protocol_accrued_sol, 29);
     f.trade(Some(0), true, 1_010_000_000);
-    let attacker = Keypair::new_from_array([33; 32]);
-    f.svm.airdrop(&attacker.pubkey(), 100_000_000).unwrap();
-    let mut s = defaults(f.matcher.pubkey(), attacker.pubkey());
-    f.send(
-        instr(
-            a::UpdateConfig {
-                admin: f.user.pubkey(),
-                config: f.cfg,
-            },
-            ix::UpdateConfig {
-                settings: s.clone(),
-                new_admin: attacker.pubkey(),
-            },
-        ),
-        false,
-        "audit_config",
-    );
-    // The victim signs while the conversion fee is still zero.
-    assert_eq!(s.convert_fee_lamports, 0);
+    let with_cap = |f: &Fixture, cap| {
+        let mut ix = f.convert_ix(0, 1, 1);
+        ix.data = ix::Convert {
+            amount: 1,
+            max_fee_lamports: cap,
+        }
+        .data();
+        ix
+    };
+    f.fail_error(with_cap(&f, 12), false, Some("FeeLimit"));
+    let mut legacy = with_cap(&f, 13);
+    legacy.data.truncate(legacy.data.len() - 8);
+    f.fail_error(legacy, false, Some("InstructionDidNotDeserialize"));
+    let before = f.r().protocol_accrued_sol;
+    f.checked(with_cap(&f, 13), false, "convert");
+    assert_eq!(f.r().protocol_accrued_sol, before + 13);
+    // A signed ceiling is not an exact-fee requirement: lower fees are safe.
+    let pending_ix = with_cap(&f, 13);
     let pending = Transaction::new(
         &[&f.user],
         Message::new(
             &[
                 ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
-                f.convert_ix(0, 1, 1),
+                pending_ix,
             ],
             Some(&f.user.pubkey()),
         ),
         f.svm.latest_blockhash(),
     );
-    let signed_message = pending.message_data();
-    let fee = 1_000_000_000;
-    s.convert_fee_lamports = fee;
-    audit_send_as(
-        &mut f,
-        &attacker,
-        instr(
-            a::UpdateConfig {
-                admin: attacker.pubkey(),
-                config: p(&[b"config"]),
-            },
-            ix::UpdateConfig {
-                settings: s,
-                new_admin: attacker.pubkey(),
-            },
-        ),
-    );
-    pending.verify().unwrap();
-    assert_eq!(pending.message_data(), signed_message);
-    let victim_before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
-    let fees = p(&[b"fees", f.room.as_ref()]);
-    let fees_before = f.svm.get_account(&fees).unwrap().lamports;
-    let reserve_before = f.r().reserve;
+    s.convert_fee_lamports = 3;
+    audit_settings(&mut f, s);
+    let before = f.r().protocol_accrued_sol;
     f.svm.send_transaction(pending).unwrap();
-    let victim_debit = victim_before - f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
-    assert!(victim_debit >= fee);
-    assert_eq!(f.svm.get_account(&fees).unwrap().lamports, fees_before + fee);
-    assert_eq!(f.r().reserve, reserve_before);
+    assert_eq!(f.r().protocol_accrued_sol, before + 3);
     f.audit();
-    // The attacker can collect the protocol accrual, including the extra fee.
-    let owner = std::mem::replace(&mut f.user, attacker);
-    f.make_ata(spl_token_interface::native_mint::ID, spl_token_interface::ID);
-    let attacker_before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
-    let swept = f.r().protocol_accrued_sol;
-    f.claim(2, 0);
-    let attacker_gain = f.svm.get_account(&f.user.pubkey()).unwrap().lamports - attacker_before;
-    assert!(attacker_gain >= fee);
-    assert_eq!(f.r().protocol_accrued_sol, 0);
-    assert_eq!(f.r().reserve, reserve_before);
-    let output = json!({
-        "kind": "executed SBF witness of an open privileged fee-authorization finding",
-        "victim": owner.pubkey().to_string(),
-        "prepared_fee_lamports": 0,
-        "execution_fee_lamports": fee,
-        "victim_debit_lamports": victim_debit,
-        "protocol_swept_lamports": swept,
-        "attacker_net_gain_on_sweep_lamports": attacker_gain,
-        "signed_message_unchanged": true,
-        "reserve_unchanged": true
-    });
-    let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/audit_fee_race.json");
-    std::fs::write(out, serde_json::to_string_pretty(&output).unwrap() + "\n").unwrap();
+}
+
+#[test]
+fn config_rejects_total_launch_fee_overflow_and_confiscatory_trade_fees() {
+    let mut f = Fixture::new(0);
+    for kind in 0..2 {
+        let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+        if kind == 0 {
+            s.room_fee_lamports = u64::MAX;
+            s.door_fee_lamports = 1;
+        } else {
+            s.fee_bps = 10_000;
+        }
+        f.fail_error(
+            instr(
+                a::UpdateConfig {
+                    admin: f.user.pubkey(),
+                    config: f.cfg,
+                },
+                ix::UpdateConfig {
+                    settings: s,
+                    new_admin: f.user.pubkey(),
+                },
+            ),
+            false,
+            Some("BadConfig"),
+        );
+    }
+    f.trade(Some(0), true, 1_010_000);
+    f.trade(Some(0), false, f.balance(f.doors[0].user));
+    f.audit();
 }

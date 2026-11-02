@@ -27,7 +27,7 @@ pub struct Settings {
 impl Settings {
     pub fn validate(&self) -> Result<()> {
         require!(
-            self.fee_bps <= 10_000
+            self.fee_bps < 10_000
                 && self.door_share_bps as u32 + self.founder_share_bps as u32 <= 10_000,
             Error::BadConfig
         );
@@ -44,13 +44,26 @@ impl Settings {
                 && self.matcher_authority != Pubkey::default(),
             Error::BadConfig
         );
-        // Make every inverse and quote representable, including at the copied trigger.
+        require!(
+            self.room_fee_lamports
+                .checked_add(self.door_fee_lamports)
+                .is_some(),
+            Error::BadConfig
+        );
+        // The cap must permit a positive purchase. Quotes up to this sold
+        // amount are monotonic and bounded by the representable trigger.
         let q = inverse(
             self.v_sol_lamports,
             self.v_tok,
             self.graduation_trigger_lamports,
-        )?;
-        require!(q <= U, Error::BadConfig);
+        )
+        .map_err(|_| error!(Error::BadConfig))?;
+        require!(q > 0 && q <= U, Error::BadConfig);
+        require!(
+            reserve(self.v_sol_lamports, self.v_tok, q).map_err(|_| error!(Error::BadConfig))?
+                <= self.graduation_trigger_lamports,
+            Error::BadConfig
+        );
         Ok(())
     }
 }
@@ -292,6 +305,9 @@ pub struct Launch {
     pub matcher_version: u16,
     pub rule: u8,
     pub face: u32,
+    // Total flat protocol fee, excluding the separately bounded first buy
+    // and account rent. Included in both launcher and matcher signatures.
+    pub max_fee_lamports: u64,
 }
 impl Launch {
     pub fn validate(&self) -> Result<()> {

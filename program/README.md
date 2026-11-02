@@ -24,8 +24,11 @@ The reason for carrying it is the pending measurement of founder volume lost
 to copies, not a finding that a nonzero share is justified.
 
 Status 0 is the curve. At the room's copied Config trigger a capped buy or
-retirement sets status 1, complete; buy/sell then stop. Open, convert and
-claims remain available. Status 2, graduation, Meteora CPIs, pool swaps and
+retirement sets status 1 and stops further buys. Sells remain available on
+both routes, including after retirement reaches the trigger. A redemption
+that lowers reserve below the cap restores status 0 and buying. Open,
+convert and claims remain available. This reversible cap preserves holder
+exits while the graduation adapter is absent. Status 2, graduation, Meteora CPIs, pool swaps and
 pool checkpoints are phase 2 and cannot be reached by this version. A
 status-2 liveness request fails closed until that adapter exists.
 
@@ -70,6 +73,7 @@ cmp idl/doors_v1.json target/idl/doors_v1.json
 python3 scripts/check_layouts.py
 cargo test --locked --test svm -- --nocapture
 cargo fmt -- --check
+python3 scripts/audit_dependencies.py --check
 python3 scripts/build_evidence.py
 python3 scripts/report_cu.py
 ```
@@ -172,6 +176,15 @@ share **0 bps** and zero launch/conversion fees. Config updates require its
 admin; fee and curve parameters are snapshotted into each new room. Existing
 rooms keep their original trigger and snapshots after Config changes.
 
+Clients must use the updated IDL: `Launch.max_fee_lamports` caps the combined
+room + initial door fee for `create_room`, or the door fee for `open_door`.
+`convert(amount, max_fee_lamports)` caps the conversion fee. Set zero for a
+free operation. Encode the user's approved maximum in the signed instruction;
+an execution-time fee increase above it fails atomically with `FeeLimit`.
+The maximum covers flat protocol fees; first-buy spend, trading slippage,
+account rent and network fees have their own budgets. Legacy instruction
+payloads without the maximum are rejected. Account layouts are unchanged.
+
 Launch clients derive SlugLock from raw metadata, fetch its holder if any,
 obtain the matcher's route/nonce/signature and the launcher's signature over
 the identical recent-blockhash transaction. The instruction creates a first
@@ -181,6 +194,6 @@ versioned transactions/lookup tables where maximum metadata and account lists
 exceed the transaction packet budget. Room IDs are not enumerable; discover
 rooms and doors with getProgramAccounts and account discriminators.
 
-The v1 program intentionally stops curve trading at completion. Deploy only
-with that explicit phase boundary understood; this repository does not claim
-an implemented graduation path.
+The [audit fixes](docs/AUDIT_FIXES.md) describe the reversible completion cap,
+fee authorization, Config validation, arithmetic and dependency remediation.
+Graduation remains a future adapter; holders can redeem on the curve in v1.

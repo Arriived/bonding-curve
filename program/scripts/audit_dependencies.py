@@ -3,6 +3,7 @@
 Uses OSV's documented crates.io query API, not a local cargo-audit installation.
 Results identify advisories to investigate, not proof of exploitability in SBF.
 """
+import argparse
 import hashlib
 import json
 import time
@@ -31,6 +32,9 @@ def request(path, body=None):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check', action='store_true', help='fail on vulnerabilities or unreviewed notices')
+    args = parser.parse_args()
     packages = {}
     locks = {}
     for path in [ROOT / 'Cargo.lock', ROOT / 'test-fixtures/launch_proxy/Cargo.lock']:
@@ -55,16 +59,32 @@ def main():
     ids = sorted({id for row in matches for id in row['advisories']})
     with ThreadPoolExecutor(max_workers=4) as pool:
         records = dict(zip(ids, pool.map(lambda id: request('/vulns/' + id), ids)))
+    policy = json.loads((ROOT / 'dependency-policy.json').read_text())
+    accepted = {(r['name'], r['version'], r['advisory']) for r in policy['reviewed_maintenance_notices']}
+    unreviewed = []
+    for row in matches:
+        for id in row['advisories']:
+            affected = [a for a in records[id].get('affected', [])
+                        if a['package']['name'] == row['name']]
+            maintenance_only = bool(affected) and all(
+                a.get('database_specific', {}).get('informational') == 'unmaintained'
+                for a in affected)
+            if not maintenance_only or (row['name'], row['version'], id) not in accepted:
+                unreviewed.append({'name': row['name'], 'version': row['version'], 'advisory': id})
     report = {'scan_at_utc': datetime.now(timezone.utc).isoformat(), 'service': API,
               'method': 'OSV querybatch, exact crates.io versions; all lockfile dependencies including dev/host',
               'lock_sha256': locks, 'unique_registry_packages': len(keys),
-              'matches': matches, 'records': records}
+              'matches': matches, 'records': records, 'unreviewed': unreviewed}
     (ROOT / 'verification/dependency_audit.json').write_text(json.dumps(report, indent=2) + '\n',
                                                           encoding='utf-8', newline='\n')
     print(f'Scanned {len(keys)} exact package versions; {len(matches)} package matches, {len(ids)} advisory IDs.')
     for row in matches:
         summaries = '; '.join(records[id].get('summary', id) for id in row['advisories'])
         print(f"{row['name']} {row['version']}: {summaries}")
+    if args.check and unreviewed:
+        raise SystemExit('Dependency policy rejected: ' + json.dumps(unreviewed))
+    if args.check:
+        print('Dependency policy passed: no vulnerabilities or unreviewed notices.')
 
 
 if __name__ == '__main__':
