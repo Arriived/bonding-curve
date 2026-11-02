@@ -221,9 +221,11 @@ impl Fixture {
         meta
     }
     fn fail(&mut self, ix: Instruction, matcher: bool) {
-        let before: BTreeMap<_, _> = ix.accounts.iter().map(|a| {
-            (a.pubkey, self.svm.get_account(&a.pubkey))
-        }).collect();
+        let before: BTreeMap<_, _> = ix
+            .accounts
+            .iter()
+            .map(|a| (a.pubkey, self.svm.get_account(&a.pubkey)))
+            .collect();
         let tx = Transaction::new(
             &if matcher {
                 vec![&self.user, &self.matcher]
@@ -231,13 +233,20 @@ impl Fixture {
                 vec![&self.user]
             },
             Message::new(
-                &[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000), ix],
+                &[
+                    ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
+                    ix,
+                ],
                 Some(&self.user.pubkey()),
             ),
             self.svm.latest_blockhash(),
         );
-        let failure = self.svm.send_transaction(tx).expect_err("must reject invalid instruction");
+        let failure = self
+            .svm
+            .send_transaction(tx)
+            .expect_err("must reject invalid instruction");
         let reason = format!("{:?}", failure.err);
+        assert!(reason.contains("Custom("), "{failure:#?}");
         assert!(
             !reason.contains("ComputationalBudgetExceeded") && !reason.contains("MaxInstructionTraceLengthExceeded"),
             "resource exhaustion must not stand in for the expected validation failure: {failure:#?}"
@@ -245,7 +254,11 @@ impl Fixture {
         for (key, account) in before {
             // The fee payer still pays the network fee on a failed transaction.
             if key != self.user.pubkey() {
-                assert_eq!(account, self.svm.get_account(&key), "failed instruction changed {key}");
+                assert_eq!(
+                    account,
+                    self.svm.get_account(&key),
+                    "failed instruction changed {key}"
+                );
             }
         }
     }
@@ -641,8 +654,14 @@ fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
     settings.door_fee_lamports = 11;
     f.send(
         instr(
-            a::UpdateConfig { admin: f.user.pubkey(), config: f.cfg },
-            ix::UpdateConfig { settings, new_admin: f.user.pubkey() },
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings,
+                new_admin: f.user.pubkey(),
+            },
         ),
         false,
         "update_config",
@@ -847,7 +866,10 @@ fn independent_holders_share_backing_without_access_to_each_others_fees() {
         f.doors[i].user = ata(f.user.pubkey(), mint, spl_token_2022_interface::ID);
         f.make_ata(mint, spl_token_2022_interface::ID);
     }
-    f.make_ata(spl_token_interface::native_mint::ID, spl_token_interface::ID);
+    f.make_ata(
+        spl_token_interface::native_mint::ID,
+        spl_token_interface::ID,
+    );
     f.trade(Some(1), true, 1_010_000_000);
     let half = f.balance(f.doors[1].user) / 2;
     f.convert(1, 0, half);
@@ -1180,11 +1202,16 @@ fn buy_fees_do_not_make_a_below_threshold_room_live() {
     assert!(r.volume_gross < c.live_min_volume_lamports as u128);
     assert_eq!(r.volume_gross, r.reserve as u128);
     assert_eq!(f.d(0).buy_volume, r.volume_gross);
-    assert!(!r.live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
+    assert!(!r
+        .live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp)
+        .unwrap());
     f.fail(f.open_ix(launch("Below volume floor"), None), true);
     // At the true fee-base threshold routing becomes eligible again.
     f.trade(Some(0), true, 101_000_000);
-    assert!(f.r().live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
+    assert!(f
+        .r()
+        .live(&c, f.svm.get_sysvar::<Clock>().unix_timestamp)
+        .unwrap());
     f.open(launch("Above volume floor"));
 }
 

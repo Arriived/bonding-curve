@@ -27,7 +27,7 @@ The rejection helper previously treated any error as success, used the default
 compute budget and checked rollback only for Room and ReserveVault. That could
 hide a missing validation behind a compute-limit failure.
 
-It now supplies the same explicit budget as successful tests, rejects compute
+It now requires an explicit program error, supplies the same budget as successful tests, rejects compute
 and instruction-trace exhaustion as substitutes for validation errors, and
 checks rollback for every supplied account except the network fee payer.
 Additional tests substitute valid but incorrect vaults, mints, doors, token
@@ -42,6 +42,15 @@ transfers, including future user ATAs, then creates a room and a door with
 atomic first buys. It also exercises nonzero room and door launch fees.
 This passed against the existing creation code; no prefunding denial of
 service was reproduced, so that code was not changed.
+
+## Corrected: CI silently reformatted its checkout
+
+The host compile step ran `cargo fmt` before its later format check. A commit
+could therefore pass while compilation and execution used files reformatted
+after checkout. CI now checks formatting without rewriting source, checks and
+tests with `--locked`, and rejects changes to tracked source, IDL, manifests
+and lockfiles before generating evidence. The passing compiler-formatted
+source is committed so recorded build hashes resolve to committed inputs.
 
 ## Integration note
 

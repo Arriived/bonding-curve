@@ -40,8 +40,8 @@ jobs:
           key: linux-solana-platform-tools-v1.58
       - name: Host compile
         run: |
-          cargo fmt
-          cargo check --tests
+          cargo fmt -- --check
+          cargo check --locked --tests
       - name: Install current SBF builder and Anchor
         run: |
           if ! command -v cargo-build-sbf; then cargo install cargo-build-sbf --version 4.5.0 --locked; fi
@@ -65,9 +65,11 @@ jobs:
           cmp idl/doors_v1.json target/idl/doors_v1.json
           python3 scripts/check_layouts.py
       - name: Execute SBF tests and mixed-operation property test
-        run: cargo test --test svm -- --nocapture
+        run: cargo test --locked --test svm -- --nocapture
       - name: Format check
         run: cargo fmt -- --check
+      - name: Verify committed build inputs
+        run: git diff --exit-code -- Cargo.lock Cargo.toml Anchor.toml programs test-fixtures idl
       - name: Generate measured evidence
         run: |
           python3 scripts/build_evidence.py
