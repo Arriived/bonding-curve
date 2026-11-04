@@ -1332,7 +1332,18 @@ fn direct_donations_and_holder_burns_preserve_coverage_and_quotes() {
             "native_donation",
         );
     }
-    let before = f.r();
+    let mut before = f.r();
+    // A buy first settles pending room-route fees (capped at the trigger), then
+    // advances by its own net input. Donations change neither step.
+    let pending = before
+        .pending_reserve_sol
+        .min(before.graduation_trigger_lamports - before.reserve);
+    assert!(
+        pending > 0,
+        "the room-token buy above must leave pending fees"
+    );
+    before.sold = before.advance(pending).unwrap();
+    before.reserve += pending;
     let q = before.advance(1_000_000).unwrap();
     f.trade(Some(0), true, 1_010_000);
     assert_eq!(f.r().sold, q);
