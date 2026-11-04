@@ -2,7 +2,7 @@
   "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
   "transactions": [
     {
-      "block_time": 1793825662,
+      "block_time": 1793827931,
       "error": null,
       "error_log": null,
       "events": [
@@ -13,8 +13,8 @@
       "name": "initialize_config",
       "ok": true,
       "program_cu": 13347,
-      "signature": "5UAoS6gcB6Ewvds94Y9pwh9Zv6HiJkHEZqXGLxXGgbYj6NttUVogfP829wdCL4h5Us43UUgVBWg1ouFgZ6JQZsCp",
-      "slot": 37,
+      "signature": "3HexQQU9RKzcvHbC7Hcbo2BuAehT9qRGunmv7m4T2ScSwZibenEu5VnJ1avun9oFT4kKQV2Ay7acGrgTzoTnvNfa",
+      "slot": 22,
       "transaction_cu": 13497
     }
   ]

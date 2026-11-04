@@ -144,8 +144,14 @@ in [DEPLOYMENT.md](DEPLOYMENT.md).
    compared with the local ELF by hash after deployment.
 5. **The devnet RPC faucet is closed** (`requestAirdrop` returns
    `410 "The RPC faucet is closed on this cluster"`). The web faucet asks AI
-   agents to use programmatic methods; installing its proof-of-work client was
-   refused by this environment's safety policy. Funding needs the owner.
+   agents to use programmatic methods. The owner's three GitHub accounts were
+   refused by the web faucet (per-8-hour limit, or accounts too new or with too
+   few public repos). With the owner's approval the proof-of-work faucet was
+   reviewed: its client (`devnet-pow` 0.1.4) does not compile on Rust 1.99, and
+   on-chain at slot 518,709,929, 23 of the program's 24 faucets are empty. The
+   one funded faucet pays 100 lamports per claim, below the 5,000-lamport fee.
+   Devnet SOL has to come from a person; the devnet deployment and the devnet
+   end-to-end test are pending until then.
 6. **Cluster rent is now 5,080 lamports per byte** (Rent sysvar:
    `lamports_per_byte_year` 5,080, `exemption_threshold` 1.0, on devnet at slot
    518,695,292 and mainnet at slot 465,433,975), not 6,960. The program reads
@@ -161,3 +167,11 @@ in [DEPLOYMENT.md](DEPLOYMENT.md).
    fails atomically with Token-2022 `InsufficientFunds` (custom error 1) from the
    transfer CPI; the program has no balance check of its own first. Safe, but
    clients see a token-program error rather than a doors error code.
+9. **The VM CU maxima are not worst cases.** Live localnet runs of the same
+   ELF exceeded the VM maximum for some instructions: `buy_room` by 3,027 CU,
+   and `open_door` and `buy_door` by about 1,700. Other instructions in the same
+   run came in up to 12,272 CU below. Per-step figures differed between runs.
+   This is consistent with PDA bump-search cost varying by address, since each
+   run uses a fresh random room nonce, while the SVM suite measures one fixed
+   room ID. The throughput headroom derived from `verification/cu.md` needs
+   margin above those maxima.
