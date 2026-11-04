@@ -1,0 +1,49 @@
+diff --git a/program/Anchor.toml b/program/Anchor.toml
+index cdc78b0..4f084fc 100644
+--- a/program/Anchor.toml
++++ b/program/Anchor.toml
+@@ -7,7 +7,10 @@ resolution = true
+ skip-lint = false
+ 
+ [programs.localnet]
+-doors_v1 = "DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v"
++doors_v1 = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
++
++[programs.devnet]
++doors_v1 = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+ 
+ [provider]
+ cluster = "Localnet"
+diff --git a/program/idl/doors_v1.json b/program/idl/doors_v1.json
+index f99e1fc..3b5f0bb 100644
+--- a/program/idl/doors_v1.json
++++ b/program/idl/doors_v1.json
+@@ -1,5 +1,5 @@
+ {
+-  "address": "DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v",
++  "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+   "metadata": {
+     "name": "doors_v1",
+     "version": "0.1.0",
+@@ -875,7 +875,7 @@
+         },
+         {
+           "name": "program",
+-          "address": "DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v"
++          "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+         },
+         {
+           "name": "program_data"
+diff --git a/program/programs/doors_v1/src/lib.rs b/program/programs/doors_v1/src/lib.rs
+index 57618f6..7f232f0 100644
+--- a/program/programs/doors_v1/src/lib.rs
++++ b/program/programs/doors_v1/src/lib.rs
+@@ -10,7 +10,7 @@ use state::*;
+ use trading::*;
+ use vaults::*;
+ 
+-declare_id!("DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v");
++declare_id!("D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG");
+ 
+ #[program]
+ pub mod doors_v1 {

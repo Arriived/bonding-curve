@@ -112,3 +112,52 @@ by this isolated program branch.
 
 The follow-up [program review](BUG_SWEEP.md) records the buy-fee volume
 correction, stronger rejection/rollback tests and CI source-integrity fix.
+
+## Devnet deployment preflight (4 November 2026)
+
+Found while preparing the devnet deployment. Details, signatures and hashes are
+in [DEPLOYMENT.md](DEPLOYMENT.md).
+
+1. **The branch tip does not pass its own tests.** At `8ce373f` ("Bind launch
+   economics and settle retirement before new buys"), 10 of 38 SBF tests fail,
+   on a pristine checkout with the original test program ID. Every failure is
+   the runtime's `UnbalancedInstruction` ("sum of account balances before and
+   after instruction do not match") inside `buy`/`open_door`, after the new
+   `settle_pending` moves lamports from FeeVault to ReserveVault. Not fixed
+   here: it is program logic, outside a deployment task.
+2. **The brief's commit is not the newest passing commit.** The brief names
+   `054be58` (16 SBF tests, passing here). `436c002`, the parent of the tip,
+   passes all 34 tests and carries every audit fix between them. Its program
+   code is identical to `f6eb007`: built here, its ELF SHA-256 equals the
+   hash CI recorded for `f6eb007`. **Deployed: `436c002` plus only the
+   program-ID change** (`verification/devnet/deployed_source.patch`). The
+   program is upgradeable, so a fixed tip can replace it under the same ID.
+3. **The deploy client targets the deployed source, not the tip.** The tip adds
+   `Launch.expected_terms_hash`; `program/devnet` builds against `436c002`'s
+   `Launch` and needs that field added when the tip is redeployed.
+4. **No verifiable build image exists for the pinned toolchain.** As of
+   4 November 2026 the newest `solanafoundation/solana-verifiable-build` tag is
+   4.3.0 (not 4.4.0) and the newest `solanafoundation/anchor` tag is v1.0.2
+   (not 1.2.2). A `solana-verify` build would use a different toolchain from
+   the declared build target. Instead: the pinned build reproduces byte for
+   byte across machines and directories (item 2), and the deployed bytes are
+   compared with the local ELF by hash after deployment.
+5. **The devnet RPC faucet is closed** (`requestAirdrop` returns
+   `410 "The RPC faucet is closed on this cluster"`). The web faucet asks AI
+   agents to use programmatic methods; installing its proof-of-work client was
+   refused by this environment's safety policy. Funding needs the owner.
+6. **Cluster rent is now 5,080 lamports per byte** (Rent sysvar:
+   `lamports_per_byte_year` 5,080, `exemption_threshold` 1.0, on devnet at slot
+   518,695,292 and mainnet at slot 465,433,975), not 6,960. The program reads
+   rent from the sysvar, and this branch's curve quantities already use the new
+   rate (graduation rent 18,013,680; trigger 85,018,013,680). A local
+   `solana-test-validator` still uses 6,960, so its rent figures differ.
+7. **VM CU depends on the program ID.** Re-running the SVM suite on the same
+   code with the deployment ID moved the measured maxima (buy_door
+   75,189 → 71,380; convert 88,715 → 85,715), because PDA bump searches depend
+   on the program address. The live comparison uses VM figures from the
+   deployed ELF itself (`verification/devnet/deployed_elf_vm/`).
+8. **An oversized sell is rejected by Token-2022, not by the program.** The sell
+   fails atomically with Token-2022 `InsufficientFunds` (custom error 1) from the
+   transfer CPI; the program has no balance check of its own first. Safe, but
+   clients see a token-program error rather than a doors error code.

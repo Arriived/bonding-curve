@@ -1,0 +1,21 @@
+{
+  "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "transactions": [
+    {
+      "block_time": 1793825662,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "kxlWYmJNTsAEQMmckTwBhZPlZR7VEVn61bCdiufDcP5v70K6cQBUAj4lBlZr66p6IBJIe5DuWbFidZ9zrhU+JozyPEbyEpkXAAAYawbn5kDgrw2XsmxenIA6sebAVJgsGZgnh6wBf0gay2QAcBcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADsDD8BgAAAICdFD7pzwMAAIDGpH6NAwAAEmXKEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8O93yxMAAAAAPiUGVmvrqnogEkh7kO5ZsWJ1n3OuFT4mjPI8RvISmRcAZc0dAAAAAGBUAAAAAAAAEA4AAAAAAAAA8gUqAQAAAAC0xAQAAAAAAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "initialize_config",
+      "ok": true,
+      "program_cu": 13347,
+      "signature": "5UAoS6gcB6Ewvds94Y9pwh9Zv6HiJkHEZqXGLxXGgbYj6NttUVogfP829wdCL4h5Us43UUgVBWg1ouFgZ6JQZsCp",
+      "slot": 37,
+      "transaction_cu": 13497
+    }
+  ]
+}

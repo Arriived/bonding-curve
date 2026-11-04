@@ -3,3 +3,9 @@
 /.anchor/
 node_modules/
 /test-fixtures/launch_proxy/target/
+
+# Secret keypairs are never committed (program, upgrade, matcher, wallets).
+*-keypair.json
+*.keypair.json
+/keys/
+/devnet/target/

@@ -1,5 +1,5 @@
 {
-  "address": "DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v",
+  "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
   "metadata": {
     "name": "doors_v1",
     "version": "0.1.0",
@@ -879,7 +879,7 @@
         },
         {
           "name": "program",
-          "address": "DooraBVNQFSS3MDouMCN2Cyd1QPmS8gjTgN4Q1q3wG7v"
+          "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
         },
         {
           "name": "program_data"
