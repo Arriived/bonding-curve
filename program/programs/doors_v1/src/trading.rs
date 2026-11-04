@@ -28,26 +28,27 @@ impl<'a, 'info> DoorRoute<'a, 'info> {
 pub fn settle_pending<'a>(
     r: &mut Room,
     ri: &AccountInfo<'a>,
-    reserve: &AccountInfo<'a>,
-    fees: &AccountInfo<'a>,
     room_vault: &AccountInfo<'a>,
     room_mint: &AccountInfo<'a>,
     retired: &AccountInfo<'a>,
     tp: &AccountInfo<'a>,
-) -> Result<()> {
+) -> Result<u64> {
     require!(r.status <= 1, Error::PhaseTwo);
     require_keys_eq!(retired.key(), r.retired_vault, Error::Account);
     let n = r
         .pending_reserve_sol
         .min(sub(r.graduation_trigger_lamports, r.reserve)?);
     if n == 0 {
-        return Ok(());
+        return Ok(0);
     }
     let q = r.advance(n)?;
     let d = sub(q, r.sold)?;
     let rid = r.room_id.to_le_bytes();
     let rb = [r.bumps[0]];
-    debit(fees, reserve, n)?;
+    // The FeeVault -> ReserveVault lamport move is returned, not applied: the caller
+    // applies it after its last CPI. A direct lamport edit followed by a CPI that
+    // passes only one of the two accounts fails the runtime's per-CPI balance check
+    // (UnbalancedInstruction), because only CPI-passed accounts are synced.
     transfer(
         room_vault,
         room_mint,
@@ -70,7 +71,7 @@ pub fn settle_pending<'a>(
         lamports: n,
         retired: r.retired
     });
-    Ok(())
+    Ok(n)
 }
 #[allow(clippy::too_many_arguments)]
 pub fn execute_trade<'a>(
@@ -116,10 +117,13 @@ pub fn execute_trade<'a>(
     // Existing fees must affect price before a new position is acquired,
     // including door routes and an open_door first buy. Otherwise a temporary
     // buyer can retire the backlog and immediately redeem at the higher price.
-    if buy {
-        settle_pending(r, ri, reserve, fees, room_vault, room_mint, retired, tp)?;
+    let settled = if buy {
+        let n = settle_pending(r, ri, room_vault, room_mint, retired, tp)?;
         require!(r.status == 0, Error::PhaseTwo);
-    }
+        n
+    } else {
+        0
+    };
     let (tokens, n, f) = if buy {
         let (n, f) = buy_amounts(
             input,
@@ -173,6 +177,10 @@ pub fn execute_trade<'a>(
                 Some(rs),
                 6,
             )?;
+        }
+        // All CPIs of the buy are done: now move the settled pending fees.
+        if settled > 0 {
+            debit(fees, reserve, settled)?;
         }
         r.reserve = add(r.reserve, n)?;
         r.sold = q;

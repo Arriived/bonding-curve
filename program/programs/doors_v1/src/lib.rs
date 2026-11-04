@@ -523,16 +523,17 @@ pub mod doors_v1 {
         let fl = a.core.fees.lamports();
         let fk = known(&a.core.room, &[]);
         let ri = a.core.room.to_account_info();
-        settle_pending(
+        let settled = settle_pending(
             &mut a.core.room,
             &ri,
-            &a.core.reserve,
-            &a.core.fees,
             &a.core.room_vault,
             &a.core.room_mint,
             &a.retired_output,
             &a.token_program,
         )?;
+        if settled > 0 {
+            debit(&a.core.fees, &a.core.reserve, settled)?;
+        }
         core_check(&a.core, 0)?;
         reserve_delta(bl, br, &a.core)?;
         fee_delta(fl, a.core.fees.lamports(), fk, known(&a.core.room, &[]))?;
