@@ -1,0 +1,237 @@
+"""The /route pipeline. Every failure path raises Refusal; nothing falls back to a default routing.
+
+  1. freshness: a snapshot inside the budget (one synchronous refresh is attempted; RPC failure refuses)
+  2. key check: signer pubkey == Config.matcher_authority in that snapshot
+  3. decide (pure, from the snapshot)
+  4. in-flight conflicts (same folded name / identity awaiting a new room) refuse with retry-after
+  5. build the transaction from a fresh blockhash, check its size with placeholder signatures
+  6. sign (KMS or dev keyfile); signature verified against the key before use
+  7. persist the decision record; only then return the partially signed transaction
+"""
+import base64
+import hashlib
+import os
+import struct
+import time
+
+from solders.pubkey import Pubkey
+from solders.signature import Signature
+from solders.transaction import Transaction
+
+from . import __version__, rules, txbuild
+from .chain import RpcError, StaleState
+from .decide import RULE_CODE, Refusal, decide
+from .inflight import InFlight
+from .layouts import LayoutError
+from .signer import SignerUnavailable
+
+
+def _u64(name, v, lo=0):
+    if not isinstance(v, int) or isinstance(v, bool) or not lo <= v < 2 ** 64:
+        raise Refusal("invalid_request", f"{name} must be an integer in [{lo}, 2^64)")
+    return v
+
+
+def room_view(room):
+    """The room state a decision depends on, as recorded for audit."""
+    return {"room_id": room["room_id"], "pubkey": room["pubkey"], "status": room["status"],
+            "created_at": room["created_at"], "reserve": room["reserve"], "last_trade_at": room["last_trade_at"],
+            "volume_gross": str(room["volume_gross"]), "door_count": room["door_count"],
+            "identity": room["identity"],
+            "buckets": [[s, str(a)] for s, a in room["buckets"] if s or a], "faces": room["faces"]}
+
+
+class Service:
+    def __init__(self, cfg, rpc, chain, signer, store, builder, log, metrics, inflight=None):
+        self.cfg, self.rpc, self.chain, self.signer = cfg, rpc, chain, signer
+        self.store, self.builder, self.log, self.metrics = store, builder, log, metrics
+        self.inflight = inflight or InFlight()
+
+    # -- readiness -------------------------------------------------------------------------------
+    def health(self):
+        out = {"version": __version__, "program": self.cfg.program_id, "signer_backend": self.signer.backend}
+        try:
+            out["matcher_pubkey"] = str(self.signer.pubkey)
+        except Exception as e:  # noqa: BLE001 - health reports, never raises
+            out["matcher_pubkey"] = None
+            out["signer_error"] = str(e)
+        snap = self.chain.current()
+        if snap is None:
+            out.update(ready=False, reason="no snapshot yet")
+            return out
+        out["snapshot"] = snap.summary()
+        try:
+            out["freshness"] = snap.check_fresh(self.rpc.slot(), self.cfg.budget)
+        except (StaleState, RpcError) as e:
+            out.update(ready=False, reason=str(e))
+            return out
+        if out["matcher_pubkey"] != snap.config["matcher_authority"]:
+            out.update(ready=False, reason=f"signer key {out['matcher_pubkey']} != Config.matcher_authority "
+                                           f"{snap.config['matcher_authority']}")
+            return out
+        out["ready"] = True
+        return out
+
+    # -- route -----------------------------------------------------------------------------------
+    def _fresh_snapshot(self):
+        try:
+            cluster_slot = self.rpc.slot()
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot read the cluster slot: {e}", 503)
+        snap = self.chain.current()
+        try:
+            if snap is None:
+                raise StaleState("no snapshot")
+            return snap, snap.check_fresh(cluster_slot, self.cfg.budget), cluster_slot
+        except StaleState:
+            pass
+        try:
+            snap = self.chain.refresh()
+            cluster_slot = self.rpc.slot()
+            return snap, snap.check_fresh(cluster_slot, self.cfg.budget), cluster_slot
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot refresh room state: {e}", 503)
+        except LayoutError as e:
+            raise Refusal("inconsistent_state", f"room state failed validation: {e}", 503)
+        except StaleState as e:
+            raise Refusal("stale_state", f"room state outside the freshness budget: {e}", 503)
+
+    def route(self, req):
+        t0 = time.monotonic()
+        try:
+            out = self._route(req)
+            self.metrics.inc("matcher_decisions_total", kind=out["decision"]["kind"], rule=out["decision"]["rule"])
+            return out
+        except Refusal as r:
+            self.metrics.inc("matcher_refusals_total", code=r.code)
+            raise
+        finally:
+            self.metrics.observe(time.monotonic() - t0)
+
+    def _route(self, req):
+        try:
+            launcher = Pubkey.from_string(str(req.get("launcher", "")))
+        except ValueError:
+            raise Refusal("invalid_request", "launcher must be a base58 public key")
+        name, symbol, uri = req.get("name"), req.get("symbol"), req.get("uri", "")
+        if not all(isinstance(x, str) for x in (name, symbol, uri)):
+            raise Refusal("invalid_request", "name, symbol and uri must be strings")
+        first_buy = _u64("first_buy_lamports", req.get("first_buy_lamports", 0))
+        min_out = _u64("min_tokens_out", req.get("min_tokens_out", 0))
+        max_fee = _u64("max_fee_lamports", req.get("max_fee_lamports", 0))
+        cu_price = _u64("cu_price_micro_lamports", req.get("cu_price_micro_lamports", 0))
+        if cu_price > self.cfg.max_cu_price:
+            raise Refusal("invalid_request", f"cu_price_micro_lamports above {self.cfg.max_cu_price}")
+
+        snap, freshness, cluster_slot = self._fresh_snapshot()
+        try:
+            matcher = self.signer.pubkey
+        except SignerUnavailable as e:
+            raise Refusal("signer_unavailable", str(e), 503)
+        except Exception as e:  # noqa: BLE001
+            raise Refusal("signer_unavailable", f"{type(e).__name__}: {e}", 503)
+        if str(matcher) != snap.config["matcher_authority"]:
+            raise Refusal("signer_mismatch", f"signer key {matcher} is not Config.matcher_authority "
+                                             f"{snap.config['matcher_authority']}", 503)
+        fee_needed = snap.config["door_fee_lamports"] + snap.config["room_fee_lamports"]
+        d = decide(snap, name, symbol, uri)
+        if fee_needed > max_fee and d.kind == "new_room":
+            raise Refusal("fee_limit", f"room+door fee {fee_needed} > max_fee_lamports {max_fee}")
+        if snap.config["door_fee_lamports"] > max_fee and d.kind == "door":
+            raise Refusal("fee_limit", f"door fee {snap.config['door_fee_lamports']} > max_fee_lamports {max_fee}")
+
+        try:
+            blockhash, last_valid, bh_slot = self.rpc.latest_blockhash()
+            height = self.rpc.block_height()
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot read a recent blockhash: {e}", 503)
+
+        nk = d.candidate_keys["name"]
+        identity = bytes.fromhex(d.identity)
+        if d.kind == "new_room":
+            busy = self.inflight.conflict([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
+                                           f"id:{d.identity}"], height)
+            if busy:
+                raise Refusal("in_flight", f"a new-room decision for this name is in flight ({busy}); "
+                                           "retry after it lands or expires", 409)
+            room_id = self._fresh_nonce(snap)
+            door_index = 0
+        else:
+            room_id = d.room_id
+            door_index = self.inflight.next_door_index(room_id, snap.rooms[room_id]["door_count"], height)
+
+        launch = txbuild.encode_launch(name, symbol, uri, first_buy, min_out, self.cfg.matcher_version,
+                                       RULE_CODE[d.rule], d.face, max_fee)
+        if d.kind == "new_room":
+            ix, room_pk, door = self.builder.create_room_ix(launcher, matcher, room_id, identity,
+                                                            d.old_holder_room_id, launch)
+        else:
+            ix, room_pk, door = self.builder.open_door_ix(launcher, matcher, room_id, door_index, identity,
+                                                          d.old_holder_room_id, launch)
+        message = txbuild.build_message(ix, launcher, blockhash, self.cfg.cu_limit, cu_price)
+        placeholder = len(bytes(Transaction.populate(message, [Signature.default()] *
+                                                      message.header.num_required_signatures)))
+        if placeholder > txbuild.PACKET_LIMIT:
+            raise Refusal("tx_too_large", f"transaction would be {placeholder} bytes > {txbuild.PACKET_LIMIT}; "
+                                          "shorten the metadata (v0 lookup tables are not supported in v1)", 413)
+        msg_bytes = bytes(message)
+        try:
+            sig = self.signer.sign(msg_bytes)
+        except SignerUnavailable as e:
+            raise Refusal("signer_unavailable", str(e), 503)
+        tx, wire = txbuild.assemble(message, matcher, sig)
+        decision_id = str(Signature.from_bytes(sig))
+
+        considered = {r["room_id"] for r in d.evaluated}
+        if d.old_holder_room_id is not None:
+            considered.add(d.old_holder_room_id)
+        all_rooms = sorted(r["pubkey"] for r in snap.rooms.values())
+        record = {
+            "id": decision_id,
+            "service": {"version": __version__, "matcher_version": self.cfg.matcher_version,
+                        "unicode": rules.UNICODE_VERSION, "signer_backend": self.signer.backend},
+            "program": self.cfg.program_id, "config_account": snap.config_key, "config": snap.config,
+            "request": {"launcher": str(launcher), "name": name, "symbol": symbol, "uri": uri,
+                        "first_buy_lamports": first_buy, "min_tokens_out": min_out, "max_fee_lamports": max_fee,
+                        "cu_price_micro_lamports": cu_price},
+            "state": {"slots": snap.slots, "slot": snap.slot, "clock_unix": snap.clock_unix,
+                      "cluster_slot_at_decision": cluster_slot, "freshness": freshness, "budget": vars(self.cfg.budget),
+                      "rooms_total": len(all_rooms),
+                      "rooms_digest": hashlib.sha256("\n".join(all_rooms).encode()).hexdigest(),
+                      "rooms": [room_view(snap.rooms[i]) for i in sorted(considered)]},
+            "decision": {"kind": d.kind, "rule": d.rule, "rule_code": RULE_CODE[d.rule], "room_id": str(room_id),
+                         "room": str(room_pk), "door_index": door_index, "door": str(door["door"]),
+                         "door_mint": str(door["door_mint"]), "face": d.face,
+                         "old_holder_room_id": None if d.old_holder_room_id is None else str(d.old_holder_room_id),
+                         "identity": d.identity, "slug_lock": snap.slug_pda(d.identity),
+                         "candidate_keys": d.candidate_keys, "evaluated": d.evaluated},
+            "transaction": {"message_base64": base64.b64encode(msg_bytes).decode(), "blockhash": blockhash,
+                            "blockhash_slot": bh_slot, "last_valid_block_height": last_valid,
+                            "block_height_at_signing": height, "matcher": str(matcher),
+                            "matcher_signature": decision_id},
+        }
+        try:
+            record_hash = self.store.append(decision_id, str(launcher), d.kind, record)
+        except Exception as e:  # noqa: BLE001 - an unrecorded decision is never released
+            raise Refusal("store_unavailable", f"decision could not be persisted: {type(e).__name__}", 503)
+        if d.kind == "new_room":
+            self.inflight.reserve_names([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
+                                         f"id:{d.identity}"], decision_id, last_valid)
+        else:
+            self.inflight.reserve_door(room_id, door_index, last_valid)
+        self.log.info("decision", extra={"fields": {"id": decision_id, "kind": d.kind, "rule": d.rule,
+                                                    "room_id": str(room_id), "slot": snap.slot,
+                                                    "launcher": str(launcher)}})
+        return {"id": decision_id, "record_sha256": record_hash, "decision": record["decision"],
+                "state_slot": snap.slot, "transaction_base64": base64.b64encode(wire).decode(),
+                "last_valid_block_height": last_valid,
+                "instructions": "sign as the fee payer (signature slot 0) and submit before "
+                                "last_valid_block_height; any change to the transaction invalidates the "
+                                "matcher signature"}
+
+    def _fresh_nonce(self, snap):
+        for _ in range(16):
+            nonce = struct.unpack("<Q", os.urandom(8))[0]
+            if nonce not in snap.rooms:
+                return nonce
+        raise Refusal("nonce_exhausted", "could not draw an unused room nonce", 503)

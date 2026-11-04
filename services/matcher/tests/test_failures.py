@@ -1,0 +1,308 @@
+"""Every failure must refuse: stale state, RPC down, key unavailable or wrong, store down. In each case
+nothing is signed-and-returned and nothing is recorded."""
+import base64
+import json
+import time
+
+import pytest
+from conftest import PROGRAM, config, room
+from solders.keypair import Keypair
+from solders.signature import Signature
+from solders.transaction import Transaction
+
+from matcher_service.chain import RpcError, StaleState
+from matcher_service.config import Budget, Config
+from matcher_service.decide import Refusal
+from matcher_service.ops import Metrics, logger
+from matcher_service.service import Service
+from matcher_service.signer import GcpKmsSigner, KeyfileSigner, Signer, SignerUnavailable, _crc32c
+from matcher_service.store import Store
+from matcher_service.txbuild import Builder
+
+NOW = 1_800_000_000
+
+
+class FakeRpc:
+    def __init__(self, slot=1000, down=False, blockhash_down=False):
+        self._slot, self.down, self.blockhash_down, self.errors = slot, down, blockhash_down, 0
+
+    def slot(self):
+        if self.down:
+            raise RpcError("getSlot: connection refused")
+        return self._slot
+
+    def latest_blockhash(self):
+        if self.down or self.blockhash_down:
+            raise RpcError("getLatestBlockhash: timeout")
+        return "11111111111111111111111111111111", 5150, self._slot
+
+    def block_height(self):
+        if self.down:
+            raise RpcError("getBlockHeight: timeout")
+        return 5000
+
+
+class Snap:
+    def __init__(self, slot, rooms=(), cfg=None, age=0.0):
+        self.slot, self.slots = slot, {"rooms": slot, "doors": slot, "slug_locks": slot, "config": slot, "clock": slot}
+        self.rooms = {r["room_id"]: r for r in rooms}
+        self.clock_unix, self.config, self.config_key = NOW, cfg or config(), "cfg"
+        self.read_wall, self.program_id = time.time() - age, PROGRAM
+
+    def slug_holder(self, i):
+        return None
+
+    def slug_pda(self, i):
+        return "lock"
+
+    def summary(self):
+        return {"slot": self.slot}
+
+    def check_fresh(self, cluster_slot, budget, now_wall=None):
+        from matcher_service.chain import Snapshot
+        return Snapshot.check_fresh(self, cluster_slot, budget, now_wall)
+
+    def coherent(self, n):
+        from matcher_service.chain import Snapshot
+        return Snapshot.coherent(self, n)
+
+
+class FakeChain:
+    def __init__(self, snap, refresh_error=None, refreshed=None):
+        self.snap, self.refresh_error, self.refreshed = snap, refresh_error, refreshed
+
+    def current(self):
+        return self.snap
+
+    def refresh(self):
+        if self.refresh_error:
+            raise self.refresh_error
+        self.snap = self.refreshed or self.snap
+        return self.snap
+
+
+class BrokenSigner(Signer):
+    backend = "broken"
+
+    def __init__(self, kp):
+        super().__init__()
+        self.kp = kp
+
+    def _raw_pubkey(self):
+        return bytes(self.kp.pubkey())
+
+    def _raw_sign(self, m):
+        raise ConnectionError("KMS endpoint unreachable")
+
+
+def cfg(tmp_path):
+    return Config(env="development", rpc_url="x", program_id=PROGRAM, signer="keyfile", keyfile=None,
+                  gcp_key_version=None, aws_key_id=None, db_path=str(tmp_path / "d.sqlite3"), matcher_version=1,
+                  budget=Budget(coherence_slots=30, max_lag_slots=30, max_age_seconds=8, refresh_seconds=2),
+                  cu_limit=400_000, max_cu_price=1_000_000, rate_ip_per_min=30, rate_launcher_per_min=6,
+                  trust_forwarded_for=False)
+
+
+def make(tmp_path, kp, snap, rpc=None, signer=None, chain=None):
+    k, path = kp
+    c = cfg(tmp_path)
+    snap.config["matcher_authority"] = str(k.pubkey())
+    return Service(c, rpc or FakeRpc(), chain or FakeChain(snap), signer or KeyfileSigner(path, "development"),
+                   Store(c.db_path), Builder(PROGRAM), logger(), Metrics())
+
+
+REQ = {"launcher": str(Keypair().pubkey()), "name": "Elon", "symbol": "ELON", "uri": "https://x/y.json"}
+
+
+def rows(svc):
+    return svc.store.db.execute("SELECT COUNT(*) FROM decisions").fetchone()[0]
+
+
+def test_happy_path_signs_and_records(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
+    out = svc.route(dict(REQ))
+    assert out["decision"]["kind"] == "door" and rows(svc) == 1
+    tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
+    i = list(tx.message.account_keys).index(kp[0].pubkey())
+    assert tx.signatures[i].verify(kp[0].pubkey(), bytes(tx.message))
+    assert tx.signatures[0] == Signature.default()          # launcher's slot left empty
+    assert svc.store.get(out["id"])["record"]["state"]["slot"] == 1000
+
+
+def test_stale_state_refuses(tmp_path, kp):
+    # snapshot 100 slots behind the cluster, and the refresh fails too
+    svc = make(tmp_path, kp, Snap(900), chain=None)
+    svc.chain = FakeChain(Snap(900), refresh_error=RpcError("getProgramAccounts: 503"))
+    svc.chain.snap.config["matcher_authority"] = str(kp[0].pubkey())
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "rpc_unavailable" and e.value.status == 503 and rows(svc) == 0
+
+
+def test_stale_after_refresh_refuses(tmp_path, kp):
+    old = Snap(900)
+    svc = make(tmp_path, kp, old)
+    svc.chain = FakeChain(old, refreshed=Snap(901))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "stale_state" and rows(svc) == 0
+
+
+def test_old_wall_clock_snapshot_refuses(tmp_path, kp):
+    s = Snap(1000, age=60)
+    svc = make(tmp_path, kp, s)
+    svc.chain = FakeChain(s, refreshed=Snap(1000, age=60))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "stale_state" and rows(svc) == 0
+
+
+def test_rpc_down_refuses(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000), rpc=FakeRpc(down=True))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "rpc_unavailable" and rows(svc) == 0
+
+
+def test_blockhash_unavailable_refuses(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000), rpc=FakeRpc(blockhash_down=True))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "rpc_unavailable" and rows(svc) == 0
+
+
+def test_signer_unavailable_refuses(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000), signer=BrokenSigner(kp[0]))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "signer_unavailable" and e.value.status == 503 and rows(svc) == 0
+
+
+def test_signer_key_not_config_matcher_refuses(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    svc.chain.snap.config["matcher_authority"] = str(Keypair().pubkey())
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "signer_mismatch" and rows(svc) == 0
+
+
+def test_store_down_refuses(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    svc.store.db.close()
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "store_unavailable"
+
+
+def test_concurrent_new_room_for_same_name_is_refused(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    first = svc.route(dict(REQ))
+    assert first["decision"]["kind"] == "new_room"
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ, symbol="OTHER", launcher=str(Keypair().pubkey())))   # same folded name
+    assert e.value.code == "in_flight" and e.value.status == 409
+
+
+def test_concurrent_doors_take_consecutive_indices(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
+    a = svc.route(dict(REQ))
+    b = svc.route(dict(REQ, launcher=str(Keypair().pubkey())))
+    assert (a["decision"]["door_index"], b["decision"]["door_index"]) == (1, 2)
+
+
+def test_keyfile_refused_in_production(kp):
+    with pytest.raises(SignerUnavailable):
+        KeyfileSigner(kp[1], "production")
+
+
+def test_signature_that_does_not_verify_is_rejected(kp):
+    class Lying(BrokenSigner):
+        def _raw_sign(self, m):
+            return bytes(64)
+    with pytest.raises(SignerUnavailable):
+        Lying(kp[0]).sign(b"message")
+
+
+def test_gcp_kms_signer_against_a_fake_endpoint(kp):
+    k = kp[0]
+    der = bytes.fromhex("302a300506032b6570032100") + bytes(k.pubkey())
+    pem = "-----BEGIN PUBLIC KEY-----\n" + base64.b64encode(der).decode() + "\n-----END PUBLIC KEY-----\n"
+    name = "projects/p/locations/l/keyRings/r/cryptoKeys/k/cryptoKeyVersions/1"
+
+    class Resp:
+        def __init__(self, body):
+            self.body = body
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return self.body
+
+    class Http:
+        def get(self, url, headers):
+            assert url.endswith(name + "/publicKey")
+            return Resp({"pem": pem, "algorithm": "EC_SIGN_ED25519"})
+
+        def post(self, url, json, headers):
+            assert url.endswith(name + ":asymmetricSign") and "digest" not in json
+            data = base64.b64decode(json["data"])
+            assert int(json["dataCrc32c"]) == _crc32c(data)
+            sig = bytes(k.sign_message(data))
+            return Resp({"signature": base64.b64encode(sig).decode(), "signatureCrc32c": str(_crc32c(sig)),
+                         "verifiedDataCrc32c": True, "name": name})
+
+    s = GcpKmsSigner(name, http=Http(), token_provider=lambda: "token")
+    assert s.pubkey == k.pubkey()
+    assert Signature.from_bytes(s.sign(b"hello")).verify(k.pubkey(), b"hello")
+
+
+def test_crc32c_reference_value():
+    assert _crc32c(b"123456789") == 0xE3069283  # RFC 3720 check value
+
+
+def test_store_is_append_only_and_tamper_evident(tmp_path):
+    st = Store(str(tmp_path / "s.sqlite3"))
+    st.append("a", "L", "door", {"x": 1})
+    st.append("b", "L", "new_room", {"x": 2})
+    assert st.verify_chain()[0]
+    import sqlite3
+    with pytest.raises(sqlite3.DatabaseError):
+        st.db.execute("UPDATE decisions SET record='{}' WHERE id='a'")
+    with pytest.raises(sqlite3.DatabaseError):
+        st.db.execute("DELETE FROM decisions WHERE id='a'")
+    st.db.execute("DROP TRIGGER no_update")
+    st.db.execute("UPDATE decisions SET record='{\"x\":9}' WHERE id='a'")
+    assert not st.verify_chain()[0]
+
+
+def test_stale_snapshot_check_rejects_incoherent_reads():
+    s = Snap(1000)
+    s.slots["clock"] = 1100            # one read 100 slots after the others; lag itself is 0
+    from matcher_service.chain import Snapshot
+    with pytest.raises(StaleState, match="span 100 slots"):
+        Snapshot.check_fresh(s, 1000, Budget(30, 30, 8, 2))
+
+
+def test_aws_kms_signer_against_a_fake_client(kp):
+    from matcher_service.signer import AwsKmsSigner
+    k = kp[0]
+    der = bytes.fromhex("302a300506032b6570032100") + bytes(k.pubkey())
+
+    class Kms:
+        def get_public_key(self, KeyId):
+            return {"KeySpec": "ECC_NIST_EDWARDS25519", "PublicKey": der}
+
+        def sign(self, KeyId, Message, MessageType, SigningAlgorithm):
+            assert (MessageType, SigningAlgorithm) == ("RAW", "ED25519_SHA_512")
+            return {"Signature": bytes(k.sign_message(Message))}
+
+    s = AwsKmsSigner("alias/matcher", client=Kms())
+    assert s.pubkey == k.pubkey()
+    assert Signature.from_bytes(s.sign(b"msg")).verify(k.pubkey(), b"msg")
+
+    class WrongSpec(Kms):
+        def get_public_key(self, KeyId):
+            return {"KeySpec": "ECC_NIST_P256", "PublicKey": der}
+    with pytest.raises(SignerUnavailable):
+        _ = AwsKmsSigner("k", client=WrongSpec()).pubkey
