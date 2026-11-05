@@ -32,7 +32,9 @@ def load_examples():
     return out
 
 
-PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+from matcher_service.txbuild import load_idl
+
+PROGRAM = load_idl()["address"]
 MATCHER = "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv"
 
 

@@ -4,6 +4,8 @@ the signer is selected here, but its key lives in a KMS (production) or a keyfil
 import os
 from dataclasses import dataclass
 
+from .txbuild import load_idl
+
 
 @dataclass(frozen=True)
 class Budget:
@@ -53,7 +55,7 @@ def load() -> Config:
     return Config(
         env=env,
         rpc_url=os.environ["MATCHER_RPC_URL"],
-        program_id=os.environ.get("MATCHER_PROGRAM_ID", "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"),
+        program_id=os.environ.get("MATCHER_PROGRAM_ID") or load_idl()["address"],
         lookup_table=os.environ["MATCHER_LOOKUP_TABLE"],
         signer=signer,
         keyfile=os.environ.get("MATCHER_KEYFILE"),

@@ -30,7 +30,7 @@ from solders.keypair import Keypair  # noqa: E402
 from matcher_service import txbuild  # noqa: E402
 from matcher_service.lookup_table import expected_addresses  # noqa: E402
 
-PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+PROGRAM = txbuild.load_idl()["address"]
 BLOCKHASH = "11111111111111111111111111111111"
 NAME, SYMBOL = "N" * 32, "S" * 10
 

@@ -9,9 +9,9 @@ intentional: it refuses rather than guesses.
 
 - **Rules:** ported from `research/doors_into_one_room/scripts/narrative/matcher.py`, with the
   calibration in `research/doors_into_one_room/NARRATIVE_DETECTION.md`.
-- **Program:** `doors_v1` at `71d32f3` on devnet, with program ID
-  `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` and ABI pinned in
-  `idl/doors_v1.deployed.json`. See `program/docs/DEPLOYMENT.md` §5.
+- **Program:** the matcher targets devnet replacement ID
+  `EiMeCEbZNjNt9SyMzm54LtbdoVFLeEXZ7EyxUpAwJtDV` with the ABI pinned in
+  `idl/doors_v1.deployed.json`. See `program/docs/DEPLOYMENT.md` §11 for rollout status.
 - **Conflicts with the brief:** [CORRECTIONS.md](CORRECTIONS.md).
 
 ## What a decision is
@@ -367,7 +367,7 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 
 ## What remains before this can run unattended
 
-1. ~~Devnet~~: done. The program is deployed, and this e2e passes there.
+1. **Devnet:** deploy and verify the replacement program and frozen table. The pre-v0 results above are for the original program.
 2. **Real KMS.** Create the key, run the service against it on devnet, and set
    `Config.matcher_authority` to the KMS public key. Both signers are tested only against fakes.
 3. **More than one replica.** Move rate limits and the request-replay cache to shared storage (for

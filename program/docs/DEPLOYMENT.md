@@ -688,3 +688,24 @@ The script creates, extends and freezes the table in one transaction. Keep
 the resulting JSON with the deployment evidence. It contains the ordered
 addresses, freeze signature, freeze slot and finalized verification slot.
 Set `MATCHER_LOOKUP_TABLE` to the recorded address on that cluster.
+
+## 11. Devnet replacement after key loss
+
+The original devnet keypairs could not be recovered. Sections 1–9 describe the
+original program. The matcher branch prepares a fresh deployment with these
+public keys.
+
+| Role | Public key |
+|---|---|
+| Program | `EiMeCEbZNjNt9SyMzm54LtbdoVFLeEXZ7EyxUpAwJtDV` |
+| Upgrade authority and Config admin | `GSjKzBpLuYT4QDBCmEmxHAtjqgVWnV3pjBfJUnFfjBwd` |
+| Matcher authority | `2oetezwxSa5CqZsNwEFmw8VTk935MHZ7VAWfyD43AWc4` |
+| Deploy payer and protocol fee recipient | `EZMYGwH34FhF9HTsWQSocWJdY3ooW3L9mmy48J9FMyxo` |
+| Smoke launcher | `65MxAxY4nnjRJJ6oBx78FzrfqwVCn4f2mvoKpBEJas6f` |
+| Smoke trader | `DicsCRibQaV5cd54iiAPZkD6cF1qpYugcW3o2cFx7x1R` |
+
+The new Config PDA is `54G2WXbMrW6LozcWXCAUh9YAFS7UsBXRwxdQQouUbL6N`.
+The deploy and freeze transactions are pending. Changing the declared
+program ID changes the ELF, so a fresh SBF build and a new verified hash
+are required before `devnet/deploy.sh` will deploy the replacement.
+The keyfiles are held outside the repository in an owner-only local directory.

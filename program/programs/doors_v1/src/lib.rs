@@ -10,7 +10,7 @@ use state::*;
 use trading::*;
 use vaults::*;
 
-declare_id!("D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG");
+declare_id!("EiMeCEbZNjNt9SyMzm54LtbdoVFLeEXZ7EyxUpAwJtDV");
 
 #[program]
 pub mod doors_v1 {

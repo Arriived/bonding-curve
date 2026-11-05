@@ -95,9 +95,9 @@ jobs:
         if: github.ref_name != 'claude/program-v1'
         run: |
           set -o pipefail
-          sha256sum -c devnet/DEPLOY_ELF.sha256
           python scripts/fetch_cluster_programs.py --out "$RUNNER_TEMP/doors-cluster-programs"
           cp "$RUNNER_TEMP/doors-cluster-programs/manifest.json" verification/matcher-v0/cluster-programs.json
+          (cd "$RUNNER_TEMP/doors-cluster-programs" && sha256sum -c "$GITHUB_WORKSPACE/program/devnet/SPL_PROGRAMS.sha256")
           cp verification/svm_report.json verification/matcher-v0/svm-bundled.json
           DOORS_SVM_CLUSTER_PROGRAMS="$RUNNER_TEMP/doors-cluster-programs" \
             cargo test --locked --test svm -- --nocapture | tee verification/matcher-v0/svm-cluster.log

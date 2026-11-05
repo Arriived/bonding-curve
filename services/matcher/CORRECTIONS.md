@@ -512,3 +512,17 @@ The public RPC returned HTTP 410 for the dedicated test payer's airdrop.
 A funded devnet signer is needed to send the freeze transaction and record
 the finalized table. The existing matcher and smoke-wallet key files are
 needed for the devnet end-to-end runs.
+
+## 18. Devnet key loss requires a new program ID
+
+The initial instruction assumed the existing keyfiles were available. The owner
+confirmed they had been lost and directed a replacement deployment. The old
+deploy wallet held 16,396,200,441 lamports at finalized slot 519,109,075. That
+wallet's balance cannot fund the new deployment without its key.
+
+The new program ID changes the Config PDA in the table to
+`54G2WXbMrW6LozcWXCAUh9YAFS7UsBXRwxdQQouUbL6N`. The other five entries are
+unchanged. `scripts/max_uri.py --json` reproduced the packet limits for the
+new program ID. The previous devnet simulation applied to the old program.
+The Linux workflow checks the three SPL binaries against
+`program/devnet/SPL_PROGRAMS.sha256`, pinned to the capture at slot 519,096,745.

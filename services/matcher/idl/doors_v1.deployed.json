@@ -1,5 +1,5 @@
 {
-  "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "address": "EiMeCEbZNjNt9SyMzm54LtbdoVFLeEXZ7EyxUpAwJtDV",
   "metadata": {
     "name": "doors_v1",
     "version": "0.1.0",
@@ -1027,7 +1027,7 @@
         },
         {
           "name": "program",
-          "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+          "address": "EiMeCEbZNjNt9SyMzm54LtbdoVFLeEXZ7EyxUpAwJtDV"
         },
         {
           "name": "program_data"
