@@ -248,3 +248,33 @@ Neither backend has been exercised against a real KMS. Both are tested against f
 - the AWS signer against a fake client that checks `RAW` / `ED25519_SHA_512` and the key spec.
 
 Whatever the backend, every returned signature is verified against the key before use.
+
+## 12. Self-review, 5 November 2026: what the service did not do as documented
+
+The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side corrections:
+
+- **"While a new-room decision for name N is in flight, another launch with name N is refused"
+  was not true under concurrency** (M-2).
+  - **What was wrong:** the check ran before signing and the reservation after storing, on a
+    thread pool, so two simultaneous requests could both be signed "new room".
+  - **Fix:** `InFlight.claim` is now one atomic step before signing, released if no decision
+    is issued.
+  - **Regression test:** it holds a request between claim and signature, and fails on the old
+    code.
+- **The reservation itself is a free denial of service on any name** (H-1, open).
+  Requests are unauthenticated, so anyone can keep a name reserved indefinitely by never
+  submitting. Remedies need an API decision.
+- **The per-launcher rate limit keys on an unauthenticated field** (M-3, open). It can be
+  evaded, and it can be aimed at a victim's wallet.
+- **`min_tokens_out` defaults to 0** (M-4, open). That is harmless for a new room's first buy,
+  which cannot be front-run, but leaves a door's first buy into a live room unprotected.
+- **Smaller input-handling bugs, fixed:**
+  - `MATCHER_TRUST_X_FORWARDED_FOR` used the client-supplied leftmost entry; it now uses
+    `MATCHER_TRUSTED_PROXY_HOPS`;
+  - the body size was unbounded, and any string became a rate-limiter key;
+  - lone surrogates in metadata caused a 500.
+- **Seam: v0 launches are blocked.** v0 support must wait for program finding M-7: a
+  prefunded maximum-metadata takeover exhausts the program heap. The legacy size cap is what
+  keeps it unreachable today (README "What remains" 7).
+- **The matcher key used by tests and the e2e is rotated** (`program/docs/DEPLOYMENT.md` §9).
+  The new key is also session-generated: devnet/localnet only.

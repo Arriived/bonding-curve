@@ -2,8 +2,11 @@
 import threading
 import time
 
+import json
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
+from solders.pubkey import Pubkey
 
 from . import config as config_mod
 from .chain import ChainState, RpcClient, RpcError
@@ -14,6 +17,10 @@ from .service import Service
 from .signer import SignerUnavailable, from_config
 from .store import Store
 from .txbuild import Builder
+
+
+# A /route body is a launcher key, metadata of at most 242 bytes and four integers; 8 KiB is ample.
+MAX_BODY_BYTES = 8 * 1024
 
 
 def build_service(cfg=None, rpc=None, signer=None):
@@ -46,9 +53,29 @@ def create_app(service: Service, start_refresher=True):
         threading.Thread(target=refresher, daemon=True, name="snapshot-refresher").start()
 
     def client_ip(request: Request):
+        peer = request.client.host if request.client else "unknown"
         if service.cfg.trust_forwarded_for and "x-forwarded-for" in request.headers:
-            return request.headers["x-forwarded-for"].split(",")[0].strip()
-        return request.client.host if request.client else "unknown"
+            # The leftmost entries are whatever the client sent; only the entries the trusted proxies
+            # appended (the rightmost `forwarded_hops`) are real. Taking the leftmost let any client
+            # pick its own rate-limit key.
+            hops = [h.strip() for h in request.headers["x-forwarded-for"].split(",")]
+            n = service.cfg.forwarded_hops
+            return hops[-n] if n >= 1 and len(hops) >= n and hops[-n] else peer
+        return peer
+
+    async def bounded_json(request: Request):
+        declared = request.headers.get("content-length")
+        if declared is not None and (not declared.isdigit() or int(declared) > MAX_BODY_BYTES):
+            raise Refusal("request_too_large", f"body over {MAX_BODY_BYTES} bytes", 413)
+        body = bytearray()
+        async for chunk in request.stream():
+            body += chunk
+            if len(body) > MAX_BODY_BYTES:
+                raise Refusal("request_too_large", f"body over {MAX_BODY_BYTES} bytes", 413)
+        try:
+            return json.loads(body)
+        except (ValueError, UnicodeDecodeError):
+            raise Refusal("invalid_request", "body must be JSON")
 
     def refuse(r: Refusal, extra=None):
         body = {"error": r.code, "message": r.message}
@@ -65,12 +92,17 @@ def create_app(service: Service, start_refresher=True):
             service.metrics.inc("matcher_refusals_total", code="rate_limited_ip")
             return refuse(Refusal("rate_limited", "too many requests from this address", 429))
         try:
-            req = await request.json()
-        except ValueError:
-            return refuse(Refusal("invalid_request", "body must be JSON"))
+            req = await bounded_json(request)
+        except Refusal as r:
+            return refuse(r)
         if not isinstance(req, dict):
             return refuse(Refusal("invalid_request", "body must be a JSON object"))
-        if not launcher_limit.allow(str(req.get("launcher", ""))):
+        # Validate before using it as a rate-limit key, so arbitrary strings cannot fill the limiter.
+        try:
+            launcher_key = str(Pubkey.from_string(req.get("launcher", "")))
+        except (ValueError, TypeError):
+            return refuse(Refusal("invalid_request", "launcher must be a base58 public key"))
+        if not launcher_limit.allow(launcher_key):
             service.metrics.inc("matcher_refusals_total", code="rate_limited_launcher")
             return refuse(Refusal("rate_limited", "too many requests for this launcher", 429))
         try:

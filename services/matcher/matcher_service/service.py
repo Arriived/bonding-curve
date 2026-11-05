@@ -109,6 +109,18 @@ class Service:
             self.metrics.observe(time.monotonic() - t0)
 
     def _route(self, req):
+        held = []   # in-flight claims taken by this request; released unless the decision is issued
+        try:
+            out = self._route_inner(req, held)
+        except BaseException:
+            for token in held:
+                self.inflight.release(token)
+            raise
+        for token in held:
+            self.inflight.bind(token, out["id"])
+        return out
+
+    def _route_inner(self, req, held):
         try:
             launcher = Pubkey.from_string(str(req.get("launcher", "")))
         except ValueError:
@@ -116,6 +128,11 @@ class Service:
         name, symbol, uri = req.get("name"), req.get("symbol"), req.get("uri", "")
         if not all(isinstance(x, str) for x in (name, symbol, uri)):
             raise Refusal("invalid_request", "name, symbol and uri must be strings")
+        try:  # JSON admits lone surrogates ("\ud800"), which have no UTF-8 encoding
+            for x in (name, symbol, uri):
+                x.encode("utf-8")
+        except UnicodeEncodeError:
+            raise Refusal("invalid_metadata", "name, symbol and uri must be valid Unicode (no lone surrogates)")
         first_buy = _u64("first_buy_lamports", req.get("first_buy_lamports", 0))
         min_out = _u64("min_tokens_out", req.get("min_tokens_out", 0))
         max_fee = _u64("max_fee_lamports", req.get("max_fee_lamports", 0))
@@ -149,8 +166,10 @@ class Service:
         nk = d.candidate_keys["name"]
         identity = bytes.fromhex(d.identity)
         if d.kind == "new_room":
-            busy = self.inflight.conflict([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
-                                           f"id:{d.identity}"], height)
+            token, busy = self.inflight.claim([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
+                                               f"id:{d.identity}"], height, last_valid)
+            if token:
+                held.append(token)
             if busy:
                 raise Refusal("in_flight", f"a new-room decision for this name is in flight ({busy}); "
                                            "retry after it lands or expires", 409)
@@ -219,9 +238,6 @@ class Service:
             record_hash = self.store.append(decision_id, str(launcher), d.kind, record)
         except Exception as e:  # noqa: BLE001 - an unrecorded decision is never released
             raise Refusal("store_unavailable", f"decision could not be persisted: {type(e).__name__}", 503)
-        if d.kind == "new_room":
-            self.inflight.reserve_names([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
-                                         f"id:{d.identity}"], decision_id, last_valid)
         self.log.info("decision", extra={"fields": {"id": decision_id, "kind": d.kind, "rule": d.rule,
                                                     "room_id": str(room_id), "slot": snap.slot,
                                                     "launcher": str(launcher)}})

@@ -77,3 +77,30 @@ def test_metrics_count_decisions_and_refusals(tmp_path, kp):
     assert 'matcher_decisions_total{kind="door",rule="T3"} 1' in m
     assert 'matcher_refusals_total{code="invalid_metadata"} 1' in m
     assert "matcher_route_seconds_count 2" in m
+
+
+def test_lone_surrogate_over_http_is_a_structured_refusal(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    body = '{"launcher": "%s", "name": "A\\ud800", "symbol": "A"}' % Keypair().pubkey()
+    r = client(svc).post("/route", content=body, headers={"content-type": "application/json"})
+    assert r.status_code == 422 and r.json()["error"] == "invalid_metadata"
+
+
+def test_oversized_body_and_launcher_are_refused_before_use(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    c = client(svc)
+    r = c.post("/route", json={"launcher": "x" * 20_000, "name": "A", "symbol": "A"})
+    assert r.status_code == 413 and r.json()["error"] == "request_too_large"
+    r = c.post("/route", json={"launcher": "x" * 2_000, "name": "A", "symbol": "A"})
+    assert r.status_code == 422 and r.json()["error"] == "invalid_request"
+
+
+def test_spoofed_forwarded_for_entries_do_not_evade_the_ip_limit(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    import dataclasses
+    svc.cfg = dataclasses.replace(svc.cfg, trust_forwarded_for=True, forwarded_hops=1)
+    c = client(svc)
+    codes = [c.post("/route", headers={"x-forwarded-for": f"10.0.0.{i}, 203.0.113.7"},
+                    json={"launcher": str(Keypair().pubkey()), "name": f"N{i}xyz", "symbol": "S"}).status_code
+             for i in range(svc.cfg.rate_ip_per_min + 1)]
+    assert codes[-1] == 429          # keyed on the proxy-appended 203.0.113.7, not the spoofed prefix

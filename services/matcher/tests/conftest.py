@@ -33,7 +33,7 @@ def load_examples():
 
 
 PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
-MATCHER = "5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN"
+MATCHER = "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv"
 
 
 def config(**over):

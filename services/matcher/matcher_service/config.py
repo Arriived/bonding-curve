@@ -30,6 +30,11 @@ class Config:
     rate_ip_per_min: int
     rate_launcher_per_min: int
     trust_forwarded_for: bool
+    # With trust_forwarded_for: how many trusted proxies append to X-Forwarded-For. The client address
+    # is the entry that many places from the right; everything left of it is client-supplied.
+    # 1 = one proxy appending the peer (nginx $proxy_add_x_forwarded_for); a GCP HTTPS load balancer
+    # appends "<client>, <lb>", so use 2 behind it.
+    forwarded_hops: int = 1
 
 
 def _int(name, default):
@@ -65,4 +70,5 @@ def load() -> Config:
         rate_ip_per_min=_int("MATCHER_RATE_IP_PER_MIN", 30),
         rate_launcher_per_min=_int("MATCHER_RATE_LAUNCHER_PER_MIN", 6),
         trust_forwarded_for=os.environ.get("MATCHER_TRUST_X_FORWARDED_FOR", "0") == "1",
+        forwarded_hops=_int("MATCHER_TRUSTED_PROXY_HOPS", 1),
     )

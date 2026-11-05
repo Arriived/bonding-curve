@@ -323,3 +323,57 @@ def test_aws_kms_signer_against_a_fake_client(kp):
             return {"KeySpec": "ECC_NIST_P256", "PublicKey": der}
     with pytest.raises(SignerUnavailable):
         _ = AwsKmsSigner("k", client=WrongSpec()).pubkey
+
+
+class GatedSigner(KeyfileSigner):
+    """Signs only after `gate` is set, so two requests can be held between check and sign."""
+
+    def __init__(self, path, gate, entered):
+        super().__init__(path, "development")
+        self.gate, self.entered = gate, entered
+
+    def _raw_sign(self, m):
+        self.entered.release()
+        assert self.gate.wait(10)
+        return super()._raw_sign(m)
+
+
+def test_concurrent_new_room_requests_cannot_both_pass_the_in_flight_check(tmp_path, kp):
+    """Check-then-reserve was two steps around signing; /route runs on a thread pool, so two
+    same-name requests could both pass the check and both be signed "new room" (T2n bypass)."""
+    import threading
+    gate, entered = threading.Event(), threading.Semaphore(0)
+    svc = make(tmp_path, kp, Snap(1000), signer=GatedSigner(kp[1], gate, entered))
+    results = []
+
+    def go(req):
+        try:
+            results.append(svc.route(req)["decision"]["kind"])
+        except Refusal as e:
+            results.append(e.code)
+
+    a = threading.Thread(target=go, args=(dict(REQ),))
+    a.start()
+    assert entered.acquire(timeout=10)        # request A is between its in-flight claim and signing
+    b = threading.Thread(target=go, args=(dict(REQ, symbol="OTHER", launcher=str(Keypair().pubkey())),))
+    b.start()
+    b.join(timeout=10)                       # B must be refused without waiting on A's signature
+    gate.set()
+    a.join(timeout=10)
+    assert sorted(results) == ["in_flight", "new_room"] and rows(svc) == 1
+
+
+def test_a_refused_new_room_decision_releases_its_in_flight_claim(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000), signer=BrokenSigner(kp[0]))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "signer_unavailable"
+    svc.signer = KeyfileSigner(kp[1], "development")
+    assert svc.route(dict(REQ))["decision"]["kind"] == "new_room"   # not blocked by the failed claim
+
+
+def test_lone_surrogate_metadata_is_refused_not_a_server_error(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ, name="Elon\ud800"))
+    assert e.value.code == "invalid_metadata" and rows(svc) == 0

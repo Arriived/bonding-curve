@@ -126,8 +126,9 @@ start if `MATCHER_PRIVATE_KEY`, `MATCHER_SECRET_KEY` or `MATCHER_KEYPAIR` is set
 | `MATCHER_CU_LIMIT` | 400000 | compute-unit limit in the launch transaction |
 | `MATCHER_MAX_CU_PRICE` | 1000000 | highest priority fee a request may ask for (micro-lamports) |
 | `MATCHER_RATE_IP_PER_MIN` | 30 | per-IP limit on `/route` |
-| `MATCHER_RATE_LAUNCHER_PER_MIN` | 6 | per-launcher-pubkey limit on `/route` |
-| `MATCHER_TRUST_X_FORWARDED_FOR` | 0 | `1` only behind a proxy that sets it |
+| `MATCHER_RATE_LAUNCHER_PER_MIN` | 6 | per-launcher-pubkey limit on `/route`. **Not a security control:** the launcher field is unauthenticated (`program/docs/SECURITY_REVIEW.md` M-3) |
+| `MATCHER_TRUST_X_FORWARDED_FOR` | 0 | `1` only behind a proxy that appends to it |
+| `MATCHER_TRUSTED_PROXY_HOPS` | 1 | with the above: the client IP is the X-Forwarded-For entry this many places from the right (1 for nginx `$proxy_add_x_forwarded_for`, 2 behind a GCP HTTPS load balancer). Entries further left are client-supplied and ignored |
 
 **The freshness budget** (`MATCHER_COHERENCE_SLOTS`, `MATCHER_MAX_LAG_SLOTS`,
 `MATCHER_MAX_AGE_SECONDS`) is enforced at signing time:
@@ -160,7 +161,8 @@ start if `MATCHER_PRIVATE_KEY`, `MATCHER_SECRET_KEY` or `MATCHER_KEYPAIR` is set
   2. The program admin sets `Config.matcher_authority` to its public key with `update_config`.
   3. Point `MATCHER_GCP_KEY_VERSION` or `MATCHER_AWS_KEY_ID` at the new key.
 
-  Until steps 2 and 3 agree, `/health` stays unready and `/route` refuses.
+  Until steps 2 and 3 agree, `/health` stays unready and `/route` refuses. The full procedure,
+  including the whole-`Settings` diff check, is `program/docs/DEPLOYMENT.md` §9.
 
 ## Deployment
 
@@ -204,7 +206,9 @@ docker run -d --name matcher -p 8080:8080 -v matcher-data:/data \
 | signer key ≠ `Config.matcher_authority` | 503 `signer_mismatch`; `/health` unready |
 | decision store unwritable | 503 `store_unavailable`; the signature is discarded, because an unrecorded decision is never released |
 | program paused | 503 `program_paused` |
-| concurrent new-room launches for one name | 409 `in_flight` for the second until the first lands or expires |
+| concurrent new-room launches for one name | 409 `in_flight` for the second until the first lands or expires. The check and the reservation are one atomic step before signing; a refused or failed decision releases it |
+| body over 8 KiB | 413 `request_too_large`, before parsing |
+| metadata with lone surrogates | 422 `invalid_metadata` |
 
 There is no default routing on any path. The unit tests (`tests/test_failures.py`) assert for each
 case that nothing is signed or recorded.
@@ -219,7 +223,7 @@ pip install -r requirements-dev.txt
 python -m pytest -q tests
 ```
 
-The unit tests (96) cover:
+The unit tests (102) cover:
 
 - **the research matcher's 14 worked examples**, through the research module and through the
   service;
@@ -301,11 +305,20 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    with the same freshness checks.
 6. ~~Program changes recommended in CORRECTIONS~~: done in the program (`e9bd2aa`). There is now an
    explicit `expires_at_slot` (§1), and door addresses are not tied to `door_count` (§3).
-7. **v0 transactions with a lookup table** for maximum-length metadata (§10).
-8. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
+7. **v0 transactions with a lookup table** for maximum-length metadata (§10). **Blocked by
+   open finding M-7** (`program/docs/SECURITY_REVIEW.md`). At v0-only sizes, a prefunded
+   `create_room` takeover exhausts the program's heap. Legacy transactions cap the metadata
+   below that size, which is the only reason it is unreachable today.
+8. **Open self-review findings for the service:**
+   - H-1: free name reservations let anyone block a name;
+   - M-3: unauthenticated per-launcher limit;
+   - M-4: door first buys default to no slippage limit.
+
+   Each needs an API decision (`program/docs/SECURITY_REVIEW.md`).
+9. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
    decision mix. Plus an on-call runbook for key rotation and RPC failover.
-9. **An archival RPC** for the verifier, and a public, independently operated verifier run over the
+10. **An archival RPC** for the verifier, and a public, independently operated verifier run over the
    decision feed.
-10. **The branch tip** is fixed, and the service targets it (CORRECTIONS §4). On any later program
+11. **The branch tip** is fixed, and the service targets it (CORRECTIONS §4). On any later program
     change, update `idl/`, `txbuild.encode_launch` and `program/devnet/DEPLOY_ELF.sha256` together,
     and rerun both test suites.
