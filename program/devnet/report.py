@@ -21,6 +21,7 @@ def main():
     vm = json.load(open(svm_path))["cu"]
     deploy = json.load(open(out / "deploy.json"))
     show = json.load(open(out / "program_show.json"))
+    upgrade = json.load(open(out / "upgrade.json")) if (out / "upgrade.json").exists() else None
     init = json.load(open(out / "init.json"))["transactions"]
     smoke = json.load(open(out / "smoke.json"))
     fails = json.load(open(out / "failures.json"))["cases"]
@@ -31,7 +32,8 @@ def main():
          "| item | value |", "|---|---|",
          f"| program ID | `{deploy['programId']}` |",
          f"| deploy signature | `{deploy['signature']}` |",
-         f"| deploy slot (`lastDeploySlot`) | {show['lastDeploySlot']:,} |",
+         *([f"| upgrade signature (`devnet/upgrade.sh`) | `{upgrade['signature']}` |"] if upgrade else []),
+         f"| {'last upgrade' if upgrade else 'deploy'} slot (`lastDeploySlot`) | {show['lastDeploySlot']:,} |",
          f"| ProgramData account | `{show['programdataAddress']}` |",
          f"| upgrade authority | `{show['authority']}` |",
          f"| ProgramData lamports | {show['lamports']:,} |",
@@ -105,7 +107,8 @@ def check(out, deploy, show, init, smoke, fails, config, elf, onchain):
     done = {t["name"]: t for t in smoke["transactions"]}
     results = [
         ("deployed bytes equal the pinned ELF", elf == onchain),
-        ("program ID matches the deploy output", deploy["programId"] == smoke["program"] == show["programId"]),
+        ("program ID matches the deploy output", deploy["programId"] == smoke["program"] == show["programId"]
+         == json.load(open(out / "upgrade.json" if (out / "upgrade.json").exists() else out / "deploy.json"))["programId"]),
         ("upgrade authority is set (not the deploy wallet)", show["authority"] not in ("", None, "none")),
         ("initialize_config succeeded", all(t["ok"] for t in init)),
         ("every Config field matches the settings", config["mismatches"] == 0),

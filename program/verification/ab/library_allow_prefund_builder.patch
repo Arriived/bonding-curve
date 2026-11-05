@@ -1,0 +1,13 @@
+diff --git a/program/programs/doors_v1/src/vaults.rs b/program/programs/doors_v1/src/vaults.rs
+index 92c8c06..c066591 100644
+--- a/program/programs/doors_v1/src/vaults.rs
++++ b/program/programs/doors_v1/src/vaults.rs
+@@ -104,7 +104,7 @@ pub fn create_pda<'a>(
+     }
+     let before = target.lamports();
+     invoke_signed(
+-        &allow_prefund_ix(
++        &system_instruction::create_account_allow_prefund(
+             target.key,
+             (needed > 0).then_some((user.key, needed)),
+             space as u64,

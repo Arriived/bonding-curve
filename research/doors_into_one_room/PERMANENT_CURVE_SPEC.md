@@ -1380,12 +1380,12 @@ with every address. Budget with margin above them.
 
 | instruction / route | samples | observed min CU | observed max CU | per room/block at the observed max (not a guarantee) |
 |---|---:|---:|---:|---:|
-| buy_door | 3,351 | 57,090 | 69,457 | 345 |
-| sell_door | 1,675 | 54,175 | 57,434 | 417 |
-| buy_room | 841 | 44,575 | 53,568 | 448 |
-| sell_room | 852 | 41,751 | 42,045 | 570 |
-| convert | 802 | 65,833 | 68,844 | 348 |
-| open_door | 4 | 138,509 | 149,950 | 160 |
+| buy_door | 3,351 | 57,124 | 69,497 | 345 |
+| sell_door | 1,675 | 54,215 | 57,474 | 417 |
+| buy_room | 841 | 44,601 | 53,602 | 447 |
+| sell_room | 852 | 41,783 | 42,077 | 570 |
+| convert | 802 | 65,855 | 68,866 | 348 |
+| open_door | 4 | 138,533 | 149,974 | 160 |
 
 The property run executes 10,000 mixed iterations and
 asserts full global liability coverage, token conservation, authority revocation
@@ -1396,14 +1396,14 @@ observed in these fixtures, not an upper bound for any address or runtime.
 
 Maximum-metadata creation with an atomic first buy: legacy 1,318 bytes
 exceeds the 1,232-byte packet limit; the executed v0 transaction
-uses 734 bytes. Its whole-transaction CU is 292,982.
+uses 734 bytes. Its whole-transaction CU is 293,064.
 
 The last column is floor(cap / observed maximum execution CU). Actual scheduling
 also charges signatures, write locks, instruction data and the transaction’s
 requested compute budget. Clients must size that budget; these counts are
 not a promise of accepted transactions per block. Pool-phase CU is unmeasured.
 
-Build commit: `b6fe25d9c67ad4432825aed878a853b7d29392b3`; ELF SHA-256: `c36ba443d6bb08726028919f28de1b8432422b876433ed4a208a96e5a808ed29`.
+Build commit: `54215ae4b4e2c89758ce813edf23f45d9cdebb0b`; ELF SHA-256: `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9`.
 Raw samples/statistics, tool versions and source hashes are in
 `program/verification/svm_report.json` and `program/verification/build.json`.
 <!-- END GENERATED PROGRAM CU -->

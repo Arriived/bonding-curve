@@ -17,8 +17,10 @@ Run from anywhere: python3 program/scripts/heap_probe.py [commit] [--heap-frame 
 before/after comparisons). --heap-frame adds ComputeBudgetInstruction::request_heap_frame(BYTES)
 to every probe transaction and writes heap_headroom[.<short>].frame<BYTES>.json; the result also
 records the whole-transaction and program CU of one worst-case create_room, to price the request.
+--patch FILE applies a source patch to the checkout first (an A/B variant, e.g.
+verification/ab/*.patch) and writes heap_headroom.ab_<patch stem>.json, recording the patch's sha256.
 """
-import argparse, json, os, re, shutil, subprocess, sys, tempfile
+import argparse, hashlib, json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]          # program/
@@ -204,13 +206,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("commit", nargs="?", default="HEAD")
     ap.add_argument("--heap-frame", type=int, default=0)
+    ap.add_argument("--patch", type=Path, default=None)
     args = ap.parse_args()
+    patch = args.patch.resolve() if args.patch else None
     head = run(["git", "rev-parse", "HEAD"], REPO).stdout.strip()
     commit = run(["git", "rev-parse", args.commit], REPO).stdout.strip()
     tmp = Path(tempfile.mkdtemp(prefix="heap-probe-"))
     wt = tmp / "wt"
     run(["git", "worktree", "add", "--detach", str(wt), commit], REPO)
     try:
+        if patch:
+            run(["git", "apply", str(patch)], wt)
         lib = wt / "program/programs/doors_v1/src/lib.rs"
         s = lib.read_text()
         for nxt in ("    pub fn open_door(", "    pub fn buy("):
@@ -231,7 +237,10 @@ def main():
         full_takeover = bool(units.pop("create_room_takeover_uri200_passes"))
         result = {
             "measured_commit": commit,
-            "measured_tree": "clean checkout of measured_commit in a temporary worktree",
+            "measured_tree": "clean checkout of measured_commit in a temporary worktree"
+                             + (" with variant_patch applied" if patch else ""),
+            **({"variant_patch": str(patch.relative_to(REPO)),
+                "variant_patch_sha256": hashlib.sha256(patch.read_bytes()).hexdigest()} if patch else {}),
             "heap_frame_requested_bytes": args.heap_frame or None,
             "allocator_heap_bytes": 32 * 1024,
             "method": "largest extra allocation appended at the end of the instruction that still succeeds, "
@@ -246,7 +255,7 @@ def main():
             "zero_means": "the launch fails even with no probe allocation (out of memory, or the 64-entry "
                           "instruction trace exceeded: see worst_launch_cu)",
         }
-        name = "heap_headroom" + ("" if commit == head else f".{commit[:7]}") + \
+        name = "heap_headroom" + (f".ab_{patch.stem}" if patch else "" if commit == head else f".{commit[:7]}") + \
             (f".frame{args.heap_frame}" if args.heap_frame else "") + ".json"
         (HERE / "verification" / name).write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result, indent=2))

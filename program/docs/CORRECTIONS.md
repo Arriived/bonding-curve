@@ -497,3 +497,110 @@ delay threshold changes, rather than snapshot them.
   - **What the doc said:** "about 3.5 SOL" for a 525,032-byte ELF.
   - **Actual:** ProgramData for the 522,776-byte ELF took 2,656,580,920 lamports, plus a
     0.05 SOL Config top-up and the e2e wallet top-ups (§5).
+
+## M-8 fix, M-6 timelock, H-1 interim (5 November 2026)
+
+Owner decisions in the brief: M-8 first, H-1 interim now with NameLock as a mainnet blocker, M-6 by
+timelock.
+
+**M-8: the creation path's trace.**
+- **Root cause:** prefunding, not the CPI count as such. A PDA someone had already sent lamports to
+  cost transfer + allocate + assign: three trace entries instead of one.
+- **Fix:** `create_pda` now uses SIMD-0312 `CreateAccountAllowPrefund` for a prefunded PDA, one CPI.
+  The feature is active on devnet (slot 454,464,000) and mainnet (slot 422,928,004),
+  `solana feature status 6sPDzwyARRExKH52LECxcGoqziH8G7SZofwuxi8Ja331`. Anchor 1.2.2's `init` already
+  did this for `Room` and `Door`.
+- **Tried and reverted: merging a buy's two System transfers.** Merging them into one, plus a lamport
+  edit, saved one trace entry but measurably *cost* heap: about 336 bytes on the worst `create_room`
+  and 320 on `open_door` (`verification/heap_headroom.ab_merged_buy_deposits.json`). The mechanism
+  is not identified. Heap is the tighter budget (M-7), so buys keep two transfers.
+- **Result** (`launch_instruction_trace_budget`, `verification/trace_budget.json`):
+
+  | launch | trace entries, before | after |
+  |---|---|---|
+  | prefunded `create_room` with a first buy | 63 | 47 |
+  | same, with a priority fee | 64 | 48 |
+  | prefunded `open_door` | 35 | 29 |
+  | prefunded `open_door`, with a priority fee | 36 | 30 |
+
+  The test now asserts at least 12 entries free on every shape. It also asserts that prefunding adds
+  at most 2, both inside the Associated Token program, which handles a prefunded user ATA itself.
+- **Correction, the library builder:** `system_instruction::create_account_allow_prefund` pushes the
+  payer onto a one-element `Vec`. On the never-freed SBF heap that strands one buffer and
+  over-allocates the next. Used as-is it cuts heap headroom (worst `create_room` ≥ 848 → ≥ 16 bytes; the
+  service-size takeover fails; `heap_headroom.ab_library_allow_prefund_builder.json`). `vaults::allow_prefund_ix` builds the same bytes with exact
+  allocations; a test asserts byte equality with the library builder.
+
+**M-6: the liveness gate is timelocked.**
+- **Change:** `update_config` refuses gate changes. `propose_gate`, `apply_gate` (permissionless,
+  after 604,800 s) and `cancel_gate` replace them, with `GateChangeProposed` / `GateChangeApplied` /
+  `GateChangeCancelled` events.
+- **Layout:** the pending change lives in a new PDA `PendingGate` `["gate"]` (65 bytes). Config's
+  layout is unchanged.
+- **This changes spec-defined behaviour, by owner decision.** The spec (§3, Config) is updated.
+
+**H-1:** the interim fix is in the service (`services/matcher/CORRECTIONS.md` §15). The NameLock is
+recorded as a mainnet blocker in `SECURITY_REVIEW.md`.
+
+**Heap and CU at `54215ae`** (`heap_probe.py`, `verification/heap_headroom.json`): worst
+`create_room` ≥ 848 bytes free (was ≥ 688 at `b6fe25d`), `open_door` ≥ 9,568 (unchanged), the
+service-size takeover ≥ 624 (was ≥ 496). The worst `create_room` uses 295,952 transaction CU (was
+322,367). The v0 maximum takeover still fails: M-7 stays open.
+
+**Correction, the A/B evidence.** The A/B heap figures were first measured on local throwaway commits
+(`d20b94b`, `e87c692`, `56afc95`, `f3022c8`) that were never pushed, so nobody else could re-run
+them. Each variant is now a patch against `54215ae` in `verification/ab/`. `heap_probe.py --patch`
+applies it in the probe's worktree and records the patch's SHA-256. All three variants were
+re-measured that way:
+
+| variant (`verification/ab/*.patch`) | worst `create_room` | `open_door` | URI-70 takeover |
+|---|---|---|---|
+| none: `54215ae` as committed | ≥ 848 | ≥ 9,568 | ≥ 624 |
+| `merged_buy_deposits` | ≥ 512 | ≥ 9,248 | ≥ 288 |
+| `transfer_allocate_assign_create_pda` (the pre-M-8 prefunded path) | ≥ 688 | ≥ 9,568 | ≥ 496 |
+| `library_allow_prefund_builder` | ≥ 16 | ≥ 9,568 | fails (0) |
+
+The re-measurements agree with the throwaway-commit figures to the byte. The pre-M-8 prefunded path
+on today's source gives exactly the `b6fe25d` figures, so the one-CPI path accounts for the whole
+heap gain; M-6 adds nothing to the launch path.
+
+**M-7 re-evaluated after M-8** (`heap_probe.py --heap-frame 262144` at `54215ae`,
+`verification/heap_headroom.frame262144.json`; the `b6fe25d` file is in git history at `c433617`):
+- **The trace objection is gone.** A 256 KiB `RequestHeapFrame` now fits on the worst prefunded
+  `create_room` and the launch runs. It used to fail at 65 trace entries.
+- **The allocator objection stands.** Free heap is identical with and without the request (848 /
+  9,568 / 624), and the v0 maximum takeover still fails. The request costs 1,774 transaction CU on
+  that `create_room`.
+- **What is left for M-7** is a program change, so the owner's call: a custom allocator over the
+  requested frame, or less heap on the takeover path (`SECURITY_REVIEW.md` M-7).
+
+**Devnet upgrade to `54215ae`** (`devnet/upgrade.sh`, new; `DEPLOYMENT.md` §5):
+- signature `qLdPHc7BqBBG2PtS21M2jAp6xoVKUSYkBkzwAP9e5bgx9jwqxa6o5YTrcTd1iD8CepGmsbnQUuysEkdC3Y9JHvw`,
+  slot 519,010,828;
+- ProgramData grew from 522,776 to 552,840 bytes; the CLI extended it, at 152,725,120 lamports of
+  permanent rent;
+- on-chain bytes equal the pinned ELF `b30c3462…83b9`. Config was read back at slot 519,010,873 with
+  0 of 22 fields differing. Config's layout is unchanged.
+
+**The program devnet e2e failed once after the upgrade, and the cause was the test.**
+- **What happened:** `create_room` failed with `Holder` (6013).
+- **Why:** the smoke launch used a fixed name and symbol. Its SlugLock from the first devnet run is
+  still held by a live room, so the identity was taken. That is the program behaving as specified.
+- **Fix:** `devnet/src/main.rs` derives a per-run name and symbol from the room's random id. The
+  rerun passed 33/33, as did localnet.
+
+**Correction, `DEPLOYMENT.md` §7.** As committed in `c433617`, the devnet half of §7 contained raw
+Python template text (`'''+rep+'''`) instead of the generated tables: a generation step had failed
+and was not caught. §7 is now regenerated from the evidence with `devnet/report.py` for both
+clusters.
+
+**Correction, `devnet/report.py`.** After an upgrade it paired the original deploy signature with
+the upgrade's `lastDeploySlot`. It now prints the upgrade signature from `upgrade.json` beside the
+deploy signature, labels the slot as the last upgrade's, and checks the upgrade's program ID.
+
+**Live devnet CU after the upgrade** (`DEPLOYMENT.md` §7): `create_room` ran 25,610 CU above its VM
+observed maximum (12,003 at `b6fe25d`), `claim_door_fees` 13,500, `sell_door` 6,858, `convert` 5,781,
+`retire_pending` 430. The smoke launch's metadata and addresses now differ on every run, so these
+are not directly comparable with the `b6fe25d` run. The worst tested VM launch, 303,780 CU, plus the
+largest drift is still about 70,600 under the service's 400,000 limit.
+
