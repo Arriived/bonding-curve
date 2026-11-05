@@ -7,6 +7,65 @@
   },
   "instructions": [
     {
+      "name": "apply_gate",
+      "docs": [
+        "Permissionless once the delay has passed: the change is already public and committed."
+      ],
+      "discriminator": [
+        132,
+        134,
+        155,
+        29,
+        133,
+        217,
+        6,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "buy",
       "discriminator": [
         102,
@@ -167,6 +226,65 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "cancel_gate",
+      "discriminator": [
+        11,
+        207,
+        82,
+        94,
+        97,
+        162,
+        128,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
     },
     {
       "name": "claim_door_fees",
@@ -1101,6 +1219,65 @@
       ]
     },
     {
+      "name": "propose_gate",
+      "discriminator": [
+        56,
+        94,
+        119,
+        21,
+        38,
+        181,
+        2,
+        248
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "gate",
+          "type": {
+            "defined": {
+              "name": "Gate"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "release_slug",
       "discriminator": [
         224,
@@ -1850,6 +2027,19 @@
       ]
     },
     {
+      "name": "PendingGate",
+      "discriminator": [
+        57,
+        61,
+        151,
+        75,
+        86,
+        18,
+        44,
+        22
+      ]
+    },
+    {
       "name": "Room",
       "discriminator": [
         156,
@@ -1953,6 +2143,45 @@
         109,
         200,
         226
+      ]
+    },
+    {
+      "name": "GateChangeApplied",
+      "discriminator": [
+        99,
+        22,
+        68,
+        58,
+        147,
+        38,
+        83,
+        33
+      ]
+    },
+    {
+      "name": "GateChangeCancelled",
+      "discriminator": [
+        94,
+        23,
+        84,
+        40,
+        99,
+        77,
+        79,
+        161
+      ]
+    },
+    {
+      "name": "GateChangeProposed",
+      "discriminator": [
+        31,
+        111,
+        209,
+        222,
+        124,
+        92,
+        104,
+        247
       ]
     },
     {
@@ -2123,6 +2352,11 @@
       "code": 6022,
       "name": "DoorNonce",
       "msg": "Door nonce must be 0 for create_room and non-zero for open_door"
+    },
+    {
+      "code": 6023,
+      "name": "GateTimelock",
+      "msg": "Liveness-gate changes take effect only through propose_gate + apply_gate, after the delay"
     }
   ],
   "types": [
@@ -2505,6 +2739,109 @@
       }
     },
     {
+      "name": "Gate",
+      "docs": [
+        "The shared liveness gate: every threshold that decides whether a room is live, or will be."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "live_min_reserve_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "live_max_idle_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "live_new_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "live_min_volume_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "pool_min_window_lp_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GateChangeApplied",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "gate",
+            "type": {
+              "defined": {
+                "name": "Gate"
+              }
+            }
+          },
+          {
+            "name": "applied_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GateChangeCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cancelled",
+            "type": {
+              "defined": {
+                "name": "Gate"
+              }
+            }
+          },
+          {
+            "name": "cancelled_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GateChangeProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "current",
+            "type": {
+              "defined": {
+                "name": "Gate"
+              }
+            }
+          },
+          {
+            "name": "proposed",
+            "type": {
+              "defined": {
+                "name": "Gate"
+              }
+            }
+          },
+          {
+            "name": "proposed_at",
+            "type": "i64"
+          },
+          {
+            "name": "effective_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
       "name": "Launch",
       "type": {
         "kind": "struct",
@@ -2561,6 +2898,38 @@
           {
             "name": "expires_at_slot",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PendingGate",
+      "docs": [
+        "A proposed gate change, PDA `[\"gate\"]`. At most one is pending; proposing again replaces it and",
+        "restarts the delay. Closed (rent to the admin) when applied or cancelled."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "gate",
+            "type": {
+              "defined": {
+                "name": "Gate"
+              }
+            }
+          },
+          {
+            "name": "proposed_at",
+            "type": "i64"
+          },
+          {
+            "name": "effective_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

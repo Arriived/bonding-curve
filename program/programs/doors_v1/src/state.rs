@@ -111,6 +111,46 @@ impl Config {
         ])
         .to_bytes()
     }
+    pub fn gate(&self) -> Gate {
+        Gate {
+            live_min_reserve_lamports: self.live_min_reserve_lamports,
+            live_max_idle_seconds: self.live_max_idle_seconds,
+            live_new_seconds: self.live_new_seconds,
+            live_min_volume_lamports: self.live_min_volume_lamports,
+            pool_min_window_lp_fee: self.pool_min_window_lp_fee,
+        }
+    }
+    pub fn set_gate(&mut self, g: Gate) {
+        self.live_min_reserve_lamports = g.live_min_reserve_lamports;
+        self.live_max_idle_seconds = g.live_max_idle_seconds;
+        self.live_new_seconds = g.live_new_seconds;
+        self.live_min_volume_lamports = g.live_min_volume_lamports;
+        self.pool_min_window_lp_fee = g.pool_min_window_lp_fee;
+    }
+    pub fn settings(&self) -> Settings {
+        Settings {
+            protocol_fee_recipient: self.protocol_fee_recipient,
+            fee_bps: self.fee_bps,
+            door_share_bps: self.door_share_bps,
+            door_fee_lamports: self.door_fee_lamports,
+            room_fee_lamports: self.room_fee_lamports,
+            convert_fee_lamports: self.convert_fee_lamports,
+            v_sol_lamports: self.v_sol_lamports,
+            v_tok: self.v_tok,
+            supply: self.supply,
+            r_star_lamports: self.r_star_lamports,
+            meteora_dynamic_config: self.meteora_dynamic_config,
+            graduation_trigger_lamports: self.graduation_trigger_lamports,
+            paused: self.paused,
+            matcher_authority: self.matcher_authority,
+            live_min_reserve_lamports: self.live_min_reserve_lamports,
+            live_max_idle_seconds: self.live_max_idle_seconds,
+            live_new_seconds: self.live_new_seconds,
+            live_min_volume_lamports: self.live_min_volume_lamports,
+            pool_min_window_lp_fee: self.pool_min_window_lp_fee,
+            founder_share_bps: self.founder_share_bps,
+        }
+    }
     pub fn apply(&mut self, s: Settings) -> Result<()> {
         s.validate()?;
         self.protocol_fee_recipient = s.protocol_fee_recipient;
@@ -135,6 +175,44 @@ impl Config {
         self.founder_share_bps = s.founder_share_bps;
         Ok(())
     }
+}
+
+/// Liveness-gate changes take effect only this long after they are proposed (SECURITY_REVIEW.md M-6).
+/// A program constant, so no admin can shorten it.
+pub const GATE_DELAY_SECONDS: i64 = 7 * 24 * 3600;
+
+/// The shared liveness gate: every threshold that decides whether a room is live, or will be.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug)]
+pub struct Gate {
+    pub live_min_reserve_lamports: u64,
+    pub live_max_idle_seconds: u64,
+    pub live_new_seconds: u64,
+    pub live_min_volume_lamports: u64,
+    pub pool_min_window_lp_fee: u64,
+}
+impl Settings {
+    pub fn gate(&self) -> Gate {
+        Gate {
+            live_min_reserve_lamports: self.live_min_reserve_lamports,
+            live_max_idle_seconds: self.live_max_idle_seconds,
+            live_new_seconds: self.live_new_seconds,
+            live_min_volume_lamports: self.live_min_volume_lamports,
+            pool_min_window_lp_fee: self.pool_min_window_lp_fee,
+        }
+    }
+}
+
+/// A proposed gate change, PDA `["gate"]`. At most one is pending; proposing again replaces it and
+/// restarts the delay. Closed (rent to the admin) when applied or cancelled.
+#[account]
+pub struct PendingGate {
+    pub gate: Gate,
+    pub proposed_at: i64,
+    pub effective_at: i64,
+    pub bump: u8,
+}
+impl PendingGate {
+    pub const LEN: usize = 8 + 40 + 8 + 8 + 1;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default)]

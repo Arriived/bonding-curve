@@ -94,22 +94,62 @@ pub fn create_pda<'a>(
         )?;
         return Ok(bump);
     }
-    deposit(user, target, system, rent.saturating_sub(target.lamports()))?;
-    if space > 0 {
-        invoke_signed(
-            &system_instruction::allocate(target.key, space as u64),
-            &[target.clone(), system.clone()],
-            &[&signed],
-        )?;
+    // Prefunded by someone else (anyone can send lamports to a PDA). One CPI tops up, allocates and
+    // assigns: SIMD-0312 CreateAccountAllowPrefund, active on devnet (slot 454,464,000) and mainnet
+    // (slot 422,928,004). The former transfer + allocate + assign cost three trace entries per account,
+    // which let a third party push a launch to the 64-entry instruction-trace limit (finding M-8).
+    let needed = rent.saturating_sub(target.lamports());
+    if needed == 0 && space == 0 && owner == &anchor_lang::system_program::ID {
+        return Ok(bump); // a funded, empty, system-owned PDA is already what was asked for
     }
-    if owner != &anchor_lang::system_program::ID {
-        invoke_signed(
-            &system_instruction::assign(target.key, owner),
-            &[target.clone(), system.clone()],
-            &[&signed],
-        )?;
-    }
+    let before = target.lamports();
+    invoke_signed(
+        &allow_prefund_ix(
+            target.key,
+            (needed > 0).then_some((user.key, needed)),
+            space as u64,
+            owner,
+        ),
+        &[target.clone(), user.clone(), system.clone()],
+        &[&signed],
+    )?;
+    require!(
+        target.lamports() == add(before, needed)?
+            && target.data_len() == space
+            && target.owner == owner,
+        Error::Invariant
+    );
     Ok(bump)
+}
+/// `SystemInstruction::CreateAccountAllowPrefund` built with exact-size allocations. The library
+/// builder pushes the payer onto a one-element `Vec`, which on the never-freed SBF heap strands the first
+/// buffer and over-allocates the second; across a launch's account creations that cost more heap than
+/// the three CPIs it replaces. Byte-identical to
+/// `system_instruction::create_account_allow_prefund` (asserted by the SBF suite).
+pub fn allow_prefund_ix(
+    target: &Pubkey,
+    payer_and_lamports: Option<(&Pubkey, u64)>,
+    space: u64,
+    owner: &Pubkey,
+) -> anchor_lang::solana_program::instruction::Instruction {
+    use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
+    const CREATE_ACCOUNT_ALLOW_PREFUND: u32 = 13; // SystemInstruction variant index
+    let mut accounts = Vec::with_capacity(1 + payer_and_lamports.is_some() as usize);
+    accounts.push(AccountMeta::new(*target, true));
+    let lamports = payer_and_lamports.map_or(0, |(payer, lamports)| {
+        accounts.push(AccountMeta::new(*payer, true));
+        lamports
+    });
+    let mut data = Vec::with_capacity(52);
+    data.extend_from_slice(&CREATE_ACCOUNT_ALLOW_PREFUND.to_le_bytes());
+    data.extend_from_slice(&lamports.to_le_bytes());
+    data.extend_from_slice(&space.to_le_bytes());
+    data.extend_from_slice(owner.as_ref());
+    Instruction {
+        program_id: anchor_lang::system_program::ID,
+        accounts,
+        data,
+    }
 }
 pub fn token(ai: &AccountInfo, mint: &Pubkey, owner: &Pubkey, program: &Pubkey) -> Result<u64> {
     require_keys_eq!(*ai.owner, *program, Error::Account);
