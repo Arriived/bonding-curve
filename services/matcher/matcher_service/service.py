@@ -18,7 +18,7 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction
 
-from . import __version__, rules, txbuild
+from . import __version__, quote, rules, txbuild
 from .chain import RpcError, StaleState
 from .decide import RULE_CODE, Refusal, decide
 from .inflight import InFlight
@@ -134,7 +134,16 @@ class Service:
         except UnicodeEncodeError:
             raise Refusal("invalid_metadata", "name, symbol and uri must be valid Unicode (no lone surrogates)")
         first_buy = _u64("first_buy_lamports", req.get("first_buy_lamports", 0))
-        min_out = _u64("min_tokens_out", req.get("min_tokens_out", 0))
+        # min_tokens_out: omitted -> the snapshot quote less max_slippage_bps (default 2%); an explicit
+        # 0 with a first buy is refused, so no launch buy is signed without a price limit (M-4).
+        req_min_out = req.get("min_tokens_out")
+        min_out = None if req_min_out is None else _u64("min_tokens_out", req_min_out)
+        slippage = _u64("max_slippage_bps", req.get("max_slippage_bps", quote.DEFAULT_MAX_SLIPPAGE_BPS))
+        if not 1 <= slippage <= quote.MAX_SLIPPAGE_BPS:
+            raise Refusal("invalid_request", f"max_slippage_bps must be in [1, {quote.MAX_SLIPPAGE_BPS}]")
+        if first_buy > 0 and min_out == 0:
+            raise Refusal("invalid_request", "min_tokens_out must be > 0 when first_buy_lamports > 0; "
+                                             "omit it to use the quoted price less max_slippage_bps")
         max_fee = _u64("max_fee_lamports", req.get("max_fee_lamports", 0))
         cu_price = _u64("cu_price_micro_lamports", req.get("cu_price_micro_lamports", 0))
         if cu_price > self.cfg.max_cu_price:
@@ -156,6 +165,22 @@ class Service:
             raise Refusal("fee_limit", f"room+door fee {fee_needed} > max_fee_lamports {max_fee}")
         if snap.config["door_fee_lamports"] > max_fee and d.kind == "door":
             raise Refusal("fee_limit", f"door fee {snap.config['door_fee_lamports']} > max_fee_lamports {max_fee}")
+        first_buy_quote = None
+        if first_buy > 0:
+            curve = quote.new_room_curve(snap.config) if d.kind == "new_room" else snap.rooms[d.room_id]
+            try:
+                tokens = quote.first_buy_tokens(curve, first_buy)
+            except ValueError:
+                tokens = None
+            if not tokens:
+                raise Refusal("first_buy_unfillable", "the room cannot fill this first buy at the snapshot "
+                                                      "(capped, complete or zero tokens)")
+            if min_out is None:
+                min_out = quote.min_out(tokens, slippage)
+            first_buy_quote = {"tokens": tokens, "max_slippage_bps": slippage if req_min_out is None else None,
+                               "min_tokens_out": min_out, "snapshot_slot": snap.slot}
+        elif min_out is None:
+            min_out = 0
 
         try:
             blockhash, last_valid, bh_slot = self.rpc.latest_blockhash()
@@ -215,8 +240,11 @@ class Service:
                         "unicode": rules.UNICODE_VERSION, "signer_backend": self.signer.backend},
             "program": self.cfg.program_id, "config_account": snap.config_key, "config": snap.config,
             "request": {"launcher": str(launcher), "name": name, "symbol": symbol, "uri": uri,
-                        "first_buy_lamports": first_buy, "min_tokens_out": min_out, "max_fee_lamports": max_fee,
+                        "first_buy_lamports": first_buy, "min_tokens_out": req_min_out,
+                        "max_slippage_bps": req.get("max_slippage_bps"), "max_fee_lamports": max_fee,
                         "cu_price_micro_lamports": cu_price},
+            "first_buy_quote": first_buy_quote,
+            "launch_min_tokens_out": min_out,
             "state": {"slots": snap.slots, "slot": snap.slot, "clock_unix": snap.clock_unix,
                       "cluster_slot_at_decision": cluster_slot, "freshness": freshness, "budget": vars(self.cfg.budget),
                       "rooms_total": len(all_rooms),

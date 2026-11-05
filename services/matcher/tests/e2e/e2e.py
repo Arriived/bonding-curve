@@ -12,6 +12,8 @@ Sequence (every step asserts; any failure exits 1):
   1. request a decision for a new identity -> new_room; the launcher signs; the program accepts it
   2. same identity from another wallet -> door via the floor; accepted; door index 1, random door nonce
   3. same name, different symbol -> door via T2n; accepted
+  3b. a door launch with a first buy and the default 2% price limit fills exactly the quoted tokens
+      when nothing moves, and is rejected on-chain (Slippage) when a large buy lands first
   4. tampered decisions are rejected: instruction data changed after the matcher signed
      (SignatureFailure), and the matcher signature stripped (AccountNotSigner, landed on-chain)
   5. replaying an accepted decision is rejected (single use)
@@ -194,10 +196,14 @@ def run(rpc, keys, target):
     name, symbol = f"E2E Room {tag}", f"E{tag[:4]}"
     accepted = []
 
-    def route(who, nm, sym):
+    from matcher_service import auth
+
+    def route(who, nm, sym, **extra):
         svc.chain.refresh()
-        r = client.post("/route", json={"launcher": str(who.pubkey()), "name": nm, "symbol": sym,
-                                        "uri": "https://example.invalid/e2e.json"})
+        # Every /route request is signed by the launcher's key (matcher_service/auth.py, M-3).
+        body = auth.sign(who, {"launcher": str(who.pubkey()), "name": nm, "symbol": sym,
+                               "uri": "https://example.invalid/e2e.json", **extra})
+        r = client.post("/route", json=body)
         if r.status_code != 200:
             fail(f"/route {nm}/{sym}: {r.status_code} {r.text}")
         return r.json()
@@ -255,6 +261,45 @@ def run(rpc, keys, target):
     if (c["decision"]["kind"], c["decision"]["rule"], c["decision"]["room_id"]) != ("door", "T2n", room_id):
         fail(f"expected T2n door into {room_id}, got {c['decision']}")
     land(c, launcher, "T2n door")
+
+    step("3b. door first buy with the default 2% limit: exact fill when unmoved, Slippage when front-run")
+    def door0_buy(lamports):
+        bh_ = rpc.latest_blockhash()[0]
+        ix_ = bld._instruction("buy", {"user": launcher.pubkey(), "core.config": bld.p(b"config"),
+                                       "core.room": room_pk, **{"core." + k: v for k, v in core.items()},
+                                       **d0, "user_token": user_token}, struct.pack("<QQ", lamports, 0))
+        st_ = confirm(rpc, send(rpc, Transaction([launcher], Message.new_with_blockhash(
+            [ix_], launcher.pubkey(), Hash.from_string(bh_)), Hash.from_string(bh_))))
+        if st_.get("err"):
+            fail(f"door 0 buy failed: {st_['err']}")
+        return st_["slot"]
+
+    def first_buy_record(out):
+        rec_ = client.get(f"/decision/{out['id']}").json()["record"]
+        q_ = rec_["first_buy_quote"]
+        if not q_ or q_["max_slippage_bps"] != 200 or q_["min_tokens_out"] != q_["tokens"] * 9800 // 10000:
+            fail(f"expected a default 2% first-buy limit, got {q_}")
+        return q_
+
+    e = route(trader, name, symbol, first_buy_lamports=100_000_000)
+    q = first_buy_record(e)
+    land(e, trader, "door with first buy")
+    held = ata(trader.pubkey(), Pubkey.from_string(e["decision"]["door_mint"]), T22)
+    got = struct.unpack_from("<Q", rpc.account(held)[1], 64)[0]
+    if got != q["tokens"]:
+        fail(f"first buy filled {got} base units, the quote said {q['tokens']}")
+    print(f"   unmoved: filled exactly the quoted {got:,} base units (limit {q['min_tokens_out']:,})", flush=True)
+    f_ = route(trader, name, symbol, first_buy_lamports=100_000_000)
+    q = first_buy_record(f_)
+    moved = door0_buy(5_000_000_000)                       # lands before the signed launch: price moves far past 2%
+    ftx = sign_as_launcher(f_["transaction_base64"], trader)
+    sig = send(rpc, ftx, skip_preflight=True)
+    st = confirm(rpc, sig)
+    logs = rpc.call("getTransaction", [sig, {"encoding": "json", "commitment": "confirmed",
+                                              "maxSupportedTransactionVersion": 0}])["meta"]["logMessages"]
+    if not st.get("err") or not any("Error Code: Slippage" in l for l in logs):
+        fail(f"front-run first buy: expected Error Code: Slippage, got {st.get('err')}")
+    print(f"   front-run by a 5 SOL buy at slot {moved}: rejected on-chain with Slippage ({sig})", flush=True)
 
     step("4a. tampered decision (Launch.rule changed after the matcher signed) is rejected")
     d = route(trader, name, symbol)

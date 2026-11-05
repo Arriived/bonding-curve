@@ -316,8 +316,18 @@ def verify(record, rpc_url, chain_ok=True):
     name, room_id, acc, launch = decode_launch_ix(msg, program, HERE.parent / "idl/doors_v1.deployed.json")
     want = "create_room" if dec["kind"] == "new_room" else "open_door"
     check("instruction matches the decision kind", name == want, name)
-    for k in ("name", "symbol", "uri", "first_buy_lamports", "min_tokens_out", "max_fee_lamports"):
+    for k in ("name", "symbol", "uri", "first_buy_lamports", "max_fee_lamports"):
         check(f"Launch.{k} equals the request", launch[k] == req[k], repr(launch[k]))
+    # min_tokens_out: the request's own value, or (omitted) the recorded quote less its slippage. The quote
+    # is recorded, not recomputed here: replaying `sold` and the pending backlog needs every fee split.
+    fbq = record.get("first_buy_quote")
+    want_min = req["min_tokens_out"] if req.get("min_tokens_out") is not None else (
+        fbq["min_tokens_out"] if fbq else 0)
+    check("Launch.min_tokens_out equals the request, or the recorded quote less max_slippage_bps",
+          launch["min_tokens_out"] == want_min == record.get("launch_min_tokens_out", want_min)
+          and (fbq is None or req.get("min_tokens_out") is not None
+               or want_min == max(1, fbq["tokens"] * (10000 - fbq["max_slippage_bps"]) // 10000))
+          and (req["first_buy_lamports"] == 0 or want_min > 0), repr(launch["min_tokens_out"]))
     check("Launch.rule and face equal the decision", (launch["rule"], launch["face"]) ==
           (dec["rule_code"], dec["face"]), f"{launch['rule']},{launch['face']}")
     room_key = acc.get("room") or acc.get("core.room")

@@ -6,9 +6,9 @@ import json
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
-from solders.pubkey import Pubkey
 
 from . import config as config_mod
+from .auth import AuthError, Verifier
 from .chain import ChainState, RpcClient, RpcError
 from .decide import Refusal
 from .layouts import LayoutError
@@ -39,6 +39,7 @@ def create_app(service: Service, start_refresher=True):
     app = FastAPI(title="doors matcher", version="1")
     ip_limit = RateLimiter(service.cfg.rate_ip_per_min)
     launcher_limit = RateLimiter(service.cfg.rate_launcher_per_min)
+    verifier = Verifier()
 
     def refresher():
         while True:
@@ -97,11 +98,13 @@ def create_app(service: Service, start_refresher=True):
             return refuse(r)
         if not isinstance(req, dict):
             return refuse(Refusal("invalid_request", "body must be a JSON object"))
-        # Validate before using it as a rate-limit key, so arbitrary strings cannot fill the limiter.
+        # The launcher limit keys on a key the caller proved control of (M-3): a signature by the
+        # launcher over the canonical request, fresh and single-use. Nothing else is read first.
         try:
-            launcher_key = str(Pubkey.from_string(req.get("launcher", "")))
-        except (ValueError, TypeError):
-            return refuse(Refusal("invalid_request", "launcher must be a base58 public key"))
+            launcher_key = verifier.verify(req)
+        except AuthError as e:
+            service.metrics.inc("matcher_refusals_total", code=e.code)
+            return refuse(Refusal(e.code, e.message, 401 if e.code == "unauthenticated" else 422))
         if not launcher_limit.allow(launcher_key):
             service.metrics.inc("matcher_refusals_total", code="rate_limited_launcher")
             return refuse(Refusal("rate_limited", "too many requests for this launcher", 429))

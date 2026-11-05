@@ -57,8 +57,49 @@ Concurrent door launches into one room do not contend, and a dropped one blocks 
 
 ```json
 {"launcher": "<base58>", "name": "...", "symbol": "...", "uri": "...",
- "first_buy_lamports": 0, "min_tokens_out": 0, "max_fee_lamports": 0, "cu_price_micro_lamports": 0}
+ "first_buy_lamports": 0, "min_tokens_out": null, "max_slippage_bps": 200,
+ "max_fee_lamports": 0, "cu_price_micro_lamports": 0,
+ "issued_at": 1793900000, "signature": "<base58 ed25519 by launcher>"}
 ```
+
+**Every request is signed by the launcher** (`matcher_service/auth.py`).
+- **What is signed:** `signature` is the launcher's ed25519 signature (a wallet's
+  `signMessage`) over:
+
+  ```
+  doors-matcher:route:v1\n
+  ```
+
+  followed by the JSON array of the ten fields above, in this order:
+
+  ```
+  [launcher, name, symbol, uri, first_buy_lamports, min_tokens_out,
+   max_slippage_bps, max_fee_lamports, cu_price_micro_lamports, issued_at]
+  ```
+
+  Integers are sent as decimal strings, an absent optional field as `null`, with
+  no whitespace. `JSON.stringify` produces exactly these bytes.
+- **Freshness:** `issued_at` must be within 120 s of the server clock, and each
+  signature is accepted once.
+- **Strict fields:** unknown fields are refused.
+- **What it costs the caller:** one `signMessage` per request, in addition to
+  signing the returned transaction.
+- **What it buys:** the per-launcher rate limit keys on a key the caller proved
+  control of. It cannot be evaded with made-up pubkeys, or spent by someone else
+  against a victim's wallet (`program/docs/SECURITY_REVIEW.md` M-3).
+
+**First-buy price limit** (M-4). With `first_buy_lamports > 0`:
+- **Omitted `min_tokens_out`:** the service quotes the buy against the snapshot,
+  exactly as the program will execute it, settling any pending backlog first. It
+  signs `min_tokens_out = floor(quote × (10,000 − max_slippage_bps) / 10,000)`.
+  `max_slippage_bps` defaults to **200 (2%)**, within `DESIGN.md` §3's "frontend
+  default should be ≤ 2–3%", and must be 1–5,000.
+- **An explicit `min_tokens_out`** is used as given.
+- **An explicit 0** is refused.
+- **What it guarantees:** no launch buy is signed without a price limit. A price
+  that moves further than the tolerance before the launch lands makes the program
+  reject it (`Slippage`, e2e step 3b).
+- **Recorded:** the quote is stored in the decision record (`first_buy_quote`).
 
 `200` returns:
 
@@ -75,7 +116,8 @@ Refusals return `{"error": code, "message": ...}`:
 
 | HTTP | codes |
 |---|---|
-| 422 | `invalid_request`, `invalid_metadata`, `fee_limit` |
+| 401 | `unauthenticated` (missing, wrong, stale or reused launcher signature) |
+| 422 | `invalid_request`, `invalid_metadata`, `fee_limit`, `first_buy_unfillable` |
 | 409 | `in_flight` (a new-room decision for the same folded name or identity is unexpired); `graduated_identity` |
 | 413 | `tx_too_large` |
 | 429 | `rate_limited` |
@@ -126,7 +168,7 @@ start if `MATCHER_PRIVATE_KEY`, `MATCHER_SECRET_KEY` or `MATCHER_KEYPAIR` is set
 | `MATCHER_CU_LIMIT` | 400000 | compute-unit limit in the launch transaction |
 | `MATCHER_MAX_CU_PRICE` | 1000000 | highest priority fee a request may ask for (micro-lamports) |
 | `MATCHER_RATE_IP_PER_MIN` | 30 | per-IP limit on `/route` |
-| `MATCHER_RATE_LAUNCHER_PER_MIN` | 6 | per-launcher-pubkey limit on `/route`. **Not a security control:** the launcher field is unauthenticated (`program/docs/SECURITY_REVIEW.md` M-3) |
+| `MATCHER_RATE_LAUNCHER_PER_MIN` | 6 | per-launcher limit on `/route`, keyed on the signature-verified launcher |
 | `MATCHER_TRUST_X_FORWARDED_FOR` | 0 | `1` only behind a proxy that appends to it |
 | `MATCHER_TRUSTED_PROXY_HOPS` | 1 | with the above: the client IP is the X-Forwarded-For entry this many places from the right (1 for nginx `$proxy_add_x_forwarded_for`, 2 behind a GCP HTTPS load balancer). Entries further left are client-supplied and ignored |
 
@@ -223,7 +265,7 @@ pip install -r requirements-dev.txt
 python -m pytest -q tests
 ```
 
-The unit tests (102) cover:
+The unit tests (108) cover:
 
 - **the research matcher's 14 worked examples**, through the research module and through the
   service;
@@ -240,7 +282,10 @@ The unit tests (102) cover:
 - **signers:** keyfile refused in production, a bad signature rejected, GCP and AWS KMS against fakes,
   the CRC32C check value;
 - **store:** append-only, tamper detection;
-- **HTTP:** rate limits per IP and per launcher, health, metrics, decision lookup;
+- **HTTP:** launcher-signed requests (unsigned, wrong key, altered, stale, replayed, unknown fields), a victim's
+  limit not spendable by others, rate limits per IP and per launcher, health, metrics, decision lookup;
+- **first-buy price limit:** the quote against the program's reference vector, the 2% default, explicit
+  limits, refusal of an explicit 0 and of an unfillable buy;
 - **layout:** the decoder offsets equal the deployed layout file.
 
 **End to end:** `python3 tests/e2e/e2e.py <keys_dir>`. Its target is the single line in
@@ -257,6 +302,8 @@ The test runs these steps:
 2. The same identity from another wallet gets a floor door.
 3. A buy through door 0.
 4. The same name with a different symbol gets a T2n door.
+   - A door launch with a first buy and the default 2% limit fills exactly the quoted tokens when nothing
+     moves, and is rejected on-chain with `Slippage` when a 5 SOL buy lands first.
 5. A decision tampered after signing is rejected at signature verification.
 6. A decision with the matcher signature stripped is rejected on-chain with `AccountNotSigner` (3010).
 7. Replaying an accepted decision is rejected with `AlreadyProcessed`.
@@ -309,12 +356,9 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    open finding M-7** (`program/docs/SECURITY_REVIEW.md`). At v0-only sizes, a prefunded
    `create_room` takeover exhausts the program's heap. Legacy transactions cap the metadata
    below that size, which is the only reason it is unreachable today.
-8. **Open self-review findings for the service:**
-   - H-1: free name reservations let anyone block a name;
-   - M-3: unauthenticated per-launcher limit;
-   - M-4: door first buys default to no slippage limit.
-
-   Each needs an API decision (`program/docs/SECURITY_REVIEW.md`).
+8. **Open self-review finding for the service: H-1.** Name reservations are free.
+   Requests are now signed (M-3 is fixed), but keys are free too. The SlugLock
+   analysis and the remedies are in `program/docs/SECURITY_REVIEW.md`.
 9. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
    decision mix. Plus an on-call runbook for key rotation and RPC failover.
 10. **An archival RPC** for the verifier, and a public, independently operated verifier run over the

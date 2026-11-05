@@ -20,7 +20,11 @@ DISC = {k: account_discriminator(k) for k in ("Room", "Door", "SlugLock", "Confi
 # field -> (offset, bytes), the subset the service reads
 ROOM_FIELDS = {"room_id": (8, 8), "status": (23, 1), "room_mint": (24, 32), "reserve": (196, 8),
                "door_count": (220, 4), "volume_gross": (264, 16), "created_at": (288, 8),
-               "last_trade_at": (296, 8), "identity": (408, 32), "liveness_buckets": (665, 600)}
+               "last_trade_at": (296, 8), "identity": (408, 32), "liveness_buckets": (665, 600),
+               # curve state for the first-buy quote (quote.py)
+               "v_sol_lamports": (152, 8), "v_tok": (160, 8), "supply": (168, 8),
+               "graduation_trigger_lamports": (184, 8), "fee_bps": (192, 2), "sold": (204, 8),
+               "pending_reserve_sol": (240, 8)}
 DOOR_FIELDS = {"room": (8, 32), "index": (40, 4), "mint": (44, 32), "nonce": (303, 8)}
 SLUG_FIELDS = {"room_id": (8, 8)}
 CONFIG_FIELDS = {"paused": (172, 1), "matcher_authority": (174, 32), "room_fee_lamports": (84, 8),
@@ -63,6 +67,10 @@ def decode_room(data: bytes) -> dict:
         "created_at": struct.unpack_from("<q", data, f["created_at"][0])[0],
         "last_trade_at": struct.unpack_from("<q", data, f["last_trade_at"][0])[0],
         "identity": data[408:440].hex(),
+        **{k: struct.unpack_from("<Q", data, f[k][0])[0]
+           for k in ("v_sol_lamports", "v_tok", "supply", "graduation_trigger_lamports", "sold",
+                     "pending_reserve_sol")},
+        "fee_bps": struct.unpack_from("<H", data, f["fee_bps"][0])[0],
         "buckets": buckets,
     }
 
@@ -96,6 +104,9 @@ def decode_config(data: bytes) -> dict:
         "live_max_idle_seconds": u("live_max_idle_seconds"),
         "live_new_seconds": u("live_new_seconds"),
         "live_min_volume_lamports": u("live_min_volume_lamports"),
+        # a new room's curve, for the first-buy quote (quote.new_room_curve)
+        **{k: u(k) for k in ("v_sol_lamports", "v_tok", "supply", "graduation_trigger_lamports")},
+        "fee_bps": h("fee_bps"),
     }
 
 

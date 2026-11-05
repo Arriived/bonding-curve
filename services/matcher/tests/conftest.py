@@ -40,7 +40,10 @@ def config(**over):
     c = {"paused": False, "matcher_authority": MATCHER, "room_fee_lamports": 0, "door_fee_lamports": 0,
          "live_min_reserve_lamports": 500_000_000, "live_max_idle_seconds": 21_600,
          "live_new_seconds": 3_600, "live_min_volume_lamports": 5_000_000_000,
-         "launch_terms_hash": "ab" * 32}
+         "launch_terms_hash": "ab" * 32,
+         # default curve (research/doors_into_one_room/outputs/curve_quantities.json, as the program's tests use)
+         "v_sol_lamports": 30_000_852_995, "v_tok": 1_073_025_606_000_000, "supply": 10 ** 15,
+         "graduation_trigger_lamports": 85_018_013_680, "fee_bps": 100}
     c.update(over)
     return c
 
@@ -69,7 +72,17 @@ def room(room_id, faces, created_at=0, reserve=10_000_000_000, last_trade_at=Non
             "reserve": reserve, "last_trade_at": created_at if last_trade_at is None else last_trade_at,
             "buckets": buckets or [], "faces": [{"name": n, "symbol": s} for n, s in faces],
             "door_count": len(faces) if door_count is None else door_count, "volume_gross": 0,
-            "identity": "", "room_mint": ""}
+            "identity": "", "room_mint": "", **curve_state(reserve)}
+
+
+def curve_state(reserve, pending=0):
+    """Curve fields consistent with `reserve`: sold = inverse(reserve), as the program keeps them."""
+    from matcher_service import quote
+    c = config()
+    sold = quote.inverse(c["v_sol_lamports"], c["v_tok"], reserve) if reserve else 0
+    return {"v_sol_lamports": c["v_sol_lamports"], "v_tok": c["v_tok"], "supply": c["supply"],
+            "graduation_trigger_lamports": c["graduation_trigger_lamports"], "fee_bps": c["fee_bps"],
+            "sold": sold, "pending_reserve_sol": pending}
 
 
 def snapshot_from_example(inp):

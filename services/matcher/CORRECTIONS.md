@@ -278,3 +278,29 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
   keeps it unreachable today (README "What remains" 7).
 - **The matcher key used by tests and the e2e is rotated** (`program/docs/DEPLOYMENT.md` §9).
   The new key is also session-generated: devnet/localnet only.
+
+## 13. Security-review follow-up, 5 November 2026
+
+- **The reservation is load-bearing (H-1).**
+  - **What earlier text implied:** that SlugLock might already stop the
+    duplicates.
+  - **What `scripts/slug_coverage.py` shows:** SlugLock covers only pairs whose
+    ASCII folds are byte-identical. Every T2n pair escapes it, and so does every
+    T3 pair that differs by a stopword, a homoglyph, NFKC or an invisible
+    character: 9 of 16 tested.
+  - **Status:** the reservation stays, and H-1 stays open pending the owner's
+    choice of remedy (`program/docs/SECURITY_REVIEW.md`).
+- **Requests are signed (M-3).** `/route` now requires the launcher's signature
+  over the canonical request (`matcher_service/auth.py`, README "API"). This is an
+  API break for every client: each request costs one `signMessage`.
+- **Launch first buys carry a price limit by default (M-4).**
+  - **Default:** the quote less 2%.
+  - **Where the guidance lives:** the brief asked for a default "consistent with
+    the frontend guidance in the spec". The spec has none; the guidance is in
+    `research/doors_into_one_room/DESIGN.md` §3 ("≤ 2–3%"). Recorded here rather
+    than invented.
+  - **New refusals:** `min_tokens_out: 0` together with a first buy, and an
+    unfillable first buy.
+- **Verifier.** `verify_decision.py` accepts a signed `min_tokens_out` equal to
+  either the request's value, or the recorded quote less its slippage. It does not
+  recompute the quote from history.

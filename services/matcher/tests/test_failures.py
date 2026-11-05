@@ -377,3 +377,55 @@ def test_lone_surrogate_metadata_is_refused_not_a_server_error(tmp_path, kp):
     with pytest.raises(Refusal) as e:
         svc.route(dict(REQ, name="Elon\ud800"))
     assert e.value.code == "invalid_metadata" and rows(svc) == 0
+
+
+def test_first_buy_quote_matches_the_program_reference_vector():
+    """program/scripts/check_spec_conflicts.py on the SBF fixture: 101 lamports gross at 100 bps is
+    100 net and buys 3,612,416 base units on a fresh default curve."""
+    from matcher_service import quote
+    assert quote.first_buy_tokens(quote.new_room_curve(config()), 101) == 3_612_416
+
+
+def test_door_first_buy_defaults_to_a_two_percent_price_limit(tmp_path, kp):
+    import struct
+    from conftest import curve_state
+    from matcher_service import quote
+    r = room(1, [("Elon", "ELON")], created_at=NOW - 60, reserve=10_000_000_000)
+    r.update(curve_state(10_000_000_000, pending=3_000_000))   # a backlog the buy settles first
+    svc = make(tmp_path, kp, Snap(1000, [r]))
+    out = svc.route(dict(REQ, first_buy_lamports=1_000_000_000))
+    rec = svc.store.get(out["id"])["record"]
+    q = rec["first_buy_quote"]
+    assert q["tokens"] == quote.first_buy_tokens(r, 1_000_000_000) and q["max_slippage_bps"] == 200
+    assert q["min_tokens_out"] == q["tokens"] * 9800 // 10000 == rec["launch_min_tokens_out"]
+    data = bytes(Transaction.from_bytes(base64.b64decode(out["transaction_base64"])).message.instructions[-1].data)
+    name_len = struct.unpack_from("<I", data, 8)[0]
+    o = 12 + name_len
+    o += 4 + struct.unpack_from("<I", data, o)[0]          # symbol
+    o += 4 + struct.unpack_from("<I", data, o)[0]          # uri
+    first_buy, min_tokens = struct.unpack_from("<QQ", data, o)
+    assert (first_buy, min_tokens) == (1_000_000_000, q["min_tokens_out"])
+
+
+def test_launch_buy_price_limits_explicit_zero_and_bounds(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
+    for bad in (dict(first_buy_lamports=10 ** 9, min_tokens_out=0), dict(first_buy_lamports=10 ** 9, max_slippage_bps=0),
+                dict(first_buy_lamports=10 ** 9, max_slippage_bps=5_001)):
+        with pytest.raises(Refusal) as e:
+            svc.route(dict(REQ, **bad))
+        assert e.value.code == "invalid_request"
+    out = svc.route(dict(REQ, first_buy_lamports=10 ** 9, min_tokens_out=12345))
+    assert svc.store.get(out["id"])["record"]["launch_min_tokens_out"] == 12345   # explicit limit kept
+    out = svc.route(dict(REQ, first_buy_lamports=10 ** 9, max_slippage_bps=500))
+    q = svc.store.get(out["id"])["record"]["first_buy_quote"]
+    assert q["min_tokens_out"] == q["tokens"] * 9500 // 10000
+    out = svc.route(dict(REQ))                                                     # no first buy: no limit needed
+    assert svc.store.get(out["id"])["record"]["launch_min_tokens_out"] == 0
+
+
+def test_unfillable_first_buy_is_refused(tmp_path, kp):
+    full = room(1, [("Elon", "ELON")], created_at=NOW - 60, reserve=85_018_013_680, status=1)
+    svc = make(tmp_path, kp, Snap(1000, [full]))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ, first_buy_lamports=10 ** 9))
+    assert e.value.code == "first_buy_unfillable" and rows(svc) == 0
