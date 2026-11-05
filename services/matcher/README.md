@@ -358,6 +358,9 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    open finding M-7** (`program/docs/SECURITY_REVIEW.md`). At v0-only sizes, a prefunded
    `create_room` takeover exhausts the program's heap. Legacy transactions cap the metadata
    below that size, which is the only reason it is unreachable today.
+   **Do not add any instruction to a launch transaction either** (`RequestHeapFrame`, a memo,
+   anything). A prefunded `create_room` with a first buy and a priority fee already uses 64 of the
+   64 allowed instruction-trace entries (finding M-8).
 8. **Open self-review finding for the service: H-1.** Name reservations are free.
    Requests are now signed (M-3 is fixed), but keys are free too. The SlugLock
    analysis and the remedies are in `program/docs/SECURITY_REVIEW.md`.
