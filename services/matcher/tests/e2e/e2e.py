@@ -198,11 +198,15 @@ def run(rpc, keys, target):
 
     from matcher_service import auth
 
+    issued = [0]
+
     def route(who, nm, sym, **extra):
         svc.chain.refresh()
-        # Every /route request is signed by the launcher's key (matcher_service/auth.py, M-3).
+        # Every /route request is signed by the launcher's key (matcher_service/auth.py, M-3). A signed
+        # request is single use, so a new request identical to an earlier one advances issued_at.
+        issued[0] = max(int(time.time()), issued[0] + 1)
         body = auth.sign(who, {"launcher": str(who.pubkey()), "name": nm, "symbol": sym,
-                               "uri": "https://example.invalid/e2e.json", **extra})
+                               "uri": "https://example.invalid/e2e.json", "issued_at": issued[0], **extra})
         r = client.post("/route", json=body)
         if r.status_code != 200:
             fail(f"/route {nm}/{sym}: {r.status_code} {r.text}")

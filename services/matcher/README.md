@@ -80,7 +80,9 @@ Concurrent door launches into one room do not contend, and a dropped one blocks 
   Integers are sent as decimal strings, an absent optional field as `null`, with
   no whitespace. `JSON.stringify` produces exactly these bytes.
 - **Freshness:** `issued_at` must be within 120 s of the server clock, and each
-  signature is accepted once.
+  signature is accepted once. A retry or a new request identical to an earlier one
+  must therefore advance `issued_at`. ed25519 is deterministic, so identical bytes
+  give an identical, already-used signature.
 - **Strict fields:** unknown fields are refused.
 - **What it costs the caller:** one `signMessage` per request, in addition to
   signing the returned transaction.
