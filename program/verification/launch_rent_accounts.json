@@ -1,0 +1,25 @@
+{
+  "first_buy": 1010000000,
+  "name": "Funding room",
+  "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "room": "8StyLwc85czB5V9nZgPkbeaDoksdhNvzZVMivsKMqz9V",
+  "sizes": [
+    0,
+    0,
+    0,
+    17,
+    165,
+    165,
+    165,
+    165,
+    165,
+    170,
+    328,
+    420,
+    511,
+    1315
+  ],
+  "source": "actual accounts created by compiled SBF in LiteSVM",
+  "symbol": "MEME",
+  "uri": "https://example.invalid/m.json"
+}

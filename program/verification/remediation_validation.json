@@ -1,0 +1,17 @@
+{
+  "run": 42068809817,
+  "url": "https://github.com/Arriived/bonding-curve/actions/runs/42068809817",
+  "tested_commit": "b5a4c1194a9c63c10f30324e9c661c0738fa07b5",
+  "conclusion": "success",
+  "sbf_tests": {
+    "passed": 52,
+    "failed": 0,
+    "ignored": 0
+  },
+  "matcher_tests_passed": 118,
+  "property_iterations": 10000,
+  "elf_sha256": "db0011da7309a63dd73ee6ce1bd0ffc0ec202f43fcd4885ede76977603ea253e",
+  "mainnet_blocker": "on-chain NameLock",
+  "deployment_performed": false,
+  "devnet_transactions_sent": 0
+}

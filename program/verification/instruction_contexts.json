@@ -1,7 +1,17 @@
 {
+  "apply_liveness": {
+    "metas_with_optionals": 2,
+    "writable": 2,
+    "signers": 0
+  },
   "buy": {
     "metas_with_optionals": 15,
     "writable": 10,
+    "signers": 1
+  },
+  "cancel_liveness": {
+    "metas_with_optionals": 3,
+    "writable": 1,
     "signers": 1
   },
   "claim_door_fees": {
@@ -43,6 +53,11 @@
     "metas_with_optionals": 9,
     "writable": 6,
     "signers": 0
+  },
+  "schedule_liveness": {
+    "metas_with_optionals": 4,
+    "writable": 2,
+    "signers": 1
   },
   "sell": {
     "metas_with_optionals": 15,

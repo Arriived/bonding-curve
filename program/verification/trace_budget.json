@@ -4,6 +4,7 @@
   "rows": [
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "create_room",
       "logged_invocations": 46,
@@ -13,6 +14,7 @@
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "open_door",
       "logged_invocations": 27,
@@ -22,6 +24,7 @@
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "create_room",
       "logged_invocations": 47,
@@ -31,6 +34,7 @@
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "open_door",
       "logged_invocations": 28,
@@ -40,36 +44,60 @@
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "create_room",
-      "logged_invocations": 63,
+      "logged_invocations": 48,
       "prefunded": true,
       "priority_fee_instruction": false,
       "succeeded": true
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "open_door",
-      "logged_invocations": 35,
+      "logged_invocations": 29,
       "prefunded": true,
       "priority_fee_instruction": false,
       "succeeded": true
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "create_room",
-      "logged_invocations": 64,
+      "logged_invocations": 49,
       "prefunded": true,
       "priority_fee_instruction": true,
       "succeeded": true
     },
     {
       "error": "",
+      "extra_budget_instructions": 0,
       "first_buy": true,
       "instruction": "open_door",
-      "logged_invocations": 36,
+      "logged_invocations": 30,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "extra_budget_instructions": 2,
+      "first_buy": true,
+      "instruction": "create_room",
+      "logged_invocations": 51,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "extra_budget_instructions": 2,
+      "first_buy": true,
+      "instruction": "open_door",
+      "logged_invocations": 32,
       "prefunded": true,
       "priority_fee_instruction": true,
       "succeeded": true

@@ -19,7 +19,11 @@ devnet and mainnet. Activation slots and observation slots are saved in
 The maximum-metadata prefunded takeover is now a required regression instead of
 an ignored reproduction. The trace test requires successful launches and at
 least ten spare entries, including a priority fee and two extra budget instructions.
-Execution results must be recorded before either finding is marked resolved.
+Final compiled-program evidence records 49/64 entries for the prefunded
+priority-fee creation path (formerly 64/64), or 51/64 with two extra budget
+instructions. All maximum-metadata launch/takeover regressions pass with the
+stock heap. M-8 and M-7 are resolved for the tested source; the deployed ELF
+is unchanged until an upgrade is authorized.
 
 ## H-1: interim service mitigation; mainnet remains blocked
 
@@ -36,7 +40,8 @@ failures release the entire claim; blockhash expiry prunes it. Door requests
 continue independently. The request's existing wallet signature authenticates
 the launcher before the HTTP endpoint reaches this pipeline.
 
-This is a balance check, not a bond or escrow. Multiple funded wallets can still
+This is a balance check, not a bond or escrow; funds can move after the check.
+Multiple funded wallets can still
 squat, and process-local reservations still require a single replica. The
 consolidation rule still depends on the operator's service: 9/16 audited routed
 pairs have distinct SlugLocks. **An on-chain NameLock covering the matcher's
@@ -64,3 +69,18 @@ All routing, takeover and release paths keep reading the same active Config gate
 
 The program upgrade authority retains its existing power to replace this code;
 this timelock constrains the Config-admin instruction path, not program upgrades.
+
+## Verification
+
+[CI run 42068809817](https://github.com/Arriived/bonding-curve/actions/runs/42068809817)
+passed against source commit `b5a4c1194a9c63c10f30324e9c661c0738fa07b5`:
+
+- 52 compiled SBF tests passed, 0 failed and 0 ignored, including the former M-7 reproduction.
+- 10,000 mixed-operation property iterations executed.
+- 118 matcher tests passed, including the rent budget versus actual SBF-created accounts.
+- Host/SBF compilation, formatting, dependency policy, IDL equality and packed-layout checks passed.
+
+`verification/remediation_validation.json` identifies the tested commit, ELF,
+run and result counts. The refreshed trace, account-size and build records
+come directly from that run; their source hashes match the checked-in code.
+No deployment or devnet transaction was performed.
