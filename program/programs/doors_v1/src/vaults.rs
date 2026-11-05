@@ -54,6 +54,8 @@ pub fn debit(from: &AccountInfo, to: &AccountInfo, n: u64) -> Result<()> {
     );
     Ok(())
 }
+/// Most seeds a program PDA uses (`["door_mint", room, nonce]`), before the bump.
+pub const MAX_SEEDS: usize = 3;
 pub fn create_pda<'a>(
     user: &AccountInfo<'a>,
     target: &AccountInfo<'a>,
@@ -70,9 +72,14 @@ pub fn create_pda<'a>(
         Error::Account
     );
     require!(target.data_is_empty(), Error::Account);
-    let mut signed = seeds.to_vec();
+    // Signer seeds on the stack: `seeds.to_vec()` + `push` allocated twice and stranded the first buffer
+    // on the never-freed heap, 96-144 bytes per created account (about 12 per create_room).
     let bb = [bump];
-    signed.push(&bb);
+    let mut buf: [&[u8]; MAX_SEEDS + 1] = [&[]; MAX_SEEDS + 1];
+    require!(seeds.len() <= MAX_SEEDS, Error::Pda);
+    buf[..seeds.len()].copy_from_slice(seeds);
+    buf[seeds.len()] = &bb;
+    let signed = &buf[..seeds.len() + 1];
     let rent = Rent::get()?.minimum_balance(funded_space);
     if target.lamports() == 0 {
         // A fresh account needs one System CPI. Always using transfer +
@@ -81,7 +88,7 @@ pub fn create_pda<'a>(
         invoke_signed(
             &system_instruction::create_account(user.key, target.key, rent, space as u64, owner),
             &[user.clone(), target.clone(), system.clone()],
-            &[&signed],
+            &[signed],
         )?;
         return Ok(bump);
     }
@@ -102,7 +109,7 @@ pub fn create_pda<'a>(
             owner,
         ),
         &[target.clone(), user.clone(), system.clone()],
-        &[&signed],
+        &[signed],
     )?;
     require!(
         target.lamports() == add(before, needed)?
