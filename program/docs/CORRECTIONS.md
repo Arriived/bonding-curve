@@ -467,3 +467,33 @@ spec has none. The guidance is `DESIGN.md` §3 ("≤ 2–3% slippage"). The serv
 +162,560 lamports). But the design defines one shared mutable gate, and changing the gate is the
 only defence against cheap wash-traded liveness (I-3). Recommendation, in `SECURITY_REVIEW.md`:
 delay threshold changes, rather than snapshot them.
+
+## Devnet deployment (5 November 2026)
+
+- **Deployed.** ELF `c36ba443…ed29` (commit `b6fe25d`) is on devnet: deploy slot 518,934,300,
+  on-chain bytes equal to the pin. Config is initialised and read back at slot 518,934,315, with
+  0 of 22 fields differing. The program e2e passes on devnet, 33/33, and so does the matcher
+  service's. Evidence and tables: `DEPLOYMENT.md` §5 and §7, and `verification/devnet/devnet/`.
+  `PENDING.md` is removed, and `devnet/e2e-target` is `devnet`.
+- **`deploy.sh` could not write to devnet from this environment.**
+  - **Why:** the CLI's default sends buffer writes to validator TPUs over QUIC, which an
+    HTTPS-only network cannot reach. It failed with `Max retries exceeded` and left a funded
+    buffer behind.
+  - **Recovery:** the buffer was closed back to the deploy wallet (§5).
+  - **Fix:** `deploy.sh` now uses `--use-rpc --max-sign-attempts 20`, and prints the
+    buffer-recovery commands on failure.
+- **Live devnet CU exceeded the VM observed maximum on five routes:**
+
+  | route | above the VM maximum |
+  |---|---|
+  | `create_room` | +12,003 |
+  | `claim_door_fees` | +4,500 |
+  | `convert` | +2,781 |
+  | `open_door` | +557 |
+  | `retire_pending` | +430 |
+
+  This is the real-cluster version of the localnet observation: VM figures are not ceilings.
+- **The cost estimate in §5 was close.**
+  - **What the doc said:** "about 3.5 SOL" for a 525,032-byte ELF.
+  - **Actual:** ProgramData for the 522,776-byte ELF took 2,656,580,920 lamports, plus a
+    0.05 SOL Config top-up and the e2e wallet top-ups (§5).

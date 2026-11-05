@@ -1,7 +1,7 @@
 # Doors v1: pre-audit security self-review
 
 5 November 2026. Branches `claude/program-v1` (program) and `claude/matcher-service`
-(off-chain matcher). Nothing is deployed.
+(off-chain matcher). Deployed to devnet only (5 November 2026, slot 518,934,300; `DEPLOYMENT.md` §5); nothing on mainnet.
 
 **This is the authors' own review, written for the external audit.** The code
 under review was largely written by the reviewer. Read every "clean" verdict as
@@ -50,6 +50,7 @@ known (already documented).
 | L-3 | Low | fixed | Lone UTF-16 surrogates in metadata caused a 500, not a refusal |
 | L-4 | Low | fixed | The program e2e compared live CU against a different ELF |
 | L-5 | Low | fixed | The spec table generator still wrote the old index-based door seeds |
+| L-6 | Low | fixed | The decision verifier took a transaction's block time as the program's Clock; on devnet they differ |
 | I-1 | Info | fixed | `claim` edited lamports before its last CPI, the class that broke `8ce373f` |
 | I-2 | Info | open | The design's door-fee rebate lowers the cost of sandwiching every trade in a room |
 | I-3 | Info | known | Keeping a dead room live costs about 0.02 SOL a day |
@@ -281,7 +282,7 @@ trading room could be sandwiched for its whole size.
   buy.
 - **On-chain, localnet e2e step 3b:**
   - an unmoved door first buy fills **exactly** the quoted tokens;
-  - the same launch front-run by a 5 SOL buy is rejected with `Slippage`.
+  - the same launch front-run by a 1 SOL buy is rejected with `Slippage`.
 
 **Residual.** The verifier checks the signed minimum against the *recorded*
 quote. It does not recompute the quote from history, because that needs every
@@ -546,6 +547,32 @@ spec's door-seed row.
 
 **Fix.** Corrected, and the per-door metadata sizes now come from one place
 (`account_sizes.py`).
+
+### L-6 — The verifier took block time for Clock (fixed)
+
+**What happened.**
+- `verify_decision.py` rebuilds room state from events and stamps each one with
+  the transaction's block time. It assumed that block time equals the `Clock` the
+  program read.
+- **On localnet they are equal; on devnet they differ by a second.** The first
+  devnet run reported DISAGREE on a correct decision:
+  `created_at` and `last_trade_at` rebuilt as 1793880912, against 1793880911 on
+  the account.
+- A false DISAGREE undermines the verifier as much as a false AGREE would.
+
+**Fix.**
+- `created_at` is immutable, so it is read exactly from the Room account.
+- `last_trade_at` and the bucket starts are compared within 5 s.
+- The decision is recomputed at both ends of that tolerance. If the outcome
+  depends on it, the verifier reports **INCONCLUSIVE** (exit 2), never AGREE or
+  DISAGREE.
+- A doctored time beyond the tolerance is still caught (e2e step 9, new case).
+
+**Results.** All six recorded decisions from the failed devnet run now verify
+AGREE, and so does every decision in the passing devnet and localnet runs.
+
+**Exact replay** would need the program to emit its Clock in `RoomCreated` and
+`Trade`. That is an IDL change, left for the owner.
 
 ### I-1 — `claim` debited before its last CPI (fixed as hardening)
 
@@ -906,10 +933,13 @@ versions across both lockfiles:
   at the versions LiteSVM bundles (hashes in `verification/build.json`).
 - **Anchor 1.2.2 generated validation code.** The constraints were read as
   written, not the macro expansion.
-- **Real clusters.** Nothing is deployed, so no devnet or mainnet behaviour has
-  been observed:
-  - scheduling, write-lock contention and priority-fee dynamics are unmeasured;
-  - CU figures are LiteSVM measurements.
+- **Mainnet, and load on devnet.** The program is deployed on devnet, and both
+  e2e suites pass there (`DEPLOYMENT.md` §5, §7), but:
+  - that is one sequential run, so scheduling, write-lock contention and
+    priority-fee dynamics under load are unmeasured;
+  - live devnet CU exceeded the VM maxima on five routes (`create_room` by
+    12,003);
+  - nothing has run on mainnet.
 - **Heap headroom on the live runtime and on future runtimes.** Measured on the
   bundled Agave 4.3.2 VM only. An Agave change to CPI or account serialisation
   could move it; the local 4.4.0 validator already differs in CU (§3, CU seam).

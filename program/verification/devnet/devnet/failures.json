@@ -1,0 +1,73 @@
+{
+  "cases": [
+    {
+      "block_time": 1793880842,
+      "error": "{\"InstructionError\":[1,{\"Custom\":3010}]}",
+      "error_log": "Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.",
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "create_room_without_matcher_signature",
+      "ok": false,
+      "program_cu": 9104,
+      "signature": "2bSpxgEBGpmH7mJbq53pZcF4og3GEvDmftoZocLWeVE5cW2kWVdQJbwDFYkvnQjpMpqoiobUxz1U4x5BcFWacTD5",
+      "slot": 518934517,
+      "transaction_cu": 9254
+    },
+    {
+      "block_time": 1793880843,
+      "error": "{\"InstructionError\":[1,{\"Custom\":3010}]}",
+      "error_log": "Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.",
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "open_door_without_matcher_signature",
+      "ok": false,
+      "program_cu": 9021,
+      "signature": "33DvxrPDWYnag6Vd2n4qiqUpvckBVsGHxSEVwZyqduoWBitGmHA8gLvZWGrMFdxFhryUoH4vfXxSQU5qabiASsuf",
+      "slot": 518934524,
+      "transaction_cu": 9171
+    },
+    {
+      "landed": false,
+      "name": "create_room_signature_over_different_routing_data",
+      "rpc_error": "sendTransaction: {\"code\":-32002,\"data\":{\"accounts\":null,\"err\":\"SignatureFailure\",\"fee\":null,\"innerInstructions\":null,\"loadedAccountsDataSize\":0,\"loadedAddresses\":null,\"logs\":[],\"postBalances\":null,\"postTokenBalances\":null,\"preBalances\":null,\"preTokenBalances\":null,\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0},\"message\":\"Transaction simulation failed: Transaction did not pass signature verification\"}"
+    },
+    {
+      "landed": false,
+      "name": "open_door_signature_over_different_routing_data",
+      "rpc_error": "sendTransaction: {\"code\":-32002,\"data\":{\"accounts\":null,\"err\":\"SignatureFailure\",\"fee\":null,\"innerInstructions\":null,\"loadedAccountsDataSize\":0,\"loadedAddresses\":null,\"logs\":[],\"postBalances\":null,\"postTokenBalances\":null,\"preBalances\":null,\"preTokenBalances\":null,\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0},\"message\":\"Transaction simulation failed: Transaction did not pass signature verification\"}"
+    },
+    {
+      "block_time": 1793880846,
+      "error": "{\"InstructionError\":[1,{\"Custom\":1}]}",
+      "error_log": "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1",
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "sell_exceeding_balance",
+      "ok": false,
+      "program_cu": 28683,
+      "signature": "52E1AFbeWJUkWcScS6f5cyBLHg4MrkkwkL3oyxuMHdugiAWyCZ4xNcefUEWSfsPktsG4cgTm2gCrz2eRsEZogfR5",
+      "slot": 518934534,
+      "transaction_cu": 28833
+    },
+    {
+      "block_time": 1793880847,
+      "error": "{\"InstructionError\":[1,{\"Custom\":6006}]}",
+      "error_log": "Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:757. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.",
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "claim_door_fees_by_non_recipient",
+      "ok": false,
+      "program_cu": 21149,
+      "signature": "5jrZerLgyBzzNcLs6LriomQPXumBJzLy4CvacKxoJ7S4M2mYTMjjhrH3nWdQfpyHpLawVYaXiELub61kL26z4Hyr",
+      "slot": 518934540,
+      "transaction_cu": 21299
+    }
+  ],
+  "probe_room": "67ZBkACH8RwNeSVujrgWXdrrF168BvhaSsdoSmZ9bGRB",
+  "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "room": "EU1JFQmgJ2rpkUFqoEbWhpJwbMnyb5Aw4qdv6jRyP1Yv"
+}
