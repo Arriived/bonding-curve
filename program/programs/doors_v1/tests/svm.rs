@@ -1469,10 +1469,89 @@ fn fee_recipient_rotation_and_pause() {
         false,
         "update_config",
     );
-    f.fail(f.trade_ix(Some(0), true, 101, 0), false);
-    f.fail(f.open_ix(launch("Paused"), None), true);
+    f.fail_error(f.trade_ix(Some(0), true, 101, 0), false, Some("Paused"));
+    f.fail_error(f.trade_ix(None, true, 101_000, 0), false, Some("Paused"));
+    f.fail_error(f.open_ix(launch("Paused"), None), true, Some("Paused"));
     f.claim(1, 0);
     f.claim(2, 0);
+}
+
+// Pause must not trap holders: while paused, door sells, room sells and conversions still
+// execute with every invariant asserted (`checked` + `audit`), while buys, launches and
+// fee settlement stay blocked. Unpausing restores buys.
+#[test]
+fn pause_blocks_new_positions_but_holders_can_still_exit() {
+    let mut f = Fixture::new(0);
+    f.open(launch("Second face"));
+    f.trade(Some(0), true, 50_000_000);
+    f.trade(Some(1), true, 20_000_000);
+    f.trade(None, true, 10_000_000);
+    assert!(f.r().pending_reserve_sol > 0);
+    let set_paused = |f: &mut Fixture, paused: bool| {
+        let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+        s.paused = paused;
+        f.checked(
+            instr(
+                a::UpdateConfig {
+                    admin: f.user.pubkey(),
+                    config: f.cfg,
+                },
+                ix::UpdateConfig {
+                    settings: s,
+                    new_admin: f.user.pubkey(),
+                },
+            ),
+            false,
+            "update_config",
+        );
+    };
+    set_paused(&mut f, true);
+    // Blocked: every way to take a new position or create anything.
+    f.fail_error(
+        f.trade_ix(Some(0), true, 1_010_000, 0),
+        false,
+        Some("Paused"),
+    );
+    f.fail_error(f.trade_ix(None, true, 1_010_000, 0), false, Some("Paused"));
+    f.fail_error(f.open_ix(launch("Paused door"), None), true, Some("Paused"));
+    let c = f.core();
+    let output = c.retired;
+    f.fail_error(
+        instr(
+            a::Retire {
+                core: c,
+                retired_output: output,
+                token_program: spl_token_2022_interface::ID,
+            },
+            ix::RetirePending {},
+        ),
+        false,
+        Some("Paused"),
+    );
+    // Open: convert part of door 0 into door 1, then exit every position completely.
+    let held0 = f.balance(f.doors[0].user);
+    f.convert(0, 1, held0 / 2);
+    let room_ata = ata(
+        f.user.pubkey(),
+        f.r().room_mint,
+        spl_token_2022_interface::ID,
+    );
+    for door in [Some(0), Some(1), None] {
+        let held = match door {
+            Some(i) => f.balance(f.doors[i].user),
+            None => f.balance(room_ata),
+        };
+        assert!(held > 0);
+        f.trade(door, false, held);
+    }
+    assert_eq!(f.balance(f.doors[0].user), 0);
+    assert_eq!(f.balance(f.doors[1].user), 0);
+    assert_eq!(f.balance(room_ata), 0);
+    assert_eq!(f.r().sold, f.r().retired);
+    // Claims were never gated.
+    f.claim(0, 0);
+    set_paused(&mut f, false);
+    f.trade(Some(1), true, 1_010_000);
 }
 #[test]
 fn liveness_boundary_release_takeover_and_exact_floor() {
@@ -2323,4 +2402,75 @@ fn takeover_heap_case(create_uri: usize) {
     let open_cu = *f.cus["open_door"].last().unwrap();
     println!("PREFUNDED_TAKEOVER_CU create_room={create_cu} open_door={open_cu}");
     assert!(create_cu < 400_000 && open_cu < 400_000);
+}
+
+// Instruction-trace budget of launches. A transaction may hold at most 64 instruction entries
+// (top-level instructions plus every CPI, Agave MAX_INSTRUCTION_TRACE_LENGTH). Prefunding a PDA turns
+// its one create_account CPI into transfer + allocate + assign, so a third party can raise a launch's
+// trace use. Shapes are the matcher service's: [cu_limit, launch] and, with a priority fee,
+// [cu_limit, cu_price, launch]. Ordinary metadata; the trace does not depend on metadata length.
+#[test]
+fn launch_instruction_trace_budget() {
+    fn shaped(f: &mut Fixture, ix: Instruction, price: bool) -> (bool, usize, String) {
+        f.svm.expire_blockhash();
+        let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(400_000)];
+        if price {
+            ixs.push(ComputeBudgetInstruction::set_compute_unit_price(1));
+        }
+        ixs.push(ix);
+        let tx = Transaction::new(
+            &vec![&f.user, &f.matcher],
+            Message::new(&ixs, Some(&f.user.pubkey())),
+            f.svm.latest_blockhash(),
+        );
+        let count = |logs: &[String]| logs.iter().filter(|l| l.contains(" invoke [")).count();
+        match f.svm.send_transaction(tx) {
+            Ok(m) => (true, count(&m.logs), String::new()),
+            Err(e) => (false, count(&e.meta.logs), format!("{:?}", e.err)),
+        }
+    }
+    let prefund = |f: &mut Fixture, ix: &Instruction| {
+        let rent = f.svm.minimum_balance_for_rent_exemption(0);
+        for account in &ix.accounts {
+            if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+                f.svm.airdrop(&account.pubkey, rent).unwrap();
+            }
+        }
+    };
+    let mut rows = Vec::new();
+    for (prefunded, price) in [(false, false), (false, true), (true, false), (true, true)] {
+        let mut f = Fixture::empty(0);
+        let mut l = launch("Trace room");
+        l.first_buy_lamports = 1_010_000_000;
+        let ix = f.create_ix(l, None);
+        if prefunded {
+            prefund(&mut f, &ix);
+        }
+        let (ok, invokes, err) = shaped(&mut f, ix, price);
+        rows.push(json!({"instruction":"create_room","first_buy":true,"prefunded":prefunded,
+            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"error":err}));
+        let mut g = Fixture::new(0);
+        let mut l = launch("Trace door");
+        l.first_buy_lamports = 101_000_000;
+        let ix = g.open_ix(l, None);
+        if prefunded {
+            prefund(&mut g, &ix);
+        }
+        let (ok, invokes, err) = shaped(&mut g, ix, price);
+        rows.push(json!({"instruction":"open_door","first_buy":true,"prefunded":prefunded,
+            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"error":err}));
+    }
+    for r in &rows {
+        println!("TRACE {r}");
+    }
+    let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification");
+    std::fs::write(
+        out.join("trace_budget.json"),
+        serde_json::to_string_pretty(&json!({"max_instruction_trace_length":64,
+            "note":"logged_invocations counts runtime 'invoke [n]' log lines (programs invoked, top level and CPI)",
+            "rows":rows}))
+        .unwrap()
+            + "\n",
+    )
+    .unwrap();
 }

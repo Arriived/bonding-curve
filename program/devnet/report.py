@@ -1,4 +1,5 @@
-"""Markdown tables from one run_deploy.sh output directory, against the VM baseline of the same ELF.
+"""Markdown tables from one run_deploy.sh output directory, compared with the VM observations of the same ELF
+(observed maxima from LiteSVM's Agave 4.3.2 at fixed addresses: not upper bounds).
 
 Usage: python3 devnet/report.py <out_dir> <svm_report.json> <cluster label> [--check]
 Prints markdown. Every number comes from the JSON files; nothing is typed in.
@@ -43,8 +44,10 @@ def main():
          "| field | on-chain | expected | match |", "|---|---|---|---|"]
     for f in config["fields"]:
         L.append(f"| `{f['field']}` | `{f['on_chain']}` | `{f['expected']}` | {'yes' if f['match'] else '**NO**'} |")
-    L += ["", "**Transactions, live CU against the VM measurement of the same ELF:**", "",
-          "| step | signature | slot | live program CU | VM min–max CU (same ELF) | live − VM max |",
+    L += ["", "**Transactions, live CU against the VM observations of the same ELF** (VM figures are observed "
+          "values from LiteSVM's Agave 4.3.2 at fixed addresses, not upper bounds; a positive last column is "
+          "expected, not a failure):", "",
+          "| step | signature | slot | live program CU | VM observed min–max CU (same ELF) | live − VM observed max |",
           "|---|---|---|---|---|---|"]
     for t in init + smoke["transactions"]:
         n = t["name"]

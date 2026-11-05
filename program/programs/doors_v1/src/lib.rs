@@ -392,7 +392,7 @@ pub mod doors_v1 {
     }
     pub fn convert(ctx: Context<Convert>, amount: u64, max_fee_lamports: u64) -> Result<()> {
         let a = ctx.accounts;
-        require!(!a.core.config.paused, Error::Paused);
+        // Not gated by pause: a holder can always move between doors and exit (spec §3, pause).
         require!(amount > 0, Error::Amount);
         let fee = a.core.config.convert_fee_lamports;
         require!(fee <= max_fee_lamports, Error::FeeLimit);
@@ -687,7 +687,9 @@ fn require_top_level_launch() -> Result<()> {
 }
 fn trade(ctx: Context<TradeAccounts>, buy: bool, amount: u64, min: u64) -> Result<()> {
     let a = ctx.accounts;
-    require!(!a.core.config.paused, Error::Paused);
+    // Pause stops new positions only. Sells stay open so a holder can always exit at the
+    // curve price; every sell invariant is asserted per instruction and needs no buy.
+    require!(!buy || !a.core.config.paused, Error::Paused);
     let ri = a.core.room.to_account_info();
     let di = a.door.as_ref().map(|d| d.to_account_info());
     let route = if let Some(d) = a.door.as_mut() {
