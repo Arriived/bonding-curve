@@ -495,3 +495,20 @@ for name, build in shapes.items():
     ])
 print("Key order", *all_keys)
 ```
+
+### Verification status
+
+The matcher unit suite passed 128 tests. The deployed Doors ELF matched
+`program/devnet/DEPLOY_ELF.sha256` at finalized devnet slot 519,099,815.
+`program/scripts/fetch_cluster_programs.py` captured the deployed SPL programs
+at finalized slot 519,096,745. The SBF rerun and compute comparison are pending.
+
+A read-only devnet simulation of create, extend and freeze passed at slot
+519,100,215. The simulated table had all six entries in order, with no
+authority. An initial simulation at finalized commitment rejected the
+derivation slot, 519,100,105, as missing from SlotHashes. The successful
+simulation used the provisioning script's confirmed preflight commitment.
+The public RPC returned HTTP 410 for the dedicated test payer's airdrop.
+A funded devnet signer is needed to send the freeze transaction and record
+the finalized table. The existing matcher and smoke-wallet key files are
+needed for the devnet end-to-end runs.
