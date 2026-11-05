@@ -145,3 +145,28 @@ def test_verifier_derives_the_same_name_key_from_the_research_matcher():
     assert len(launches) > 40
     for name, symbol in launches:
         assert vd.name_key_research(rm, name, symbol) == rules.name_lock_key(name, symbol), (name, symbol)
+
+
+def test_verifier_recompute_returns_the_same_fields_on_every_path():
+    """Each recompute() outcome carries the fields verify() compares (a floor door once lacked one)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("verify_decision", SERVICE / "scripts/verify_decision.py")
+    vd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vd)
+    rm = research_matcher()
+    cfg = {"live_min_reserve_lamports": 500_000_000, "live_max_idle_seconds": 21_600, "live_new_seconds": 3_600,
+           "live_min_volume_lamports": 5_000_000_000}
+    now = 1_800_000_000
+
+    def room(rid, faces, created_at, status=0):
+        return {"room_id": rid, "status": status, "faces": [{"name": n, "symbol": s} for n, s in faces],
+                "created_at": created_at, "reserve": 0, "last_trade_at": created_at, "buckets": []}
+    live, dead = now - 60, now - 10 * 86400
+    want = {"kind", "rule", "room_id", "old_holder", "old_name_holder"}
+    cases = [({1: room(1, [("Elon", "ELON")], live)}, 1, None),     # floor door
+             ({1: room(1, [("Elon", "ELON")], live)}, None, None),  # text door
+             ({1: room(1, [("Elon", "ELON")], dead)}, 1, 1),        # new room over two dead holders
+             ({}, None, None)]                                      # new room
+    for rooms, holder, name_holder in cases:
+        out = vd.recompute(rm, rooms, holder, cfg, now, "Elon", "ELON", name_holder)
+        assert set(out) == want, (rooms, holder, name_holder, out)

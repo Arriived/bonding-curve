@@ -320,7 +320,7 @@ def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None)
         if h["status"] > 1:
             return {"kind": "refuse", "rule": "graduated_identity"}
         if rm.is_live(research_room(h), now, p)[0]:
-            return {"kind": "door", "rule": "floor", "room_id": holder_id, "old_holder": None}
+            return {"kind": "door", "rule": "floor", "room_id": holder_id, "old_holder": None, "old_name_holder": None}
         old_holder = holder_id
     candidates = [research_room(r) for r in rooms.values() if r["status"] <= 1]
     out = rm.decide({"now": now, "candidate": {"name": name, "symbol": symbol}, "rooms": candidates,
