@@ -122,7 +122,7 @@ Additional size checks are recorded at slots 464,036,284–464,036,304 in `outpu
 
 | quantity | old rate on revised schema | verified rate on revised schema |
 |---|---|---|
-| launch rent, lamports | 37,604,880 | 27,447,240 |
+| launch rent, lamports | 38,280,000 | 27,940,000 |
 | graduation rent, lamports | 24,680,160 | 18,013,680 |
 
 All current rent-dependent spec figures are regenerated. The trigger remains a Config value snapshotted into each Room; a later rent/default change does not rewrite an old room's curve or graduation trigger. Runtime graduation uses the rent sysvar, not this calibration coefficient.
@@ -143,7 +143,9 @@ Two changes surfaced by the matcher service (`services/matcher/CORRECTIONS.md`
   lands blocks nothing. A nonce collision fails `init` cleanly; the client
   requests a fresh decision. `door_count` and `Door.index` remain a
   creation-order statistic and the `("door", index)` metadata label, but no
-  address depends on them. `Door` stores `nonce: u64` in former reserved bytes
+  address depends on them. Door mints also carry `("door_nonce", <u64
+  decimal>)` and `("program", <program id>)`, so the mint alone derives its
+  Door PDA (§3, Mints). `Door` stores `nonce: u64` in former reserved bytes
   (size unchanged, 328), and `DoorOpened` appends `nonce`.
 - **Signed launches carry `expires_at_slot: u64`.** `create_room` and
   `open_door` reject (`Expired`) when the executing slot is past it, or when
@@ -258,8 +260,8 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 <!-- BEGIN GENERATED DOOR ACCOUNTS -->
 | account | seeds / derivation | data bytes | rent (lamports) |
 |---|---|---|---|
-| Door | `["door", room, door_nonce u64 LE]` (door 0: nonce 0) | 328 | 2,316,480 |
-| DoorMint (max metadata) | `["door_mint", room, door_nonce]` | 638 | 3,891,280 |
+| Door (door 0: nonce 0) | `["door", room, door_nonce u64 LE]` | 328 | 2,316,480 |
+| DoorMint (max metadata) | `["door_mint", room, door_nonce]` | 735 | 4,384,040 |
 | DoorVault | `["door_vault", door]` | 165 | 1,488,440 |
 | DoorRoomVault | `["door_room_vault", door]` | 165 | 1,488,440 |
 | trader's Token-2022 ATA | `ATA program` | 170 | 1,513,840 |
@@ -271,9 +273,9 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 | item | lamports | SOL | USD at assumed $150/SOL |
 |---|---|---|---|
 | per room, excluding door accounts | 18,262,600 | 0.018263 | $2.74 |
-| per door, max metadata | 9,184,640 | 0.009185 | $1.38 |
-| per door, minimum metadata | 7,919,720 | 0.007920 | $1.19 |
-| launch room + door 0, max metadata | 27,447,240 | 0.027447 | $4.12 |
+| per door, max metadata | 9,677,400 | 0.009677 | $1.45 |
+| per door, minimum metadata | 8,315,960 | 0.008316 | $1.25 |
+| launch room + door 0, max metadata | 27,940,000 | 0.027940 | $4.19 |
 | graduation rent, paid from reserve | 18,013,680 | 0.018014 | $2.70 |
 <!-- END GENERATED RENT TOTALS -->
 
@@ -293,7 +295,16 @@ closed, so their rent is permanent.
 **Nothing else.** No PermissionedBurn, transfer fee, hook or close authority.
 To wallets and scanners they look like ordinary fixed-supply memecoin mints.
 
-- Door mints carry `additional_metadata = [("room", <room pubkey>), ("door", <index>)]`.
+- Door mints carry `additional_metadata = [("room", <room pubkey>), ("door", <index>),
+  ("door_nonce", <door_nonce, u64 decimal>), ("program", <program id>)]`, in that order.
+  - **The mint alone locates its door:** `Door = PDA(["door", room, door_nonce u64 LE],
+    program)`. `door` is the creation-order index and locates nothing.
+  - **This is a locator, not a proof.** Anyone can create a Token-2022 mint with the
+    same labels. An integrator verifies by deriving the PDA with the *known* doors
+    program ID (not the `program` label), reading that `Door`, and checking
+    `door.mint` equals this mint and `door.room` equals the `room` label.
+  - Cost: +97 bytes per door mint at a 20-digit nonce, +492,760 lamports of rent
+    (`scripts/account_sizes.py`); door 0's nonce is `0`.
 - **The room mint carries door 0's name, symbol and URI**, which the launcher
   supplies in `create_room`, plus `[("room", <room pubkey>)]`. Its
   `update_authority` is None, so the room's face is fixed permanently by the
@@ -622,7 +633,7 @@ recursively requiring the new lock to have an older holder.
 
 1. **Door mint.**
    1. Create `DoorMint`, the same sequence as the room mint, with metadata
-      `("room", …), ("door", index)`.
+      `("room", …), ("door", index), ("door_nonce", …), ("program", …)`.
    2. Create `DoorVault` and mint 10¹⁵ into it.
    3. Mint authority → None, metadata update authority → None.
 2. **Accounts.** Create `DoorRoomVault` (empty) and `Door` (`backing = 0`,
@@ -1182,37 +1193,37 @@ Founder share is present but defaults to 0 bps of the program fee; door and foun
 | through door N, per $1M | $6.0k | $0 | $0.00 | $4.0k | $10.0k |
 | room token through the program, per $1M | $0 | $6.0k | $0.00 | $4.0k | $10.0k |
 
-Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.009185 SOL = $1.38. Graduation rent (0.018014 SOL) is paid from the reserve at graduate, not by the launcher.
+Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.009677 SOL = $1.45. Graduation rent (0.018014 SOL) is paid from the reserve at graduate, not by the launcher.
 
 Room lifetime volume at which one more no-traffic door repays its rent, V = rent × (D + 1) / (door_rate × rho):
 
 | rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
 |---|---|---|---|---|
-| 0.01 | $252.6k | $2.32M | $22.98M | $229.64M |
-| 0.05 | $50.5k | $463.8k | $4.60M | $45.93M |
-| 0.3 | $8.4k | $77.3k | $766.2k | $7.65M |
+| 0.01 | $266.1k | $2.44M | $24.22M | $241.96M |
+| 0.05 | $53.2k | $488.7k | $4.84M | $48.39M |
+| 0.3 | $8.9k | $81.5k | $807.3k | $8.07M |
 
 Income of one more no-traffic door over the room's life, net of its rent, door_rate × rho × V / (D + 1) − rent:
 
 | room lifetime volume V | rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
 |---|---|---|---|---|---|
-| $1.00M | 0.05 | $25.90 | $1.59 | $-1.08 | $-1.35 |
-| $1.00M | 0.3 | $162.26 | $16.44 | $0.42 | $-1.20 |
-| $10.00M | 0.05 | $271.35 | $28.33 | $1.62 | $-1.08 |
-| $10.00M | 0.3 | $1.6k | $176.84 | $16.60 | $0.42 |
-| $50.00M | 0.05 | $1.4k | $147.14 | $13.61 | $0.12 |
-| $50.00M | 0.3 | $8.2k | $889.71 | $88.53 | $7.62 |
+| $1.00M | 0.05 | $25.82 | $1.52 | $-1.15 | $-1.42 |
+| $1.00M | 0.3 | $162.18 | $16.37 | $0.35 | $-1.27 |
+| $10.00M | 0.05 | $271.28 | $28.25 | $1.55 | $-1.15 |
+| $10.00M | 0.3 | $1.6k | $176.77 | $16.53 | $0.35 |
+| $50.00M | 0.05 | $1.4k | $147.06 | $13.53 | $0.05 |
+| $50.00M | 0.3 | $8.2k | $889.64 | $88.46 | $7.55 |
 
 10,000 spam doors in a room with 10 doors already (cost = rent only):
 
 | V | rho | spam income | spam cost (rent) | net |
 |---|---|---|---|---|
-| $1.00M | 0.05 | $299.70 | $13.8k | $-13.5k |
-| $1.00M | 0.3 | $1.8k | $13.8k | $-12.0k |
-| $10.00M | 0.05 | $3.0k | $13.8k | $-10.8k |
-| $10.00M | 0.3 | $18.0k | $13.8k | $4.2k |
-| $50.00M | 0.05 | $15.0k | $13.8k | $1.2k |
-| $50.00M | 0.3 | $89.9k | $13.8k | $76.1k |
+| $1.00M | 0.05 | $299.70 | $14.5k | $-14.2k |
+| $1.00M | 0.3 | $1.8k | $14.5k | $-12.7k |
+| $10.00M | 0.05 | $3.0k | $14.5k | $-11.5k |
+| $10.00M | 0.3 | $18.0k | $14.5k | $3.5k |
+| $50.00M | 0.05 | $15.0k | $14.5k | $468.91 |
+| $50.00M | 0.3 | $89.9k | $14.5k | $75.4k |
 <!-- END GENERATED FEE FIGURES -->
 
 ## 7. Limits
@@ -1353,8 +1364,8 @@ instruction touches more than two doors. Indexers enumerate doors with
 `getProgramAccounts` on a `room` memcmp, whose cost grows with door count.
 
 **Data growth.** `MAX_BLOCK_ACCOUNTS_DATA_SIZE_DELTA = 100,000,000` bytes per
-block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
-638 + two vaults of 165 each.
+block (same file, L37). A door allocates up to 1,393 data bytes: Door 328 + DoorMint
+735 (maximum metadata) + two vaults of 165 each (`scripts/account_sizes.py`).
 
 **Clones and twins: frontend requirements, not on-chain ones.**
 
@@ -1457,8 +1468,10 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
   - a door is verified through its `Door` account: find it by its `mint`
     field (offset 44), then check the account is the PDA
     `["door", room, door.nonce]` and its mint is `["door_mint", room,
-    door.nonce]`. The `("door", index)` metadata is a creation-order label
-    and no longer locates the PDA (§0.F).
+    door.nonce]`. Or start from the mint: its `("room", …)` and
+    `("door_nonce", …)` metadata derive the Door PDA directly (§3, Mints);
+    then check that `Door`'s mint is this mint. The `("door", index)` label
+    is creation order only.
 - **The room token** carries door 0's name, symbol and image, permanently.
   It and door 0 are twins: same metadata, different mints, same asset, same
   price. The frontend must label which is which.

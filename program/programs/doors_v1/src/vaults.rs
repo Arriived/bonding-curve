@@ -202,9 +202,14 @@ pub fn mint_check(ai: &AccountInfo, initial: bool) -> Result<()> {
             && Option::<Pubkey>::from(pointer.metadata_address) == Some(ai.key()),
         Error::Invariant
     );
-    let metadata = m.get_variable_len_extension::<TokenMetadata>()?;
+    // Read the two fixed-offset fields of the Borsh TokenMetadata in place
+    // (update_authority: 32 bytes, zero = None; then mint: 32 bytes). Deserializing
+    // the whole value allocates its strings on the never-freed SBF heap on every
+    // check, which exhausted the 32 KiB heap on a prefunded create_room + first buy.
+    let metadata = m.get_extension_bytes::<TokenMetadata>()?;
+    require!(metadata.len() >= 64, Error::Invariant);
     require!(
-        Option::<Pubkey>::from(metadata.update_authority).is_none() && metadata.mint == ai.key(),
+        metadata[..32].iter().all(|b| *b == 0) && metadata[32..64] == ai.key().to_bytes(),
         Error::Invariant
     );
     Ok(())
@@ -279,7 +284,7 @@ pub fn create_mint<'a>(
     authority: &AccountInfo<'a>,
     room_key: Pubkey,
     launch: &Launch,
-    index: Option<u32>,
+    door: Option<(u32, u64)>,
     system: &AccountInfo<'a>,
     program: &AccountInfo<'a>,
     mint_seeds: &[&[u8]],
@@ -288,8 +293,12 @@ pub fn create_mint<'a>(
 ) -> Result<(u8, u8)> {
     let room = room_key.to_string();
     let mut extra = vec![("room".to_string(), room)];
-    if let Some(i) = index {
+    if let Some((i, nonce)) = door {
+        // Self-describing door mint: room + door_nonce + program give the Door PDA
+        // ["door", room, door_nonce u64 LE] with no scan. `door` is creation order only.
         extra.push(("door".to_string(), i.to_string()));
+        extra.push(("door_nonce".to_string(), nonce.to_string()));
+        extra.push(("program".to_string(), crate::ID.to_string()));
     }
     let meta_value = 64
         + 12

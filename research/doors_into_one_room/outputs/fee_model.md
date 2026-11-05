@@ -8,34 +8,34 @@ Founder share is present but defaults to 0 bps of the program fee; door and foun
 | through door N, per $1M | $6.0k | $0 | $0.00 | $4.0k | $10.0k |
 | room token through the program, per $1M | $0 | $6.0k | $0.00 | $4.0k | $10.0k |
 
-Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.009185 SOL = $1.38. Graduation rent (0.018014 SOL) is paid from the reserve at graduate, not by the launcher.
+Door fee 0.0 SOL and room fee 0.0 SOL (defaults). A door costs its rent only: 0.009677 SOL = $1.45. Graduation rent (0.018014 SOL) is paid from the reserve at graduate, not by the launcher.
 
 Room lifetime volume at which one more no-traffic door repays its rent, V = rent × (D + 1) / (door_rate × rho):
 
 | rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
 |---|---|---|---|---|
-| 0.01 | $252.6k | $2.32M | $22.98M | $229.64M |
-| 0.05 | $50.5k | $463.8k | $4.60M | $45.93M |
-| 0.3 | $8.4k | $77.3k | $766.2k | $7.65M |
+| 0.01 | $266.1k | $2.44M | $24.22M | $241.96M |
+| 0.05 | $53.2k | $488.7k | $4.84M | $48.39M |
+| 0.3 | $8.9k | $81.5k | $807.3k | $8.07M |
 
 Income of one more no-traffic door over the room's life, net of its rent, door_rate × rho × V / (D + 1) − rent:
 
 | room lifetime volume V | rho | D = 10 | D = 100 | D = 1,000 | D = 10,000 |
 |---|---|---|---|---|---|
-| $1.00M | 0.05 | $25.90 | $1.59 | $-1.08 | $-1.35 |
-| $1.00M | 0.3 | $162.26 | $16.44 | $0.42 | $-1.20 |
-| $10.00M | 0.05 | $271.35 | $28.33 | $1.62 | $-1.08 |
-| $10.00M | 0.3 | $1.6k | $176.84 | $16.60 | $0.42 |
-| $50.00M | 0.05 | $1.4k | $147.14 | $13.61 | $0.12 |
-| $50.00M | 0.3 | $8.2k | $889.71 | $88.53 | $7.62 |
+| $1.00M | 0.05 | $25.82 | $1.52 | $-1.15 | $-1.42 |
+| $1.00M | 0.3 | $162.18 | $16.37 | $0.35 | $-1.27 |
+| $10.00M | 0.05 | $271.28 | $28.25 | $1.55 | $-1.15 |
+| $10.00M | 0.3 | $1.6k | $176.77 | $16.53 | $0.35 |
+| $50.00M | 0.05 | $1.4k | $147.06 | $13.53 | $0.05 |
+| $50.00M | 0.3 | $8.2k | $889.64 | $88.46 | $7.55 |
 
 10,000 spam doors in a room with 10 doors already (cost = rent only):
 
 | V | rho | spam income | spam cost (rent) | net |
 |---|---|---|---|---|
-| $1.00M | 0.05 | $299.70 | $13.8k | $-13.5k |
-| $1.00M | 0.3 | $1.8k | $13.8k | $-12.0k |
-| $10.00M | 0.05 | $3.0k | $13.8k | $-10.8k |
-| $10.00M | 0.3 | $18.0k | $13.8k | $4.2k |
-| $50.00M | 0.05 | $15.0k | $13.8k | $1.2k |
-| $50.00M | 0.3 | $89.9k | $13.8k | $76.1k |
+| $1.00M | 0.05 | $299.70 | $14.5k | $-14.2k |
+| $1.00M | 0.3 | $1.8k | $14.5k | $-12.7k |
+| $10.00M | 0.05 | $3.0k | $14.5k | $-11.5k |
+| $10.00M | 0.3 | $18.0k | $14.5k | $3.5k |
+| $50.00M | 0.05 | $15.0k | $14.5k | $468.91 |
+| $50.00M | 0.3 | $89.9k | $14.5k | $75.4k |

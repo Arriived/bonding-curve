@@ -621,7 +621,7 @@ fn initialize_door<'a>(
         di,
         rk,
         l,
-        Some(i),
+        Some((i, l.door_nonce)),
         system,
         tp,
         &[b"door_mint", rk.as_ref(), &nb],
@@ -798,9 +798,6 @@ fn claim(ctx: Context<Claim>, kind: u8) -> Result<()> {
         + a.core.room.pending_reserve_wsol as u128
         + a.door.as_ref().map_or(0, |d| d.accrued_wsol) as u128;
     require!(fw as u128 >= known_w, Error::Invariant);
-    if sol > 0 {
-        debit(&a.core.fees, &a.recipient, sol)?;
-    }
     if wsol > 0 {
         let rid = a.core.room.room_id.to_le_bytes();
         let b = [a.core.room.bumps[0]];
@@ -814,6 +811,12 @@ fn claim(ctx: Context<Claim>, kind: u8) -> Result<()> {
             Some(&[b"room", &rid, &b]),
             9,
         )?;
+    }
+    // Direct lamport edits only after the instruction's last CPI: the runtime syncs only
+    // CPI-passed accounts, so an edit followed by a CPI that passes one of the two edited
+    // accounts fails as UnbalancedInstruction (the class that broke 8ce373f).
+    if sol > 0 {
+        debit(&a.core.fees, &a.recipient, sol)?;
     }
     match kind {
         0 => {
