@@ -1,5 +1,5 @@
 {
-  "git_commit": "f87f34107e3b37a1199ab6c5e1d5980c209824a6",
+  "git_commit": "71d32f3094b0b3149bae95dc1a7bbc7c7b3d6bca",
   "versions": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
@@ -19,7 +19,7 @@
     "programs/doors_v1/src/math.rs": "ada2917208c17acdfed422a8bd9ca536c6679b3fd32b414437a1c99026de5921",
     "programs/doors_v1/src/state.rs": "d66df7de5321f86e6eb9d2af2bca7638907ee9c2d32c38f86a7551825d88a828",
     "programs/doors_v1/src/trading.rs": "48eb2c3635b1a417ce7ecea7399d5a4798a2155359a8c69c32f0e308d87a6682",
-    "programs/doors_v1/src/vaults.rs": "03790cb3cf3d9b5ab9c0b1386eb4d4d956ba3cfad3ee6ae2ca8de30168bab573",
+    "programs/doors_v1/src/vaults.rs": "60642db512bcdf7cf9973b09e77b0ac59626c40ee3d92543c8df8f1a87d39d05",
     "programs/doors_v1/tests/cases/sweeps.rs": "13253dcecb3994af5c133450062d6614609bb7d595c0ffbbdea07eb4e63ab32f",
     "programs/doors_v1/tests/svm.rs": "432f2fbf737bbeb88286fd7ea248b34729e9fa7287595b54da00c338d6686c24",
     "programs/doors_v1/Cargo.toml": "93fba8c1ce66791aa186d4a4fcf72f074bb09c2ef157e4b8babede985112226f",
@@ -30,7 +30,7 @@
     "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
     "Anchor.toml": "77264d6963a22531d18acd7edc1d5bcecbda97e0c2c3c2b60483003abfed3c31"
   },
-  "elf_sha256": "4edc63feae5657094aab2702666f5cfa99ce92a9b4e6c891d85f633b8aadff97",
+  "elf_sha256": "0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434",
   "idl_sha256": "17ad0fcd9cc7b19c1cd6e6f28b6b97514b9ccdd7071726a335ac5728b1292e31",
   "vm": {
     "litesvm": "0.18.1",

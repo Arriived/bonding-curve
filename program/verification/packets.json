@@ -26,7 +26,7 @@
       13349
     ],
     "open_door": [
-      141037
+      140312
     ],
     "sell_door": [
       57476,
@@ -44,6 +44,6 @@
     "uri": 200
   },
   "packet_limit": 1232,
-  "transaction_cu": 299410,
+  "transaction_cu": 296507,
   "v0_bytes": 754
 }
