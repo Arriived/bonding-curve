@@ -21,12 +21,16 @@ DISC = {k: account_discriminator(k) for k in ("Room", "Door", "SlugLock", "Confi
 ROOM_FIELDS = {"room_id": (8, 8), "status": (23, 1), "room_mint": (24, 32), "reserve": (196, 8),
                "door_count": (220, 4), "volume_gross": (264, 16), "created_at": (288, 8),
                "last_trade_at": (296, 8), "identity": (408, 32), "liveness_buckets": (665, 600)}
-DOOR_FIELDS = {"room": (8, 32), "index": (40, 4), "mint": (44, 32)}
+DOOR_FIELDS = {"room": (8, 32), "index": (40, 4), "mint": (44, 32), "nonce": (303, 8)}
 SLUG_FIELDS = {"room_id": (8, 8)}
 CONFIG_FIELDS = {"paused": (172, 1), "matcher_authority": (174, 32), "room_fee_lamports": (84, 8),
                  "door_fee_lamports": (76, 8), "live_min_reserve_lamports": (206, 8),
                  "live_max_idle_seconds": (214, 8), "live_new_seconds": (222, 8),
-                 "live_min_volume_lamports": (230, 8)}
+                 "live_min_volume_lamports": (230, 8),
+                 # Config::launch_terms_hash inputs (create_room requires Launch.expected_terms_hash)
+                 "fee_bps": (72, 2), "door_share_bps": (74, 2), "v_sol_lamports": (100, 8), "v_tok": (108, 8),
+                 "supply": (116, 8), "r_star_lamports": (124, 8), "graduation_trigger_lamports": (164, 8),
+                 "founder_share_bps": (246, 2)}
 BUCKETS = 25  # liveness_buckets: [Bucket { start: i64, amount: u128 }; 25] = 600 bytes
 
 
@@ -66,7 +70,7 @@ def decode_room(data: bytes) -> dict:
 def decode_door(data: bytes) -> dict:
     _check(data, "Door", DOOR_LEN)
     return {"room": str(Pubkey.from_bytes(data[8:40])), "index": struct.unpack_from("<I", data, 40)[0],
-            "mint": str(Pubkey.from_bytes(data[44:76]))}
+            "mint": str(Pubkey.from_bytes(data[44:76])), "nonce": struct.unpack_from("<Q", data, 303)[0]}
 
 
 def decode_slug(data: bytes) -> dict:
@@ -77,7 +81,13 @@ def decode_slug(data: bytes) -> dict:
 def decode_config(data: bytes) -> dict:
     _check(data, "Config", CONFIG_LEN)
     u = lambda k: struct.unpack_from("<Q", data, CONFIG_FIELDS[k][0])[0]  # noqa: E731
+    h = lambda k: struct.unpack_from("<H", data, CONFIG_FIELDS[k][0])[0]  # noqa: E731
+    terms = hashlib.sha256(b"doors-v1:launch-terms:v1" + b"".join(
+        struct.pack("<Q", u(k)) for k in ("v_sol_lamports", "v_tok", "supply", "r_star_lamports",
+                                          "graduation_trigger_lamports"))
+        + b"".join(struct.pack("<H", h(k)) for k in ("fee_bps", "door_share_bps", "founder_share_bps"))).hexdigest()
     return {
+        "launch_terms_hash": terms,
         "paused": bool(data[172]),
         "matcher_authority": str(Pubkey.from_bytes(data[174:206])),
         "room_fee_lamports": u("room_fee_lamports"),

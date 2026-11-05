@@ -4,7 +4,11 @@ These are conflicts between the brief and what the deployed program, the researc
 environment actually do, each verified before building on it. Item 1 is the expiry question the brief
 asked about.
 
-## 1. The program verifies no expiry; the runtime does, through the blockhash
+**Status, 5 November 2026.** Items 1 and 3 are resolved in the program (`claude/program-v1` `e9bd2aa`,
+deploy ELF `36e22dab…3b31`), and the service now targets that program (item 4). The original findings
+are kept below as recorded; each resolved item ends with what changed.
+
+## 1. The program verified no expiry; the runtime did, through the blockhash (resolved)
 
 **What the program checks.** The deployed program
 (`436c002` plus the program-ID patch; `program/verification/devnet/deployed_source.patch`) has no
@@ -43,6 +47,25 @@ test demonstrates it. A decision submitted after its `last_valid_block_height` w
 - Instruction-sysvar introspection that rejects a launch transaction whose first instruction is a
   System `AdvanceNonceAccount`.
 
+**Resolved (program `e9bd2aa`).** The first option was taken, with an upper bound added:
+
+- `Launch` carries `expires_at_slot: u64`, inside the matcher-signed instruction data.
+- `create_room` and `open_door` fail with `Expired` (6045) unless
+  `slot <= expires_at_slot <= slot + 150` (`MAX_LAUNCH_WINDOW_SLOTS`, equal to `MAX_PROCESSING_AGE`).
+  The upper bound stops a matcher bug or a compromised matcher key from signing a far-future expiry
+  that a durable nonce could then hold.
+- The service sets `expires_at_slot` to the blockhash's slot + 150 (`service.py`; `txbuild.py`
+  `MAX_LAUNCH_WINDOW_SLOTS`). For a blockhash-based transaction, the program bound and the runtime bound
+  coincide to within the slot-vs-block-height difference, so a decision never outlives its blockhash
+  by more than skipped slots. The bound is recorded in the decision (`transaction.expires_at_slot`) and
+  checked by `scripts/verify_decision.py`.
+- Localnet e2e, this branch:
+  - step 6b: a matcher-signed launch with `expires_at_slot` one slot in the past, on a valid blockhash,
+    is rejected on-chain with `Expired`;
+  - step 6c: a launch on a durable nonce, held past `expires_at_slot`, is rejected on-chain with
+    `Expired` (slot 190 in the recorded run), although the nonce kept the transaction itself valid;
+  - steps 1–3: launches inside the window land.
+
 ## 2. Single use: what the program enforces, and what the service only tracks
 
 **Enforced on-chain:**
@@ -51,18 +74,20 @@ test demonstrates it. A decision submitted after its `last_valid_block_height` w
 |---|---|
 | the same signed transaction twice | runtime signature de-duplication within the blockhash window (`AlreadyProcessed`, e2e step 5), then blockhash expiry |
 | the same room-id nonce twice | `init` on the Room PDA `["room", room_id]` |
-| the same door index twice | `init` on the Door PDA `["door", room, door_count]` |
+| the same door nonce twice | `init` on the Door PDA `["door", room, door_nonce]` (door 0 is nonce 0, created by `create_room`) |
+| a held decision | `Launch.expires_at_slot`, at most 150 slots ahead (item 1) |
 
 **Tracked by the service only (per process, `matcher_service/inflight.py`):**
 
 - **Two different launches decided against the same snapshot.** If two launchers ask for the same new
   name within one blockhash window, both would get "new room". The second would bypass the T2n rule.
   The service refuses the second with 409 and `retry-after` until the first lands or expires.
-- **Door index allocation.** Concurrent door decisions into one room take consecutive indices.
+- ~~Door index allocation.~~ No longer needed: each door decision carries a random signed nonce
+  (item 3).
 
 Running more than one replica requires moving this state to shared storage (README, "What remains").
 
-## 3. The door index is `room.door_count` at execution: concurrent doors into one room serialise
+## 3. The door index was `room.door_count` at execution: concurrent doors into one room serialised (resolved)
 
 `OpenDoor` derives the new door's address from `core.room.door_count` (`contexts.rs`). Consequences:
 
@@ -75,18 +100,44 @@ Running more than one replica requires moving this state to shared storage (READ
 **A program change would remove the coupling:** derive the Door PDA from the launcher and a
 matcher-chosen nonce, as `create_room` already does for rooms.
 
-## 4. The deployed program is not the branch tip
+**Resolved (program `e9bd2aa`).**
 
-This service targets the program actually deployed: `436c002` plus the program-ID patch, pinned ELF
-`f2cfdb85…b436`. It pins that program's IDL in `idl/doors_v1.deployed.json`.
+- The Door PDA is `["door", room, door_nonce]` and the door mint is `["door_mint", room, door_nonce]`.
+  `door_nonce` is a `u64` in the matcher-signed `Launch` and is stored on the `Door` account (`nonce`,
+  offset 303) and in the `DoorOpened` event.
+- `create_room` requires nonce 0; `open_door` requires a non-zero nonce.
+- The service draws the nonce from `secrets.randbits(64)`, retrying on 0 (`service._door_nonce`).
+  Concurrent door launches into one room therefore have independent addresses, and a dropped one blocks
+  nothing. The in-flight index allocation is removed.
+- A collision fails cleanly: `init` on an existing Door PDA aborts the transaction, nothing moves, and
+  the client re-requests. With 64 random bits, the chance of a collision is about n²/2⁶⁵ for n doors in
+  one room.
+- `room.door_count` is still incremented and is still the `index` in `DoorOpened`. The service's
+  door count from `DoorOpened` events still holds, because every door, door 0 included, emits exactly
+  one. It no longer determines any address.
 
-The branch tip `8ce373f` differs in two ways:
+## 4. The deploy candidate was not the branch tip (resolved)
 
-- It fails 10 of 38 of its own SBF tests (`program/docs/CORRECTIONS.md`, devnet preflight item 1).
-- It changes the instruction layout: it adds `Launch.expected_terms_hash`.
+This service originally targeted the deploy candidate: `436c002` plus the program-ID patch, pinned ELF
+`f2cfdb85…b436`.
 
-When a fixed tip is deployed, `idl/` and `txbuild.encode_launch` must be updated together, and the
-layout test re-run.
+The branch tip `8ce373f` differed in two ways:
+
+- It failed 10 of 38 of its own SBF tests (`program/docs/CORRECTIONS.md`, devnet preflight item 1).
+- It changed the instruction layout: it added `Launch.expected_terms_hash`.
+
+**Resolved.** The tip is fixed (`6385fdd`; cause and fix are in `program/docs/CORRECTIONS.md`,
+"Pre-audit program changes"). The door-nonce and expiry changes are on top (`e9bd2aa`), and the deploy
+pin is `36e22dab…3b31`. The service now targets that program:
+
+- `idl/doors_v1.deployed.json` and `idl/layouts.deployed.json` are copied from
+  `program/idl/doors_v1.json` and `program/verification/layouts.json` at `e9bd2aa`.
+- `txbuild.encode_launch` appends `expected_terms_hash`, `door_nonce` and `expires_at_slot`. The terms
+  hash is recomputed from Config (`layouts.decode_config`, the program's `launch_terms_hash`
+  preimage).
+- The layout test passes against the new files, and so do 96 of 96 unit tests and the localnet e2e.
+
+Nothing is on devnet yet: the deploy is still pending funding.
 
 ## 5. The brief's normalisation list is a subset of the calibrated one
 

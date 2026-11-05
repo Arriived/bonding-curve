@@ -9,8 +9,9 @@ intentional: it refuses rather than guesses.
 
 - **Rules:** ported from `research/doors_into_one_room/scripts/narrative/matcher.py`, with the
   calibration in `research/doors_into_one_room/NARRATIVE_DETECTION.md`.
-- **Program:** the deployed `doors_v1`, program ID `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG`,
-  IDL pinned in `idl/doors_v1.deployed.json`.
+- **Program:** `doors_v1` at `claude/program-v1` `e9bd2aa`, deploy ELF `36e22dab…3b31`, program ID
+  `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG`. Its IDL is pinned in `idl/doors_v1.deployed.json`.
+  It is not on devnet yet.
 - **Conflicts with the brief:** [CORRECTIONS.md](CORRECTIONS.md).
 
 ## What a decision is
@@ -22,11 +23,21 @@ launcher's signature slot empty. The launcher's wallet signs as fee payer and su
 Changing anything invalidates the matcher signature:
 
 - metadata, amounts, fee cap;
-- the room, door index, SlugLock or old-holder accounts;
-- the compute budget, the blockhash.
+- the room, the door nonce (and so the door address), SlugLock or old-holder accounts;
+- the compute budget, the blockhash, `expires_at_slot`.
 
-**Expiry is the blockhash:** about 150 slots, roughly 32 s. After `last_valid_block_height` the
-transaction can no longer land (CORRECTIONS §1).
+**Expiry is enforced twice.**
+
+- The program rejects the launch after `Launch.expires_at_slot`. The service sets it to the blockhash's
+  slot + 150, and the program refuses any value more than 150 slots ahead. This holds even for a
+  transaction on a durable nonce.
+- The runtime rejects the transaction after its blockhash's `last_valid_block_height`.
+
+Either way, a decision lives about 150 slots, roughly 32 s (CORRECTIONS §1).
+
+**Door addresses** come from a random, non-zero 64-bit nonce, which is signed in `Launch.door_nonce`.
+Concurrent door launches into one room do not contend, and a dropped one blocks nothing
+(CORRECTIONS §3).
 
 ### Rules
 
@@ -52,9 +63,11 @@ transaction can no longer land (CORRECTIONS §1).
 `200` returns:
 
 - `id`, which is the matcher signature;
-- `decision`: kind, rule, room id and address, door index, SlugLock, old holder, the evaluated rooms;
+- `decision`: kind, rule, room id and address, door nonce and address, SlugLock, old holder, the evaluated
+  rooms;
 - `transaction_base64`;
 - `last_valid_block_height`;
+- `expires_at_slot`;
 - `state_slot`;
 - `record_sha256`.
 
@@ -206,7 +219,7 @@ pip install -r requirements-dev.txt
 python -m pytest -q tests
 ```
 
-The unit tests (95) cover:
+The unit tests (96) cover:
 
 - **the research matcher's 14 worked examples**, through the research module and through the
   service;
@@ -218,7 +231,8 @@ The unit tests (95) cover:
   window edges;
 - **each tie-break tier, and floor handling** for live, dead and graduated holders;
 - **failure cases:** stale state, incoherent reads, RPC down, blockhash unavailable, signer
-  unavailable or mismatched, store down, in-flight conflicts, consecutive door indices;
+  unavailable or mismatched, store down, in-flight conflicts, independent random door nonces, and the expiry, terms hash
+  and door nonce carried in the signed launch;
 - **signers:** keyfile refused in production, a bad signature rejected, GCP and AWS KMS against fakes,
   the CRC32C check value;
 - **store:** append-only, tamper detection;
@@ -243,6 +257,9 @@ The test runs these steps:
 6. A decision with the matcher signature stripped is rejected on-chain with `AccountNotSigner` (3010).
 7. Replaying an accepted decision is rejected with `AlreadyProcessed`.
 8. A decision submitted after its blockhash expired is rejected with `BlockhashNotFound`.
+   - A matcher-signed launch past its `expires_at_slot` is rejected on-chain with `Expired`, while
+     its blockhash is still valid.
+   - A launch on a durable nonce, held past `expires_at_slot`, is rejected on-chain with `Expired`.
 9. Records are served by `/decision/{id}`, and the hash chain verifies.
 10. `verify_decision.py` agrees with every accepted decision.
 11. The verifier reports DISAGREE on three doctored records.
@@ -282,13 +299,13 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 5. **Scale the state source.** Every snapshot does `getProgramAccounts` for all rooms and doors. That
    is fine at devnet scale; production needs an indexer (Geyser or websocket) feeding the snapshot,
    with the same freshness checks.
-6. **Program changes recommended in CORRECTIONS:** an explicit `expires_at_slot` (§1), and door
-   addresses not tied to `door_count` (§3).
+6. ~~Program changes recommended in CORRECTIONS~~: done in the program (`e9bd2aa`). There is now an
+   explicit `expires_at_slot` (§1), and door addresses are not tied to `door_count` (§3).
 7. **v0 transactions with a lookup table** for maximum-length metadata (§10).
 8. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
    decision mix. Plus an on-call runbook for key rotation and RPC failover.
 9. **An archival RPC** for the verifier, and a public, independently operated verifier run over the
    decision feed.
-10. **The branch tip.** When it is fixed and deployed, update `idl/doors_v1.deployed.json`,
-    `txbuild.encode_launch` (`Launch.expected_terms_hash`) and `program/devnet/DEPLOY_ELF.sha256`
-    together, and rerun both test suites.
+10. **The branch tip** is fixed, and the service targets it (CORRECTIONS §4). On any later program
+    change, update `idl/`, `txbuild.encode_launch` and `program/devnet/DEPLOY_ELF.sha256` together,
+    and rerun both test suites.

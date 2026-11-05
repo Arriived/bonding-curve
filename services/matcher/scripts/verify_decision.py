@@ -8,7 +8,7 @@ What it checks, without trusting the service's snapshot:
   2. Signature: the matcher signature verifies over the recorded transaction message, and the signing
      key equals Config.matcher_authority *as of the decision slot* (replayed from ConfigChanged events).
   3. Transaction content: the instruction is create_room/open_door with exactly the recorded room,
-     door index, SlugLock, old holder and Launch arguments (decoded from the message bytes).
+     door nonce and address, expires_at_slot, SlugLock, old holder and Launch arguments (decoded from the message bytes).
   4. State at the decision slot, rebuilt from the program's own events and block times:
      every room that could have matched (any door face equal under T3/T2n now; faces are immutable and
      only ever added) and the candidate's SlugLock holder. Rooms are replayed from creation to the slot:
@@ -253,7 +253,8 @@ def decode_launch_ix(msg, program, idl_path):
     room_id = r.u("Q") if spec["name"] == "create_room" else None
     launch = {"name": r.s(), "symbol": r.s(), "uri": r.s(), "first_buy_lamports": r.u("Q"),
               "min_tokens_out": r.u("Q"), "matcher_version": r.u("H"), "rule": r.u("B"), "face": r.u("I"),
-              "max_fee_lamports": r.u("Q")}
+              "max_fee_lamports": r.u("Q"), "expected_terms_hash": r.take(32).hex(),
+              "door_nonce": r.u("Q"), "expires_at_slot": r.u("Q")}
     return spec["name"], room_id, accounts, launch
 
 
@@ -324,6 +325,12 @@ def verify(record, rpc_url, chain_ok=True):
     if room_id is not None:
         check("room-id nonce equals the decision", str(room_id) == dec["room_id"])
     check("door account equals the decision", acc["door"] == dec["door"])
+    check("door account is the PDA of the signed door nonce",
+          acc["door"] == str(pda([b"door", bytes(Pubkey.from_string(room_key)), struct.pack("<Q", launch["door_nonce"])], program))
+          and str(launch["door_nonce"]) == dec["door_nonce"] and (launch["door_nonce"] == 0) == (name == "create_room"))
+    check("Launch.expires_at_slot is the recorded expiry, within 150 slots of the blockhash slot",
+          launch["expires_at_slot"] == txr["expires_at_slot"]
+          and 0 <= launch["expires_at_slot"] - txr["blockhash_slot"] <= 150, str(launch["expires_at_slot"]))
     check("SlugLock account equals the candidate identity's PDA", acc["slug"] == dec["slug_lock"] ==
           str(pda([b"slug", rules.program_identity(req["name"], req["symbol"])], program)))
     oh = acc.get("old_holder")

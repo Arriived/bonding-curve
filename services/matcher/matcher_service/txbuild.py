@@ -7,7 +7,7 @@ transaction message:
 
   - the launcher's pubkey (fee payer and `user`),
   - the metadata, first buy, slippage and fee cap (`Launch` instruction data),
-  - the routing (`create_room` + room-id nonce, or `open_door` into a specific room and door index,
+  - the routing (`create_room` + room-id nonce, or `open_door` into a specific room with a signed door nonce,
     and the SlugLock / old-holder accounts),
   - the compute budget and optional priority fee,
   - and a recent blockhash, which is the expiry: the runtime rejects the transaction once the
@@ -62,9 +62,16 @@ def _borsh_str(s):
     return struct.pack("<I", len(b)) + b
 
 
-def encode_launch(name, symbol, uri, first_buy, min_tokens_out, matcher_version, rule, face, max_fee):
+MAX_LAUNCH_WINDOW_SLOTS = 150  # programs/doors_v1/src/state.rs; the runtime's blockhash window
+
+
+def encode_launch(name, symbol, uri, first_buy, min_tokens_out, matcher_version, rule, face, max_fee,
+                  terms_hash: bytes, door_nonce, expires_at_slot):
+    if len(terms_hash) != 32:
+        raise ValueError("expected_terms_hash must be 32 bytes")
     return (_borsh_str(name) + _borsh_str(symbol) + _borsh_str(uri)
-            + struct.pack("<QQHBIQ", first_buy, min_tokens_out, matcher_version, rule, face, max_fee))
+            + struct.pack("<QQHBIQ", first_buy, min_tokens_out, matcher_version, rule, face, max_fee)
+            + terms_hash + struct.pack("<QQ", door_nonce, expires_at_slot))
 
 
 def ata(owner, mint, program):
@@ -105,10 +112,11 @@ class Builder:
             "retired": self.p(b"retired", bytes(room)),
         }
 
-    def door_accounts(self, room, index):
-        i = struct.pack("<I", index)
-        door = self.p(b"door", bytes(room), i)
-        mint = self.p(b"door_mint", bytes(room), i)
+    def door_accounts(self, room, nonce):
+        """Door PDAs are seeded by the signed door nonce (0 for door 0), never by door_count."""
+        n = struct.pack("<Q", nonce)
+        door = self.p(b"door", bytes(room), n)
+        mint = self.p(b"door_mint", bytes(room), n)
         return {"door": door, "door_mint": mint, "door_vault": self.p(b"door_vault", bytes(door)),
                 "backing": self.p(b"door_room_vault", bytes(door))}
 
@@ -123,9 +131,9 @@ class Builder:
                   **r, **d}
         return self._instruction("create_room", values, struct.pack("<Q", room_id) + launch_data), room, d
 
-    def open_door_ix(self, user, matcher, room_id, door_index, identity, old_holder_room_id, launch_data):
+    def open_door_ix(self, user, matcher, room_id, door_nonce, identity, old_holder_room_id, launch_data):
         room, r = self.room_accounts(room_id)
-        d = self.door_accounts(room, door_index)
+        d = self.door_accounts(room, door_nonce)
         values = {"user": user, "matcher": matcher, "core.config": self.p(b"config"), "core.room": room,
                   **{"core." + k: v for k, v in r.items()}, "slug": self.p(b"slug", identity),
                   "user_token": ata(user, d["door_mint"], T22),

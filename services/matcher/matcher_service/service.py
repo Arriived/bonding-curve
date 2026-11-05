@@ -155,18 +155,22 @@ class Service:
                 raise Refusal("in_flight", f"a new-room decision for this name is in flight ({busy}); "
                                            "retry after it lands or expires", 409)
             room_id = self._fresh_nonce(snap)
-            door_index = 0
+            door_nonce = 0          # door 0 is always at nonce 0
         else:
             room_id = d.room_id
-            door_index = self.inflight.next_door_index(room_id, snap.rooms[room_id]["door_count"], height)
+            door_nonce = self._door_nonce()   # random: concurrent doors into one room never contend
+        # Explicit expiry, inside the program's 150-slot window and no later than the blockhash
+        # (slots advance at least as fast as block heights, so bh_slot + 150 <= the blockhash's last slot).
+        expires_at_slot = bh_slot + txbuild.MAX_LAUNCH_WINDOW_SLOTS
 
         launch = txbuild.encode_launch(name, symbol, uri, first_buy, min_out, self.cfg.matcher_version,
-                                       RULE_CODE[d.rule], d.face, max_fee)
+                                       RULE_CODE[d.rule], d.face, max_fee,
+                                       bytes.fromhex(snap.config["launch_terms_hash"]), door_nonce, expires_at_slot)
         if d.kind == "new_room":
             ix, room_pk, door = self.builder.create_room_ix(launcher, matcher, room_id, identity,
                                                             d.old_holder_room_id, launch)
         else:
-            ix, room_pk, door = self.builder.open_door_ix(launcher, matcher, room_id, door_index, identity,
+            ix, room_pk, door = self.builder.open_door_ix(launcher, matcher, room_id, door_nonce, identity,
                                                           d.old_holder_room_id, launch)
         message = txbuild.build_message(ix, launcher, blockhash, self.cfg.cu_limit, cu_price)
         placeholder = len(bytes(Transaction.populate(message, [Signature.default()] *
@@ -200,13 +204,14 @@ class Service:
                       "rooms_digest": hashlib.sha256("\n".join(all_rooms).encode()).hexdigest(),
                       "rooms": [room_view(snap.rooms[i]) for i in sorted(considered)]},
             "decision": {"kind": d.kind, "rule": d.rule, "rule_code": RULE_CODE[d.rule], "room_id": str(room_id),
-                         "room": str(room_pk), "door_index": door_index, "door": str(door["door"]),
+                         "room": str(room_pk), "door_nonce": str(door_nonce), "door": str(door["door"]),
                          "door_mint": str(door["door_mint"]), "face": d.face,
                          "old_holder_room_id": None if d.old_holder_room_id is None else str(d.old_holder_room_id),
                          "identity": d.identity, "slug_lock": snap.slug_pda(d.identity),
                          "candidate_keys": d.candidate_keys, "evaluated": d.evaluated},
             "transaction": {"message_base64": base64.b64encode(msg_bytes).decode(), "blockhash": blockhash,
-                            "blockhash_slot": bh_slot, "last_valid_block_height": last_valid,
+                            "blockhash_slot": bh_slot, "expires_at_slot": expires_at_slot,
+                            "last_valid_block_height": last_valid,
                             "block_height_at_signing": height, "matcher": str(matcher),
                             "matcher_signature": decision_id},
         }
@@ -217,17 +222,21 @@ class Service:
         if d.kind == "new_room":
             self.inflight.reserve_names([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
                                          f"id:{d.identity}"], decision_id, last_valid)
-        else:
-            self.inflight.reserve_door(room_id, door_index, last_valid)
         self.log.info("decision", extra={"fields": {"id": decision_id, "kind": d.kind, "rule": d.rule,
                                                     "room_id": str(room_id), "slot": snap.slot,
                                                     "launcher": str(launcher)}})
         return {"id": decision_id, "record_sha256": record_hash, "decision": record["decision"],
                 "state_slot": snap.slot, "transaction_base64": base64.b64encode(wire).decode(),
-                "last_valid_block_height": last_valid,
+                "last_valid_block_height": last_valid, "expires_at_slot": expires_at_slot,
                 "instructions": "sign as the fee payer (signature slot 0) and submit before "
-                                "last_valid_block_height; any change to the transaction invalidates the "
-                                "matcher signature"}
+                                "last_valid_block_height and expires_at_slot; any change to the transaction "
+                                "invalidates the matcher signature"}
+
+    def _door_nonce(self):
+        while True:
+            n = struct.unpack("<Q", os.urandom(8))[0]
+            if n:
+                return n
 
     def _fresh_nonce(self, snap):
         for _ in range(16):

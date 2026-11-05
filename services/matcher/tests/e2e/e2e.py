@@ -10,7 +10,7 @@ Usage: python3 tests/e2e/e2e.py <keys_dir>   (keys_dir as in program/docs/DEPLOY
 
 Sequence (every step asserts; any failure exits 1):
   1. request a decision for a new identity -> new_room; the launcher signs; the program accepts it
-  2. same identity from another wallet -> door via the floor; accepted; door index 1
+  2. same identity from another wallet -> door via the floor; accepted; door index 1, random door nonce
   3. same name, different symbol -> door via T2n; accepted
   4. tampered decisions are rejected: instruction data changed after the matcher signed
      (SignatureFailure), and the matcher signature stripped (AccountNotSigner, landed on-chain)
@@ -209,7 +209,7 @@ def run(rpc, keys, target):
         if st.get("err"):
             fail(f"{label}: program rejected an untampered decision: {st['err']}")
         print(f"   {label}: {out['decision']['kind']} rule {out['decision']['rule']} room {out['decision']['room_id']} "
-              f"door {out['decision']['door_index']} -> landed {sig} slot {st['slot']}", flush=True)
+              f"door nonce {out['decision']['door_nonce']} -> landed {sig} slot {st['slot']}", flush=True)
         accepted.append(out["id"])
         return tx, sig
 
@@ -222,9 +222,9 @@ def run(rpc, keys, target):
 
     step("2. same identity from another wallet -> door via the floor")
     b = route(trader, name, symbol)
-    if (b["decision"]["kind"], b["decision"]["rule"], b["decision"]["room_id"], b["decision"]["door_index"]) != \
-            ("door", "floor", room_id, 1):
-        fail(f"expected floor door 1 into {room_id}, got {b['decision']}")
+    if (b["decision"]["kind"], b["decision"]["rule"], b["decision"]["room_id"]) != ("door", "floor", room_id) \
+            or int(b["decision"]["door_nonce"]) == 0:
+        fail(f"expected a floor door with a non-zero nonce into {room_id}, got {b['decision']}")
     land(b, trader, "floor door")
 
     step("2b. a buy through door 0, so later verification replays a Trade (reserve, buckets, last trade)")
@@ -323,6 +323,65 @@ def run(rpc, keys, target):
             if "BlockhashNotFound" not in str(err) and "Blockhash not found" not in str(err):
                 fail(f"expired decision failed for an unexpected reason: {err}")
             print(f"   rejected after block height {lvbh}: BlockhashNotFound", flush=True)
+
+    step("6b. a matcher-signed launch past its expires_at_slot is rejected on-chain, blockhash still valid")
+    from solders.hash import Hash
+    from matcher_service.txbuild import MAX_LAUNCH_WINDOW_SLOTS, build_message, encode_launch
+    from matcher_service import rules as _rules
+    matcher_kp = kp(keys, "matcher-authority")
+    snap = svc.chain.refresh()
+    terms = bytes.fromhex(snap.config["launch_terms_hash"])
+    ident = _rules.program_identity(name, symbol)
+
+    def signed_open(expires, nonce_door, message_fn):
+        data = encode_launch(name, symbol, "https://example.invalid/e2e.json", 0, 0, 1, 1, 0, 0, terms,
+                             nonce_door, expires)
+        ix, _, _ = svc.builder.open_door_ix(trader.pubkey(), matcher_kp.pubkey(), int(room_id), nonce_door, ident,
+                                            None, data)
+        return message_fn(ix)
+
+    slot = rpc.slot()
+    bh = rpc.latest_blockhash()[0]
+    msg = signed_open(slot - 1, int.from_bytes(os.urandom(8), "little") | 1,
+                      lambda ix: build_message(ix, trader.pubkey(), bh, 400_000, 0))
+    etx = Transaction([trader, matcher_kp], msg, Hash.from_string(bh))
+    sig = send(rpc, etx, skip_preflight=True)
+    st = confirm(rpc, sig)
+    logs = rpc.call("getTransaction", [sig, {"encoding": "json", "commitment": "confirmed",
+                                              "maxSupportedTransactionVersion": 0}])["meta"]["logMessages"]
+    if not st.get("err") or not any("Error Code: Expired" in l for l in logs):
+        fail(f"expired launch: expected Error Code: Expired, got {st.get('err')}")
+    print(f"   rejected on-chain: Expired ({sig})", flush=True)
+
+    step("6c. a durable-nonce launch (no blockhash expiry) held past expires_at_slot is rejected on-chain")
+    from solders import system_program as sp
+    nonce_kp = Keypair()
+    rent = rpc.call("getMinimumBalanceForRentExemption", [80])
+    bh = rpc.latest_blockhash()[0]
+    create = sp.create_nonce_account(trader.pubkey(), nonce_kp.pubkey(), trader.pubkey(), rent)
+    ntx = Transaction([trader, nonce_kp], Message.new_with_blockhash(list(create), trader.pubkey(),
+                                                                    Hash.from_string(bh)), Hash.from_string(bh))
+    confirm(rpc, send(rpc, ntx))
+    raw = base64.b64decode(rpc.call("getAccountInfo", [str(nonce_kp.pubkey()), {"encoding": "base64",
+                                                                                "commitment": "confirmed"}])["value"]["data"][0])
+    durable = Hash(raw[40:72])
+    advance = sp.advance_nonce_account(sp.AdvanceNonceAccountParams(nonce_pubkey=nonce_kp.pubkey(),
+                                                                    authorized_pubkey=trader.pubkey()))
+    slot = rpc.slot()
+    expires = slot + 20
+    msg = signed_open(expires, int.from_bytes(os.urandom(8), "little") | 1,
+                      lambda ix: Message.new_with_blockhash([advance, ix], trader.pubkey(), durable))
+    held = Transaction([trader, matcher_kp], msg, durable)
+    while rpc.slot() <= expires:
+        time.sleep(0.5)
+    sig = send(rpc, held, skip_preflight=True)
+    st = confirm(rpc, sig)
+    logs = rpc.call("getTransaction", [sig, {"encoding": "json", "commitment": "confirmed",
+                                              "maxSupportedTransactionVersion": 0}])["meta"]["logMessages"]
+    if not st.get("err") or not any("Error Code: Expired" in l for l in logs):
+        fail(f"held durable-nonce launch: expected Error Code: Expired, got {st.get('err')}")
+    print(f"   rejected on-chain after slot {expires}: Expired ({sig}); the durable nonce kept the transaction "
+          "itself valid, the program's expiry did not", flush=True)
 
     step("7. decision records and the store's hash chain")
     for i in accepted:

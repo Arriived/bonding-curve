@@ -203,11 +203,28 @@ def test_concurrent_new_room_for_same_name_is_refused(tmp_path, kp):
     assert e.value.code == "in_flight" and e.value.status == 409
 
 
-def test_concurrent_doors_take_consecutive_indices(tmp_path, kp):
+def test_concurrent_doors_get_independent_random_nonces(tmp_path, kp):
     svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
     a = svc.route(dict(REQ))
     b = svc.route(dict(REQ, launcher=str(Keypair().pubkey())))
-    assert (a["decision"]["door_index"], b["decision"]["door_index"]) == (1, 2)
+    na, nb = int(a["decision"]["door_nonce"]), int(b["decision"]["door_nonce"])
+    assert na and nb and na != nb and a["decision"]["door"] != b["decision"]["door"]
+
+
+def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
+    import struct
+    svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
+    out = svc.route(dict(REQ))
+    tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
+    data = bytes(tx.message.instructions[-1].data)
+    terms, door_nonce, expires = data[-48:-16], *struct.unpack("<QQ", data[-16:])
+    assert expires == 1000 + 150 == out["expires_at_slot"]            # blockhash slot + 150
+    assert door_nonce == int(out["decision"]["door_nonce"]) != 0
+    assert terms.hex() == svc.chain.snap.config["launch_terms_hash"]
+    (tmp_path / "n").mkdir()
+    created = make(tmp_path / "n", kp, Snap(1000)).route(dict(REQ, name="Fresh", symbol="FRSH"))
+    cdata = bytes(Transaction.from_bytes(base64.b64decode(created["transaction_base64"])).message.instructions[-1].data)
+    assert struct.unpack("<Q", cdata[-16:-8])[0] == 0                  # door 0 is nonce 0
 
 
 def test_keyfile_refused_in_production(kp):

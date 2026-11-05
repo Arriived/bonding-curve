@@ -39,7 +39,8 @@ MATCHER = "5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN"
 def config(**over):
     c = {"paused": False, "matcher_authority": MATCHER, "room_fee_lamports": 0, "door_fee_lamports": 0,
          "live_min_reserve_lamports": 500_000_000, "live_max_idle_seconds": 21_600,
-         "live_new_seconds": 3_600, "live_min_volume_lamports": 5_000_000_000}
+         "live_new_seconds": 3_600, "live_min_volume_lamports": 5_000_000_000,
+         "launch_terms_hash": "ab" * 32}
     c.update(over)
     return c
 
