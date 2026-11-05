@@ -120,7 +120,13 @@ class Builder:
         return {"door": door, "door_mint": mint, "door_vault": self.p(b"door_vault", bytes(door)),
                 "backing": self.p(b"door_room_vault", bytes(door))}
 
-    def create_room_ix(self, user, matcher, room_id, identity, old_holder_room_id, launch_data):
+    def create_room_ix(self, user, matcher, room_id, identity, old_holder_room_id, launch_data,
+                       name_key: bytes | None = None, old_name_holder_room_id=None):
+        """`name_key`: the NameLock key (rules.name_lock_key), or None for a launch without one."""
+        if name_key is not None and len(name_key) != 16:
+            raise ValueError("name_key must be 16 bytes")
+        if name_key is None and old_name_holder_room_id is not None:
+            raise ValueError("an old name holder needs a name key")
         room, r = self.room_accounts(room_id)
         d = self.door_accounts(room, 0)
         values = {"user": user, "matcher": matcher, "config": self.p(b"config"), "room": room,
@@ -128,8 +134,12 @@ class Builder:
                   "fee_wsol": self.p(b"fee_wsol", bytes(room)), "user_token": ata(user, d["door_mint"], T22),
                   "old_holder": (None if old_holder_room_id is None
                                  else self.p(b"room", struct.pack("<Q", old_holder_room_id))),
+                  "name_lock": None if name_key is None else self.p(b"name", name_key),
+                  "old_name_holder": (None if old_name_holder_room_id is None
+                                      else self.p(b"room", struct.pack("<Q", old_name_holder_room_id))),
                   **r, **d}
-        return self._instruction("create_room", values, struct.pack("<Q", room_id) + launch_data), room, d
+        data = struct.pack("<Q", room_id) + launch_data + (b"\x00" if name_key is None else b"\x01" + name_key)
+        return self._instruction("create_room", values, data), room, d
 
     def open_door_ix(self, user, matcher, room_id, door_nonce, identity, old_holder_room_id, launch_data):
         room, r = self.room_accounts(room_id)

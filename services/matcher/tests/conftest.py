@@ -51,12 +51,19 @@ def config(**over):
 class FakeSnapshot:
     """The parts of chain.Snapshot that decide() reads."""
 
-    def __init__(self, rooms, now, cfg=None, locks=None):
+    def __init__(self, rooms, now, cfg=None, locks=None, names=None):
         self.rooms = {r["room_id"]: r for r in rooms}
         self.clock_unix = now
         self.config = cfg or config()
         self.locks = locks or {}  # identity hex -> holder room_id
+        self.names = names or {}  # NameLock key hex -> holder room_id
         self.program_id = PROGRAM
+
+    def name_holder(self, key_hex):
+        return self.names.get(key_hex)
+
+    def name_pda(self, key_hex):
+        return "name:" + key_hex
 
     def slug_holder(self, identity_hex):
         return self.locks.get(identity_hex)

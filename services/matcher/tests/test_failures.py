@@ -23,17 +23,8 @@ NOW = 1_800_000_000
 
 
 class FakeRpc:
-    def __init__(self, slot=1000, down=False, blockhash_down=False, balance=100 * 10 ** 9):
+    def __init__(self, slot=1000, down=False, blockhash_down=False):
         self._slot, self.down, self.blockhash_down, self.errors = slot, down, blockhash_down, 0
-        self._balance = balance
-
-    def balance(self, pubkey):
-        if self.down:
-            raise RpcError("getBalance: timeout")
-        return self._balance
-
-    def min_balance(self, n):
-        return (128 + n) * 5080          # the devnet/mainnet rent rate (program/docs/DEPLOYMENT.md)
 
     def slot(self):
         if self.down:
@@ -63,6 +54,12 @@ class Snap:
 
     def slug_pda(self, i):
         return "lock"
+
+    def name_holder(self, k):
+        return None
+
+    def name_pda(self, k):
+        return "name:" + k
 
     def summary(self):
         return {"slot": self.slot}
@@ -203,13 +200,23 @@ def test_store_down_refuses(tmp_path, kp):
     assert e.value.code == "store_unavailable"
 
 
-def test_concurrent_new_room_for_same_name_is_refused(tmp_path, kp):
+def test_concurrent_new_rooms_for_one_name_are_both_signed_under_one_name_lock(tmp_path, kp):
+    """No in-flight reservation (H-1 closed): both are signed, and both carry the same NameLock, so the
+    program lets at most one of them land. Different symbols, so different SlugLocks."""
     svc = make(tmp_path, kp, Snap(1000))
-    first = svc.route(dict(REQ))
-    assert first["decision"]["kind"] == "new_room"
-    with pytest.raises(Refusal) as e:
-        svc.route(dict(REQ, symbol="OTHER", launcher=str(Keypair().pubkey())))   # same folded name
-    assert e.value.code == "in_flight" and e.value.status == 409
+    a = svc.route(dict(REQ))
+    b = svc.route(dict(REQ, symbol="OTHER", launcher=str(Keypair().pubkey())))   # same folded name
+    assert a["decision"]["kind"] == b["decision"]["kind"] == "new_room"
+    assert a["decision"]["identity"] != b["decision"]["identity"]
+    assert a["decision"]["name_key"] == b["decision"]["name_key"] and a["decision"]["name_key"]
+    for out in (a, b):
+        tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
+        data = bytes(tx.message.instructions[-1].data)
+        assert data[-17:] == b"\x01" + bytes.fromhex(out["decision"]["name_key"])
+    # the same launcher can hold several unexpired new-room decisions: nothing is held off-chain
+    who = str(Keypair().pubkey())
+    assert svc.route(dict(REQ, launcher=who, name="Another Name", symbol="ANO"))
+    assert svc.route(dict(REQ, launcher=who, name="Third Name", symbol="THR"))
 
 
 def test_concurrent_doors_get_independent_random_nonces(tmp_path, kp):
@@ -233,7 +240,8 @@ def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
     (tmp_path / "n").mkdir()
     created = make(tmp_path / "n", kp, Snap(1000)).route(dict(REQ, name="Fresh", symbol="FRSH"))
     cdata = bytes(Transaction.from_bytes(base64.b64decode(created["transaction_base64"])).message.instructions[-1].data)
-    assert struct.unpack("<Q", cdata[-16:-8])[0] == 0                  # door 0 is nonce 0
+    assert cdata[-17] == 1                                              # Some(name_key): 1 + 16 bytes
+    assert struct.unpack("<Q", cdata[-33:-25])[0] == 0                  # door 0 is nonce 0
 
 
 def test_keyfile_refused_in_production(kp):
@@ -334,53 +342,6 @@ def test_aws_kms_signer_against_a_fake_client(kp):
         _ = AwsKmsSigner("k", client=WrongSpec()).pubkey
 
 
-class GatedSigner(KeyfileSigner):
-    """Signs only after `gate` is set, so two requests can be held between check and sign."""
-
-    def __init__(self, path, gate, entered):
-        super().__init__(path, "development")
-        self.gate, self.entered = gate, entered
-
-    def _raw_sign(self, m):
-        self.entered.release()
-        assert self.gate.wait(10)
-        return super()._raw_sign(m)
-
-
-def test_concurrent_new_room_requests_cannot_both_pass_the_in_flight_check(tmp_path, kp):
-    """Check-then-reserve was two steps around signing; /route runs on a thread pool, so two
-    same-name requests could both pass the check and both be signed "new room" (T2n bypass)."""
-    import threading
-    gate, entered = threading.Event(), threading.Semaphore(0)
-    svc = make(tmp_path, kp, Snap(1000), signer=GatedSigner(kp[1], gate, entered))
-    results = []
-
-    def go(req):
-        try:
-            results.append(svc.route(req)["decision"]["kind"])
-        except Refusal as e:
-            results.append(e.code)
-
-    a = threading.Thread(target=go, args=(dict(REQ),))
-    a.start()
-    assert entered.acquire(timeout=10)        # request A is between its in-flight claim and signing
-    b = threading.Thread(target=go, args=(dict(REQ, symbol="OTHER", launcher=str(Keypair().pubkey())),))
-    b.start()
-    b.join(timeout=10)                       # B must be refused without waiting on A's signature
-    gate.set()
-    a.join(timeout=10)
-    assert sorted(results) == ["in_flight", "new_room"] and rows(svc) == 1
-
-
-def test_a_refused_new_room_decision_releases_its_in_flight_claim(tmp_path, kp):
-    svc = make(tmp_path, kp, Snap(1000), signer=BrokenSigner(kp[0]))
-    with pytest.raises(Refusal) as e:
-        svc.route(dict(REQ))
-    assert e.value.code == "signer_unavailable"
-    svc.signer = KeyfileSigner(kp[1], "development")
-    assert svc.route(dict(REQ))["decision"]["kind"] == "new_room"   # not blocked by the failed claim
-
-
 def test_lone_surrogate_metadata_is_refused_not_a_server_error(tmp_path, kp):
     svc = make(tmp_path, kp, Snap(1000))
     with pytest.raises(Refusal) as e:
@@ -459,28 +420,3 @@ def test_rpc_retries_rate_limits_then_gives_up():
     assert len(calls) == RpcClient.RATE_LIMIT_RETRIES + 1
 
 
-def test_one_in_flight_new_room_decision_per_launcher(tmp_path, kp):
-    """H-1 interim: a launcher holding an unexpired new-room decision cannot take a second name."""
-    svc = make(tmp_path, kp, Snap(1000))
-    who = str(Keypair().pubkey())
-    first = svc.route(dict(REQ, launcher=who))
-    with pytest.raises(Refusal) as e:
-        svc.route(dict(REQ, launcher=who, name="Another Name", symbol="ANO"))
-    assert e.value.code == "launcher_in_flight" and e.value.status == 409 and first["id"] in e.value.message
-    assert svc.route(dict(REQ, launcher=str(Keypair().pubkey()), name="Another Name", symbol="ANO"))
-
-
-def test_new_room_needs_proof_of_funds(tmp_path, kp):
-    """H-1 interim: the launcher must hold the launch's rent, fees, first buy and signature fees."""
-    from matcher_service import funds
-    need, rent = funds.required_lamports(FakeRpc(), funds.create_room_sizes(
-        REQ["name"], REQ["symbol"], REQ["uri"], 10 ** 9, True), 0, 10 ** 9)
-    assert rent > 27_000_000 and need == rent + 10 ** 9 + funds.SIGNATURE_FEES
-    poor = make(tmp_path, kp, Snap(1000), rpc=FakeRpc(balance=need - 1))
-    with pytest.raises(Refusal) as e:
-        poor.route(dict(REQ, first_buy_lamports=10 ** 9))
-    assert e.value.code == "insufficient_funds" and rows(poor) == 0
-    assert poor.inflight.conflict([f"name:{'ELON'}", "x"], 0) is None        # nothing was held
-    (tmp_path / "ok").mkdir()
-    ok = make(tmp_path / "ok", kp, Snap(1000), rpc=FakeRpc(balance=need))
-    assert ok.route(dict(REQ, first_buy_lamports=10 ** 9))["decision"]["kind"] == "new_room"

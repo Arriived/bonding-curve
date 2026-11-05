@@ -119,6 +119,32 @@ def score_room(c, faces):
     return best
 
 
+# ---- the NameLock key (create_room `name_key`) ---------------------------------------------------
+NAME_KEY_LEN = 16  # state.rs NAME_KEY_LEN
+NAME_KEY_DOMAIN = b"doors-v1:name-key:v1"
+
+
+def name_lock_key(name, symbol):
+    """The key the program locks for a new room: one key per launch, equal for two launches exactly when
+    `text_tier` routes them together (T3 or T2n), so one key -> one live room enforces the routing rule.
+
+      - folded name of at least NAME_EQUAL_MIN_LEN characters: class N over the folded name (covers T2n,
+        and T3 for such names, since T3 implies equal names);
+      - shorter non-empty folded name with a non-empty folded symbol: class P over (symbol, name) (T3 only);
+      - otherwise None: the launch can never route by text, and only the SlugLock applies.
+
+    sha256(domain || 0 || class || 0 || payload)[:16]; payload is UTF-8. The program never computes it.
+    """
+    c = ident(name, symbol)
+    if len(c["nk"]) >= NAME_EQUAL_MIN_LEN:
+        cls, payload = b"N", c["nk"].encode()
+    elif c["nk"] and c["sk"]:
+        cls, payload = b"P", c["sk"].encode() + b"\x00" + c["nk"].encode()
+    else:
+        return None
+    return hashlib.sha256(NAME_KEY_DOMAIN + b"\x00" + cls + b"\x00" + payload).digest()[:NAME_KEY_LEN]
+
+
 # ---- program fold and identity (programs/doors_v1/src/state.rs) --------------------------------
 _PROGRAM_DIGITS = {ord("0"): ord("O"), ord("1"): ord("I"), ord("3"): ord("E"), ord("4"): ord("A"),
                    ord("5"): ord("S"), ord("7"): ord("T"), ord("8"): ord("B")}

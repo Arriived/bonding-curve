@@ -1,8 +1,9 @@
 """Normalisation, the name-length minimum, the program's own fold, and parity with the research matcher."""
 import json
+from pathlib import Path
 
 import pytest
-from conftest import SERVICE, research_matcher
+from conftest import SERVICE, load_examples, research_matcher
 
 from matcher_service import rules
 from matcher_service.layouts import (CONFIG_FIELDS, DOOR_FIELDS, ROOM_FIELDS, SLUG_FIELDS)
@@ -93,3 +94,54 @@ def test_layout_constants_match_the_deployed_layout_file():
         table = {f["field"]: (f["offset"], f["bytes"]) for f in lay[name]["fields"]}
         for k, v in fields.items():
             assert table[k] == v, (name, k)
+
+
+def _name_pairs():
+    """Every slug_coverage pair, the research examples' faces against each other, and edge cases."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("slug_coverage", Path(__file__).resolve().parents[1]
+                                                  / "scripts/slug_coverage.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    launches = [a for _, a, _ in mod.PAIRS] + [b for _, _, b in mod.PAIRS]
+    for _, ex in load_examples():
+        launches.append((ex["candidate"]["name"], ex["candidate"]["symbol"]))
+        launches += [(f["name"], f["symbol"]) for r in ex["rooms"] for f in r["faces"]]
+    launches += [("Pep", "PEP"), ("Pep", "PEP2"), ("pep", "pep"), ("The Coin", "THE"), ("Coin", "C"),
+                 ("A", "A"), ("A", "B"), ("Pepe", "$$$"), ("Ｐｅｐ", "ＰＥＰ"), ("P3P", "PEP")]
+    return [(a, b) for a in launches for b in launches]
+
+
+def test_name_lock_key_equals_exactly_when_the_matcher_routes_together():
+    """One key -> one live room enforces the routing rule only if keys are equal exactly when text_tier
+    routes two launches together (T3 or T2n). Checked both ways over every pair."""
+    from matcher_service import rules
+    pairs = _name_pairs()
+    assert len(pairs) > 1000
+    for a, b in pairs:
+        ka, kb = rules.name_lock_key(*a), rules.name_lock_key(*b)
+        tier, _ = rules.text_tier(rules.ident(*b), rules.ident(*a))
+        together = tier in rules.ROUTING_TIERS
+        assert (ka is not None and ka == kb) == together, (a, b, tier, ka, kb)
+        assert ka is None or len(ka) == rules.NAME_KEY_LEN
+
+
+def test_name_lock_key_classes():
+    from matcher_service import rules
+    assert rules.name_lock_key("Pepe Coin", "PEPE") == rules.name_lock_key("PEPE", "FROG")     # N: name only
+    assert rules.name_lock_key("Pep", "PEP") != rules.name_lock_key("Pep", "FROG")             # P: short name
+    assert rules.name_lock_key("Pep", "PEP") == rules.name_lock_key("pep", "$PEP")
+    assert rules.name_lock_key("The Official Coin", "X") is None                              # folds to ""
+
+
+def test_verifier_derives_the_same_name_key_from_the_research_matcher():
+    """scripts/verify_decision.py recomputes the key from the research matcher, independently of rules.py."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("verify_decision", SERVICE / "scripts/verify_decision.py")
+    vd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vd)
+    rm = research_matcher()
+    launches = sorted({a for a, _ in _name_pairs()})
+    assert len(launches) > 40
+    for name, symbol in launches:
+        assert vd.name_key_research(rm, name, symbol) == rules.name_lock_key(name, symbol), (name, symbol)

@@ -8,10 +8,12 @@ What it checks, without trusting the service's snapshot:
   2. Signature: the matcher signature verifies over the recorded transaction message, and the signing
      key equals Config.matcher_authority *as of the decision slot* (replayed from ConfigChanged events).
   3. Transaction content: the instruction is create_room/open_door with exactly the recorded room,
-     door nonce and address, expires_at_slot, SlugLock, old holder and Launch arguments (decoded from the message bytes).
+     door nonce and address, expires_at_slot, SlugLock, old holder, NameLock key and account, old name holder and
+     Launch arguments (decoded from the message bytes). The name key is recomputed from the research matcher's
+     own normalisation, not the service's code.
   4. State at the decision slot, rebuilt from the program's own events and block times:
      every room that could have matched (any door face equal under T3/T2n now; faces are immutable and
-     only ever added) and the candidate's SlugLock holder. Rooms are replayed from creation to the slot:
+     only ever added), the candidate's SlugLock holder and its NameLock holder. Rooms are replayed from creation to the slot:
      RoomCreated -> creation; DoorOpened -> faces, door_count; Trade -> reserve, status, liveness
      buckets (Room::record semantics, amount = curve_lamports); PendingRetired.
      Timestamps: `created_at` is immutable, so it is read exactly from the Room account. The program's
@@ -62,7 +64,23 @@ def disc(kind, name):
 
 
 EVENTS = {disc("event", n): n for n in ("RoomCreated", "DoorOpened", "Trade", "PendingRetired", "SlugReleased",
-                                        "ConfigChanged")}
+                                        "NameReleased", "ConfigChanged")}
+NAME_KEY_DOMAIN = b"doors-v1:name-key:v1"
+
+
+def name_key_research(rm, name, symbol):
+    """The NameLock key from the research matcher's ident() (the reference the service ports): class N over
+    the folded name if it has at least name_equal_min_len characters, else class P over (symbol, name) when
+    both are non-empty, else none. Must equal services/matcher rules.name_lock_key."""
+    c = rm.ident(name, symbol)
+    nk, sk = c["nk"], c["sk"]
+    if len(nk) >= rm.DEFAULTS["name_equal_min_len"]:
+        cls, payload = b"N", nk.encode()
+    elif nk and sk:
+        cls, payload = b"P", sk.encode() + b"\x00" + nk.encode()
+    else:
+        return None
+    return hashlib.sha256(NAME_KEY_DOMAIN + b"\x00" + cls + b"\x00" + payload).digest()[:16]
 
 
 class R:
@@ -100,7 +118,10 @@ def decode_event(data):
         return None
     r = R(data[8:])
     if name == "RoomCreated":
-        return name, {"room": r.pk(), "room_id": r.u("Q"), "identity": r.take(32).hex(), "founder": r.pk()}
+        out = {"room": r.pk(), "room_id": r.u("Q"), "identity": r.take(32).hex(), "founder": r.pk()}
+        r.u("H"), r.u("H"), r.u("B"), r.u("I")          # founder_share_bps, matcher_version, rule, face
+        out["name_key"] = (r.take(16).hex() if r.u("B") else None) if r.o < len(r.b) else None
+        return name, out
     if name == "DoorOpened":
         return name, {"room": r.pk(), "door": r.pk(), "index": r.u("I"), "mint": r.pk()}
     if name == "Trade":
@@ -114,6 +135,8 @@ def decode_event(data):
         return name, {"room": r.pk(), "lamports": r.u("Q"), "retired": r.u("Q")}
     if name == "SlugReleased":
         return name, {"identity": r.take(32).hex(), "room": r.pk()}
+    if name == "NameReleased":
+        return name, {"key": r.take(16).hex(), "room": r.pk()}
     if name == "ConfigChanged":
         admin, matcher, _fs = r.pk(), r.pk(), r.u("H")
         s = {"protocol_fee_recipient": r.pk(), "fee_bps": r.u("H"), "door_share_bps": r.u("H"),
@@ -242,6 +265,17 @@ def lock_holder_at(hist, lock_pda, identity, upto_slot):
     return holder
 
 
+def name_holder_at(hist, lock_pda, key_hex, upto_slot):
+    holder = None
+    for slot, sig in hist.signatures(lock_pda, upto_slot):
+        for name, e in hist.events(sig)[1]:
+            if name == "RoomCreated" and e.get("name_key") == key_hex:
+                holder = e["room_id"]
+            elif name == "NameReleased" and e["key"] == key_hex:
+                holder = None
+    return holder
+
+
 def decode_launch_ix(msg, program, idl_path):
     idl = json.load(open(idl_path))
     names = {bytes(i["discriminator"]): i for i in idl["instructions"]}
@@ -266,10 +300,12 @@ def decode_launch_ix(msg, program, idl_path):
               "min_tokens_out": r.u("Q"), "matcher_version": r.u("H"), "rule": r.u("B"), "face": r.u("I"),
               "max_fee_lamports": r.u("Q"), "expected_terms_hash": r.take(32).hex(),
               "door_nonce": r.u("Q"), "expires_at_slot": r.u("Q")}
+    if spec["name"] == "create_room":
+        launch["name_key"] = r.take(16).hex() if r.u("B") else None
     return spec["name"], room_id, accounts, launch
 
 
-def recompute(rm, rooms, holder_id, cfg, now, name, symbol):
+def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None):
     """Program floor semantics + research decide() for text rule, liveness and ties."""
     params = {k: cfg[k] for k in ("live_min_reserve_lamports", "live_max_idle_seconds", "live_new_seconds",
                                   "live_min_volume_lamports")}
@@ -290,8 +326,18 @@ def recompute(rm, rooms, holder_id, cfg, now, name, symbol):
     out = rm.decide({"now": now, "candidate": {"name": name, "symbol": symbol}, "rooms": candidates,
                      "params": params})
     if out["decision"] == "door":
-        return {"kind": "door", "rule": out["rule"].split()[0], "room_id": out["room_id"], "old_holder": old_holder}
-    return {"kind": "new_room", "rule": "new_room", "room_id": None, "old_holder": old_holder}
+        return {"kind": "door", "rule": out["rule"].split()[0], "room_id": out["room_id"], "old_holder": old_holder,
+                "old_name_holder": None}
+    old_name_holder = None
+    if name_holder_id is not None:
+        h = rooms[name_holder_id]
+        if h["status"] > 1:
+            return {"kind": "refuse", "rule": "graduated_name"}
+        if rm.is_live(research_room(h), now, p)[0]:
+            return {"kind": "refuse", "rule": "inconsistent_state"}
+        old_name_holder = name_holder_id
+    return {"kind": "new_room", "rule": "new_room", "room_id": None, "old_holder": old_holder,
+            "old_name_holder": old_name_holder}
 
 
 def verify(record, rpc_url, chain_ok=True):
@@ -357,6 +403,17 @@ def verify(record, rpc_url, chain_ok=True):
     oh = acc.get("old_holder")
     want_oh = program if dec["old_holder_room_id"] is None else str(pda([b"room", struct.pack("<Q", int(dec["old_holder_room_id"]))], program))
     check("old holder account equals the decision", oh == want_oh, oh)
+    want_key = name_key_research(rm, req["name"], req["symbol"]) if name == "create_room" else None
+    if name == "create_room":
+        check("Launch name_key is the research matcher's key for the request",
+              launch["name_key"] == (want_key.hex() if want_key else None) == dec.get("name_key"), launch["name_key"])
+        want_nl = program if want_key is None else str(pda([b"name", want_key], program))
+        check("NameLock account equals the key's PDA", acc.get("name_lock") == want_nl
+              and (want_key is None or dec.get("name_lock") == want_nl), acc.get("name_lock"))
+        onh = acc.get("old_name_holder")
+        want_onh = program if dec.get("old_name_holder_room_id") is None else str(
+            pda([b"room", struct.pack("<Q", int(dec["old_name_holder_room_id"]))], program))
+        check("old name holder account equals the decision", onh == want_onh, onh)
 
     # 4. state at the slot, rebuilt from events
     current_rooms = [decode_room(d) | {"pubkey": k} for k, d in
@@ -376,11 +433,14 @@ def verify(record, rpc_url, chain_ok=True):
     identity = rules.program_identity(req["name"], req["symbol"]).hex()
     lock = str(pda([b"slug", bytes.fromhex(identity)], program))
     holder = lock_holder_at(hist, lock, identity, slot)
+    name_holder = None
+    if want_key is not None:
+        name_holder = name_holder_at(hist, str(pda([b"name", want_key], program)), want_key.hex(), slot)
     relevant = {}
     for r in current_rooms:
         faces = room_of_door.get(r["pubkey"], [])
         if any(rm.text_tier(c, rm.ident(f["name"], f["symbol"]), rm.DEFAULTS, fuzzy=False)[0] in ("T3", "T2n")
-               for f in faces) or r["room_id"] == holder:
+               for f in faces) or r["room_id"] in (holder, name_holder):
             relevant[r["pubkey"]] = r
     rebuilt = {}
     for pk, r in relevant.items():
@@ -396,7 +456,7 @@ def verify(record, rpc_url, chain_ok=True):
     recorded = {r["room_id"]: r for r in state["rooms"]}
     for rid, st in rebuilt.items():
         rec = recorded.get(rid)
-        matched_then = rid == holder or any(
+        matched_then = rid in (holder, name_holder) or any(
             rm.text_tier(c, rm.ident(f["name"], f["symbol"]), rm.DEFAULTS, fuzzy=False)[0] in ("T3", "T2n")
             for f in st["faces"])
         if rec is None:
@@ -420,16 +480,18 @@ def verify(record, rpc_url, chain_ok=True):
               ", ".join(f"{k}: chain {got[k]} vs record {want[k]}" for k in diffs), inconclusive=timing_only)
 
     # 5. decision
-    expect = recompute(rm, rebuilt, holder, cfg, now, req["name"], req["symbol"])
+    expect = recompute(rm, rebuilt, holder, cfg, now, req["name"], req["symbol"], name_holder)
     def shifted(d):
         return {k: dict(v, last_trade_at=v["last_trade_at"] + d) for k, v in rebuilt.items()}
-    robust = all(recompute(rm, shifted(d), holder, cfg, now, req["name"], req["symbol"]) == expect
+    robust = all(recompute(rm, shifted(d), holder, cfg, now, req["name"], req["symbol"], name_holder) == expect
                  for d in (-BLOCK_TIME_TOLERANCE, BLOCK_TIME_TOLERANCE))
     check(f"the recomputed decision does not depend on block-time precision (±{BLOCK_TIME_TOLERANCE} s)",
           robust, "the outcome changes within the tolerance: a liveness boundary", inconclusive=not robust)
     got = {"kind": dec["kind"], "rule": dec["rule"],
            "room_id": None if dec["kind"] == "new_room" else int(dec["room_id"]),
-           "old_holder": None if dec["old_holder_room_id"] is None else int(dec["old_holder_room_id"])}
+           "old_holder": None if dec["old_holder_room_id"] is None else int(dec["old_holder_room_id"]),
+           "old_name_holder": (None if dec.get("old_name_holder_room_id") is None
+                               else int(dec["old_name_holder_room_id"]))}
     check("independent recomputation agrees with the decision", expect == got,
           f"recomputed {expect}, recorded {got}")
 

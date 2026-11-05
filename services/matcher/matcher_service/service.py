@@ -3,10 +3,9 @@
   1. freshness: a snapshot inside the budget (one synchronous refresh is attempted; RPC failure refuses)
   2. key check: signer pubkey == Config.matcher_authority in that snapshot
   3. decide (pure, from the snapshot)
-  4. in-flight conflicts (same folded name / identity awaiting a new room) refuse with retry-after
-  5. build the transaction from a fresh blockhash, check its size with placeholder signatures
-  6. sign (KMS or dev keyfile); signature verified against the key before use
-  7. persist the decision record; only then return the partially signed transaction
+  4. build the transaction from a fresh blockhash, check its size with placeholder signatures
+  5. sign (KMS or dev keyfile); signature verified against the key before use
+  6. persist the decision record; only then return the partially signed transaction
 """
 import base64
 import hashlib
@@ -18,10 +17,9 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction
 
-from . import __version__, funds, quote, rules, txbuild
+from . import __version__, quote, rules, txbuild
 from .chain import RpcError, StaleState
 from .decide import RULE_CODE, Refusal, decide
-from .inflight import InFlight
 from .layouts import LayoutError
 from .signer import SignerUnavailable
 
@@ -42,10 +40,9 @@ def room_view(room):
 
 
 class Service:
-    def __init__(self, cfg, rpc, chain, signer, store, builder, log, metrics, inflight=None):
+    def __init__(self, cfg, rpc, chain, signer, store, builder, log, metrics):
         self.cfg, self.rpc, self.chain, self.signer = cfg, rpc, chain, signer
         self.store, self.builder, self.log, self.metrics = store, builder, log, metrics
-        self.inflight = inflight or InFlight()
 
     # -- readiness -------------------------------------------------------------------------------
     def health(self):
@@ -109,18 +106,6 @@ class Service:
             self.metrics.observe(time.monotonic() - t0)
 
     def _route(self, req):
-        held = []   # in-flight claims taken by this request; released unless the decision is issued
-        try:
-            out = self._route_inner(req, held)
-        except BaseException:
-            for token in held:
-                self.inflight.release(token)
-            raise
-        for token in held:
-            self.inflight.bind(token, out["id"])
-        return out
-
-    def _route_inner(self, req, held):
         try:
             launcher = Pubkey.from_string(str(req.get("launcher", "")))
         except ValueError:
@@ -188,34 +173,11 @@ class Service:
         except RpcError as e:
             raise Refusal("rpc_unavailable", f"cannot read a recent blockhash: {e}", 503)
 
-        nk = d.candidate_keys["name"]
         identity = bytes.fromhex(d.identity)
         if d.kind == "new_room":
-            # H-1 interim (1/2): one in-flight new-room decision per launcher.
-            mine = self.inflight.conflict([f"launcher:{launcher}"], height)
-            if mine:
-                raise Refusal("launcher_in_flight", f"this launcher already holds an unexpired new-room decision "
-                                                    f"({mine}); fetch it from /decision/{{id}} or retry after it "
-                                                    "lands or expires", 409)
-            # H-1 interim (2/2): proof of funds. A hold is only granted to a launcher who could pay for it.
-            try:
-                need, rent = funds.required_lamports(
-                    self.rpc, funds.create_room_sizes(name, symbol, uri, first_buy, d.old_holder_room_id is None),
-                    fee_needed, first_buy)
-                have = self.rpc.balance(launcher)
-            except RpcError as e:
-                raise Refusal("rpc_unavailable", f"cannot check the launcher's balance: {e}", 503)
-            if have < need:
-                raise Refusal("insufficient_funds", f"launcher holds {have} lamports; this launch needs {need} "
-                                                    f"(rent {rent}, fees {fee_needed}, first buy {first_buy}, "
-                                                    f"signatures {funds.SIGNATURE_FEES})", 422)
-            token, busy = self.inflight.claim([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
-                                               f"id:{d.identity}", f"launcher:{launcher}"], height, last_valid)
-            if token:
-                held.append(token)
-            if busy:
-                raise Refusal("in_flight", f"a new-room decision for this name is in flight ({busy}); "
-                                           "retry after it lands or expires", 409)
+            # No in-flight reservation: two concurrent new-room decisions for one name key or identity can
+            # both be signed, and the program lets at most one land (NameLock / SlugLock, created atomically
+            # with the room). The other fails on-chain; re-requesting then routes it as a door.
             room_id = self._fresh_nonce(snap)
             door_nonce = 0          # door 0 is always at nonce 0
         else:
@@ -229,8 +191,9 @@ class Service:
                                        RULE_CODE[d.rule], d.face, max_fee,
                                        bytes.fromhex(snap.config["launch_terms_hash"]), door_nonce, expires_at_slot)
         if d.kind == "new_room":
-            ix, room_pk, door = self.builder.create_room_ix(launcher, matcher, room_id, identity,
-                                                            d.old_holder_room_id, launch)
+            ix, room_pk, door = self.builder.create_room_ix(
+                launcher, matcher, room_id, identity, d.old_holder_room_id, launch,
+                bytes.fromhex(d.name_key) if d.name_key else None, d.old_name_holder_room_id)
         else:
             ix, room_pk, door = self.builder.open_door_ix(launcher, matcher, room_id, door_nonce, identity,
                                                           d.old_holder_room_id, launch)
@@ -251,6 +214,8 @@ class Service:
         considered = {r["room_id"] for r in d.evaluated}
         if d.old_holder_room_id is not None:
             considered.add(d.old_holder_room_id)
+        if d.old_name_holder_room_id is not None:
+            considered.add(d.old_name_holder_room_id)
         all_rooms = sorted(r["pubkey"] for r in snap.rooms.values())
         record = {
             "id": decision_id,
@@ -273,6 +238,10 @@ class Service:
                          "door_mint": str(door["door_mint"]), "face": d.face,
                          "old_holder_room_id": None if d.old_holder_room_id is None else str(d.old_holder_room_id),
                          "identity": d.identity, "slug_lock": snap.slug_pda(d.identity),
+                         "name_key": d.name_key or None,
+                         "name_lock": snap.name_pda(d.name_key) if d.name_key else None,
+                         "old_name_holder_room_id": (None if d.old_name_holder_room_id is None
+                                                     else str(d.old_name_holder_room_id)),
                          "candidate_keys": d.candidate_keys, "evaluated": d.evaluated},
             "transaction": {"message_base64": base64.b64encode(msg_bytes).decode(), "blockhash": blockhash,
                             "blockhash_slot": bh_slot, "expires_at_slot": expires_at_slot,

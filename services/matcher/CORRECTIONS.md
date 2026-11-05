@@ -339,3 +339,54 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
 - **Tests:** `test_one_in_flight_new_room_decision_per_launcher`, `test_new_room_needs_proof_of_funds`.
 - **What it does not do:** stop a squatter with N funded wallets holding N names. That needs the
   NameLock, recorded as a mainnet blocker in `program/docs/SECURITY_REVIEW.md`.
+
+## 16. H-1 closed on-chain: NameLock; the reservation is removed (5 November 2026)
+
+- **What the owner decided:** the matcher signs its folded-name key, and the program uses it as a PDA seed
+  for a `NameLock`. The program never computes the fold.
+- **The key** (`rules.name_lock_key`): 16 bytes, `sha256("doors-v1:name-key:v1" 0 class 0 payload)[:16]`.
+  - Class `N`, over the folded name, when the folded name has at least 4 characters.
+  - Class `P`, over the folded symbol and folded name, when the name is shorter and both are non-empty.
+  - Otherwise no key, and no NameLock.
+  - **Why one key per launch is enough:** T3 and T2n both require equal folded names, so the
+    matcher's relation between two room-creating launches reduces to "same key".
+    `test_name_lock_key_equals_exactly_when_the_matcher_routes_together` checks this both ways over
+    every pair of the slug-coverage classes, the research examples and edge cases.
+  - **Why 16 bytes:** each byte costs URI length in a legacy transaction. Finding a second
+    preimage of a 128-bit key costs 2^128 work, and the chance of an accidental collision among
+    10^9 names is about 10^-21.
+- **Correction, the old reservation was narrower than documented:** it reserved `name:` only for
+  names of 4 or more characters, plus the exact identity. A short-name T3 pair with different program
+  identities (a 3-letter homoglyph name, for example) was not reserved. The `P` class of the
+  NameLock covers it.
+- **Removed:** `inflight.py`, the one-hold-per-launcher limit, `funds.py` and the proof of funds.
+  - Each existed only to stop two concurrent new-room decisions for one name. The program now
+    enforces that atomically: `slug_coverage.py` shows 0 of 16 routed pair classes without an on-chain
+    floor (9 before).
+  - With the holds gone, H-1's reservation squatting is gone too.
+  - Tests replaced: `test_concurrent_new_rooms_for_one_name_are_both_signed_under_one_name_lock`.
+  - The e2e test, step 1b: two decisions under one NameLock, the second rejected on-chain (`Holder`,
+    6013), and once re-requested it becomes a T2n door.
+- **What the reservation did that nothing does now:** when two launchers race one new name, the faster
+  transaction becomes the room's founder. The other loses only its transaction fee. This matters only
+  while `founder_share_bps > 0`.
+- **Snapshot and decision:**
+  - The snapshot now reads every `NameLock`, checking that each is the PDA of its stored key.
+  - A dead holder is passed as `old_name_holder`.
+  - A graduated holder is refused with 409 `graduated_name`.
+  - A live holder that the text rule did not match is refused with 503 `inconsistent_state`. Only a
+    lock keyed under other Unicode tables can produce one, so the service fails closed.
+- **Verifier:** recomputes the key from the research matcher's `ident()`, not from `rules.py`, and replays
+  the NameLock holder from `RoomCreated.name_key` and `NameReleased`.
+- **Cost, URI length** (`scripts/max_uri.py`, name 32, symbol 10, with a priority fee):
+
+  | shape | legacy before | legacy now | v0 + lookup table (comparison) |
+  |---|---|---|---|
+  | `create_room` | 102 | **51** | 200 |
+  | takeover | 70 | **19** | 169 |
+  | NameLock takeover only | — | **19** | 169 |
+  | both locks held by different dead rooms | — | **does not fit** | 137 |
+
+  Shorter names and symbols leave more room, byte for byte. Moving to v0 is README "What remains" item 7.
+- **Correction, README item 7** still said a launch uses 64 of 64 trace entries and that v0 was blocked
+  by M-7. Neither was true after the M-8 change. It now gives the current figures.

@@ -128,3 +128,50 @@ def test_paused_program_is_refused():
     with pytest.raises(Refusal) as e:
         decide(FakeSnapshot([], NOW, config(paused=True)), "A", "A", "")
     assert e.value.code == "program_paused"
+
+
+# ---- NameLock (H-1) ----------------------------------------------------------------------------------
+def test_new_room_signs_its_name_key_and_passes_a_dead_name_holder():
+    key = rules.name_lock_key("Elon", "OTHER").hex()
+    d = decide(FakeSnapshot([], NOW), "Elon", "OTHER", "")
+    assert (d.kind, d.name_key, d.old_name_holder_room_id) == ("new_room", key, None)
+    # Room 1 ("Elon"/"ELON") is dead and holds the name; the SlugLock of "Elon"/"OTHER" is free.
+    snap = FakeSnapshot([dead_room(1, [("Elon", "ELON")])], NOW, names={key: 1})
+    d = decide(snap, "Elon", "OTHER", "")
+    assert (d.kind, d.old_holder_room_id, d.old_name_holder_room_id) == ("new_room", None, 1)
+    # Both locks held by different dead rooms: both are passed.
+    ident = rules.program_identity("Elon", "OTHER").hex()
+    snap = FakeSnapshot([dead_room(1, [("Elon", "ELON")]), dead_room(2, [("Elon", "OTHER")])], NOW,
+                        locks={ident: 2}, names={key: 1})
+    d = decide(snap, "Elon", "OTHER", "")
+    assert (d.kind, d.old_holder_room_id, d.old_name_holder_room_id) == ("new_room", 2, 1)
+
+
+def test_doors_carry_no_name_key():
+    d = decide(FakeSnapshot([live_room(2, [("Elon", "ELON")])], NOW), "Elon", "OTHER", "")
+    assert (d.kind, d.name_key, d.old_name_holder_room_id) == ("door", "", None)
+
+
+def test_launch_without_a_name_key():
+    d = decide(FakeSnapshot([], NOW), "The Official Coin", "X", "")
+    assert (d.kind, d.name_key) == ("new_room", "")
+
+
+def test_graduated_name_holder_is_refused():
+    key = rules.name_lock_key("Elon", "OTHER").hex()
+    snap = FakeSnapshot([room(1, [("Elon", "ELON")], status=2)], NOW, names={key: 1})
+    with pytest.raises(Refusal) as e:
+        decide(snap, "Elon", "OTHER", "")
+    assert e.value.code == "graduated_name" and e.value.status == 409
+
+
+def test_live_name_holder_the_text_rule_missed_fails_closed():
+    """Only possible if the lock was keyed under other Unicode tables (or the snapshot is inconsistent)."""
+    key = rules.name_lock_key("Elon", "OTHER").hex()
+    snap = FakeSnapshot([live_room(1, [("Zed", "ZED")])], NOW, names={key: 1})
+    with pytest.raises(Refusal) as e:
+        decide(snap, "Elon", "OTHER", "")
+    assert e.value.code == "inconsistent_state" and e.value.status == 503
+    with pytest.raises(Refusal) as e:
+        decide(FakeSnapshot([], NOW, names={key: 9}), "Elon", "OTHER", "")
+    assert e.value.code == "inconsistent_state"

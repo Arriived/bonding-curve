@@ -14,8 +14,8 @@ def account_discriminator(name: str) -> bytes:
     return hashlib.sha256(f"account:{name}".encode()).digest()[:8]
 
 
-ROOM_LEN, DOOR_LEN, SLUG_LEN, CONFIG_LEN = 1315, 328, 17, 248
-DISC = {k: account_discriminator(k) for k in ("Room", "Door", "SlugLock", "Config")}
+ROOM_LEN, DOOR_LEN, SLUG_LEN, NAME_LEN, CONFIG_LEN = 1315, 328, 17, 33, 248
+DISC = {k: account_discriminator(k) for k in ("Room", "Door", "SlugLock", "NameLock", "Config")}
 
 # field -> (offset, bytes), the subset the service reads
 ROOM_FIELDS = {"room_id": (8, 8), "status": (23, 1), "room_mint": (24, 32), "reserve": (196, 8),
@@ -27,6 +27,7 @@ ROOM_FIELDS = {"room_id": (8, 8), "status": (23, 1), "room_mint": (24, 32), "res
                "pending_reserve_sol": (240, 8)}
 DOOR_FIELDS = {"room": (8, 32), "index": (40, 4), "mint": (44, 32), "nonce": (303, 8)}
 SLUG_FIELDS = {"room_id": (8, 8)}
+NAME_FIELDS = {"room_id": (8, 8), "key": (16, 16)}
 CONFIG_FIELDS = {"paused": (172, 1), "matcher_authority": (174, 32), "room_fee_lamports": (84, 8),
                  "door_fee_lamports": (76, 8), "live_min_reserve_lamports": (206, 8),
                  "live_max_idle_seconds": (214, 8), "live_new_seconds": (222, 8),
@@ -84,6 +85,11 @@ def decode_door(data: bytes) -> dict:
 def decode_slug(data: bytes) -> dict:
     _check(data, "SlugLock", SLUG_LEN)
     return {"room_id": struct.unpack_from("<Q", data, 8)[0]}
+
+
+def decode_name(data: bytes) -> dict:
+    _check(data, "NameLock", NAME_LEN)
+    return {"room_id": struct.unpack_from("<Q", data, 8)[0], "key": data[16:32].hex()}
 
 
 def decode_config(data: bytes) -> dict:

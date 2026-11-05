@@ -120,7 +120,7 @@ def pda(seeds, program):
 
 
 class Snapshot:
-    def __init__(self, program_id, slots, clock_unix, config, config_key, rooms, slugs, read_wall):
+    def __init__(self, program_id, slots, clock_unix, config, config_key, rooms, slugs, read_wall, names=None):
         self.program_id = program_id
         self.slots = slots              # read -> context slot
         self.slot = max(slots.values())
@@ -129,6 +129,7 @@ class Snapshot:
         self.config_key = config_key
         self.rooms = rooms              # room_id -> room dict (+ pubkey, faces ordered by door index)
         self.slugs = slugs              # SlugLock PDA -> holder room_id
+        self.names = names or {}        # NameLock key hex -> holder room_id
         self.read_wall = read_wall
 
     def slug_pda(self, identity_hex):
@@ -136,6 +137,12 @@ class Snapshot:
 
     def slug_holder(self, identity_hex):
         return self.slugs.get(self.slug_pda(identity_hex))
+
+    def name_pda(self, key_hex):
+        return str(pda([b"name", bytes.fromhex(key_hex)], self.program_id))
+
+    def name_holder(self, key_hex):
+        return self.names.get(key_hex)
 
     def coherent(self, coherence_slots):
         return max(self.slots.values()) - min(self.slots.values()) <= coherence_slots
@@ -155,7 +162,7 @@ class Snapshot:
 
     def summary(self):
         return {"slots": self.slots, "slot": self.slot, "clock_unix": self.clock_unix,
-                "rooms": len(self.rooms), "slug_locks": len(self.slugs)}
+                "rooms": len(self.rooms), "slug_locks": len(self.slugs), "name_locks": len(self.names)}
 
 
 class ChainState:
@@ -178,6 +185,7 @@ class ChainState:
         s_rooms, rooms_raw = rpc.program_accounts(prog, "Room", layouts.ROOM_LEN)
         s_doors, doors_raw = rpc.program_accounts(prog, "Door", layouts.DOOR_LEN, min_slot=s_rooms)
         s_slugs, slugs_raw = rpc.program_accounts(prog, "SlugLock", layouts.SLUG_LEN, min_slot=s_rooms)
+        s_names, names_raw = rpc.program_accounts(prog, "NameLock", layouts.NAME_LEN, min_slot=s_rooms)
         s_cfg, cfg_data, cfg_v = rpc.account(self.config_key, min_slot=s_rooms)
         if cfg_data is None or cfg_v["owner"] != prog:
             raise RpcError(f"Config {self.config_key} missing or not owned by {prog}")
@@ -213,11 +221,17 @@ class ChainState:
             if not room["faces"]:
                 raise layouts.LayoutError(f"room {room['room_id']} has no door 0 in this snapshot")
         slugs = {key: layouts.decode_slug(data)["room_id"] for key, data in slugs_raw}  # lock PDA -> holder
-        s_clock, clock_data, _ = rpc.account(CLOCK_SYSVAR, min_slot=max(s_rooms, s_doors, s_slugs, s_cfg))
+        names = {}
+        for key, data in names_raw:   # key hex -> holder; the PDA is checked, as for rooms
+            n = layouts.decode_name(data)
+            if str(pda([b"name", bytes.fromhex(n["key"])], prog)) != key:
+                raise layouts.LayoutError(f"name lock {key} is not the PDA of its key {n['key']}")
+            names[n["key"]] = n["room_id"]
+        s_clock, clock_data, _ = rpc.account(CLOCK_SYSVAR, min_slot=max(s_rooms, s_doors, s_slugs, s_names, s_cfg))
         clock_unix = struct.unpack_from("<q", clock_data, 32)[0]
-        snap = Snapshot(prog, {"rooms": s_rooms, "doors": s_doors, "slug_locks": s_slugs, "config": s_cfg,
-                               "clock": s_clock}, clock_unix, config, self.config_key, rooms, slugs,
-                        time.time())
+        snap = Snapshot(prog, {"rooms": s_rooms, "doors": s_doors, "slug_locks": s_slugs, "name_locks": s_names,
+                               "config": s_cfg, "clock": s_clock}, clock_unix, config, self.config_key, rooms,
+                        slugs, time.time(), names)
         with self._lock:
             self._snapshot = snap
         return snap

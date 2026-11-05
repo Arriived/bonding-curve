@@ -235,7 +235,7 @@ docker run -d --name matcher -p 8080:8080 -v matcher-data:/data \
 - It defaults to `MATCHER_ENV=production` and `MATCHER_SIGNER=gcp-kms`.
 - It persists decisions to `/data`. **Back up that volume:** the decision store is the audit trail.
 - It has a container `HEALTHCHECK` on `/health`.
-- **Run exactly one replica.** In-flight reservations and rate limits are per process (see "What
+- **Run exactly one replica.** Rate limits and the request-replay cache are per process (see "What
   remains").
 - Put a TLS-terminating proxy in front of it, and set `MATCHER_TRUST_X_FORWARDED_FOR=1` only there.
 
@@ -250,7 +250,9 @@ docker run -d --name matcher -p 8080:8080 -v matcher-data:/data \
 | signer key ≠ `Config.matcher_authority` | 503 `signer_mismatch`; `/health` unready |
 | decision store unwritable | 503 `store_unavailable`; the signature is discarded, because an unrecorded decision is never released |
 | program paused | 503 `program_paused` |
-| concurrent new-room launches for one name | 409 `in_flight` for the second until the first lands or expires. The check and the reservation are one atomic step before signing; a refused or failed decision releases it |
+| concurrent new-room launches for one name | both are signed under one `NameLock`; the program lets the first land and rejects the other (`Holder`, 6013) with nothing created. Re-requested, it routes as a door |
+| new room whose name is held by a graduated room | 409 `graduated_name` (the program has no graduation adapter in v1) |
+| `NameLock` held by a live room the text rule did not match | 503 `inconsistent_state` (only possible under other Unicode tables); fail closed |
 | body over 8 KiB | 413 `request_too_large`, before parsing |
 | metadata with lone surrogates | 422 `invalid_metadata` |
 
@@ -279,8 +281,11 @@ The unit tests (108) cover:
   window edges;
 - **each tie-break tier, and floor handling** for live, dead and graduated holders;
 - **failure cases:** stale state, incoherent reads, RPC down, blockhash unavailable, signer
-  unavailable or mismatched, store down, in-flight conflicts, independent random door nonces, and the expiry, terms hash
-  and door nonce carried in the signed launch;
+  unavailable or mismatched, store down, concurrent new rooms signed under one NameLock, independent random door
+  nonces, and the expiry, terms hash, door nonce and name key carried in the signed launch;
+- **the NameLock key:** equal for two launches exactly when T3 or T2n routes them together, over every pair of the
+  slug-coverage classes, the research examples and edge cases; the verifier's independent derivation from the
+  research matcher gives the same key; dead, graduated and inconsistent name holders;
 - **signers:** keyfile refused in production, a bad signature rejected, GCP and AWS KMS against fakes,
   the CRC32C check value;
 - **store:** append-only, tamper detection;
@@ -343,7 +348,7 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 1. ~~Devnet~~: done. The program is deployed, and this e2e passes there.
 2. **Real KMS.** Create the key, run the service against it on devnet, and set
    `Config.matcher_authority` to the KMS public key. Both signers are tested only against fakes.
-3. **More than one replica.** Move in-flight reservations and rate limits to shared storage (for
+3. **More than one replica.** Move rate limits and the request-replay cache to shared storage (for
    example Redis), and the decision store to a managed database with point-in-time backups. SQLite
    with one writer is a single-instance design.
 4. **Publish the store's hash-chain head**, for example periodically as an on-chain memo. Without it,
@@ -353,32 +358,22 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    with the same freshness checks.
 6. ~~Program changes recommended in CORRECTIONS~~: done in the program (`e9bd2aa`). There is now an
    explicit `expires_at_slot` (§1), and door addresses are not tied to `door_count` (§3).
-7. **v0 transactions with a lookup table** for maximum-length metadata (§10). **Blocked by
-   open finding M-7** (`program/docs/SECURITY_REVIEW.md`). At v0-only sizes, a prefunded
-   `create_room` takeover exhausts the program's heap. Legacy transactions cap the metadata
-   below that size, which is the only reason it is unreachable today.
-   **Do not add any instruction to a launch transaction either** (`RequestHeapFrame`, a memo,
-   anything). A prefunded `create_room` with a first buy and a priority fee already uses 64 of the
-   64 allowed instruction-trace entries (finding M-8).
-8. **H-1, interim in place; the on-chain NameLock is a mainnet blocker.**
-
-   A new-room decision holds its name only if two conditions hold:
-   - **One hold per launcher:** the launcher holds no other unexpired new-room
-     decision.
-   - **Proof of funds:** the launcher's confirmed balance covers the launch:
-     - rent for every account `create_room` makes, priced by the cluster's own
-       `getMinimumBalanceForRentExemption`;
-     - Config's flat fees;
-     - the first buy;
-     - signature fees (`matcher_service/funds.py`).
-
-   So holding a name costs one funded wallet per name held, about 0.028 SOL plus
-   the first buy, though none of it is spent. That raises the cost of squatting;
-   it does not remove it.
-
-   **Until the program enforces the consolidation rule itself, this service
-   enforces it.** The program does not: for 9 of the 16 routed-together pair
-   classes there is no on-chain floor at all (`scripts/slug_coverage.py`).
+7. **v0 transactions with a lookup table** for longer metadata (§10). **Recommended next, and no longer
+   blocked:** finding M-7 is closed (the v0 maximum takeover fits the heap with 1,280 bytes to spare), and
+   a launch uses at most 49 of its 64 instruction-trace entries (M-8). The NameLock (item 8) made it
+   pressing: at name 32 and symbol 10, legacy transactions now cap the URI at 51 bytes for a new room and
+   19 for a takeover, and a takeover of two locks held by different dead rooms does not fit at all. With
+   a lookup table of the six accounts every launch shares, the same shapes take 200, 169 and 137
+   (`scripts/max_uri.py`, which prints both). Today a longer launch is refused with 413 `tx_too_large`.
+8. ~~H-1~~: **closed on-chain.** `create_room` creates a `NameLock` PDA keyed by the name key this
+   service signs (`rules.name_lock_key`), atomically with the room, so two rooms can never hold one key
+   while the first is live. The key is equal for two launches exactly when the text rule routes them
+   together (T3 or T2n), tested over every pair (`tests/test_rules.py`). The service is still trusted to
+   compute the key, but no longer to serialise concurrent decisions: the in-flight reservation, the
+   one-hold-per-launcher limit and the proof of funds are gone, and with them the reservation squatting
+   of H-1. What the reservation still did, and nothing does now: when two launchers race one new name,
+   the faster transaction becomes the room's founder and the other fails on-chain (it pays only its
+   transaction fee and, re-requested, becomes a door). That matters only while `founder_share_bps > 0`.
 9. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
    decision mix. Plus an on-call runbook for key rotation and RPC failover.
 10. **An archival RPC** for the verifier, and a public, independently operated verifier run over the

@@ -11,6 +11,10 @@ the first room is live, so no duplicate room can exist and the in-flight reserva
 wasted transaction. If they differ, both rooms can be created and only the reservation (H-1)
 prevents it.
 
+Since the on-chain NameLock (H-1 closed), each pair also shows whether both launches carry the same
+NameLock key (`rules.name_lock_key`, which `create_room` locks): if so, the second `create_room` fails
+on-chain while the first room is live, whatever the SlugLocks say.
+
 Usage: python3 scripts/slug_coverage.py [--json]
 """
 import json
@@ -45,9 +49,11 @@ def row(cls, a, b):
     ca, cb = rules.ident(*a), rules.ident(*b)
     tier, _ = rules.text_tier(cb, ca)
     ia, ib = rules.program_identity(*a), rules.program_identity(*b)
+    na, nb = rules.name_lock_key(*a), rules.name_lock_key(*b)
     return {"class": cls, "a": list(a), "b": list(b), "matcher_tier": tier,
             "routed_together": tier in rules.ROUTING_TIERS,
-            "same_slug": ia == ib, "slug_a": ia.hex()[:16], "slug_b": ib.hex()[:16]}
+            "same_slug": ia == ib, "slug_a": ia.hex()[:16], "slug_b": ib.hex()[:16],
+            "same_name_lock": na is not None and na == nb}
 
 
 def main():
@@ -55,15 +61,18 @@ def main():
     if "--json" in sys.argv:
         print(json.dumps({"unicode": rules.UNICODE_VERSION, "rows": rows}, indent=2, ensure_ascii=False))
         return
-    print("| class | launch A | launch B | matcher | same SlugLock? |")
-    print("|---|---|---|---|---|")
+    print("| class | launch A | launch B | matcher | same SlugLock? | same NameLock? |")
+    print("|---|---|---|---|---|---|")
     for r in rows:
         a, b = r["a"], r["b"]
         print(f"| {r['class']} | `{a[0]}` / `{a[1]}` | `{b[0]}` / `{b[1]}` | {r['matcher_tier']} | "
-              f"{'yes' if r['same_slug'] else '**no**'} |")
-    gaps = [r for r in rows if r["routed_together"] and not r["same_slug"]]
-    print(f"\n{len(gaps)} of {sum(r['routed_together'] for r in rows)} routed-together pairs derive different "
-          "SlugLocks: the second create_room would land as a second room.")
+              f"{'yes' if r['same_slug'] else '**no**'} | {'yes' if r['same_name_lock'] else '**no**'} |")
+    routed = [r for r in rows if r["routed_together"]]
+    gaps = [r for r in routed if not r["same_slug"]]
+    open_ = [r for r in routed if not (r["same_slug"] or r["same_name_lock"])]
+    print(f"\n{len(gaps)} of {len(routed)} routed-together pairs derive different SlugLocks. With the NameLock, "
+          f"{len(open_)} of {len(routed)} have no on-chain floor: the second create_room fails while the first "
+          "room is live.")
 
 
 if __name__ == "__main__":

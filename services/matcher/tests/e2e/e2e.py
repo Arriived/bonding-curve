@@ -10,6 +10,9 @@ Usage: python3 tests/e2e/e2e.py <keys_dir>   (keys_dir as in program/docs/DEPLOY
 
 Sequence (every step asserts; any failure exits 1):
   1. request a decision for a new identity -> new_room; the launcher signs; the program accepts it
+  1b. H-1 on-chain: two concurrent new-room decisions for one name (different symbols, so different SlugLocks)
+      are both signed under one NameLock; the first lands, the second is rejected by the program (Holder,
+      6013) and nothing is created; re-requested, it routes as a T2n door into the first room
   2. same identity from another wallet -> door via the floor; accepted; door index 1, random door nonce
   3. same name, different symbol -> door via T2n; accepted
   3b. a door launch with a first buy and the default 2% price limit fills exactly the quoted tokens
@@ -229,6 +232,28 @@ def run(rpc, keys, target):
         fail(f"expected new_room, got {a['decision']}")
     tx_a, _ = land(a, launcher, "new room")
     room_id = a["decision"]["room_id"]
+
+    step("1b. concurrent new rooms for one name: both signed under one NameLock, only the first can land")
+    race = f"E2E Race {tag}"
+    r1, r2 = route(launcher, race, "R" + tag[:4]), route(trader, race, "Q" + tag[:4])
+    d1, d2 = r1["decision"], r2["decision"]
+    if not (d1["kind"] == d2["kind"] == "new_room" and d1["identity"] != d2["identity"]
+            and d1["name_key"] and d1["name_key"] == d2["name_key"] and d1["name_lock"] == d2["name_lock"]):
+        fail(f"expected two new-room decisions under one NameLock, got {d1} / {d2}")
+    land(r1, launcher, "first new room")
+    lose = sign_as_launcher(r2["transaction_base64"], trader)
+    lsig = send(rpc, lose, skip_preflight=True)
+    lst = confirm(rpc, lsig)
+    if lst.get("err") != {"InstructionError": [len(Transaction.from_bytes(base64.b64decode(r2["transaction_base64"]))
+                                                   .message.instructions) - 1, {"Custom": 6013}]}:
+        fail(f"second new room under a held NameLock: expected Holder (6013), got {lst.get('err')}")
+    if rpc.call("getAccountInfo", [d2["room"], {"encoding": "base64"}])["value"] is not None:
+        fail("the losing new room exists")
+    print(f"   second new room rejected on-chain: {lsig} slot {lst['slot']} Custom 6013", flush=True)
+    r3 = route(trader, race, "Q" + tag[:4])
+    if (r3["decision"]["kind"], r3["decision"]["rule"], r3["decision"]["room_id"]) != ("door", "T2n", d1["room_id"]):
+        fail(f"re-requested, expected a T2n door into {d1['room_id']}, got {r3['decision']}")
+    land(r3, trader, "re-requested as a door")
 
     step("2. same identity from another wallet -> door via the floor")
     b = route(trader, name, symbol)

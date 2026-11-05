@@ -9,7 +9,8 @@ Order (research matcher plus the two rules the program itself enforces):
   3. Text rule over every room with status 0/1: T3 or T2n against any door face, room live.
      Ties: stronger text tier, greater SOL depth (reserve), lowest room id. Graduated rooms are not
      routing targets in v1 (open_door into one fails with PhaseTwo).
-  4. Otherwise a new room.
+  4. Otherwise a new room. Its NameLock key (`rules.name_lock_key`) is signed with it; if a dead room holds
+     that key, it is passed as the old name holder (a live holder would have matched in step 3).
 The function never reads the clock, the network or the key: the caller supplies `now` from the
 snapshot. That is what makes a recorded decision recomputable.
 """
@@ -37,6 +38,8 @@ class Decision:
     face: int = 0                  # door index whose face matched (0 for new rooms and floor ties)
     old_holder_room_id: int | None = None   # dead SlugLock holder the program needs to see
     identity: str = ""             # program identity hex (SlugLock seed)
+    name_key: str = ""             # NameLock key hex for a new room ("" when the launch has none)
+    old_name_holder_room_id: int | None = None   # dead NameLock holder the program needs to see
     candidate_keys: dict = field(default_factory=dict)
     evaluated: list = field(default_factory=list)   # every room with a T3/T2n text match, and why
 
@@ -100,4 +103,27 @@ def decide(snapshot, name, symbol, uri) -> Decision:
         d.kind, d.rule, d.room_id, d.face = "door", row["text"], room["room_id"], row["face"]
         if d.old_holder_room_id == room["room_id"]:
             d.old_holder_room_id = None  # cannot happen (a dead holder is never live), kept explicit
+        return d
+
+    # 4. new room: the NameLock
+    key = rules.name_lock_key(name, symbol)
+    if key is not None:
+        d.name_key = key.hex()
+        holder_id = snapshot.name_holder(d.name_key)
+        if holder_id is not None:
+            holder = snapshot.rooms.get(holder_id)
+            if holder is None:
+                raise Refusal("inconsistent_state", f"NameLock points at room {holder_id}, which the snapshot lacks", 503)
+            try:
+                live, why = is_live(holder, now, t)
+            except GraduatedRoom:
+                raise Refusal("graduated_name", f"this name is held by graduated room {holder_id}; v1 has no "
+                              "graduation adapter and the program rejects a new room under it", 409)
+            d.evaluated.append({"room_id": holder_id, "role": "name_lock_holder", "live": live, "live_reason": why})
+            if live:
+                # Its door 0 has this key, so step 3 would have matched it. Different Unicode tables from the
+                # service that created the lock can cause this; fail closed rather than sign a failing launch.
+                raise Refusal("inconsistent_state", f"NameLock is held by live room {holder_id}, which the text "
+                              f"rule did not match (unicode {rules.UNICODE_VERSION})", 503)
+            d.old_name_holder_room_id = holder_id
     return d
