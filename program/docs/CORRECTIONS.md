@@ -287,7 +287,7 @@ instruction:
   addresses, and live localnet runs earlier fell both above and below the VM maxima
   (`services/matcher/CORRECTIONS.md` §9 on that branch). **These maxima are not worst cases.**
 
-**Throughput headroom.** The execution-only ceiling for the heaviest trade moved from 279 (convert)
+**Throughput headroom.** The per-room count at the observed maximum (not a ceiling; see the 5 November follow-up below) for the heaviest trade moved from 279 (convert)
 to 306 (convert) per room per block. buy_door went from 336 to 317, buy_room from 520 to 435, and
 open_door from 197 to 184. The binding trade ceiling did not fall, so headroom did not materially
 change. The ceilings carry the same bump-search caveat.
@@ -407,7 +407,7 @@ convention as `AUDIT_FIXES.md`.
 
 **VM CU, `e9bd2aa` → `1558b2e` (`verification/cu.md`):**
 
-| instruction | before | after | ceiling per room per block |
+| instruction | before | after | per room/block at the observed max |
 |---|---|---|---|
 | buy_door | 62,616–75,550 | 57,083–69,450 | 317 → 345 |
 | sell_door | 59,704–63,530 | 54,171–57,430 | 377 → 417 |
@@ -420,4 +420,50 @@ convention as `AUDIT_FIXES.md`.
 - **Trades fell 1,500–9,400 CU:** `mint_check` no longer deserialises metadata on every
   door/room check.
 - **`open_door` rose ~20,000 CU:** two more metadata-field CPIs.
-- **Heaviest trade:** the binding trade ceiling rose (convert, 306 → 348).
+- **Heaviest trade:** the per-room count at the observed maximum rose (convert, 306 → 348).
+
+## Security-review follow-up (5 November 2026)
+
+The findings are worked through in `SECURITY_REVIEW.md`. This section records conflicts with the
+brief, and with earlier documents.
+
+**1. `RequestHeapFrame` does not resolve M-7, for two independent reasons.**
+- **The allocator ignores the frame.** The program uses the stock entrypoint
+  allocator, `BumpAllocator::with_fixed_address_range(HEAP_START_ADDRESS, HEAP_LENGTH)`
+  with `HEAP_LENGTH = 32 * 1024` (`solana-program-entrypoint` 3.1.1, `custom_heap_default!`).
+  A larger requested frame is mapped by the runtime, but this allocator never uses it.
+  Measured (`heap_headroom.frame262144.json`): free heap at the end of `open_door` is ≥ 9,568
+  bytes with and without a 256 KiB request, and of a URI-70 takeover ≥ 496 with and without it.
+- **The trace has no room for the request.** One more top-level instruction does not fit:
+  a prefunded `create_room` with a first buy uses 63 of the 64 instruction-trace entries,
+  and 64 when the service adds its priority-fee instruction (`verification/trace_budget.json`).
+  With `RequestHeapFrame` added, the launch fails with `Max instruction trace length exceeded`
+  (heap probe, `--heap-frame 262144`).
+- **Status:** M-7 stays open, and M-8 (the trace margin) is new. The brief excluded a custom
+  allocator; it would also need the frame request, and so the same trace entry.
+
+**2. The brief's slippage guidance is not in the spec.** "Frontend guidance in the spec": the
+spec has none. The guidance is `DESIGN.md` §3 ("≤ 2–3% slippage"). The service default is 2%.
+
+**3. Pause no longer blocks sells or `convert`.**
+- **Spec change:** this changes spec-defined behaviour, by the owner's decision in the brief.
+- **What earlier documents said:** `AUDIT_FIXES.md` (2 November) kept pause as a privileged
+  control covering every trade; that is superseded.
+- **Invariant review:** no invariant requires buys and sells to be paused together
+  (`SECURITY_REVIEW.md` M-5).
+- **New consequence:** an exploit in the sell path can now only be stopped by an upgrade.
+
+**4. CU figures were presented as ceilings.**
+- **What was wrong:** `report_cu.py` (and the spec block it generates), `cu.md`, `devnet/report.py`,
+  `DEPLOYMENT.md`, `README.md`, `SECURITY_REVIEW.md` and this file labelled
+  `floor(cap / VM max)` a "ceiling", and VM maxima as worst cases.
+- **What they are:** observed values from LiteSVM's Agave 4.3.2 at fixed addresses. The live
+  4.4.0 validator exceeded them in two runs: `claim_door_fees` by 4,500 and 10,500 CU, and
+  `convert` by 5,773 and 1,273. The gap itself moves from run to run.
+- **Change:** all of these now say so. The e2e comparison labels the VM column "observed", and a
+  positive difference as expected.
+
+**5. M-6 (liveness snapshot) evaluated, not implemented.** The cost is small (+32 bytes per Room,
++162,560 lamports). But the design defines one shared mutable gate, and changing the gate is the
+only defence against cheap wash-traded liveness (I-3). Recommendation, in `SECURITY_REVIEW.md`:
+delay threshold changes, rather than snapshot them.

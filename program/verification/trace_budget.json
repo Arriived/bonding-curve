@@ -1,0 +1,78 @@
+{
+  "max_instruction_trace_length": 64,
+  "note": "logged_invocations counts runtime 'invoke [n]' log lines (programs invoked, top level and CPI)",
+  "rows": [
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room",
+      "logged_invocations": 46,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door",
+      "logged_invocations": 27,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room",
+      "logged_invocations": 47,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door",
+      "logged_invocations": 28,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room",
+      "logged_invocations": 63,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door",
+      "logged_invocations": 35,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room",
+      "logged_invocations": 64,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "succeeded": true
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door",
+      "logged_invocations": 36,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "succeeded": true
+    }
+  ]
+}

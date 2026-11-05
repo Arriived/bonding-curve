@@ -23,9 +23,10 @@ def main():
            'the build target/CLI is current stable Solana 4.4.0.',
            '',f'Writable-account cap: {cap:,} CU, verified from Agave v4.4.0 source.',
            '**These are observed values from one runtime, not bounds.** LiteSVM 0.18.1 (Agave 4.3.2), fixed',
-           'fixture addresses. Live runs exceed them: on the Agave 4.4.0 local validator, `convert` and',
-           '`claim_door_fees` used 5,773 and 4,500 CU more than the maxima below (program/docs/DEPLOYMENT.md',
-           '§7), and PDA bump searches vary with every address. Budget with margin above them.',
+           'fixture addresses. Live runs exceed them: on the Agave 4.4.0 local validator, two localnet runs',
+           'on 5 November put `claim_door_fees` 4,500 and 10,500 CU above the maxima below, and `convert`',
+           '5,773 and 1,273 above (program/docs/DEPLOYMENT.md §7, and its history). PDA bump searches vary',
+           'with every address. Budget with margin above them.',
            '', '| instruction / route | samples | observed min CU | observed max CU | per room/block at the observed max (not a guarantee) |',
            '|---|---:|---:|---:|---:|']
     measured={}

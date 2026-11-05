@@ -8,14 +8,19 @@ The test VM is LiteSVM 0.18.1 with its locked Agave 4.3.2 runtime;
 the build target/CLI is current stable Solana 4.4.0.
 
 Writable-account cap: 24,000,000 CU, verified from Agave v4.4.0 source.
+**These are observed values from one runtime, not bounds.** LiteSVM 0.18.1 (Agave 4.3.2), fixed
+fixture addresses. Live runs exceed them: on the Agave 4.4.0 local validator, two localnet runs
+on 5 November put `claim_door_fees` 4,500 and 10,500 CU above the maxima below, and `convert`
+5,773 and 1,273 above (program/docs/DEPLOYMENT.md §7, and its history). PDA bump searches vary
+with every address. Budget with margin above them.
 
-| instruction / route | samples | min CU | max CU | execution-only ceiling per room/block |
+| instruction / route | samples | observed min CU | observed max CU | per room/block at the observed max (not a guarantee) |
 |---|---:|---:|---:|---:|
-| buy_door | 3,351 | 57,083 | 69,450 | 345 |
-| sell_door | 1,675 | 54,171 | 57,430 | 417 |
-| buy_room | 841 | 44,568 | 53,561 | 448 |
-| sell_room | 852 | 41,747 | 42,041 | 570 |
-| convert | 802 | 65,835 | 68,846 | 348 |
+| buy_door | 3,351 | 57,090 | 69,457 | 345 |
+| sell_door | 1,675 | 54,175 | 57,434 | 417 |
+| buy_room | 841 | 44,575 | 53,568 | 448 |
+| sell_room | 852 | 41,751 | 42,045 | 570 |
+| convert | 802 | 65,833 | 68,844 | 348 |
 | open_door | 4 | 138,509 | 149,950 | 160 |
 
 The property run executes 10,000 mixed iterations and
@@ -23,17 +28,17 @@ asserts full global liability coverage, token conservation, authority revocation
 and exact ReserveVault/state deltas after affected instructions. Additional
 samples exercise maximum-length room/door metadata, a larger curve position,
 the capped crossing buy and conversion while complete. These are maxima
-observed in these fixtures, not a proof of worst-case CU for every address.
+observed in these fixtures, not an upper bound for any address or runtime.
 
 Maximum-metadata creation with an atomic first buy: legacy 1,318 bytes
 exceeds the 1,232-byte packet limit; the executed v0 transaction
 uses 734 bytes. Its whole-transaction CU is 292,982.
 
-The ceiling is floor(cap / maximum measured execution CU). Actual scheduling
+The last column is floor(cap / observed maximum execution CU). Actual scheduling
 also charges signatures, write locks, instruction data and the transaction’s
-requested compute budget. Clients must size that budget; these ceilings are
+requested compute budget. Clients must size that budget; these counts are
 not a promise of accepted transactions per block. Pool-phase CU is unmeasured.
 
-Build commit: `805bae3cc44e1c56d275955da1aa0691e848e2d5`; ELF SHA-256: `34d4ce91b68f55482f90d7735d2bc29d82c9e735c7f04f3f16b2111d39bd2d9e`.
+Build commit: `b6fe25d9c67ad4432825aed878a853b7d29392b3`; ELF SHA-256: `c36ba443d6bb08726028919f28de1b8432422b876433ed4a208a96e5a808ed29`.
 Raw samples/statistics, tool versions and source hashes are in
 `program/verification/svm_report.json` and `program/verification/build.json`.

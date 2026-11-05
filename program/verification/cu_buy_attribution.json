@@ -8,7 +8,7 @@
   "rows": [
     {
       "pending_before": 0,
-      "program_cu": 44344,
+      "program_cu": 44351,
       "route": "room",
       "settled": false,
       "step": 0,
@@ -19,7 +19,7 @@
     },
     {
       "pending_before": 6000,
-      "program_cu": 53522,
+      "program_cu": 53529,
       "route": "room",
       "settled": true,
       "step": 1,
@@ -31,7 +31,7 @@
     },
     {
       "pending_before": 0,
-      "program_cu": 44571,
+      "program_cu": 44578,
       "route": "room",
       "settled": false,
       "step": 2,
@@ -42,7 +42,7 @@
     },
     {
       "pending_before": 6000,
-      "program_cu": 53525,
+      "program_cu": 53532,
       "route": "room",
       "settled": true,
       "step": 3,
@@ -54,7 +54,7 @@
     },
     {
       "pending_before": 6000,
-      "program_cu": 69260,
+      "program_cu": 69267,
       "route": "door",
       "settled": true,
       "step": 4,
@@ -67,7 +67,7 @@
     },
     {
       "pending_before": 0,
-      "program_cu": 60310,
+      "program_cu": 60317,
       "route": "door",
       "settled": false,
       "step": 5,
