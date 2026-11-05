@@ -39,9 +39,22 @@ class RpcClient:
         self._http = httpx.Client(timeout=timeout, transport=transport)
         self.errors = 0
 
+    RATE_LIMIT_RETRIES = 4          # 429 only; total wait capped by RATE_LIMIT_MAX_WAIT per retry
+    RATE_LIMIT_MAX_WAIT = 4.0
+
     def call(self, method, params):
         try:
-            r = self._http.post(self.url, json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
+            for attempt in range(self.RATE_LIMIT_RETRIES + 1):
+                r = self._http.post(self.url, json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
+                if r.status_code != 429 or attempt == self.RATE_LIMIT_RETRIES:
+                    break
+                # Public RPCs (devnet) rate-limit getProgramAccounts. Back off and retry; the snapshot's slot
+                # coherence and age checks still refuse anything a slow retry would make stale.
+                try:
+                    wait = float(r.headers.get("retry-after", ""))
+                except ValueError:
+                    wait = 0.5 * 2 ** attempt
+                time.sleep(min(max(wait, 0.0), self.RATE_LIMIT_MAX_WAIT))
             r.raise_for_status()
             body = r.json()
         except (httpx.HTTPError, ValueError) as e:

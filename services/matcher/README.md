@@ -296,7 +296,7 @@ The unit tests (108) cover:
 | target | what it does | status |
 |---|---|---|
 | `localnet` | Starts `solana-test-validator` with the pinned deploy ELF as an upgradeable program, owned by the real upgrade-authority key, and initialises Config with the real matcher key. | **PASS** |
-| `devnet` | The same test against the deployed devnet program. | **PENDING** until the program is deployed (`program/docs/DEPLOYMENT.md` section 5). Until then it exits 3 with a PENDING message. |
+| `devnet` | The same test against the program deployed on devnet (`program/docs/DEPLOYMENT.md` §5), using the smoke wallets' own devnet balances. Step 6 (blockhash expiry) runs on localnet only. | **PASS**, 5 November 2026: every on-chain step, and all four decisions verify AGREE. `tests/e2e/target` is `devnet`. |
 
 The test runs these steps:
 
@@ -340,8 +340,7 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 
 ## What remains before this can run unattended
 
-1. **Devnet.** Deploy the program (it needs devnet SOL; `program/docs/DEPLOYMENT.md` §5), then
-   switch `tests/e2e/target` to `devnet` and run the e2e test.
+1. ~~Devnet~~: done. The program is deployed, and this e2e passes there.
 2. **Real KMS.** Create the key, run the service against it on devnet, and set
    `Config.matcher_authority` to the KMS public key. Both signers are tested only against fakes.
 3. **More than one replica.** Move in-flight reservations and rate limits to shared storage (for

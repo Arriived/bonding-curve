@@ -12,13 +12,19 @@ What it checks, without trusting the service's snapshot:
   4. State at the decision slot, rebuilt from the program's own events and block times:
      every room that could have matched (any door face equal under T3/T2n now; faces are immutable and
      only ever added) and the candidate's SlugLock holder. Rooms are replayed from creation to the slot:
-     RoomCreated -> created_at; DoorOpened -> faces, door_count; Trade -> reserve, status, liveness
-     buckets (Room::record semantics, amount = curve_lamports, time = block time = Clock); PendingRetired.
+     RoomCreated -> creation; DoorOpened -> faces, door_count; Trade -> reserve, status, liveness
+     buckets (Room::record semantics, amount = curve_lamports); PendingRetired.
+     Timestamps: `created_at` is immutable, so it is read exactly from the Room account. The program's
+     Clock at a trade is not in any event, and a transaction's block time is only an estimate of it: on
+     devnet they differed by 1 s (localnet: equal). So `last_trade_at` and bucket starts are rebuilt from
+     block times and compared within BLOCK_TIME_TOLERANCE seconds, and the decision is recomputed at both
+     ends of that tolerance. If the outcome depends on it, the result is INCONCLUSIVE (exit 2), never a
+     false AGREE or DISAGREE.
   5. Decision: recomputed with the *research* matcher (research/.../matcher.py decide()) for the text
      rule, liveness and ties, plus the program's floor semantics, using Config thresholds at the slot.
      Compared with the recorded kind, rule, room and old holder.
   6. Outcome: whether a transaction carrying this matcher signature landed, and whether it succeeded.
-Exit code 0 on agreement, 1 on any disagreement, 2 if the check could not be completed.
+Exit code 0 on agreement, 1 on any disagreement, 2 if the check could not be completed or is inconclusive.
 """
 import argparse
 import base64
@@ -175,6 +181,9 @@ class History:
         return t["blockTime"], out
 
 
+BLOCK_TIME_TOLERANCE = 5   # seconds between a block time and the Clock the program read
+
+
 def record_amount(buckets, now, amount):
     """Room::record: hourly ring of 25 tagged buckets."""
     start = now // 3600 * 3600
@@ -195,7 +204,8 @@ def replay_room(hist, room_pk, trigger, upto_slot, faces_by_mint):
                 continue
             if name == "RoomCreated":
                 st = {"room_id": e["room_id"], "status": 0, "created_at": when, "reserve": 0, "last_trade_at": when,
-                      "buckets": [[0, 0] for _ in range(25)], "faces": [], "door_count": 0, "identity": e["identity"]}
+                      "buckets": [[0, 0] for _ in range(25)], "faces": [], "door_count": 0, "identity": e["identity"],
+                      "trade_times": []}
             elif st is None:
                 continue
             elif name == "DoorOpened":
@@ -204,6 +214,7 @@ def replay_room(hist, room_pk, trigger, upto_slot, faces_by_mint):
             elif name == "Trade":
                 st["reserve"], st["status"] = e["reserve"], e["status"]
                 st["last_trade_at"] = when
+                st["trade_times"].append(when)
                 record_amount(st["buckets"], when, e["curve_lamports"])
             elif name == "PendingRetired":
                 st["reserve"] += e["lamports"]
@@ -288,8 +299,8 @@ def verify(record, rpc_url, chain_ok=True):
     hist = History(rpc)
     rm = research()
     checks = []
-    def check(name, ok, detail=""):
-        checks.append({"check": name, "ok": bool(ok), "detail": detail})
+    def check(name, ok, detail="", inconclusive=False):
+        checks.append({"check": name, "ok": bool(ok), "detail": detail, "inconclusive": bool(inconclusive)})
     req, dec, txr, state = record["request"], record["decision"], record["transaction"], record["state"]
     program = record["program"]
     check("store hash chain", chain_ok)
@@ -377,6 +388,7 @@ def verify(record, rpc_url, chain_ok=True):
         trig = struct.unpack_from("<Q", acct, 184)[0]
         st = replay_room(hist, pk, trig, slot, faces_by_mint)
         if st is not None:
+            st["created_at"] = struct.unpack_from("<q", acct, 288)[0]   # immutable: exact from the account
             rebuilt[st["room_id"]] = st
     now = rpc.call("getBlockTime", [state["slots"]["clock"]])
     check("decision clock equals the block time of the clock-read slot", now == state["clock_unix"],
@@ -397,12 +409,24 @@ def verify(record, rpc_url, chain_ok=True):
                "buckets": sorted([s, str(a)] for s, a in st["buckets"] if s or a), "faces": st["faces"]}
         want = {k: rec[k] for k in ("status", "created_at", "reserve", "last_trade_at", "door_count", "faces")}
         want["buckets"] = sorted(rec["buckets"])
-        diffs = [k for k in got if got[k] != want[k]]
-        check(f"room {rid} state at slot {slot} equals the recorded state", not diffs,
-              ", ".join(f"{k}: chain {got[k]} vs record {want[k]}" for k in diffs))
+        tol = BLOCK_TIME_TOLERANCE
+        diffs = [k for k in got if got[k] != want[k]
+                 and not (k == "last_trade_at" and abs(got[k] - want[k]) <= tol)]
+        near_hour = any(min(t % 3600, 3600 - t % 3600) <= tol for t in st["trade_times"])
+        timing_only = diffs == ["buckets"] and near_hour and \
+            sum(int(a) for _, a in got["buckets"]) == sum(int(a) for _, a in want["buckets"])
+        check(f"room {rid} state at slot {slot} equals the recorded state "
+              f"(timestamps within {tol} s of block time)", not diffs or timing_only,
+              ", ".join(f"{k}: chain {got[k]} vs record {want[k]}" for k in diffs), inconclusive=timing_only)
 
     # 5. decision
     expect = recompute(rm, rebuilt, holder, cfg, now, req["name"], req["symbol"])
+    def shifted(d):
+        return {k: dict(v, last_trade_at=v["last_trade_at"] + d) for k, v in rebuilt.items()}
+    robust = all(recompute(rm, shifted(d), holder, cfg, now, req["name"], req["symbol"]) == expect
+                 for d in (-BLOCK_TIME_TOLERANCE, BLOCK_TIME_TOLERANCE))
+    check(f"the recomputed decision does not depend on block-time precision (±{BLOCK_TIME_TOLERANCE} s)",
+          robust, "the outcome changes within the tolerance: a liveness boundary", inconclusive=not robust)
     got = {"kind": dec["kind"], "rule": dec["rule"],
            "room_id": None if dec["kind"] == "new_room" else int(dec["room_id"]),
            "old_holder": None if dec["old_holder_room_id"] is None else int(dec["old_holder_room_id"])}
@@ -445,15 +469,19 @@ def main():
     except (RpcError, OSError, KeyError, ValueError) as e:
         print(f"could not complete verification: {type(e).__name__}: {e}")
         sys.exit(2)
-    ok = all(c["ok"] for c in checks)
+    failed = [c for c in checks if not c["ok"] and not c["inconclusive"]]
+    unsure = [c for c in checks if c["inconclusive"]]
+    verdict = "DISAGREE" if failed else ("INCONCLUSIVE" if unsure else "AGREE")
     if a.json:
-        print(json.dumps({"decision_id": a.decision_id, "agree": ok, "checks": checks, "landed": landed}, indent=1))
+        print(json.dumps({"decision_id": a.decision_id, "verdict": verdict, "agree": verdict == "AGREE",
+                          "checks": checks, "landed": landed}, indent=1))
     else:
         for c in checks:
-            print(f"{'PASS' if c['ok'] else 'FAIL'}  {c['check']}{'  [' + c['detail'] + ']' if c['detail'] and not c['ok'] else ''}")
+            tag = "PASS" if c["ok"] and not c["inconclusive"] else ("UNSURE" if c["inconclusive"] else "FAIL")
+            print(f"{tag}  {c['check']}{'  [' + c['detail'] + ']' if c['detail'] and tag != 'PASS' else ''}")
         print(f"landed: {landed}")
-        print("AGREE" if ok else "DISAGREE")
-    sys.exit(0 if ok else 1)
+        print(verdict)
+    sys.exit({"AGREE": 0, "DISAGREE": 1, "INCONCLUSIVE": 2}[verdict])
 
 
 if __name__ == "__main__":

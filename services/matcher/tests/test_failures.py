@@ -429,3 +429,22 @@ def test_unfillable_first_buy_is_refused(tmp_path, kp):
     with pytest.raises(Refusal) as e:
         svc.route(dict(REQ, first_buy_lamports=10 ** 9))
     assert e.value.code == "first_buy_unfillable" and rows(svc) == 0
+
+
+def test_rpc_retries_rate_limits_then_gives_up():
+    import httpx
+    from matcher_service.chain import RpcClient
+    calls = []
+
+    def handler(n429):
+        def h(request):
+            calls.append(1)
+            if len(calls) <= n429:
+                return httpx.Response(429, headers={"retry-after": "0"})
+            return httpx.Response(200, json={"jsonrpc": "2.0", "id": 1, "result": 77})
+        return h
+    assert RpcClient("http://x", transport=httpx.MockTransport(handler(2))).slot() == 77 and len(calls) == 3
+    calls.clear()
+    with pytest.raises(RpcError):
+        RpcClient("http://x", transport=httpx.MockTransport(handler(99))).slot()
+    assert len(calls) == RpcClient.RATE_LIMIT_RETRIES + 1

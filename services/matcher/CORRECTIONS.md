@@ -304,3 +304,25 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
 - **Verifier.** `verify_decision.py` accepts a signed `min_tokens_out` equal to
   either the request's value, or the recorded quote less its slippage. It does not
   recompute the quote from history.
+
+## 14. Devnet, 5 November 2026
+
+- **The program is deployed on devnet, and this service's e2e passes there**
+  (`program/docs/DEPLOYMENT.md` §5, §7). `tests/e2e/target` is now `devnet`.
+- **The verifier's timestamp assumption was false on a real cluster.**
+  - **What it assumed:** that a transaction's block time equals the program's
+    `Clock` ("time = block time = Clock").
+  - **What devnet showed:** a 1 s difference, and a false DISAGREE.
+  - **Fix:** `created_at` is read exactly from the Room account. `last_trade_at`
+    and bucket starts are compared within 5 s, and the decision is recomputed at
+    both ends of that window. A result that depends on the window is reported as
+    INCONCLUSIVE (exit 2).
+  - **Detail:** `program/docs/SECURITY_REVIEW.md` L-6.
+- **Public devnet RPC rate-limits `getProgramAccounts` (HTTP 429).** A snapshot
+  makes three such calls. `RpcClient.call` now retries 429 only, up to 4 times,
+  honouring `Retry-After` (at most 4 s per wait). The snapshot's slot-coherence and
+  age checks still refuse anything the delay makes stale. Production should use a
+  dedicated RPC either way.
+- **e2e step 3b front-runs with 1 SOL, not 5,** to fit the devnet budget. It now
+  asserts, from the moved state, that the same first buy would fall below the
+  signed limit, rather than assuming a large buy is enough.

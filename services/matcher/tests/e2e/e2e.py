@@ -467,13 +467,15 @@ def run(rpc, keys, target):
     doctored = []
     r1 = copy.deepcopy(base)
     r1["state"]["rooms"][0]["reserve"] += 1                     # misreported room state
+    r4 = copy.deepcopy(base)
+    r4["state"]["rooms"][0]["last_trade_at"] += 60              # misreported time, beyond the block-time tolerance
     r2 = copy.deepcopy(base)
     r2["decision"]["rule"] = "T3"                               # misreported rule
     r3 = copy.deepcopy(base)
     r3["request"]["name"] = r3["request"]["name"] + "X"         # request differs from the signed message
-    for label, rec in (("room state", r1), ("rule", r2), ("request", r3)):
+    for label, rec in (("room state", r1), ("room time", r4), ("rule", r2), ("request", r3)):
         checks, _ = verify_decision.verify(rec, URLS[target])
-        bad = [c["check"] for c in checks if not c["ok"]]
+        bad = [c["check"] for c in checks if not c["ok"] and not c.get("inconclusive")]   # real failures only
         if not bad:
             fail(f"verifier accepted a record with a doctored {label}")
         print(f"   doctored {label}: DISAGREE ({bad[0]})", flush=True)
