@@ -653,7 +653,11 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     let n1 = door_nonce()?;
     let d0 = DoorKeys::new(ctx.room, 0);
     let d1 = DoorKeys::new(ctx.room, n1);
-    let (name, symbol) = ("Doors Devnet Smoke", "DOORS");
+    // A fresh identity per run: on a persistent cluster (devnet) an earlier run's room still holds the
+    // previous identity's SlugLock, so a fixed name would need its old holder (Holder, 6013).
+    let tag = format!("{:06X}", rid & 0xFF_FFFF);
+    let (name, symbol) = (format!("Doors Smoke {tag}"), format!("D{}", &tag[..5]));
+    let (name, symbol) = (name.as_str(), symbol.as_str());
 
     // 1. create_room, signed by the launcher and the matcher; creates door 0.
     let l0 = prepare(&c, launch(name, symbol), 0)?;

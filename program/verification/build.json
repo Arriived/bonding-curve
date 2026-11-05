@@ -1,5 +1,5 @@
 {
-  "git_commit": "b6fe25d9c67ad4432825aed878a853b7d29392b3",
+  "git_commit": "54215ae4b4e2c89758ce813edf23f45d9cdebb0b",
   "versions": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
@@ -14,14 +14,14 @@
     "sha256": "77e24a3e25eca88da8d6e78bf18a48902614becf4fd2cc266036eb6a2247a54e"
   },
   "source_sha256": {
-    "programs/doors_v1/src/contexts.rs": "d1968ade4abeb04fc3d030fcc425a10e4b5ba79a6e2571cad18731cb52e89a8a",
-    "programs/doors_v1/src/lib.rs": "9266f71aaf3b303868c545b31132ac3a688e080f203488831e5270b279636dc6",
+    "programs/doors_v1/src/contexts.rs": "b88e07c0b09ef3efc8ddc8af5861646872652972e114604efc72deb34dc6d465",
+    "programs/doors_v1/src/lib.rs": "697cd710a615a623b38bf39abf8409d6065bbec6a011c209b92f5ced27a0c50d",
     "programs/doors_v1/src/math.rs": "ada2917208c17acdfed422a8bd9ca536c6679b3fd32b414437a1c99026de5921",
-    "programs/doors_v1/src/state.rs": "827dcbf2720b4c5b926018d0a9d1042a81d96b429ba273ab72c45e5c00c9a1e1",
+    "programs/doors_v1/src/state.rs": "af2084e3460c04d271a85c4ad7cbab46ab0d03504141ef72705f34df5f412c69",
     "programs/doors_v1/src/trading.rs": "48eb2c3635b1a417ce7ecea7399d5a4798a2155359a8c69c32f0e308d87a6682",
-    "programs/doors_v1/src/vaults.rs": "0bd09bb0be4b5ab1715cb46b5281e1b0e14f8e03748b889f90a0f5ec97443bf0",
+    "programs/doors_v1/src/vaults.rs": "f4b493595176dfe81dbd1112b14570cf6d4ba19659ed282d8c039382d3e1cfaa",
     "programs/doors_v1/tests/cases/sweeps.rs": "13253dcecb3994af5c133450062d6614609bb7d595c0ffbbdea07eb4e63ab32f",
-    "programs/doors_v1/tests/svm.rs": "0454a81361bec8dc84ca142356e52898c60eaa782794b67e1d7ac0c57c969e08",
+    "programs/doors_v1/tests/svm.rs": "5c4acea7ad455602894423e4e7d8e848b4fad16e7be9f83a54270ecf46a3ce7c",
     "programs/doors_v1/Cargo.toml": "93fba8c1ce66791aa186d4a4fcf72f074bb09c2ef157e4b8babede985112226f",
     "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
     "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",
@@ -30,8 +30,8 @@
     "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
     "Anchor.toml": "77264d6963a22531d18acd7edc1d5bcecbda97e0c2c3c2b60483003abfed3c31"
   },
-  "elf_sha256": "c36ba443d6bb08726028919f28de1b8432422b876433ed4a208a96e5a808ed29",
-  "idl_sha256": "cbd6625e826527e2432095bfaf08d0d93dad35f4746842db880c6eaa58861d6e",
+  "elf_sha256": "b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9",
+  "idl_sha256": "d037777da14bb121775cec48db1482c65d15397f6985794afe7d7deafab3c42d",
   "vm": {
     "litesvm": "0.18.1",
     "agave_runtime": "4.3.2",

@@ -1,0 +1,32 @@
+diff --git a/program/programs/doors_v1/src/trading.rs b/program/programs/doors_v1/src/trading.rs
+index 808eec5..8991534 100644
+--- a/program/programs/doors_v1/src/trading.rs
++++ b/program/programs/doors_v1/src/trading.rs
+@@ -140,8 +140,9 @@ pub fn execute_trade<'a>(
+         if let Some(d) = route.as_ref() {
+             require!(tokens <= sub(r.supply, d.d.backing)?, Error::Balance);
+         }
+-        deposit(user, reserve, system.ok_or(Error::Account)?, n)?;
+-        deposit(user, fees, system.unwrap(), f)?;
++        // One System transfer for curve input and fee together (one CPI, not two: the creation
++        // path's trace and heap budgets, findings M-7/M-8). The fee moves to FeeVault below.
++        deposit(user, reserve, system.ok_or(Error::Account)?, add(n, f)?)?;
+         if let Some(d) = route.as_mut() {
+             transfer(
+                 room_vault,
+@@ -178,9 +179,12 @@ pub fn execute_trade<'a>(
+                 6,
+             )?;
+         }
+-        // All CPIs of the buy are done: now move the settled pending fees.
+-        if settled > 0 {
+-            debit(fees, reserve, settled)?;
++        // All CPIs of the buy are done. Net the two program-owned moves into one lamport edit:
++        // the buy fee f (ReserveVault -> FeeVault) and the settled backlog (FeeVault -> ReserveVault).
++        match f.cmp(&settled) {
++            core::cmp::Ordering::Greater => debit(reserve, fees, f - settled)?,
++            core::cmp::Ordering::Less => debit(fees, reserve, settled - f)?,
++            core::cmp::Ordering::Equal => {}
+         }
+         r.reserve = add(r.reserve, n)?;
+         r.sold = q;

@@ -1,7 +1,17 @@
 {
+  "apply_gate": {
+    "metas_with_optionals": 3,
+    "writable": 3,
+    "signers": 0
+  },
   "buy": {
     "metas_with_optionals": 15,
     "writable": 10,
+    "signers": 1
+  },
+  "cancel_gate": {
+    "metas_with_optionals": 3,
+    "writable": 2,
     "signers": 1
   },
   "claim_door_fees": {
@@ -33,6 +43,11 @@
     "metas_with_optionals": 19,
     "writable": 11,
     "signers": 2
+  },
+  "propose_gate": {
+    "metas_with_optionals": 4,
+    "writable": 2,
+    "signers": 1
   },
   "release_slug": {
     "metas_with_optionals": 4,

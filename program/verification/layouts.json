@@ -453,5 +453,30 @@
         "bytes": 1
       }
     ]
+  },
+  "PendingGate": {
+    "bytes": 65,
+    "fields": [
+      {
+        "field": "gate",
+        "offset": 8,
+        "bytes": 40
+      },
+      {
+        "field": "proposed_at",
+        "offset": 48,
+        "bytes": 8
+      },
+      {
+        "field": "effective_at",
+        "offset": 56,
+        "bytes": 8
+      },
+      {
+        "field": "bump",
+        "offset": 64,
+        "bytes": 1
+      }
+    ]
   }
 }
