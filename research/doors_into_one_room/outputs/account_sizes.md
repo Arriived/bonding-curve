@@ -12,17 +12,18 @@
 | RoomVault (room-token account owned by Room PDA; 1B pre-minted here) | 165 | 1,488,440 | 0.001488 |
 | RetiredVault (room-token account owned by Room PDA) | 165 | 1,488,440 | 0.001488 |
 | FeeWsol (SPL WSOL account owned by Room PDA; post-graduation sell fees) | 165 | 1,488,440 | 0.001488 |
-| DoorMint, max metadata (name 32 / symbol 10 / uri 200) | 638 | 3,891,280 | 0.003891 |
-| DoorMint, minimum metadata | 389 | 2,626,360 | 0.002626 |
+| DoorMint, max metadata (name 32 / symbol 10 / uri 200) | 735 | 4,384,040 | 0.004384 |
+| DoorMint, minimum metadata | 467 | 3,022,600 | 0.003023 |
 | DoorVault (door-token account owned by Door PDA; 1B pre-minted here) | 165 | 1,488,440 | 0.001488 |
 | DoorRoomVault (room-token account owned by Door PDA; the backing) | 165 | 1,488,440 | 0.001488 |
 | trader's Token-2022 ATA (door or room token; ImmutableOwner) | 170 | 1,513,840 | 0.001514 |
 | check: classic SPL token account | 165 | 1,488,440 | 0.001488 |
 
-Per-door rent (Door + DoorMint max + DoorVault + DoorRoomVault): 9,184,640 lamports = 0.009185 SOL = $1.38 at $150/SOL (minimum metadata: 7,919,720 = 0.007920 SOL = $1.19)
-Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault): 1,296
+Per-door rent (Door + DoorMint max + DoorVault + DoorRoomVault): 9,677,400 lamports = 0.009677 SOL = $1.45 at $150/SOL (minimum metadata: 8,315,960 = 0.008316 SOL = $1.25)
+Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault): 1,393
 Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + RoomMint + RoomVault + RetiredVault + FeeWsol): 18,262,600 lamports = 0.018263 SOL = $2.74
-Launching a room (room accounts + door 0 at max metadata; no room or door fee): 27,447,240 lamports = 0.027447 SOL = $4.12, plus transaction fees
+Door-mint metadata self-description (door_nonce + program, 5 Nov 2026): DoorMint max 638 -> 735 bytes, +97 bytes, +492,760 lamports per door at a 20-digit nonce
+Launching a room (room accounts + door 0 at max metadata; no room or door fee): 27,940,000 lamports = 0.027940 SOL = $4.19, plus transaction fees
 
 Accounts created at graduation, and their rent:
 
@@ -149,5 +150,6 @@ Field layouts:
 | 296 | 2 | matcher_version: u16 |
 | 298 | 1 | rule: u8 |
 | 299 | 4 | face: u32 (door index) |
-| 303 | 25 | reserved: [u8; 25] |
+| 303 | 8 | nonce: u64 (Door PDA seed, Launch.door_nonce; 0 for door 0) |
+| 311 | 17 | reserved: [u8; 17] |
 

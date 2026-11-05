@@ -3,7 +3,7 @@ New-room grace 1 h; mature reserve >= 0.5 SOL, idle <= 6 h; gross trailing volum
 
 | item | lamports | SOL |
 |---|---|---|
-| launch room and door 0, max-metadata rent | 27,447,240 | 0.027447 |
+| launch room and door 0, max-metadata rent | 27,940,000 | 0.027940 |
 | only reclaimable rent: SlugLock, if attacker wins cleanup | 736,600 | 0.000737 |
 | mature curve: reserve held as capital | 500,000,000 | 0.500000 |
 | mature curve: gross volume per day, both legs counted | 5,000,000,000 | 5.000000 |
@@ -16,28 +16,28 @@ New-room grace 1 h; mature reserve >= 0.5 SOL, idle <= 6 h; gross trailing volum
 
 | K identities | rooms created per day | rent/day if each lock recreated (SOL) | steady-state rent/day reusing the lock (SOL) |
 |---|---|---|---|
-| 10 | 240 | 6.587338 | 6.410554 |
-| 100 | 2400 | 65.873376 | 64.105536 |
-| 500 | 12000 | 329.366880 | 320.527680 |
+| 10 | 240 | 6.705600 | 6.528816 |
+| 100 | 2400 | 67.056000 | 65.288160 |
+| 500 | 12000 | 335.280000 | 326.440800 |
 
 **Namespace poisoning by mature rooms held live**:
 
 | K rooms | rent once (SOL) | reserve capital (SOL) | protocol fees lost per day at volume floor (SOL) |
 |---|---|---|---|
-| 10 | 0.274472 | 5 | 0.200000 |
-| 100 | 2.744724 | 50 | 2.000000 |
-| 500 | 13.723620 | 250 | 10.000000 |
+| 10 | 0.279400 | 5 | 0.200000 |
+| 100 | 2.794000 | 50 | 2.000000 |
+| 500 | 13.970000 | 250 | 10.000000 |
 
 **Grace-window sensitivity at the verified rent**:
 
 | grace (h) | copies covered by grace | rent/day for 500 identities with new locks (SOL) | recurring rent/day reusing locks (SOL) |
 |---|---|---|---|
-| 0.25 | 65/94 | 1317.467520 | 1282.110720 |
-| 0.5 | 74/94 | 658.733760 | 641.055360 |
-| 1 | 86/94 | 329.366880 | 320.527680 |
-| 1.5 | 93/94 | 219.577920 | 213.685120 |
-| 2 | 94/94 | 164.683440 | 160.263840 |
-| 6 | 94/94 | 54.894480 | 53.421280 |
+| 0.25 | 65/94 | 1341.120000 | 1305.763200 |
+| 0.5 | 74/94 | 670.560000 | 652.881600 |
+| 1 | 86/94 | 335.280000 | 326.440800 |
+| 1.5 | 93/94 | 223.520000 | 217.627200 |
+| 2 | 94/94 | 167.640000 | 163.220400 |
+| 6 | 94/94 | 55.880000 | 54.406800 |
 
 Choose 1 h instead of the previous 2 h: grace covers 86/94 (91.5%) of the fixed SOL age-proxy targets. The conditional fixed-target curve-sum proxy loss bound is 3.19–8.51 retention points; the true production routing cost is unmeasured. Halving grace doubles the continuous unfunded-recreation rent rate; mature-room wash costs are unchanged. Small targeted squats remain affordable; this is not an economic guarantee.
 

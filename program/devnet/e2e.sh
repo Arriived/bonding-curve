@@ -57,5 +57,14 @@ esac
 export DOORS_RPC="$URL"
 devnet/target/release/doors-devnet smoke "$KEYS" "$OUT/smoke.json"
 devnet/target/release/doors-devnet fail "$KEYS" "$OUT/smoke.json" "$OUT/failures.json"
-python3 devnet/report.py "$OUT" verification/devnet/deployed_elf_vm/svm_report.json "$TARGET" --check
+# The VM baseline must be the SBF evidence of the pinned deploy ELF itself, or "live vs VM" compares
+# two different programs. verification/build.json records the ELF that produced svm_report.json.
+PINNED=$(cut -d' ' -f1 devnet/DEPLOY_ELF.sha256)
+VM_ELF=$(python3 -c 'import json;print(json.load(open("verification/build.json"))["elf_sha256"])')
+if [ "$PINNED" != "$VM_ELF" ]; then
+  echo "VM baseline verification/svm_report.json is from ELF $VM_ELF, not the pinned $PINNED;" >&2
+  echo "rerun the SBF suite and scripts/build_evidence.py on the pinned source first." >&2
+  exit 1
+fi
+python3 devnet/report.py "$OUT" verification/svm_report.json "$TARGET" --check
 echo "e2e $TARGET: PASS"

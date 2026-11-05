@@ -617,6 +617,7 @@ impl Fixture {
                     key,
                     p(&[b"door", self.room.as_ref(), &d.nonce.to_le_bytes()])
                 );
+                self.audit_door_metadata(key, &d);
             }
         }
         assert!(
@@ -657,6 +658,59 @@ impl Fixture {
             total, m.base.supply as u128,
             "token conservation including external donations and burns"
         );
+    }
+    /// The door mint alone locates its Door: room, door_nonce and program from the
+    /// mint's metadata derive the Door PDA, and that Door names this mint back.
+    fn audit_door_metadata(&self, door: Pubkey, d: &Door) {
+        let account = self.svm.get_account(&d.mint).unwrap();
+        let m = StateWithExtensions::<Mint>::unpack(&account.data).unwrap();
+        let md = m
+            .get_variable_len_extension::<spl_token_metadata_interface::state::TokenMetadata>()
+            .unwrap();
+        let expected = vec![
+            ("room".to_string(), d.room.to_string()),
+            ("door".to_string(), d.index.to_string()),
+            ("door_nonce".to_string(), d.nonce.to_string()),
+            ("program".to_string(), ID.to_string()),
+        ];
+        assert_eq!(md.additional_metadata, expected);
+        // Size and rent: the account is exactly base mint + TLV headers + this metadata,
+        // the formula research/doors_into_one_room/scripts/account_sizes.py uses.
+        let value = 64
+            + 12
+            + md.name.len()
+            + md.symbol.len()
+            + md.uri.len()
+            + 4
+            + expected
+                .iter()
+                .map(|(k, v)| 8 + k.len() + v.len())
+                .sum::<usize>();
+        assert_eq!(account.data.len(), 165 + 1 + (4 + 64) + 4 + value);
+        assert!(
+            account.lamports
+                >= self
+                    .svm
+                    .minimum_balance_for_rent_exemption(account.data.len())
+        );
+        let get = |k: &str| {
+            md.additional_metadata
+                .iter()
+                .find(|(key, _)| key == k)
+                .unwrap()
+                .1
+                .clone()
+        };
+        let room: Pubkey = get("room").parse().unwrap();
+        let nonce: u64 = get("door_nonce").parse().unwrap();
+        let program: Pubkey = get("program").parse().unwrap();
+        let derived =
+            Pubkey::find_program_address(&[b"door", room.as_ref(), &nonce.to_le_bytes()], &program)
+                .0;
+        assert_eq!(derived, door);
+        let back =
+            Door::try_deserialize(&mut &self.svm.get_account(&derived).unwrap().data[..]).unwrap();
+        assert_eq!(back.mint, d.mint);
     }
     fn time(&mut self, seconds: i64) {
         let mut c = self.svm.get_sysvar::<Clock>();
@@ -2046,4 +2100,138 @@ fn launch_expiry_window_is_enforced_on_both_launch_paths() {
     let late = f.open_ix(with("Held decision", slot + 10), None);
     f.svm.warp_to_slot(slot + 11);
     f.fail_error(late, true, Some("Expired"));
+}
+
+// Attribution of buy CU to the settle-before-buy retirement (8ce373f). Same room, same
+// route, same input; the only difference between paired samples is whether
+// `pending_reserve_sol` is non-zero when the buy executes.
+#[test]
+fn buy_cu_attribution_with_and_without_pending_settlement() {
+    let token_prefix = format!("Program {} consumed ", spl_token_2022_interface::ID);
+    let root_prefix = format!("Program {ID} consumed ");
+    let mut rows = Vec::new();
+    let mut f = Fixture::new(0);
+    // (step, route, retire first). Room buys put the door share into pending, door buys do not.
+    for (step, route, clear) in [
+        (0, None, false),
+        (1, None, false),
+        (2, None, true),
+        (3, None, false),
+        (4, Some(0), false),
+        (5, Some(0), true),
+    ] {
+        if clear {
+            // Clear the backlog so this buy settles nothing.
+            f.retire();
+        }
+        let pending = f.r().pending_reserve_sol;
+        let name = if route.is_some() {
+            "attr_buy_door"
+        } else {
+            "attr_buy_room"
+        };
+        let meta = f.checked(f.trade_ix(route, true, 1_010_000, 0), false, name);
+        f.audit();
+        let root = meta.logs.iter().find_map(|l| {
+            l.strip_prefix(&root_prefix)
+                .and_then(|s| s.split_whitespace().next())
+                .and_then(|n| n.parse::<u64>().ok())
+        });
+        let token_cpis: Vec<u64> = meta
+            .logs
+            .iter()
+            .filter_map(|l| {
+                l.strip_prefix(&token_prefix)
+                    .and_then(|s| s.split_whitespace().next())
+                    .and_then(|n| n.parse::<u64>().ok())
+            })
+            .collect();
+        rows.push(
+            json!({"step":step,"route":if route.is_some(){"door"}else{"room"},
+            "pending_before":pending,"settled":pending>0,"program_cu":root,
+            "token_cpis":token_cpis.len(),"token_cpi_cu":token_cpis}),
+        );
+    }
+    let get = |i: usize| rows[i]["program_cu"].as_u64().unwrap();
+    let settled = |i: usize| rows[i]["settled"].as_bool().unwrap();
+    let cpis = |i: usize| rows[i]["token_cpis"].as_u64().unwrap();
+    // Steps 0, 2 and 5 settle nothing; 1, 3 and 4 settle a non-zero backlog.
+    assert!(!settled(0) && settled(1) && !settled(2) && settled(3) && settled(4) && !settled(5));
+    assert!(cpis(1) == cpis(0) + 1 && cpis(3) == cpis(2) + 1 && cpis(4) == cpis(5) + 1);
+    let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification");
+    std::fs::write(
+        out.join("cu_buy_attribution.json"),
+        serde_json::to_string_pretty(&json!({
+            "kind":"executed compiled Anchor SBF in LiteSVM; same fixture, same input (1,010,000 lamports)",
+            "rows":rows,
+            "room_buy_delta_cu":[get(1) as i64 - get(0) as i64, get(3) as i64 - get(2) as i64],
+            "door_buy_delta_cu":get(4) as i64 - get(5) as i64
+        }))
+        .unwrap()
+            + "\n",
+    )
+    .unwrap();
+}
+
+// Worst case for the never-freed 32 KiB SBF heap: maximum metadata on both mints,
+// every writable launch account prefunded by a third party (so creation takes the
+// transfer + allocate + assign path), non-zero flat fees and an atomic first buy
+// that also settles a pending backlog. Anyone can prefund a PDA, so a launch that
+// only fits the heap when unfunded can be griefed.
+#[test]
+fn prefunded_maximum_metadata_launches_fit_the_heap() {
+    let mut f = Fixture::empty(0);
+    let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
+    settings.room_fee_lamports = 7;
+    settings.door_fee_lamports = 11;
+    f.send(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        "update_config",
+    );
+    let max = |name: &str, fee: u64, buy: u64| {
+        let mut l = launch(&format!("{name}{}", "x".repeat(32 - name.len())));
+        l.symbol = "Y".repeat(10);
+        l.uri = "u".repeat(200);
+        l.max_fee_lamports = fee;
+        l.first_buy_lamports = buy;
+        l
+    };
+    let rent = f.svm.minimum_balance_for_rent_exemption(0);
+    let l = max("Prefunded max room", 18, 1_010_000_000);
+    let ix = f.create_ix(l.clone(), None);
+    for account in &ix.accounts {
+        if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+            f.svm.airdrop(&account.pubkey, rent).unwrap();
+        }
+    }
+    f.create(l, None);
+    // A room-route buy leaves a pending backlog, so the next first buy settles it.
+    f.trade(None, true, 1_010_000);
+    assert!(f.r().pending_reserve_sol > 0);
+    let l = max("Prefunded max door", 11, 101_000_000);
+    let ix = f.open_ix(l.clone(), None);
+    for account in &ix.accounts {
+        if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+            f.svm.airdrop(&account.pubkey, rent).unwrap();
+        }
+    }
+    f.open(l);
+    assert_eq!(f.r().pending_reserve_sol, 0);
+    assert!(f.d(1).backing > 0);
+    // The matcher service signs launches with a 400,000 CU limit (MATCHER_CU_LIMIT default);
+    // a third party's prefunding must not push a co-signed launch past it.
+    let create_cu = *f.cus["create_room"].last().unwrap();
+    let open_cu = *f.cus["open_door"].last().unwrap();
+    println!("PREFUNDED_MAX_CU create_room={create_cu} open_door={open_cu}");
+    assert!(create_cu < 400_000 && open_cu < 400_000);
 }

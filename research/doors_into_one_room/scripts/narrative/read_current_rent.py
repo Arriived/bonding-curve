@@ -40,7 +40,8 @@ def main():
         if any(row['result']!=A.rent(row['params'][0]) for row in rows):
             raise SystemExit('Confirmed rent minima conflict with the schema; stop and record the correction.')
         return
-    sizes={0,165,170,A.meme_mint(32,10,200,[(4,44)]),A.meme_mint(32,10,200,[(4,44),(4,10)])}
+    sizes={0,165,170,A.meme_mint(32,10,200,A.ROOM_MINT_META),A.meme_mint(32,10,200,A.DOOR_MINT_META_MAX),
+           A.meme_mint(1,1,0,A.DOOR_MINT_META_MIN)}
     sizes.update(sum(n for _,n in fields) for fields in A.LAYOUTS.values())
     before=rpc('getSlot',[{'commitment':'finalized'}])
     rows=[]
