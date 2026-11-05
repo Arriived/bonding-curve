@@ -297,7 +297,32 @@ impl Fixture {
         }
         l
     }
+    /// The fixture's name key: name only (like the matcher's T2n key), from the program's own fold and
+    /// hash. The service computes its own key; the program treats it as opaque.
+    fn name_key(l: &Launch) -> [u8; NAME_KEY_LEN] {
+        let mut x = l.clone();
+        x.symbol = "~".into(); // folds to nothing
+        x.identity()[..NAME_KEY_LEN].try_into().unwrap()
+    }
+    /// The room that holds a NameLock, as the service resolves it from chain state.
+    fn name_holder(&self, key: &[u8; NAME_KEY_LEN]) -> Option<Pubkey> {
+        let lock = self.svm.get_account(&p(&[b"name", key]))?;
+        let lock = NameLock::try_deserialize(&mut &lock.data[..]).ok()?;
+        Some(p(&[b"room", &lock.room_id.to_le_bytes()]))
+    }
     fn create_ix(&self, l: Launch, holder: Option<Pubkey>) -> Instruction {
+        let key = Self::name_key(&l);
+        let name_holder = self.name_holder(&key);
+        self.create_ix_named(l, holder, Some(key), Some(p(&[b"name", &key])), name_holder)
+    }
+    fn create_ix_named(
+        &self,
+        l: Launch,
+        holder: Option<Pubkey>,
+        name_key: Option<[u8; NAME_KEY_LEN]>,
+        name_lock: Option<Pubkey>,
+        old_name_holder: Option<Pubkey>,
+    ) -> Instruction {
         let mut l = self.fill(l, false);
         let config = self.svm.get_account(&self.cfg).unwrap();
         l.expected_terms_hash = Config::try_deserialize(&mut &config.data[..])
@@ -315,6 +340,8 @@ impl Fixture {
                 grad_payer: p(&[b"grad_payer", self.room.as_ref()]),
                 slug: p(&[b"slug", &l.identity()]),
                 old_holder: holder,
+                name_lock,
+                old_name_holder,
                 room_mint: p(&[b"room_mint", self.room.as_ref()]),
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
@@ -333,6 +360,7 @@ impl Fixture {
             ix::CreateRoom {
                 room_id: self.rid,
                 launch: l,
+                name_key,
             },
         )
     }
@@ -1596,6 +1624,148 @@ fn liveness_boundary_release_takeover_and_exact_floor() {
     f.create(launch("First room"), Some(live));
     assert_eq!(f.r().created_at, created + 7200);
 }
+// NameLock (H-1): the matcher signs a name key; the program enforces one key -> one live room, at
+// account creation, under the same liveness rule as SlugLock.
+#[test]
+fn name_lock_one_key_one_live_room() {
+    let mut f = Fixture::new(0);
+    let first = f.room;
+    let base = launch("First room");
+    let key = Fixture::name_key(&base);
+    let lock_addr = p(&[b"name", &key]);
+    let lock = |f: &Fixture| {
+        NameLock::try_deserialize(&mut &f.svm.get_account(&lock_addr).unwrap().data[..]).unwrap()
+    };
+    assert_eq!((lock(&f).room_id, lock(&f).key), (f.rid, key));
+    let next = |f: &mut Fixture, rid: u64| {
+        f.rid = rid;
+        f.room = p(&[b"room", &rid.to_le_bytes()]);
+        f.doors.clear();
+    };
+    // Same name key, different symbol: a different SlugLock identity, so only the NameLock stops
+    // a second room. This is the H-1 race, now atomic on-chain.
+    let mut other_symbol = base.clone();
+    other_symbol.symbol = "FROG".into();
+    assert_ne!(other_symbol.identity(), base.identity());
+    next(&mut f, 0x1d4e_6f80_a2b3_c4d5);
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, Some(key), Some(lock_addr), None),
+        true,
+        Some("Holder"),
+    );
+    f.fail_error(
+        f.create_ix_named(
+            other_symbol.clone(),
+            None,
+            Some(key),
+            Some(lock_addr),
+            Some(first),
+        ),
+        true,
+        Some("Live"),
+    );
+    // Key and account must come together, at the key's PDA.
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, Some(key), None, None),
+        true,
+        Some("NameLock"),
+    );
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, None, Some(lock_addr), None),
+        true,
+        Some("NameLock"),
+    );
+    f.fail_error(
+        f.create_ix_named(
+            other_symbol.clone(),
+            None,
+            Some([7; NAME_KEY_LEN]),
+            Some(lock_addr),
+            None,
+        ),
+        true,
+        Some("Pda"),
+    );
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, None, None, Some(first)),
+        true,
+        Some("Holder"),
+    );
+    // release_name is refused while the room is live, then closes the lock and pays its rent.
+    let release = |f: &Fixture, room: Pubkey| {
+        instr(
+            a::ReleaseName {
+                caller: f.user.pubkey(),
+                config: f.cfg,
+                room,
+                name_lock: lock_addr,
+            },
+            ix::ReleaseName {},
+        )
+    };
+    f.fail(release(&f, first), false);
+    f.time(3600);
+    let rent = f.svm.get_account(&lock_addr).unwrap().lamports;
+    let before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+    f.send(release(&f, first), false, "release_name");
+    assert!(f.svm.get_account(&lock_addr).is_none());
+    assert_eq!(
+        f.svm.get_account(&f.user.pubkey()).unwrap().lamports,
+        before + rent - 5000
+    );
+    // A free key: no old name holder may be passed. Prefunding the lock PDA does not block creation.
+    f.fail_error(
+        f.create_ix_named(
+            other_symbol.clone(),
+            None,
+            Some(key),
+            Some(lock_addr),
+            Some(first),
+        ),
+        true,
+        Some("Holder"),
+    );
+    let r0 = f.svm.minimum_balance_for_rent_exemption(0);
+    f.svm.airdrop(&lock_addr, r0).unwrap();
+    f.create(other_symbol.clone(), None);
+    let second = f.room;
+    assert_eq!(lock(&f).room_id, f.rid);
+    // Takeover in place once the holder is dead, without a release, and with the SlugLock and the
+    // NameLock held by two different dead rooms: `first` holds base's identity, `second` the name.
+    f.time(3600);
+    next(&mut f, 0x2e5f_7091_b3c4_d5e6);
+    f.fail_error(
+        f.create_ix_named(
+            base.clone(),
+            Some(first),
+            Some(key),
+            Some(lock_addr),
+            Some(first),
+        ),
+        true,
+        Some("Holder"),
+    );
+    f.fail_error(
+        f.create_ix_named(base.clone(), Some(first), Some(key), Some(lock_addr), None),
+        true,
+        Some("Holder"),
+    );
+    f.send(
+        f.create_ix_named(
+            base.clone(),
+            Some(first),
+            Some(key),
+            Some(lock_addr),
+            Some(second),
+        ),
+        true,
+        "create_room",
+    );
+    assert_eq!(lock(&f).room_id, f.rid);
+    // release_name checks the room named in the lock.
+    f.time(3600);
+    f.fail(release(&f, second), false);
+}
 #[test]
 fn fold_and_integer_math_match_reference_vectors() {
     use doors_v1::{math::*, state::fold};
@@ -2315,24 +2485,124 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
     assert!(create_cu < 400_000 && open_cu < 400_000);
 }
 
-// The takeover paths deserialise a second Room (`old_holder`) on top of the worst case
+// The takeover paths read a second Room (`old_holder`, in place) on top of the worst case
 // above: every new account prefunded, non-zero fees, first buy. The create_room takeover
 // uses the largest metadata the matcher service can sign in a legacy transaction
-// (name 32, symbol 10, URI 70: services/matcher txbuild size check); open_door uses the
-// program maximum (URI 200), which fits a legacy transaction. The program maximum for a
-// create_room takeover needs a v0 transaction and exhausts the heap when prefunded:
-// see `prefunded_v0_maximum_takeover_exhausts_the_heap` and SECURITY_REVIEW.md M-7.
+// (name 32, symbol 10, URI 70: services/matcher/scripts/max_uri.py); open_door uses the
+// program maximum (URI 200), which fits a legacy transaction.
 #[test]
 fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
     takeover_heap_case(70);
 }
 
-/// Reproduction of open finding SECURITY_REVIEW.md M-7: fails with "memory allocation
-/// failed, out of memory" until the launch path's heap use is reduced or the heap enlarged.
+/// Formerly the reproduction of finding SECURITY_REVIEW.md M-7 ("memory allocation failed, out of
+/// memory"): the program maximum for a create_room takeover, which needs a v0 transaction. It fits
+/// since the old holder is read in place instead of deserialised into a boxed `Account<Room>`.
 #[test]
-#[ignore = "open finding M-7 (SECURITY_REVIEW.md): reproduces a heap exhaustion; run with --ignored"]
-fn prefunded_v0_maximum_takeover_exhausts_the_heap() {
+fn prefunded_v0_maximum_takeover_fits_the_heap() {
     takeover_heap_case(200);
+}
+
+// The old holder is read in place (`RoomBytes`). It must be exactly what `Account<Room>` accepted:
+// program-owned, Room-sized, Room discriminator, at its canonical room PDA, holding the lock, and dead.
+#[test]
+fn takeover_holder_is_validated_in_place() {
+    let mut f = Fixture::new(0);
+    f.trade(Some(0), true, 5_000_000);
+    let held = f.room;
+    let held_data = f.svm.get_account(&held).unwrap();
+    // RoomBytes reads the same fields as the Borsh layout, including every liveness bucket.
+    let mut r = Room::try_deserialize(&mut &held_data.data[..]).unwrap();
+    r.reserve = 0x0102_0304_0506_0708;
+    r.created_at = 0x1112_1314_1516;
+    r.last_trade_at = 0x2122_2324_2526;
+    for (i, b) in r.liveness_buckets.iter_mut().enumerate() {
+        b.start = 3600 * (i as i64 + 7);
+        b.amount = (i as u128 + 1) << 70;
+    }
+    let mut bytes = Vec::new();
+    r.try_serialize(&mut bytes).unwrap();
+    assert_eq!(bytes.len(), Room::LEN);
+    let view = RoomBytes(&bytes);
+    assert_eq!((view.room_id(), view.bump()), (r.room_id, r.bumps[0]));
+    let cfg = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    for status in [0u8, 1] {
+        r.status = status;
+        let mut b2 = Vec::new();
+        r.try_serialize(&mut b2).unwrap();
+        for now in [
+            0,
+            3600 * 7,
+            3600 * 31,
+            0x1112_1314_1516 + 1,
+            0x2122_2324_2526 + 3600,
+            i64::MAX / 2,
+        ] {
+            for c in [
+                cfg.clone(),
+                Config {
+                    live_min_volume_lamports: 0,
+                    live_min_reserve_lamports: 0,
+                    live_max_idle_seconds: u64::MAX,
+                    ..cfg.clone()
+                },
+            ] {
+                assert_eq!(
+                    RoomBytes(&b2).live(&c, now).unwrap(),
+                    r.live(&c, now).unwrap()
+                );
+            }
+        }
+    }
+    // A second dead room, not the lock's holder.
+    f.time(3600);
+    let other_rid = 0x6a01_33c2_4be8_9d11;
+    f.rid = other_rid;
+    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+    f.doors.clear();
+    f.create(launch("Other dead room"), None);
+    let other = f.room;
+    f.time(3600);
+    // A forged Room: valid bytes and discriminator of the real holder, owned by the program, but not
+    // at a room PDA; and the same bytes owned by the System program.
+    let forged = Pubkey::new_unique();
+    f.svm.set_account(forged, held_data.clone().into()).unwrap();
+    let foreign = Pubkey::new_unique();
+    f.svm
+        .set_account(
+            foreign,
+            Account {
+                owner: anchor_lang::system_program::ID,
+                ..held_data.clone()
+            },
+        )
+        .unwrap();
+    f.rid = 0x0f3e_7c21_9b84_a556;
+    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+    f.doors.clear();
+    for (holder, code) in [
+        (None, "Holder"),
+        (Some(other), "Holder"),
+        (Some(f.cfg), "Holder"),
+        (Some(DoorKeys::new(held, 0, f.user.pubkey()).door), "Holder"),
+        (Some(foreign), "Holder"),
+        (Some(forged), "Pda"),
+    ] {
+        f.fail_error(f.create_ix(launch("First room"), holder), true, Some(code));
+    }
+    f.create(launch("First room"), Some(held));
+    assert_eq!(
+        SlugLock::try_deserialize(
+            &mut &f
+                .svm
+                .get_account(&p(&[b"slug", &launch("First room").identity()]))
+                .unwrap()
+                .data[..]
+        )
+        .unwrap()
+        .room_id,
+        f.rid
+    );
 }
 
 fn takeover_heap_case(create_uri: usize) {
@@ -2370,7 +2640,7 @@ fn takeover_heap_case(create_uri: usize) {
             }
         }
     };
-    let mut next_room = |f: &mut Fixture, rid: u64| {
+    let next_room = |f: &mut Fixture, rid: u64| {
         f.rid = rid;
         f.room = p(&[b"room", &rid.to_le_bytes()]);
         f.doors.clear();

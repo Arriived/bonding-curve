@@ -536,6 +536,7 @@ dependencies = [
  "solana-instruction 3.5.1",
  "solana-keypair",
  "solana-message",
+ "solana-sha256-hasher",
  "solana-signature",
  "solana-signer",
  "solana-transaction",

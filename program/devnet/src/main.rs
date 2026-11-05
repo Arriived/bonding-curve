@@ -82,10 +82,21 @@ impl Chain {
         Self { log: vec![] }
     }
     fn rpc(&self, method: &str, params: Value) -> Result<Value> {
-        let body = json!({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).to_string();
+        let body =
+            json!({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).to_string();
         for attempt in 0..6 {
             let out = Command::new("curl")
-                .args(["-sS", "--fail-with-body", "-m", "60", "-H", "content-type: application/json", "-d", &body, &rpc_url()])
+                .args([
+                    "-sS",
+                    "--fail-with-body",
+                    "-m",
+                    "60",
+                    "-H",
+                    "content-type: application/json",
+                    "-d",
+                    &body,
+                    &rpc_url(),
+                ])
                 .output()
                 .context("run curl")?;
             let text = String::from_utf8_lossy(&out.stdout).to_string();
@@ -110,40 +121,80 @@ impl Chain {
     }
     fn blockhash(&self) -> Result<Hash> {
         let r = self.rpc("getLatestBlockhash", json!([{"commitment": "confirmed"}]))?;
-        Hash::from_str(r["value"]["blockhash"].as_str().ok_or_else(|| anyhow!("blockhash"))?).map_err(|e| anyhow!("{e:?}"))
+        Hash::from_str(
+            r["value"]["blockhash"]
+                .as_str()
+                .ok_or_else(|| anyhow!("blockhash"))?,
+        )
+        .map_err(|e| anyhow!("{e:?}"))
     }
-    fn tx(&self, ixs: &[Instruction], payer: &Keypair, signers: &[&Keypair]) -> Result<Transaction> {
+    fn tx(
+        &self,
+        ixs: &[Instruction],
+        payer: &Keypair,
+        signers: &[&Keypair],
+    ) -> Result<Transaction> {
         let mut all = vec![ComputeBudgetInstruction::set_compute_unit_limit(CU_LIMIT)];
         all.extend_from_slice(ixs);
         let bh = self.blockhash()?;
         let mut v: Vec<&Keypair> = vec![payer];
-        v.extend(signers.iter().copied().filter(|k| k.pubkey() != payer.pubkey()));
-        Ok(Transaction::new(&v, Message::new(&all, Some(&payer.pubkey())), bh))
+        v.extend(
+            signers
+                .iter()
+                .copied()
+                .filter(|k| k.pubkey() != payer.pubkey()),
+        );
+        Ok(Transaction::new(
+            &v,
+            Message::new(&all, Some(&payer.pubkey())),
+            bh,
+        ))
     }
-    fn submit(&self, t: &Transaction, skip_preflight: bool) -> Result<std::result::Result<Signature, String>> {
+    fn submit(
+        &self,
+        t: &Transaction,
+        skip_preflight: bool,
+    ) -> Result<std::result::Result<Signature, String>> {
         let wire = bincode::serialize(t)?;
         let b64 = b64_encode(&wire);
         let params = json!([b64, {"encoding": "base64", "skipPreflight": skip_preflight, "preflightCommitment": "confirmed", "maxRetries": 5}]);
         match self.rpc("sendTransaction", params) {
-            Ok(r) => Ok(Ok(Signature::from_str(r.as_str().ok_or_else(|| anyhow!("signature"))?).map_err(|e| anyhow!("{e}"))?)),
+            Ok(r) => Ok(Ok(Signature::from_str(
+                r.as_str().ok_or_else(|| anyhow!("signature"))?,
+            )
+            .map_err(|e| anyhow!("{e}"))?)),
             Err(e) => Ok(Err(e.to_string())),
         }
     }
     fn wait(&self, sig: &Signature) -> Result<Value> {
         for _ in 0..90 {
             sleep(Duration::from_millis(1000));
-            let r = self.rpc("getSignatureStatuses", json!([[sig.to_string()], {"searchTransactionHistory": true}]))?;
+            let r = self.rpc(
+                "getSignatureStatuses",
+                json!([[sig.to_string()], {"searchTransactionHistory": true}]),
+            )?;
             let st = &r["value"][0];
-            if !st.is_null() && (st["confirmationStatus"] == json!("confirmed") || st["confirmationStatus"] == json!("finalized")) {
+            if !st.is_null()
+                && (st["confirmationStatus"] == json!("confirmed")
+                    || st["confirmationStatus"] == json!("finalized"))
+            {
                 return Ok(st.clone());
             }
         }
         bail!("no confirmation for {sig}")
     }
     /// Send, confirm, then read back slot, CU and logs. Records the result.
-    fn send(&mut self, name: &str, ixs: &[Instruction], payer: &Keypair, signers: &[&Keypair]) -> Result<Value> {
+    fn send(
+        &mut self,
+        name: &str,
+        ixs: &[Instruction],
+        payer: &Keypair,
+        signers: &[&Keypair],
+    ) -> Result<Value> {
         let t = self.tx(ixs, payer, signers)?;
-        let sig = self.submit(&t, false)?.map_err(|e| anyhow!("{name}: {e}"))?;
+        let sig = self
+            .submit(&t, false)?
+            .map_err(|e| anyhow!("{name}: {e}"))?;
         self.wait(&sig)?;
         self.record(name, &sig, true)
     }
@@ -155,7 +206,12 @@ impl Chain {
     }
     /// `skip_preflight = false` makes the RPC verify signatures and report the reason;
     /// a forged signature is otherwise dropped silently by the leader and never lands.
-    fn send_fail_with(&mut self, name: &str, t: Transaction, skip_preflight: bool) -> Result<Value> {
+    fn send_fail_with(
+        &mut self,
+        name: &str,
+        t: Transaction,
+        skip_preflight: bool,
+    ) -> Result<Value> {
         match self.submit(&t, skip_preflight)? {
             Err(e) => {
                 println!("{name}: rejected before execution: {e}");
@@ -186,50 +242,87 @@ impl Chain {
             bail!("{name}: transaction {sig} not found");
         }
         let meta = &found["meta"];
-        let logs: Vec<String> = meta["logMessages"].as_array().into_iter().flatten().filter_map(|l| l.as_str().map(String::from)).collect();
+        let logs: Vec<String> = meta["logMessages"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|l| l.as_str().map(String::from))
+            .collect();
         // Program-inclusive CU (its CPIs included, compute-budget instruction excluded):
         // the same quantity the SVM report measures.
         let prefix = format!("Program {ID} consumed ");
         let program_cu = logs.iter().find_map(|l| {
-            l.strip_prefix(&prefix).and_then(|r| r.split_whitespace().next()).and_then(|n| n.parse::<u64>().ok())
+            l.strip_prefix(&prefix)
+                .and_then(|r| r.split_whitespace().next())
+                .and_then(|n| n.parse::<u64>().ok())
         });
-        let err = if meta["err"].is_null() { None } else { Some(meta["err"].to_string()) };
-        let error_log = logs.iter().find(|l| l.contains("Error Code:") || l.contains("failed:")).cloned();
+        let err = if meta["err"].is_null() {
+            None
+        } else {
+            Some(meta["err"].to_string())
+        };
+        let error_log = logs
+            .iter()
+            .find(|l| l.contains("Error Code:") || l.contains("failed:"))
+            .cloned();
         if expect_ok && err.is_some() {
             bail!("{name} failed: {err:?} {error_log:?}");
         }
-        let events: Vec<String> = logs.iter().filter_map(|l| l.strip_prefix("Program data: ").map(String::from)).collect();
+        let events: Vec<String> = logs
+            .iter()
+            .filter_map(|l| l.strip_prefix("Program data: ").map(String::from))
+            .collect();
         let rec = json!({
             "name": name, "signature": sig.to_string(), "slot": found["slot"], "block_time": found["blockTime"],
             "landed": true, "ok": err.is_none(), "program_cu": program_cu, "transaction_cu": meta["computeUnitsConsumed"],
             "fee_lamports": meta["fee"], "error": err, "error_log": error_log, "events": events,
         });
-        println!("{name}: slot {} sig {} program_cu {:?} ok {}", found["slot"], sig, program_cu, err.is_none());
+        println!(
+            "{name}: slot {} sig {} program_cu {:?} ok {}",
+            found["slot"],
+            sig,
+            program_cu,
+            err.is_none()
+        );
         self.log.push(rec.clone());
         Ok(rec)
     }
     fn account_at(&self, k: &Pubkey) -> Result<(u64, Option<Account>)> {
-        let r = self.rpc("getAccountInfo", json!([k.to_string(), {"encoding": "base64", "commitment": "confirmed"}]))?;
+        let r = self.rpc(
+            "getAccountInfo",
+            json!([k.to_string(), {"encoding": "base64", "commitment": "confirmed"}]),
+        )?;
         let slot = r["context"]["slot"].as_u64().unwrap_or(0);
         let v = &r["value"];
         if v.is_null() {
             return Ok((slot, None));
         }
-        let data = b64(v["data"][0].as_str().ok_or_else(|| anyhow!("data"))?).ok_or_else(|| anyhow!("base64"))?;
-        Ok((slot, Some(Account {
-            lamports: v["lamports"].as_u64().ok_or_else(|| anyhow!("lamports"))?,
-            data,
-            owner: Pubkey::from_str(v["owner"].as_str().ok_or_else(|| anyhow!("owner"))?).map_err(|e| anyhow!("{e}"))?,
-        })))
+        let data = b64(v["data"][0].as_str().ok_or_else(|| anyhow!("data"))?)
+            .ok_or_else(|| anyhow!("base64"))?;
+        Ok((
+            slot,
+            Some(Account {
+                lamports: v["lamports"].as_u64().ok_or_else(|| anyhow!("lamports"))?,
+                data,
+                owner: Pubkey::from_str(v["owner"].as_str().ok_or_else(|| anyhow!("owner"))?)
+                    .map_err(|e| anyhow!("{e}"))?,
+            }),
+        ))
     }
     fn account(&self, k: &Pubkey) -> Result<Account> {
-        self.account_at(k)?.1.ok_or_else(|| anyhow!("account {k} not found"))
+        self.account_at(k)?
+            .1
+            .ok_or_else(|| anyhow!("account {k} not found"))
     }
     fn slot(&self) -> Result<u64> {
-        self.rpc("getSlot", json!([{"commitment": "confirmed"}]))?.as_u64().ok_or_else(|| anyhow!("slot"))
+        self.rpc("getSlot", json!([{"commitment": "confirmed"}]))?
+            .as_u64()
+            .ok_or_else(|| anyhow!("slot"))
     }
     fn rent(&self, len: usize) -> Result<u64> {
-        self.rpc("getMinimumBalanceForRentExemption", json!([len]))?.as_u64().ok_or_else(|| anyhow!("rent"))
+        self.rpc("getMinimumBalanceForRentExemption", json!([len]))?
+            .as_u64()
+            .ok_or_else(|| anyhow!("rent"))
     }
     fn room(&self, k: &Pubkey) -> Result<Room> {
         Ok(Room::try_deserialize(&mut &self.account(k)?.data[..])?)
@@ -238,7 +331,11 @@ impl Chain {
         Ok(Door::try_deserialize(&mut &self.account(k)?.data[..])?)
     }
     fn balance(&self, k: &Pubkey) -> Result<u64> {
-        Ok(StateWithExtensions::<TokenAccount>::unpack(&self.account(k)?.data)?.base.amount)
+        Ok(
+            StateWithExtensions::<TokenAccount>::unpack(&self.account(k)?.data)?
+                .base
+                .amount,
+        )
     }
 }
 
@@ -246,7 +343,9 @@ fn b64_encode(d: &[u8]) -> String {
     const A: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut s = String::new();
     for c in d.chunks(3) {
-        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
+        let n = (c[0] as u32) << 16
+            | (*c.get(1).unwrap_or(&0) as u32) << 8
+            | *c.get(2).unwrap_or(&0) as u32;
         for i in 0..4 {
             if i <= c.len() {
                 s.push(A[(n >> (18 - 6 * i) & 63) as usize] as char);
@@ -285,7 +384,9 @@ fn settings_from(path: &str) -> Result<Settings> {
         r_star_lamports: u("r_star_lamports")?,
         meteora_dynamic_config: pk("meteora_dynamic_config")?,
         graduation_trigger_lamports: u("graduation_trigger_lamports")?,
-        paused: v["paused"].as_bool().ok_or_else(|| anyhow!("paused: missing"))?,
+        paused: v["paused"]
+            .as_bool()
+            .ok_or_else(|| anyhow!("paused: missing"))?,
         matcher_authority: pk("matcher_authority")?,
         live_min_reserve_lamports: u("live_min_reserve_lamports")?,
         live_max_idle_seconds: u("live_max_idle_seconds")?,
@@ -312,7 +413,10 @@ fn init(dir: &str, settings: &str, out: &str) -> Result<()> {
         ix::InitializeConfig { settings: s },
     );
     c.send("initialize_config", &[ixn], &admin, &[])?;
-    fs::write(out, serde_json::to_string_pretty(&json!({"program": ID.to_string(), "transactions": c.log}))?)?;
+    fs::write(
+        out,
+        serde_json::to_string_pretty(&json!({"program": ID.to_string(), "transactions": c.log}))?,
+    )?;
     Ok(())
 }
 
@@ -331,35 +435,112 @@ fn config(settings: &str, out: &str) -> Result<()> {
     };
     let rows: Vec<(&str, String, String)> = vec![
         ("admin", k.admin.to_string(), ua.clone()),
-        ("protocol_fee_recipient", k.protocol_fee_recipient.to_string(), s.protocol_fee_recipient.to_string()),
+        (
+            "protocol_fee_recipient",
+            k.protocol_fee_recipient.to_string(),
+            s.protocol_fee_recipient.to_string(),
+        ),
         ("fee_bps", k.fee_bps.to_string(), s.fee_bps.to_string()),
-        ("door_share_bps", k.door_share_bps.to_string(), s.door_share_bps.to_string()),
-        ("founder_share_bps", k.founder_share_bps.to_string(), s.founder_share_bps.to_string()),
-        ("door_fee_lamports", k.door_fee_lamports.to_string(), s.door_fee_lamports.to_string()),
-        ("room_fee_lamports", k.room_fee_lamports.to_string(), s.room_fee_lamports.to_string()),
-        ("convert_fee_lamports", k.convert_fee_lamports.to_string(), s.convert_fee_lamports.to_string()),
-        ("v_sol_lamports", k.v_sol_lamports.to_string(), s.v_sol_lamports.to_string()),
+        (
+            "door_share_bps",
+            k.door_share_bps.to_string(),
+            s.door_share_bps.to_string(),
+        ),
+        (
+            "founder_share_bps",
+            k.founder_share_bps.to_string(),
+            s.founder_share_bps.to_string(),
+        ),
+        (
+            "door_fee_lamports",
+            k.door_fee_lamports.to_string(),
+            s.door_fee_lamports.to_string(),
+        ),
+        (
+            "room_fee_lamports",
+            k.room_fee_lamports.to_string(),
+            s.room_fee_lamports.to_string(),
+        ),
+        (
+            "convert_fee_lamports",
+            k.convert_fee_lamports.to_string(),
+            s.convert_fee_lamports.to_string(),
+        ),
+        (
+            "v_sol_lamports",
+            k.v_sol_lamports.to_string(),
+            s.v_sol_lamports.to_string(),
+        ),
         ("v_tok", k.v_tok.to_string(), s.v_tok.to_string()),
         ("supply", k.supply.to_string(), s.supply.to_string()),
-        ("r_star_lamports", k.r_star_lamports.to_string(), s.r_star_lamports.to_string()),
-        ("meteora_dynamic_config", k.meteora_dynamic_config.to_string(), s.meteora_dynamic_config.to_string()),
-        ("graduation_trigger_lamports", k.graduation_trigger_lamports.to_string(), s.graduation_trigger_lamports.to_string()),
+        (
+            "r_star_lamports",
+            k.r_star_lamports.to_string(),
+            s.r_star_lamports.to_string(),
+        ),
+        (
+            "meteora_dynamic_config",
+            k.meteora_dynamic_config.to_string(),
+            s.meteora_dynamic_config.to_string(),
+        ),
+        (
+            "graduation_trigger_lamports",
+            k.graduation_trigger_lamports.to_string(),
+            s.graduation_trigger_lamports.to_string(),
+        ),
         ("paused", k.paused.to_string(), s.paused.to_string()),
-        ("matcher_authority", k.matcher_authority.to_string(), s.matcher_authority.to_string()),
-        ("live_min_reserve_lamports", k.live_min_reserve_lamports.to_string(), s.live_min_reserve_lamports.to_string()),
-        ("live_max_idle_seconds", k.live_max_idle_seconds.to_string(), s.live_max_idle_seconds.to_string()),
-        ("live_new_seconds", k.live_new_seconds.to_string(), s.live_new_seconds.to_string()),
-        ("live_min_volume_lamports", k.live_min_volume_lamports.to_string(), s.live_min_volume_lamports.to_string()),
-        ("pool_min_window_lp_fee", k.pool_min_window_lp_fee.to_string(), s.pool_min_window_lp_fee.to_string()),
-        ("bump", k.bump.to_string(), Pubkey::find_program_address(&[b"config"], &ID).1.to_string()),
+        (
+            "matcher_authority",
+            k.matcher_authority.to_string(),
+            s.matcher_authority.to_string(),
+        ),
+        (
+            "live_min_reserve_lamports",
+            k.live_min_reserve_lamports.to_string(),
+            s.live_min_reserve_lamports.to_string(),
+        ),
+        (
+            "live_max_idle_seconds",
+            k.live_max_idle_seconds.to_string(),
+            s.live_max_idle_seconds.to_string(),
+        ),
+        (
+            "live_new_seconds",
+            k.live_new_seconds.to_string(),
+            s.live_new_seconds.to_string(),
+        ),
+        (
+            "live_min_volume_lamports",
+            k.live_min_volume_lamports.to_string(),
+            s.live_min_volume_lamports.to_string(),
+        ),
+        (
+            "pool_min_window_lp_fee",
+            k.pool_min_window_lp_fee.to_string(),
+            s.pool_min_window_lp_fee.to_string(),
+        ),
+        (
+            "bump",
+            k.bump.to_string(),
+            Pubkey::find_program_address(&[b"config"], &ID)
+                .1
+                .to_string(),
+        ),
     ];
     let mut mismatches = 0;
     let mut table = vec![];
-    println!("Config {cfg_key} at slot {slot} ({} bytes, owner {})", acc.data.len(), acc.owner);
+    println!(
+        "Config {cfg_key} at slot {slot} ({} bytes, owner {})",
+        acc.data.len(),
+        acc.owner
+    );
     for (f, got, want) in rows {
         let ok = got == want;
         mismatches += usize::from(!ok);
-        println!("{f:<29} {got:<46} {want:<46} {}", if ok { "ok" } else { "MISMATCH" });
+        println!(
+            "{f:<29} {got:<46} {want:<46} {}",
+            if ok { "ok" } else { "MISMATCH" }
+        );
         table.push(json!({"field": f, "on_chain": got, "expected": want, "match": ok}));
     }
     fs::write(
@@ -469,6 +650,7 @@ impl Ctx {
     }
     fn create_ix(&self, user: Pubkey, matcher: Pubkey, l: Launch) -> Instruction {
         let d = DoorKeys::new(self.room, 0);
+        let key = smoke_name_key(&l.name);
         instr(
             a::CreateRoom {
                 user,
@@ -480,6 +662,8 @@ impl Ctx {
                 grad_payer: p(&[b"grad_payer", self.room.as_ref()]),
                 slug: p(&[b"slug", &l.identity()]),
                 old_holder: None,
+                name_lock: Some(p(&[b"name", &key])),
+                old_name_holder: None,
                 room_mint: p(&[b"room_mint", self.room.as_ref()]),
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
@@ -498,6 +682,7 @@ impl Ctx {
             ix::CreateRoom {
                 room_id: self.rid,
                 launch: l,
+                name_key: Some(key),
             },
         )
     }
@@ -523,7 +708,14 @@ impl Ctx {
             ix::OpenDoor { launch: l },
         )
     }
-    fn trade_ix(&self, r: &Room, user: Pubkey, door: Option<&DoorKeys>, buy: bool, n: u64) -> Instruction {
+    fn trade_ix(
+        &self,
+        r: &Room,
+        user: Pubkey,
+        door: Option<&DoorKeys>,
+        buy: bool,
+        n: u64,
+    ) -> Instruction {
         let user_token = door.map_or(ata(user, r.room_mint, T22), |d| ata(user, d.mint, T22));
         let ac = a::TradeAccounts {
             user,
@@ -537,12 +729,31 @@ impl Ctx {
             system_program: SYS,
         };
         if buy {
-            instr(ac, ix::Buy { lamports_in: n, min_tokens_out: 0 })
+            instr(
+                ac,
+                ix::Buy {
+                    lamports_in: n,
+                    min_tokens_out: 0,
+                },
+            )
         } else {
-            instr(ac, ix::Sell { tokens_in: n, min_lamports_out: 0 })
+            instr(
+                ac,
+                ix::Sell {
+                    tokens_in: n,
+                    min_lamports_out: 0,
+                },
+            )
         }
     }
-    fn convert_ix(&self, r: &Room, user: Pubkey, x: &DoorKeys, y: &DoorKeys, n: u64) -> Instruction {
+    fn convert_ix(
+        &self,
+        r: &Room,
+        user: Pubkey,
+        x: &DoorKeys,
+        y: &DoorKeys,
+        n: u64,
+    ) -> Instruction {
         instr(
             a::Convert {
                 user,
@@ -560,18 +771,31 @@ impl Ctx {
                 token_program: T22,
                 system_program: SYS,
             },
-            ix::Convert { amount: n, max_fee_lamports: 0 },
+            ix::Convert {
+                amount: n,
+                max_fee_lamports: 0,
+            },
         )
     }
     fn retire_ix(&self, r: &Room) -> Instruction {
         let c = self.core(r);
         let out = c.retired;
         instr(
-            a::Retire { core: c, retired_output: out, token_program: T22 },
+            a::Retire {
+                core: c,
+                retired_output: out,
+                token_program: T22,
+            },
             ix::RetirePending {},
         )
     }
-    fn claim_ix(&self, r: &Room, authority: Pubkey, d: &DoorKeys, recipient: Pubkey) -> Instruction {
+    fn claim_ix(
+        &self,
+        r: &Room,
+        authority: Pubkey,
+        d: &DoorKeys,
+        recipient: Pubkey,
+    ) -> Instruction {
         instr(
             a::Claim {
                 authority,
@@ -626,7 +850,8 @@ fn b64(s: &str) -> Option<Vec<u8>> {
 fn mint_check(c: &Chain, mint: &Pubkey) -> Result<Value> {
     let acc = c.account(mint)?;
     let m = StateWithExtensions::<Mint>::unpack(&acc.data)?;
-    let md = m.get_variable_len_extension::<spl_token_metadata_interface::state::TokenMetadata>()?;
+    let md =
+        m.get_variable_len_extension::<spl_token_metadata_interface::state::TokenMetadata>()?;
     let ua = Option::<Pubkey>::from(md.update_authority);
     let ok = m.base.supply == U
         && m.base.mint_authority.is_none()
@@ -642,7 +867,78 @@ fn mint_check(c: &Chain, mint: &Pubkey) -> Result<Value> {
     }))
 }
 
+/// The matcher service's NameLock key (services/matcher rules.name_lock_key) for the plain names this
+/// helper launches: ASCII words of letters and digits separated by single spaces, no stopword, no
+/// COIN/TOKEN suffix, no camelCase, folding to at least 4 characters. For those the service's
+/// normalisation reduces to: per word, lower-case, `rn`->`m` then `vv`->`w`, upper-case, digits
+/// 0 1 3 4 5 7 8 -> O I E A S T B; words joined; class N. Any other name is refused rather than keyed
+/// wrongly. `smoke_key_matches_the_service` pins it to vectors computed with the service's rules.py.
+fn smoke_name_key(name: &str) -> [u8; NAME_KEY_LEN] {
+    const STOP: [&str; 13] = [
+        "THE", "A", "AN", "OF", "ON", "AND", "COIN", "TOKEN", "OFFICIAL", "SOL", "SOLANA", "MEME",
+        "CTO",
+    ];
+    let mut nk = String::new();
+    for w in name.split(' ') {
+        assert!(
+            !w.is_empty() && w.bytes().all(|c| c.is_ascii_alphanumeric()),
+            "plain name: {name}"
+        );
+        assert!(
+            !w.as_bytes()
+                .windows(2)
+                .any(|p| p[0].is_ascii_lowercase() && p[1].is_ascii_uppercase()),
+            "no camelCase: {name}"
+        );
+        let t = w
+            .to_ascii_lowercase()
+            .replace("rn", "m")
+            .replace("vv", "w")
+            .to_ascii_uppercase();
+        let t: String = t
+            .chars()
+            .map(|c| match c {
+                '0' => 'O',
+                '1' => 'I',
+                '3' => 'E',
+                '4' => 'A',
+                '5' => 'S',
+                '7' => 'T',
+                '8' => 'B',
+                c => c,
+            })
+            .collect();
+        assert!(
+            !STOP.contains(&t.as_str()) && !t.ends_with("COIN") && !t.ends_with("TOKEN"),
+            "plain name: {name}"
+        );
+        nk.push_str(&t);
+    }
+    assert!(nk.len() >= 4, "class N name: {name}");
+    let h = solana_sha256_hasher::hashv(&[b"doors-v1:name-key:v1\0N\0", nk.as_bytes()]);
+    h.to_bytes()[..NAME_KEY_LEN].try_into().unwrap()
+}
+fn smoke_key_matches_the_service() {
+    for (name, key) in [
+        ("Doors Smoke 0A1B2C", "2f06537ec8ddfa6f5057dc7d33ee1237"),
+        ("Doors Smoke FFE387", "10a09ffa681e7b0fc073e86e91d3f1a0"),
+        ("Doors Smoke 4578BD", "40bd7fa8d5a4143caf668ae8d0b26612"),
+        ("Doors Unsigned Probe", "8e6865372d9077ac15a17f18121f5953"),
+        ("Doors Devnet Smoke", "ba48f6c3bcb2159df982b88647109e3d"),
+        ("Turn Vvave 0137", "008fd9082274f6972df9a3b87cca37be"),
+    ] {
+        let got: String = smoke_name_key(name)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(
+            got, key,
+            "smoke name key differs from the service's for {name}"
+        );
+    }
+}
 fn smoke(dir: &str, out: &str) -> Result<()> {
+    smoke_key_matches_the_service();
     let mut c = Chain::new();
     let launcher = key(dir, "smoke-launcher")?;
     let trader = key(dir, "smoke-trader")?;
@@ -661,7 +957,12 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
 
     // 1. create_room, signed by the launcher and the matcher; creates door 0.
     let l0 = prepare(&c, launch(name, symbol), 0)?;
-    c.send("create_room", &[ctx.create_ix(lk, matcher.pubkey(), l0)], &launcher, &[&matcher])?;
+    c.send(
+        "create_room",
+        &[ctx.create_ix(lk, matcher.pubkey(), l0)],
+        &launcher,
+        &[&matcher],
+    )?;
     let r = c.room(&ctx.room)?;
     // Token accounts that later trades expect (idempotent ATA creation, as clients do).
     c.send(
@@ -676,7 +977,12 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     )?;
     // 2. open_door into the room from a second wallet, same identity (a vamp joining).
     let l1 = prepare(&c, launch(name, symbol), n1)?;
-    c.send("open_door", &[ctx.open_ix(&r, tk, matcher.pubkey(), l1)], &trader, &[&matcher])?;
+    c.send(
+        "open_door",
+        &[ctx.open_ix(&r, tk, matcher.pubkey(), l1)],
+        &trader,
+        &[&matcher],
+    )?;
     c.send(
         "create_atas_trader",
         &[
@@ -691,20 +997,58 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     // 3. a buy through door 0, a buy through door 1, a sell, a convert.
     let r = c.room(&ctx.room)?;
     let mut fee_recs = vec![];
-    fee_recs.push(("door0", c.send("buy_door0", &[ctx.trade_ix(&r, lk, Some(&d0), true, 100_000_000)], &launcher, &[])?));
-    fee_recs.push(("door1", c.send("buy_door1", &[ctx.trade_ix(&r, tk, Some(&d1), true, 100_000_000)], &trader, &[])?));
+    fee_recs.push((
+        "door0",
+        c.send(
+            "buy_door0",
+            &[ctx.trade_ix(&r, lk, Some(&d0), true, 100_000_000)],
+            &launcher,
+            &[],
+        )?,
+    ));
+    fee_recs.push((
+        "door1",
+        c.send(
+            "buy_door1",
+            &[ctx.trade_ix(&r, tk, Some(&d1), true, 100_000_000)],
+            &trader,
+            &[],
+        )?,
+    ));
     let held = c.balance(&ata(lk, d0.mint, T22))?;
-    fee_recs.push(("door0", c.send("sell_door0", &[ctx.trade_ix(&r, lk, Some(&d0), false, held / 2)], &launcher, &[])?));
+    fee_recs.push((
+        "door0",
+        c.send(
+            "sell_door0",
+            &[ctx.trade_ix(&r, lk, Some(&d0), false, held / 2)],
+            &launcher,
+            &[],
+        )?,
+    ));
     let held = c.balance(&ata(lk, d0.mint, T22))?;
-    c.send("convert_door0_to_door1", &[ctx.convert_ix(&r, lk, &d0, &d1, held / 2)], &launcher, &[])?;
+    c.send(
+        "convert_door0_to_door1",
+        &[ctx.convert_ix(&r, lk, &d0, &d1, held / 2)],
+        &launcher,
+        &[],
+    )?;
     // 4. a direct buy of the room token.
-    fee_recs.push(("room", c.send("buy_room_token", &[ctx.trade_ix(&r, tk, None, true, 50_000_000)], &trader, &[])?));
+    fee_recs.push((
+        "room",
+        c.send(
+            "buy_room_token",
+            &[ctx.trade_ix(&r, tk, None, true, 50_000_000)],
+            &trader,
+            &[],
+        )?,
+    ));
 
     // Fee split, checked before retire/claim move the counters: expected values come from
     // each Trade event's fee and the room's snapshotted door/founder shares.
     let rr = c.room(&ctx.room)?;
     let (dd0, dd1) = (c.door(&d0.door)?, c.door(&d1.door)?);
-    let (mut e_d0, mut e_d1, mut e_pending, mut e_protocol, mut e_founder, mut e_total) = (0u64, 0u64, 0u64, 0u64, 0u64, 0u64);
+    let (mut e_d0, mut e_d1, mut e_pending, mut e_protocol, mut e_founder, mut e_total) =
+        (0u64, 0u64, 0u64, 0u64, 0u64, 0u64);
     let mut trade_rows = vec![];
     for (route, rec) in &fee_recs {
         for t in trades_in(rec) {
@@ -738,7 +1082,12 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     // 5. retire_pending; 6. claim_door_fees for door 0 by its fee recipient (the launcher).
     c.send("retire_pending", &[ctx.retire_ix(&rr)], &launcher, &[])?;
     let after_retire = c.room(&ctx.room)?;
-    c.send("claim_door_fees", &[ctx.claim_ix(&after_retire, lk, &d0, lk)], &launcher, &[])?;
+    c.send(
+        "claim_door_fees",
+        &[ctx.claim_ix(&after_retire, lk, &d0, lk)],
+        &launcher,
+        &[],
+    )?;
     let d0_after = c.door(&d0.door)?;
 
     // On-chain state against the spec.
@@ -761,8 +1110,13 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
             "accrued_sol": door.accrued_sol, "claimed_sol": door.claimed_sol,
         }));
     }
+    let name_key = smoke_name_key(name);
+    let name_lock = p(&[b"name", &name_key]);
+    let nl = NameLock::try_deserialize(&mut &c.account(&name_lock)?.data[..])?;
     let verify = json!({
         "room": ctx.room.to_string(), "room_id": rid.to_string(), "door1_nonce": n1.to_string(),
+        "name_lock": {"address": name_lock.to_string(), "key": name_key.iter().map(|b| format!("{b:02x}")).collect::<String>(),
+                      "room_id": nl.room_id.to_string(), "ok": nl.room_id == rid && nl.key == name_key},
         "status": rf.status, "door_count": rf.door_count,
         "room_mint": mint_check(&c, &rf.room_mint)?, "doors": doors,
         "reserve": rf.reserve.to_string(), "sold": rf.sold.to_string(), "retired": rf.retired.to_string(),
@@ -798,11 +1152,17 @@ fn fail(dir: &str, smoke_report: &str, out: &str) -> Result<()> {
     let trader = key(dir, "smoke-trader")?;
     let matcher = key(dir, "matcher-authority")?;
     let s: Value = serde_json::from_str(&fs::read_to_string(smoke_report)?)?;
-    let rid: u64 = s["verify"]["room_id"].as_str().ok_or_else(|| anyhow!("room_id"))?.parse()?;
+    let rid: u64 = s["verify"]["room_id"]
+        .as_str()
+        .ok_or_else(|| anyhow!("room_id"))?
+        .parse()?;
     let ctx = Ctx::new(rid);
     let r = c.room(&ctx.room)?;
     let (lk, tk) = (launcher.pubkey(), trader.pubkey());
-    let n1: u64 = s["verify"]["door1_nonce"].as_str().ok_or_else(|| anyhow!("door1_nonce"))?.parse()?;
+    let n1: u64 = s["verify"]["door1_nonce"]
+        .as_str()
+        .ok_or_else(|| anyhow!("door1_nonce"))?
+        .parse()?;
     let d0 = DoorKeys::new(ctx.room, 0);
     let d1 = DoorKeys::new(ctx.room, n1);
     // A fresh room for the create_room cases, so the signature is the only defect.
@@ -833,26 +1193,48 @@ fn fail(dir: &str, smoke_report: &str, out: &str) -> Result<()> {
     create_changed.rule = 2;
     create_changed.face = 7;
     let cases = [
-        ("create_room_signature_over_different_routing_data", ctx2.create_ix(lk, matcher.pubkey(), probe.clone()), ctx2.create_ix(lk, matcher.pubkey(), create_changed), &launcher),
-        ("open_door_signature_over_different_routing_data", ctx.open_ix(&r, tk, matcher.pubkey(), smoke_launch.clone()), ctx.open_ix(&r, tk, matcher.pubkey(), open_changed), &trader),
+        (
+            "create_room_signature_over_different_routing_data",
+            ctx2.create_ix(lk, matcher.pubkey(), probe.clone()),
+            ctx2.create_ix(lk, matcher.pubkey(), create_changed),
+            &launcher,
+        ),
+        (
+            "open_door_signature_over_different_routing_data",
+            ctx.open_ix(&r, tk, matcher.pubkey(), smoke_launch.clone()),
+            ctx.open_ix(&r, tk, matcher.pubkey(), open_changed),
+            &trader,
+        ),
     ];
     for (name, signed_ix, submitted_ix, payer) in cases {
         let signed = c.tx(&[signed_ix], payer, &[&matcher])?;
         let mut forged = signed.clone();
         forged.message = Message::new_with_blockhash(
-            &[ComputeBudgetInstruction::set_compute_unit_limit(CU_LIMIT), submitted_ix],
+            &[
+                ComputeBudgetInstruction::set_compute_unit_limit(CU_LIMIT),
+                submitted_ix,
+            ],
             Some(&payer.pubkey()),
             &signed.message.recent_blockhash,
         );
         assert_eq!(forged.message.account_keys, signed.message.account_keys);
-        let pi = forged.message.account_keys.iter().position(|k| *k == payer.pubkey()).unwrap();
+        let pi = forged
+            .message
+            .account_keys
+            .iter()
+            .position(|k| *k == payer.pubkey())
+            .unwrap();
         forged.signatures[pi] = payer.sign_message(&forged.message_data());
         c.send_fail_with(name, forged, false)?;
     }
 
     // (c) A sell larger than the seller's balance.
     let held = c.balance(&ata(tk, d1.mint, T22))?;
-    let t = c.tx(&[ctx.trade_ix(&r, tk, Some(&d1), false, held + 1)], &trader, &[])?;
+    let t = c.tx(
+        &[ctx.trade_ix(&r, tk, Some(&d1), false, held + 1)],
+        &trader,
+        &[],
+    )?;
     c.send_fail("sell_exceeding_balance", t)?;
 
     // (d) claim_door_fees for door 0 signed by the trader, who is not door 0's fee recipient.
@@ -861,10 +1243,15 @@ fn fail(dir: &str, smoke_report: &str, out: &str) -> Result<()> {
 
     fs::write(
         out,
-        serde_json::to_string_pretty(&json!({"program": ID.to_string(), "room": ctx.room.to_string(), "probe_room": ctx2.room.to_string(), "cases": c.log}))?,
+        serde_json::to_string_pretty(
+            &json!({"program": ID.to_string(), "room": ctx.room.to_string(), "probe_room": ctx2.room.to_string(), "cases": c.log}),
+        )?,
     )?;
     for r in &c.log {
-        println!("{}: landed={} sig={} error={} rpc_error={} log={}", r["name"], r["landed"], r["signature"], r["error"], r["rpc_error"], r["error_log"]);
+        println!(
+            "{}: landed={} sig={} error={} rpc_error={} log={}",
+            r["name"], r["landed"], r["signature"], r["error"], r["rpc_error"], r["error_log"]
+        );
     }
     Ok(())
 }
@@ -874,21 +1261,41 @@ fn fail(dir: &str, smoke_report: &str, out: &str) -> Result<()> {
 fn selftest(dir: &str) -> Result<()> {
     let sample: Vec<u8> = (0u16..=600).map(|i| (i * 7 % 256) as u8).collect();
     for n in 0..5 {
-        assert_eq!(b64(&b64_encode(&sample[n..])).unwrap(), sample[n..].to_vec());
+        assert_eq!(
+            b64(&b64_encode(&sample[n..])).unwrap(),
+            sample[n..].to_vec()
+        );
     }
     let c = Chain::new();
     let payer = key(dir, "smoke-launcher")?;
-    let ixn = Instruction { program_id: SYS, accounts: vec![AccountMeta::new(payer.pubkey(), true), AccountMeta::new(payer.pubkey(), false)], data: vec![2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0] };
+    let ixn = Instruction {
+        program_id: SYS,
+        accounts: vec![
+            AccountMeta::new(payer.pubkey(), true),
+            AccountMeta::new(payer.pubkey(), false),
+        ],
+        data: vec![2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    };
     let t = c.tx(&[ixn], &payer, &[])?;
     let wire = b64_encode(&bincode::serialize(&t)?);
-    let r = c.rpc("simulateTransaction", json!([wire, {"encoding": "base64", "sigVerify": true, "commitment": "confirmed"}]))?;
-    println!("simulate (expected to fail on funds, not parsing): {}", r["value"]["err"]);
+    let r = c.rpc(
+        "simulateTransaction",
+        json!([wire, {"encoding": "base64", "sigVerify": true, "commitment": "confirmed"}]),
+    )?;
+    println!(
+        "simulate (expected to fail on funds, not parsing): {}",
+        r["value"]["err"]
+    );
     Ok(())
 }
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
-    let arg = |i: usize| args.get(i).map(String::as_str).ok_or_else(|| anyhow!("missing argument {i}"));
+    let arg = |i: usize| {
+        args.get(i)
+            .map(String::as_str)
+            .ok_or_else(|| anyhow!("missing argument {i}"))
+    };
     match args.get(1).map(String::as_str) {
         Some("init") => init(arg(2)?, arg(3)?, arg(4)?),
         Some("config") => config(arg(2)?, arg(3)?),
@@ -896,5 +1303,13 @@ fn main() -> Result<()> {
         Some("fail") => fail(arg(2)?, arg(3)?, arg(4)?),
         Some("selftest") => selftest(arg(2)?),
         _ => bail!("usage: doors-devnet init|config|smoke|fail ..."),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn smoke_name_key_equals_the_service_vectors() {
+        super::smoke_key_matches_the_service();
     }
 }

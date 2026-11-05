@@ -30,8 +30,8 @@
     "signers": 1
   },
   "create_room": {
-    "metas_with_optionals": 23,
-    "writable": 15,
+    "metas_with_optionals": 25,
+    "writable": 16,
     "signers": 2
   },
   "initialize_config": {
@@ -45,6 +45,11 @@
     "signers": 2
   },
   "propose_gate": {
+    "metas_with_optionals": 4,
+    "writable": 2,
+    "signers": 1
+  },
+  "release_name": {
     "metas_with_optionals": 4,
     "writable": 2,
     "signers": 1

@@ -454,6 +454,26 @@
       }
     ]
   },
+  "NameLock": {
+    "bytes": 33,
+    "fields": [
+      {
+        "field": "room_id",
+        "offset": 8,
+        "bytes": 8
+      },
+      {
+        "field": "key",
+        "offset": 16,
+        "bytes": 16
+      },
+      {
+        "field": "bump",
+        "offset": 32,
+        "bytes": 1
+      }
+    ]
+  },
   "PendingGate": {
     "bytes": 65,
     "fields": [

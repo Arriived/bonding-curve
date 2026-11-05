@@ -79,6 +79,8 @@ LAYOUTS = {
     "FeeVault (program-owned, no data; SOL fees)": [],
     "GradPayer (SYSTEM-owned PDA, no data; holds DAMM v2 rent, signs as payer)": [],
     "SlugLock": [("anchor discriminator", 8), ("room_id: u64", 8), ("bump: u8", 1)],
+    # matcher-signed name key (H-1); created with the room whenever the launch has a key
+    "NameLock": [("anchor discriminator", 8), ("room_id: u64", 8), ("key: [u8; 16]", 16), ("bump: u8", 1)],
     # PDA ["gate"]: at most one, admin-paid, closed on apply/cancel (SECURITY_REVIEW.md M-6).
     "PendingGate": [
         ("anchor discriminator", 8), ("gate: Gate (5 x u64 liveness thresholds)", 40),
@@ -126,7 +128,7 @@ def per_door_rent_lamports():
 
 def per_room_rent_lamports():
     return (rent(sum(b for _, b in LAYOUTS["Room"])) + 3 * rent(0)
-            + rent(sum(b for _, b in LAYOUTS["SlugLock"]))
+            + rent(sum(b for _, b in LAYOUTS["SlugLock"])) + rent(sum(b for _, b in LAYOUTS["NameLock"]))
             + rent(meme_mint(32, 10, 200, ROOM_MINT_META)) + 3 * rent(165))
 
 
@@ -153,13 +155,14 @@ def main():
         print(f"| {k} | {n} | {rent(n):,} | {rent(n)/SOL:.6f} |")
     per_door = rent(sizes["Door"])+rent(door_mint_max)+2*rent(TA)
     per_door_min = rent(sizes["Door"])+rent(door_mint_min)+2*rent(TA)
-    per_room = (rent(sizes["Room"])+3*rent(0)+rent(sizes["SlugLock"])+rent(room_mint)+3*rent(TA))
+    per_room = (rent(sizes["Room"])+3*rent(0)+rent(sizes["SlugLock"])+rent(sizes["NameLock"])+rent(room_mint)
+                + 3*rent(TA))
     print(f"\nPer-door rent (Door + DoorMint max + DoorVault + DoorRoomVault): {per_door:,} lamports "
           f"= {per_door/SOL:.6f} SOL = ${per_door/SOL*USD_PER_SOL:,.2f} at ${USD_PER_SOL:.0f}/SOL "
           f"(minimum metadata: {per_door_min:,} = {per_door_min/SOL:.6f} SOL = ${per_door_min/SOL*USD_PER_SOL:,.2f})")
     print(f"Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault): "
           f"{sizes['Door']+door_mint_max+2*TA:,}")
-    print(f"Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + RoomMint "
+    print(f"Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + NameLock + RoomMint "
           f"+ RoomVault + RetiredVault + FeeWsol): {per_room:,} lamports = {per_room/SOL:.6f} SOL "
           f"= ${per_room/SOL*USD_PER_SOL:,.2f}")
     launch = per_room+per_door

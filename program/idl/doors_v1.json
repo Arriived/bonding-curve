@@ -861,6 +861,21 @@
           "optional": true
         },
         {
+          "name": "name_lock",
+          "docs": [
+            "and taken over from a dead holder."
+          ],
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "old_name_holder",
+          "docs": [
+            "May be the same account as `old_holder`."
+          ],
+          "optional": true
+        },
+        {
           "name": "room_mint",
           "writable": true
         },
@@ -957,6 +972,17 @@
           "type": {
             "defined": {
               "name": "Launch"
+            }
+          }
+        },
+        {
+          "name": "name_key",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                16
+              ]
             }
           }
         }
@@ -1276,6 +1302,91 @@
           }
         }
       ]
+    },
+    {
+      "name": "release_name",
+      "docs": [
+        "Permissionless, like release_slug and under the same rule: a NameLock whose room is not live",
+        "is closed and its rent paid to the caller."
+      ],
+      "discriminator": [
+        3,
+        68,
+        17,
+        217,
+        57,
+        53,
+        123,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "room",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "room.room_id",
+                "account": "Room"
+              }
+            ]
+          }
+        },
+        {
+          "name": "name_lock",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "name_lock"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
     },
     {
       "name": "release_slug",
@@ -2027,6 +2138,19 @@
       ]
     },
     {
+      "name": "NameLock",
+      "discriminator": [
+        160,
+        97,
+        145,
+        164,
+        62,
+        209,
+        115,
+        76
+      ]
+    },
+    {
       "name": "PendingGate",
       "discriminator": [
         57,
@@ -2182,6 +2306,19 @@
         92,
         104,
         247
+      ]
+    },
+    {
+      "name": "NameReleased",
+      "discriminator": [
+        40,
+        189,
+        0,
+        197,
+        89,
+        167,
+        209,
+        69
       ]
     },
     {
@@ -2357,6 +2494,11 @@
       "code": 6023,
       "name": "GateTimelock",
       "msg": "Liveness-gate changes take effect only through propose_gate + apply_gate, after the delay"
+    },
+    {
+      "code": 6024,
+      "name": "NameLock",
+      "msg": "name_key and the name_lock account must be given together"
     }
   ],
   "types": [
@@ -2903,6 +3045,56 @@
       }
     },
     {
+      "name": "NameLock",
+      "docs": [
+        "PDA `[\"name\", key]`: the room that holds a matcher-signed name key (finding H-1). Released or taken",
+        "over under the same rule as `SlugLock` (`live_rule`), when its room is not live."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room_id",
+            "type": "u64"
+          },
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NameReleased",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "room",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
       "name": "PendingGate",
       "docs": [
         "A proposed gate change, PDA `[\"gate\"]`. At most one is pending; proposing again replaces it and",
@@ -3207,6 +3399,17 @@
           {
             "name": "face",
             "type": "u32"
+          },
+          {
+            "name": "name_key",
+            "type": {
+              "option": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            }
           }
         ]
       }

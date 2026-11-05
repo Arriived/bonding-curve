@@ -229,6 +229,82 @@ pub struct Price {
     pub denominator: u128,
 }
 
+/// The liveness rule, the only one: `Room::live` and the in-place read of an old holder
+/// (`RoomBytes::live`) both call it, so a lock's takeover and its release can never disagree.
+pub fn live_rule(
+    status: u8,
+    created_at: i64,
+    last_trade_at: i64,
+    reserve: u64,
+    buckets: impl Iterator<Item = Bucket>,
+    c: &Config,
+    now: i64,
+) -> Result<bool> {
+    // Status 2 cannot be created by v1. Fail closed until the pool adapter exists.
+    require!(status <= 1, Error::PhaseTwo);
+    if created_at > now {
+        return Ok(false);
+    }
+    if ((now - created_at) as u64) < c.live_new_seconds {
+        return Ok(true);
+    }
+    if last_trade_at > now {
+        return Ok(false);
+    }
+    let volume = buckets
+        .filter(|b| b.start % 3600 == 0 && b.start >= now.saturating_sub(86400) && b.start <= now)
+        .try_fold(0u128, |n, b| {
+            n.checked_add(b.amount).ok_or(error!(Error::Overflow))
+        })?;
+    Ok(reserve >= c.live_min_reserve_lamports
+        && (now - last_trade_at) as u64 <= c.live_max_idle_seconds
+        && volume >= c.live_min_volume_lamports as u128)
+}
+
+/// A `Room` account read in place: the fields a lock takeover needs, at their fixed Borsh offsets,
+/// with no deserialisation and no heap allocation (finding M-7: a boxed `Account<Room>` cost
+/// about 1.3 KB of the 32 KiB heap on every takeover). Offsets are those of
+/// `verification/layouts.json`; the SBF suite checks them against a serialised `Room`.
+pub struct RoomBytes<'a>(pub &'a [u8]);
+impl RoomBytes<'_> {
+    pub const ROOM_ID: usize = 8;
+    pub const BUMP: usize = 16;
+    pub const STATUS: usize = 23;
+    pub const RESERVE: usize = 196;
+    pub const CREATED_AT: usize = 288;
+    pub const LAST_TRADE_AT: usize = 296;
+    pub const BUCKETS: usize = 665;
+    pub const BUCKET_LEN: usize = 24;
+    fn u64_at(&self, o: usize) -> u64 {
+        u64::from_le_bytes(self.0[o..o + 8].try_into().unwrap())
+    }
+    fn i64_at(&self, o: usize) -> i64 {
+        i64::from_le_bytes(self.0[o..o + 8].try_into().unwrap())
+    }
+    /// Owner, size and discriminator are the caller's to check first (`vaults::room_bytes`).
+    pub fn room_id(&self) -> u64 {
+        self.u64_at(Self::ROOM_ID)
+    }
+    pub fn bump(&self) -> u8 {
+        self.0[Self::BUMP]
+    }
+    pub fn live(&self, c: &Config, now: i64) -> Result<bool> {
+        let b = &self.0[Self::BUCKETS..Self::BUCKETS + 25 * Self::BUCKET_LEN];
+        live_rule(
+            self.0[Self::STATUS],
+            self.i64_at(Self::CREATED_AT),
+            self.i64_at(Self::LAST_TRADE_AT),
+            self.u64_at(Self::RESERVE),
+            b.chunks_exact(Self::BUCKET_LEN).map(|x| Bucket {
+                start: i64::from_le_bytes(x[..8].try_into().unwrap()),
+                amount: u128::from_le_bytes(x[8..].try_into().unwrap()),
+            }),
+            c,
+            now,
+        )
+    }
+}
+
 #[account]
 pub struct Room {
     pub room_id: u64,
@@ -298,29 +374,15 @@ impl Room {
         )
     }
     pub fn live(&self, c: &Config, now: i64) -> Result<bool> {
-        // Status 2 cannot be created by v1. Fail closed until the pool adapter exists.
-        require!(self.status <= 1, Error::PhaseTwo);
-        if self.created_at > now {
-            return Ok(false);
-        }
-        if ((now - self.created_at) as u64) < c.live_new_seconds {
-            return Ok(true);
-        }
-        if self.last_trade_at > now {
-            return Ok(false);
-        }
-        let volume = self
-            .liveness_buckets
-            .iter()
-            .filter(|b| {
-                b.start % 3600 == 0 && b.start >= now.saturating_sub(86400) && b.start <= now
-            })
-            .try_fold(0u128, |n, b| {
-                n.checked_add(b.amount).ok_or(error!(Error::Overflow))
-            })?;
-        Ok(self.reserve >= c.live_min_reserve_lamports
-            && (now - self.last_trade_at) as u64 <= c.live_max_idle_seconds
-            && volume >= c.live_min_volume_lamports as u128)
+        live_rule(
+            self.status,
+            self.created_at,
+            self.last_trade_at,
+            self.reserve,
+            self.liveness_buckets.iter().copied(),
+            c,
+            now,
+        )
     }
     pub fn record(&mut self, now: i64, gross: u64) -> Result<()> {
         require!(now >= 0, Error::Clock);
@@ -389,6 +451,23 @@ pub struct SlugLock {
 }
 impl SlugLock {
     pub const LEN: usize = 17;
+}
+
+/// Length of a NameLock key. The matcher service computes it (its grouping key, hashed); the
+/// program never computes a fold for it, it only enforces one key -> one room, atomically.
+/// 16 bytes: a second preimage costs 2^128 work; accidental collision odds at 10^9 names are ~10^-21.
+pub const NAME_KEY_LEN: usize = 16;
+
+/// PDA `["name", key]`: the room that holds a matcher-signed name key (finding H-1). Released or taken
+/// over under the same rule as `SlugLock` (`live_rule`), when its room is not live.
+#[account]
+pub struct NameLock {
+    pub room_id: u64,
+    pub key: [u8; NAME_KEY_LEN],
+    pub bump: u8,
+}
+impl NameLock {
+    pub const LEN: usize = 8 + 8 + NAME_KEY_LEN + 1;
 }
 
 /// Longest a signed launch may remain valid ahead of the executing slot. Equals the

@@ -119,6 +119,8 @@ def check(out, deploy, show, init, smoke, fails, config, elf, onchain):
         t = done.get(step)
         results.append((f"smoke step {step} landed and succeeded with program CU recorded",
                         bool(t and t["ok"] and t["program_cu"])))
+    if "name_lock" in v:   # runs of a program with the NameLock (H-1)
+        results += [("NameLock holds the smoke room under the matcher's name key", v["name_lock"]["ok"])]
     results += [("room mint: 1B supply, no mint/freeze/metadata authority", v["room_mint"]["ok"])]
     for d in v["doors"]:
         results += [(f"door {d['index']} mint: 1B supply, no mint/freeze/metadata authority", d["mint"]["ok"]),

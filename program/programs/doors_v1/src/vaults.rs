@@ -25,15 +25,6 @@ pub fn pda(ai: &AccountInfo, seeds: &[&[u8]]) -> Result<u8> {
     require_keys_eq!(ai.key(), key, Error::Pda);
     Ok(bump)
 }
-pub fn room_address(r: &Room, key: Pubkey) -> Result<()> {
-    let expected = Pubkey::create_program_address(
-        &[b"room", &r.room_id.to_le_bytes(), &[r.bumps[0]]],
-        &crate::ID,
-    )
-    .map_err(|_| error!(Error::Pda))?;
-    require_keys_eq!(key, expected, Error::Pda);
-    Ok(())
-}
 pub fn deposit<'a>(
     user: &AccountInfo<'a>,
     to: &AccountInfo<'a>,
@@ -566,15 +557,40 @@ pub fn read_slug(ai: &AccountInfo, identity: &[u8; 32]) -> Result<Option<SlugLoc
         &mut &ai.try_borrow_data()?[..],
     )?))
 }
+/// The lock's holder must be the canonical `Room` of `lock_room_id`, and not live. The room is read
+/// in place (`RoomBytes`): owner, exact size and discriminator are what `Account<Room>` checked.
+pub fn read_name(ai: &AccountInfo, key: &[u8; NAME_KEY_LEN]) -> Result<Option<NameLock>> {
+    pda(ai, &[b"name", key])?;
+    if ai.data_is_empty() {
+        require_keys_eq!(*ai.owner, anchor_lang::system_program::ID, Error::Account);
+        return Ok(None);
+    }
+    require_keys_eq!(*ai.owner, crate::ID, Error::Account);
+    Ok(Some(NameLock::try_deserialize(
+        &mut &ai.try_borrow_data()?[..],
+    )?))
+}
 pub fn holder_dead(
-    lock: &SlugLock,
-    holder: Option<&Box<Account<Room>>>,
+    lock_room_id: u64,
+    holder: Option<&AccountInfo>,
     c: &Config,
     now: i64,
 ) -> Result<()> {
     let holder = holder.ok_or(Error::Holder)?;
-    room_address(holder, holder.key())?;
-    require!(lock.room_id == holder.room_id, Error::Holder);
-    require!(!holder.live(c, now)?, Error::Live);
+    require_keys_eq!(*holder.owner, crate::ID, Error::Holder);
+    let data = holder.try_borrow_data()?;
+    require!(
+        data.len() == Room::LEN && data[..8] == *Room::DISCRIMINATOR,
+        Error::Holder
+    );
+    let room = RoomBytes(&data);
+    let expected = Pubkey::create_program_address(
+        &[b"room", &room.room_id().to_le_bytes(), &[room.bump()]],
+        &crate::ID,
+    )
+    .map_err(|_| error!(Error::Pda))?;
+    require_keys_eq!(*holder.key, expected, Error::Pda);
+    require!(lock_room_id == room.room_id(), Error::Holder);
+    require!(!room.live(c, now)?, Error::Live);
     Ok(())
 }

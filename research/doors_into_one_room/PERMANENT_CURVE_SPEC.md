@@ -154,6 +154,37 @@ Two changes surfaced by the matcher service (`services/matcher/CORRECTIONS.md`
   therefore cannot keep a co-signed launch alive past its signed window. The
   matcher sets it to its blockhash's slot + 150.
 
+### 0.G Matcher-keyed NameLock (owner decision, 5 November 2026)
+
+Closes finding H-1 (`program/docs/SECURITY_REVIEW.md`); measurements in
+`program/docs/CORRECTIONS.md`.
+
+- **What it enforces:** one name key -> one live room, at account creation and
+  atomically with the room. The key is the matcher service's grouping key: 16
+  bytes, `sha256("doors-v1:name-key:v1" 0 class 0 payload)[:16]` over its folded
+  name (class N, names of 4+ folded characters) or folded symbol and name (class
+  P, shorter names). It is equal for two launches exactly when the text rule
+  routes them together (T3 or T2n).
+- **What the program trusts:** the matcher, for the key. The program never computes
+  the matcher's fold (Unicode normalisation on-chain is out of reach). It no longer
+  trusts the matcher to serialise concurrent new-room decisions.
+- **Interface:** `create_room` takes `name_key: Option<[u8; 16]>` and the optional
+  accounts `name_lock` (`["name", name_key]`) and `old_name_holder`. Key and
+  account are given together or not at all (`NameLock`). `NameLock` is
+  `{ room_id: u64, key: [u8; 16], bump: u8 }`, 33 bytes. `RoomCreated` appends
+  `name_key`.
+- **Alongside SlugLock, not instead of it.** SlugLock is a floor that trusts
+  nothing: it is keyed by the program's own fold of the metadata. NameLock covers
+  the broader set the matcher routes together, but only as far as the matcher keys
+  it honestly. Two different guarantees.
+- **One rule for release and takeover.** A NameLock is taken over in place by
+  `create_room` when its holder is not live, or closed by the permissionless
+  `release_name`. Both use `live_rule`, the same function as SlugLock's takeover
+  and `release_slug` (§3).
+- **Old holders are read in place.** Since `8f54026`, `old_holder` and
+  `old_name_holder` are read from their account bytes (owner, size,
+  discriminator, canonical room PDA), not deserialised (finding M-7).
+
 ### 0.A Conflicts found in this revision's rulings
 
 Rulings 1 (free launch), 3 (no ticker locks) and 4 (room token inherits
@@ -260,6 +291,7 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 | FeeVault | `["fees", room]` | 0 | 650,240 |
 | GradPayer (System-owned) | `["grad_payer", room]` | 0 | 650,240 |
 | SlugLock | `["slug", derived_identity_hash]` | 17 | 736,600 |
+| NameLock (when the launch has a name key) | `["name", name_key]` | 33 | 817,880 |
 | RoomMint | `["room_mint", room]` | 616 | 3,779,520 |
 | RoomVault | `["room_vault", room]` | 165 | 1,488,440 |
 | RetiredVault | `["retired", room]` | 165 | 1,488,440 |
@@ -283,10 +315,10 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 <!-- BEGIN GENERATED RENT TOTALS -->
 | item | lamports | SOL | USD at assumed $150/SOL |
 |---|---|---|---|
-| per room, excluding door accounts | 18,262,600 | 0.018263 | $2.74 |
+| per room, excluding door accounts | 19,080,480 | 0.019080 | $2.86 |
 | per door, max metadata | 9,677,400 | 0.009677 | $1.45 |
 | per door, minimum metadata | 8,315,960 | 0.008316 | $1.25 |
-| launch room + door 0, max metadata | 27,940,000 | 0.027940 | $4.19 |
+| launch room + door 0, max metadata | 28,757,880 | 0.028758 | $4.31 |
 | graduation rent, paid from reserve | 18,013,680 | 0.018014 | $2.70 |
 <!-- END GENERATED RENT TOTALS -->
 
@@ -602,6 +634,11 @@ transaction. Indexers discover room accounts rather than walking an ID range.
   If the holder passes the single liveness gate, reject creation: the launch
   must be a door of that holder. If the holder fails, take over atomically.
   Read and validate its DAMM pool when graduated. If no lock exists, create it.
+- **NameLock (§0.G).** If `name_key` is given, validate `name_lock` as its PDA.
+  If the lock exists, its holder (`old_name_holder`, which may be the same room as
+  `old_holder`) must be the room it names and must fail the same liveness gate;
+  then take it over in place. If it does not exist, create it, and no old name
+  holder may be passed. The program never computes the key.
 - Initialize a genuinely new room with the execution clock; never reset the
   previous holder's `created_at`. A failed creation rolls back lock changes.
 
@@ -610,6 +647,8 @@ transaction. Indexers discover room accounts rather than walking an ID range.
 - `Room`, `ReserveVault`, `FeeVault`;
 - `GradPayer`, funded with its own rent-exempt minimum only;
 - `SlugLock` (derived identity; create if absent, otherwise re-point only from a dead holder);
+- `NameLock` when the launch carries a name key (create if absent, otherwise re-point only from a
+  dead holder);
 - `RoomMint`, `RoomVault`, `RetiredVault`, `FeeWsol`;
 - **door 0**, which is always created.
 
@@ -932,6 +971,14 @@ can revive it. It never changes room creation time or the lock holder.
   re-point the same lock without closing it. Check the previous holder and its
   pool (when graduated) before takeover. Creation time belongs to the newly
   created room and cannot be reset on the old holder.
+
+### `release_name(room)`, permissionless
+
+- Load `Config`, `Room` and the `NameLock` at `["name", lock.key]`. Verify the
+  lock names this exact room.
+- **Allowed exactly when `NOT live(room)`**, with the same function as
+  `release_slug` and launch takeover.
+- Close only the `NameLock`; its rent goes to the caller. Emit `NameReleased`.
 
 ### Fee instructions
 
@@ -1341,10 +1388,11 @@ These are meta counts, not legacy/v0 packet-size measurements.
 | claim_door_fees | 17 | 9 | 1 |
 | claim_founder_fees | 17 | 9 | 1 |
 | convert | 20 | 14 | 1 |
-| create_room | 23 | 15 | 2 |
+| create_room | 25 | 16 | 2 |
 | initialize_config | 5 | 2 | 1 |
 | open_door | 19 | 11 | 2 |
 | propose_gate | 4 | 2 | 1 |
+| release_name | 4 | 2 | 1 |
 | release_slug | 4 | 2 | 1 |
 | retire_pending | 9 | 6 | 0 |
 | sell | 15 | 10 | 1 |
@@ -1492,6 +1540,8 @@ block (same file, L37). A door allocates up to 1,393 data bytes: Door 328 + Door
     entry: R* + (T − R*) + slack.
 16. **S2:** `release_slug` succeeds exactly when the current holder fails
     the routing liveness gate, in any status, and closes only its `SlugLock`.
+    **S3:** the same holds for `release_name` and its `NameLock`, and while a
+    `NameLock`'s room is live no second room can be created under its key.
     It rejects a stale former holder after takeover. Boundary and stale-pool
     tests use the same `is_live` helper as routing.
 17. **F4:** founder and fee snapshots are immutable after room creation.
