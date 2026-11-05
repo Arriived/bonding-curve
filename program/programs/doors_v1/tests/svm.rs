@@ -2235,3 +2235,92 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
     println!("PREFUNDED_MAX_CU create_room={create_cu} open_door={open_cu}");
     assert!(create_cu < 400_000 && open_cu < 400_000);
 }
+
+// The takeover paths deserialise a second Room (`old_holder`) on top of the worst case
+// above: every new account prefunded, non-zero fees, first buy. The create_room takeover
+// uses the largest metadata the matcher service can sign in a legacy transaction
+// (name 32, symbol 10, URI 70: services/matcher txbuild size check); open_door uses the
+// program maximum (URI 200), which fits a legacy transaction. The program maximum for a
+// create_room takeover needs a v0 transaction and exhausts the heap when prefunded:
+// see `prefunded_v0_maximum_takeover_exhausts_the_heap` and SECURITY_REVIEW.md M-7.
+#[test]
+fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
+    takeover_heap_case(70);
+}
+
+/// Reproduction of open finding SECURITY_REVIEW.md M-7: fails with "memory allocation
+/// failed, out of memory" until the launch path's heap use is reduced or the heap enlarged.
+#[test]
+#[ignore = "open finding M-7 (SECURITY_REVIEW.md): reproduces a heap exhaustion; run with --ignored"]
+fn prefunded_v0_maximum_takeover_exhausts_the_heap() {
+    takeover_heap_case(200);
+}
+
+fn takeover_heap_case(create_uri: usize) {
+    let mut f = Fixture::empty(0);
+    let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
+    settings.room_fee_lamports = 7;
+    settings.door_fee_lamports = 11;
+    f.send(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        "update_config",
+    );
+    let max = |name: &str, fee: u64, buy: u64| {
+        let mut l = launch(&format!("{name}{}", "x".repeat(32 - name.len())));
+        l.symbol = "Y".repeat(10);
+        l.uri = "u".repeat(200);
+        l.max_fee_lamports = fee;
+        l.first_buy_lamports = buy;
+        l
+    };
+    let prefund = |f: &mut Fixture, ix: &Instruction| {
+        let rent = f.svm.minimum_balance_for_rent_exemption(0);
+        for account in &ix.accounts {
+            if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+                f.svm.airdrop(&account.pubkey, rent).unwrap();
+            }
+        }
+    };
+    let mut next_room = |f: &mut Fixture, rid: u64| {
+        f.rid = rid;
+        f.room = p(&[b"room", &rid.to_le_bytes()]);
+        f.doors.clear();
+    };
+    // Room A holds identity "Taken"; B holds "Door identity". Both go dead.
+    f.create(max("Taken", 18, 0), None);
+    let a_room = f.room;
+    next_room(&mut f, 0x51c3_0aa7_9e44_1d02);
+    f.create(max("Door identity", 18, 0), None);
+    let b_room = f.room;
+    f.time(3600);
+    // create_room takeover of A's exact identity, prefunded, with a first buy.
+    next_room(&mut f, 0x7d21_93be_04f5_c6a8);
+    let mut l = max("Taken", 18, 1_010_000_000);
+    l.uri = "u".repeat(create_uri);
+    let ix = f.create_ix(l.clone(), Some(a_room));
+    prefund(&mut f, &ix);
+    f.create(l, Some(a_room));
+    let create_cu = *f.cus["create_room"].last().unwrap();
+    // A room-route buy leaves a backlog for the next first buy to settle.
+    f.trade(None, true, 1_010_000);
+    assert!(f.r().pending_reserve_sol > 0);
+    // open_door into this (young, live) room with B's identity: B is the dead old holder.
+    let l = max("Door identity", 11, 101_000_000);
+    let ix = f.open_ix(l, Some(b_room));
+    prefund(&mut f, &ix);
+    f.checked(ix, true, "open_door");
+    f.audit();
+    let open_cu = *f.cus["open_door"].last().unwrap();
+    println!("PREFUNDED_TAKEOVER_CU create_room={create_cu} open_door={open_cu}");
+    assert!(create_cu < 400_000 && open_cu < 400_000);
+}

@@ -1,0 +1,8 @@
+{
+  "all_other_accounts_unchanged": true,
+  "finding": "launch Config snapshot race",
+  "fixed": true,
+  "rejected_with": "LaunchTerms",
+  "signed_message_unchanged": true,
+  "signed_min_tokens": 34612776855252
+}

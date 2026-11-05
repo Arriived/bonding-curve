@@ -7,7 +7,7 @@
 | part | status |
 |---|---|
 | program ID, upgrade authority, matcher authority | generated; public keys in §2 |
-| build of the deploy source | done; 34/34 SBF tests passing; ELF pinned in `devnet/DEPLOY_ELF.sha256` (§3) |
+| build of the deploy source | done; 44 SBF tests passing and 1 ignored (the reproduction of open finding M-7), including the 10,000-iteration property run; ELF pinned in `devnet/DEPLOY_ELF.sha256` (§3) |
 | **devnet deployment** | **PENDING.** The deploy wallet has no devnet SOL. The devnet RPC faucet is closed, the web faucet refused the owner's accounts, and every on-chain proof-of-work faucet was empty or paid less than its fee. See §5. |
 | end-to-end test, localnet | **PASS**, 33 of 33 checks (§7) |
 | **end-to-end test, devnet** | **PENDING.** It is built and switched by one line (§7); it exits 3 with a PENDING message until §5 is done. |
@@ -19,7 +19,7 @@
 |---|---|---|
 | **program ID** | `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` | `program.json` |
 | **upgrade authority** (also the Config admin: `initialize_config` must be signed by it) | `HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky` | `upgrade-authority.json` |
-| **matcher authority**, set in `Config.matcher_authority` | `5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN` | `matcher-authority.json` |
+| **matcher authority** (devnet/localnet only), set in `Config.matcher_authority` | `AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv` | `matcher-authority.json` |
 | deploy wallet (fee payer; devnet protocol fee recipient) | `2eKSWypmuDsBtH6hsZa4u6CgABkdS8vHtNozWPBhB1a2` | `deploy-wallet.json` |
 | e2e launcher (door 0 creator) | `3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k` | `smoke-launcher.json` |
 | e2e trader (door 1 creator) | `vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh` | `smoke-trader.json` |
@@ -42,6 +42,13 @@ The program ID comes from the keypair, so it is the same on every cluster.
 - No private key appears in any committed file. Every committed file was
   scanned for each key in base58, hex and JSON-array form.
 
+**Matcher key rotated, 5 November 2026.** The first matcher key,
+`5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN`, was generated in a cloud session. It
+was never set in any deployed Config. Its secret was deleted, and the key above
+replaced it. **The replacement was also generated in a cloud session, so it is a
+devnet/localnet key too.** No session-generated key may become the mainnet
+matcher: the mainnet key is created inside KMS by the owner (§9).
+
 **Losing `program.json` loses this program ID.** Losing
 `upgrade-authority.json` makes the program unupgradeable and Config unchangeable.
 
@@ -49,16 +56,14 @@ The program ID comes from the keypair, so it is the same on every cluster.
 
 | | |
 |---|---|
-| source | commit `436c002` plus the program-ID change only (`verification/devnet/deployed_source.patch`: `declare_id!`, `Anchor.toml`, IDL address) |
-| why not the brief's `054be58` | it lacks 13 commits of audit fixes; `436c002` is the newest commit whose full SBF suite passes (34/34) |
-| why not the tip `8ce373f` | 10 of 38 SBF tests fail with `UnbalancedInstruction` ([CORRECTIONS](CORRECTIONS.md), devnet preflight item 1) |
-| ELF | 525,032 bytes, SHA-256 `f2cfdb853ba77f6783221a98963c54fcaa730575cf79567814d164045669b436`, pinned in `devnet/DEPLOY_ELF.sha256`. `deploy.sh` refuses any other binary. |
-| IDL | byte-identical to `anchor idl build`, SHA-256 `f70a0c64873c68e109d41ae64404b7ccd47d61e80de591d541195902925ab8f1` |
-| tests on this exact source | `cargo test --locked --test svm`: 34 passed, 0 failed; `cargo fmt --check` clean; `check_layouts.py` passes |
+| source | the branch tip: program source `1558b2e`; `verification/build.json` records `805bae3` (same program source plus tests) with every source hash |
+| history | Until 5 November the deploy source was `436c002` plus the program-ID patch (ELF `f2cfdb85…b436`; `verification/devnet/deployed_source.patch`, `deployed_elf_vm/`), because the tip `8ce373f` failed 10 of 38 SBF tests. The tip was then fixed (`6385fdd`), extended (`e9bd2aa`, `1558b2e`) and repinned ([CORRECTIONS](CORRECTIONS.md)). |
+| ELF | 523,168 bytes, SHA-256 `34d4ce91b68f55482f90d7735d2bc29d82c9e735c7f04f3f16b2111d39bd2d9e`, pinned in `devnet/DEPLOY_ELF.sha256`. `deploy.sh` refuses any other binary. |
+| IDL | byte-identical to `anchor idl build`, SHA-256 `cbd6625e826527e2432095bfaf08d0d93dad35f4746842db880c6eaa58861d6e` |
+| tests on this exact source | `cargo test --locked --test svm`: 44 passed, 0 failed, 1 ignored (the reproduction of open finding M-7 in `SECURITY_REVIEW.md`); `cargo fmt --check` clean; `check_layouts.py` passes |
 
-**`program/devnet` builds against the deploy source, not the tip.** The tip
-adds `Launch.expected_terms_hash`. To build the client, check out `436c002` and
-apply `deployed_source.patch`.
+**`program/devnet` builds against the tip** (it fills `expected_terms_hash`,
+`door_nonce` and `expires_at_slot`).
 
 ## 4. Toolchain and build verifiability
 
@@ -81,9 +86,11 @@ downloaded, not checked against a published value.
 No `solana-verifiable-build` image exists for Agave 4.4.0, and no Anchor 1.2.2
 image exists. What stands in for it:
 
-1. **The pinned build is reproducible.** `436c002` built here gives exactly
-   the ELF hash CI recorded on GitHub's runner for the same program code
-   (`a5bccfad…71af`), in a different directory on a different machine.
+1. **The build reproduced once, for the earlier pin.** `436c002` built here
+   gave exactly the ELF hash CI recorded on GitHub's runner for the same program
+   code (`a5bccfad…71af`), in a different directory on a different machine. The
+   current pin has not been built by CI yet. The heap probe's clean-worktree build
+   of `e9bd2aa` gave the same ELF as this tree (`36e22dab…`).
 2. **The deployed bytes are compared with the pinned ELF.** `deploy.sh` dumps
    the deployed program and fails unless its hash equals the pinned ELF.
 
@@ -123,8 +130,10 @@ field. Then run the end-to-end test against devnet (§7).
    - Generate the program and upgrade-authority keys on hardware the owner
      controls, not in a cloud session.
    - Store the upgrade authority offline, or as a multisig (§8).
-   - The matcher key lives with the matcher service. It must not be the
-     upgrade authority or the admin.
+   - The matcher key is created inside KMS (GCP `EC_SIGN_ED25519`, HSM protection
+     level, or AWS `ECC_NIST_EDWARDS25519`), non-exportable, by the owner. It is
+     never a file and never comes from a session. It must not be the upgrade
+     authority or the admin. Installing it is a rotation (§9).
 2. **Config admin.** `initialize_config` makes the current upgrade authority
    the Config admin. To separate them, hand admin to a distinct key with
    `update_config(settings, new_admin)`.
@@ -134,7 +143,7 @@ field. Then run the end-to-end test against devnet (§7).
    rent, plus buffer-write fees, with a priority fee under load.
 5. **Order.** Deploy only an ELF that has passed the devnet end-to-end test,
    from a fresh session.
-6. **Do not deploy the tip `8ce373f`** until its regression is fixed.
+6. **Deploy only the pinned ELF.** `deploy.sh` refuses any other; `e2e.sh` refuses a VM baseline from another ELF.
 
 ## 7. End-to-end test
 
@@ -179,13 +188,13 @@ The devnet run replaces all four, and its tables replace the ones below.
 | item | value |
 |---|---|
 | program ID | `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` |
-| deploy signature | `zc7PNuBFuTT3n7fCRQ1K9e3ipW5PhnC2XBXQVHgFM7EbFfMCra6GvLbtQxXHJBjVQWToFftGG4buLycdaoapbpw` |
+| deploy signature | `63jbFwgekKXPmSSoFfaK5tM9L6Say2LH4pTuQnXaWatvtK3mGXxkbmCs4fZmPjgEbKqMr655tqgYkaW79xZ7NAQd` |
 | deploy slot (`lastDeploySlot`) | 17 |
 | ProgramData account | `4SbbsdYLxSgVP42JRpGj6DZVSBp9tVas8iTRQfiFjMNi` |
 | upgrade authority | `HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky` |
-| ProgramData lamports | 3,630,482,160 |
-| local ELF SHA-256 | `f2cfdb853ba77f6783221a98963c54fcaa730575cf79567814d164045669b436` |
-| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `f2cfdb853ba77f6783221a98963c54fcaa730575cf79567814d164045669b436` |
+| ProgramData lamports | 3,642,453,360 |
+| local ELF SHA-256 | `34d4ce91b68f55482f90d7735d2bc29d82c9e735c7f04f3f16b2111d39bd2d9e` |
+| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `34d4ce91b68f55482f90d7735d2bc29d82c9e735c7f04f3f16b2111d39bd2d9e` |
 | on-chain bytes equal local ELF | yes |
 | Config account | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw` (read at slot 23, 248 bytes) |
 | Config fields differing from settings | 0 of 22 |
@@ -209,7 +218,7 @@ The devnet run replaces all four, and its tables replace the ones below.
 | `meteora_dynamic_config` | `11111111111111111111111111111111` | `11111111111111111111111111111111` | yes |
 | `graduation_trigger_lamports` | `85018013680` | `85018013680` | yes |
 | `paused` | `false` | `false` | yes |
-| `matcher_authority` | `5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN` | `5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN` | yes |
+| `matcher_authority` | `AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv` | `AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv` | yes |
 | `live_min_reserve_lamports` | `500000000` | `500000000` | yes |
 | `live_max_idle_seconds` | `21600` | `21600` | yes |
 | `live_new_seconds` | `3600` | `3600` | yes |
@@ -221,18 +230,18 @@ The devnet run replaces all four, and its tables replace the ones below.
 
 | step | signature | slot | live program CU | VM min–max CU (same ELF) | live − VM max |
 |---|---|---|---|---|---|
-| initialize_config | `3HexQQU9RKzcvHbC7Hcbo2BuAehT9qRGunmv7m4T2ScSwZibenEu5VnJ1avun9oFT4kKQV2Ay7acGrgTzoTnvNfa` | 22 | 13,347 | 13,347–13,347 (n=1) | +0 |
-| create_room | `33SWLrA3vAPnneHgENmLhaQjWt4uhzfYkDuBkaueqHSu6DH6PUG3Zq168zf96XXNq8iQWLPpfA2pLhaZeakcCfPs` | 24 | 207,607 | 219,879–219,879 (n=1) | -12,272 |
-| create_atas_launcher | `613Jae56eyLqQyNXz4RmLbgs9VTtG879HUarYtmHru18EMc4M7wsrbY4ck2qLAm5w3BRCdovuaaVgryfRZtfjqeK` | 27 | None | not measured | — |
-| open_door | `5Tc9MTPaEL9pxCBdDG7QAANH8ba7kfF9wAmtedAY5xxMXSehohBua1qrxBE9TWFqKz4BXBqKDof8hh3VHiQ7Y6GP` | 29 | 123,445 | 118,833–121,715 (n=3) | +1,730 |
-| create_atas_trader | `31JBJRnvTeKqgXE2w2ZrE38G8rLGFQQQs2vHpmDujLYkUkhtLWwp5wdmbgj8ojP6cjJHQKCSkLEvgLzFAKuzVkeo` | 32 | None | not measured | — |
-| buy_door0 | `4KgbCFcnzjsQHHU41UqLzrFtYLbVHNg7hwNdPo9R8NRNHDnMq9BYPQA7ucNu2BAeREBB3ZHxVKgU7RJ6pqZsyKAH` | 34 | 62,327 | 66,677–71,380 (n=3,348) | -9,053 |
-| buy_door1 | `63aDQSgbRNBTbTcWhiYmapUDYwr88Y2tLq6qsgEDmNyKskSYk9aKf6QDSTCFoU4i8MLTeTDkjYu2BmnsfLMVV4Ue` | 37 | 73,060 | 66,677–71,380 (n=3,348) | +1,680 |
-| sell_door0 | `39dbgGaAxU7VTofhqfWfW4NzyGPmysMvEAteodkZ5gp78tp4m8poeNgpc9iwkJxziLfZdw8FqrnAtBX8xwPt5TyX` | 39 | 59,782 | 64,089–68,603 (n=1,673) | -8,821 |
-| convert_door0_to_door1 | `KF3JMA3YjSxCzTuYM4e5WNyyK719SdAdupPjCL6NPu666Dd4srmm6SPGBGZaWmb5pJYDMhPn4WjcV68Euo3UeFN` | 42 | 82,981 | 81,205–85,715 (n=800) | -2,734 |
-| buy_room_token | `3VfqJz5ShhA7w4iHP6LvzLqmYDDyCjoWzpjKf8k3EFuDam57MghRz2Y7wbtTNxzDyDMdtaTaerSWJ9Fa5BNEHat` | 44 | 48,780 | 45,722–45,753 (n=840) | +3,027 |
-| retire_pending | `2tkGNvBLmAaM227zRgxdCr9uQfPGjj1SsYZpzz57QHbf6zUgeCUrxoevj6FFQPTX9JkbnSm7kkYh5oB9avyxjf9Z` | 47 | 31,331 | 22,585–31,295 (n=829) | +36 |
-| claim_door_fees | `5pN2Z6mg9ATTtS37VUjKuvQ4NqfxkwjFgMXCPWDyKJ2gqzaSyYtbQqho2Sw3Tey8NijAfqi1F5iq5Sg9AkMPnWyQ` | 49 | 50,591 | 45,008–51,764 (n=808) | -1,173 |
+| initialize_config | `4kqMUb8MCjTfpe3r2Uk5VUbPz6x72W3TWf5dCLCLu1sb4zASiR1ieqS2WpyqELXs7BXfFd6V8UFGru9L1H5tZZ4h` | 22 | 13,347 | 13,347–13,347 (n=1) | +0 |
+| create_room | `2DAgFjGY9QmS7reb5cuQ6MGu1xHvLTyEEpKyeEWCexabXMM1fn2d3LD37RKWdFvYpQEyosktykRXVU5KDRC1iJwW` | 24 | 212,089 | 230,768–230,768 (n=1) | -18,679 |
+| create_atas_launcher | `2Kkjfg69PDMLKWtmoXqDAZHz4NXMqEM6PdjX6wqFPZDEAKFfTuoaTr7Dm3N3bG9dYYUBjHdU7kAhTdKbd43XDij5` | 27 | None | not measured | — |
+| open_door | `5ZgGRGD2MU5MJKS2ttpRJyQXXxfK2WVmZ58Qz5C8dLLE3DBDHEc3ENmAXzsrKzgMghvrT76XBcj4JD1vM4unAWoM` | 29 | 135,392 | 138,509–149,950 (n=3) | -14,558 |
+| create_atas_trader | `67jdALraNYBK5wQFBvcvzBeVZQHkK7bH3T7QWUCLhqtGAYFLmurAaxsBbFr6ff88XYqwR9afoWASpxFjcYmTcAqB` | 32 | None | not measured | — |
+| buy_door0 | `2eXAeitPzaAGf611DMJuX2mfJn1e5LgU8qSwv8gXB5hPG7Pau46C5Yg5GH8oXrHA5mHo6Ggtnp4dqndxkSyuXLjn` | 34 | 59,958 | 57,083–69,296 (n=3,348) | -9,338 |
+| buy_door1 | `52TpsLiK6euj9gkk5x7zZWc4vrXdUGWiFoS5qTJxunka5UAusoGit3z3QMUtbxUVv1X4NWnzSeWk7id5U8hp8dS3` | 37 | 60,191 | 57,083–69,296 (n=3,348) | -9,105 |
+| sell_door0 | `4hfWsbFHb73onxHaFb1tARjYwjwT5bQrfAHp7ewxwSrpLArPLoBrJ372tGhCP9JRbb6ZZCt6uP2wQA6fYytwe6pY` | 39 | 57,037 | 54,171–57,185 (n=1,673) | -148 |
+| convert_door0_to_door1 | `5PzJ6c4qjwVgrPHMC93iYcnhuXSppgbaebZr3avKf1VJQsqLzyNuReSkWXTej2u4oxPtfmEYpEZvg8bVKvis6khW` | 41 | 74,619 | 65,835–68,846 (n=800) | +5,773 |
+| buy_room_token | `2xEFg3hFoD21GWivvFLvmwU3pDVbx4UPqGVwvRxQ8tJb5oNJoUuvA1dFVCWU6z4HX14hUt3by7XRxYkos8meLg19` | 44 | 41,517 | 44,568–53,561 (n=840) | -12,044 |
+| retire_pending | `3wf8oveJ3qBcx8Bnh77rk4m3wVBr42Y4CqxkLX7guPgmDPeNdgs6PJw4Y932YKyaEsXGs5aejwnccFYAoencx7cV` | 46 | 29,716 | 20,819–29,789 (n=829) | -73 |
+| claim_door_fees | `RyQ4MthjYhkN4AUFJFLrmts7GZwDiPwExYZLeLzq1TrtuW4Crdt1M5LJaq1yyw5sPe5F1Xf4VcSXjrLCYcvskN1` | 49 | 44,837 | 36,580–40,337 (n=808) | +4,500 |
 
 ATA rows are client setup (Associated Token program), not doors program CU.
 
@@ -240,21 +249,21 @@ ATA rows are client setup (Associated Token program), not doors program CU.
 
 | case | landed on-chain | signature | slot | error |
 |---|---|---|---|---|
-| create_room_without_matcher_signature | yes | `5459LSCJuGH8hP88gHKiwVo8BoRMLUUxezuGc2DoRSt1BV22QyfAx1TFafeVrsYAnryUFKEBeYbiM8uxx6KDU99T` | 52 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
-| open_door_without_matcher_signature | yes | `3eCDshwbfTCiYHjoyGyvQWcHpU4eawndRmawjTMH7gpFxRnZUpDFFaWvwfR9z237fU3yT1ZbKVXQg64y5kfKhx2w` | 54 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| create_room_without_matcher_signature | yes | `5ZvvBDuGsRzKfLpnd7X6gN96kJEpdonqrmo3ZhoueC1J9Uk3okUdXczst1gxdLebGRbasMd8H37gNC7toqhd5ojq` | 52 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| open_door_without_matcher_signature | yes | `3UYRcnioZKx5turRqgQ8aeSuch6G7aLHgf2QHp6uFWSDeDmqyGgbMnE5ckE3uVrdgyL6yFGrucoLhvZ8UjsTZBSP` | 54 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
 | create_room_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
 | open_door_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
-| sell_exceeding_balance | yes | `4Md9uRjWZS1iLiCnXLBxMxsN8cA1xC9aAQzLr1G85ER3SGW7C7bsPkipFuSGXuCXLpH6PK49xGZXMfCk2u7Yrrdb` | 57 | {"InstructionError":[1,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
-| claim_door_fees_by_non_recipient | yes | `2SQ7t5veFzbZpxbqYfmG9SerD3qgsHsArpYczVpiJ8rSBdQyCi6MCwb21u87FDGfebvZgt9AVMiCzCVUCMxvGZPC` | 59 | {"InstructionError":[1,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:750. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
+| sell_exceeding_balance | yes | `3PaPh4PnbRonrNy3LkqnAg5q1DiYyUpQKa9dg8Ydnn4wMEWYoso4pVyxRRvXKRRKcpLisFuMUZ8RRVUWSqhQGCn1` | 57 | {"InstructionError":[1,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
+| claim_door_fees_by_non_recipient | yes | `4htNurcc8wyxT3x59GTaHKwvPUG6n6RM3fxejDijYbUGrAKskcbdRcXF92N2dKuuyM4v494Lye19His8BDhT4nMG` | 59 | {"InstructionError":[1,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:755. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
 
 **On-chain state checks after the sequence:**
 
 | check | result |
 |---|---|
-| room mint `AdetfjrniVDXtszQQADMBqUn1auJzbjVJfPCKBaeCpyj`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
-| door 0 mint `3p5UATBQ2QNH1SmckZZcqKJy9ty2EpajtGUfXkHdUBRg`: supply, authorities | 1000000000000000, None, None, None → ok |
+| room mint `AkpiTyQ9bmFTVv5VA777eav7xBfPs3WtDVZnQNrVYti5`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
+| door 0 mint `HcpsK53QewHHvPKTdm1DBouZF2QQ1TtrSj7VGaVb3xfu`: supply, authorities | 1000000000000000, None, None, None → ok |
 | door 0 backing vault vs circulating door supply | 882397366623 vs 882397366623 → equal |
-| door 1 mint `BXyiwqF7LHfcCkdj2Dujz38iCCowm3DR16XfjoQkJKgX`: supply, authorities | 1000000000000000, None, None, None → ok |
+| door 1 mint `5NtA9R8ZdJVsvYGrsEae3bKi95DFVw9csZjfvFPLZuST`: supply, authorities | 1000000000000000, None, None, None → ok |
 | door 1 backing vault vs circulating door supply | 4388842602598 vs 4388842602598 → equal |
 | reserve vs curve integral of `sold` | 197908792 vs 197908792 → covers |
 | ReserveVault lamports − rent vs `reserve` | 197908792 vs 197908792 → covers |
@@ -303,25 +312,24 @@ PASS  failure case claim_door_fees_by_non_recipient rejected with {"Custom":6006
 33 of 33 checks passed
 ```
 
-**Live CU against the VM.** The VM column is LiteSVM running the same ELF
-(`verification/devnet/deployed_elf_vm/`). Live figures in this run range from
-12,272 CU below the VM maximum to 3,027 above it:
+**Live CU against the VM.** The VM column is LiteSVM running the pinned ELF itself
+(`verification/svm_report.json`; `e2e.sh` refuses a baseline from any other ELF). Live
+figures in this run range from 18,679 CU below the VM maximum to 5,773 above it:
 
-- `buy_room_token` is 3,027 above the VM maximum;
-- `open_door` is 1,730 above;
-- `buy_door1` is 1,680 above.
+- `convert_door0_to_door1` is 5,773 above the VM maximum;
+- `claim_door_fees` is 4,500 above the VM maximum;
 
-The first localnet run had different per-step figures. The difference is
-consistent with PDA bump searches, which vary by address: every run creates a
-room at a fresh random nonce, while the VM suite measures one fixed room ID. Two
-consequences:
+Two candidate causes, not separated here:
+- **PDA bump searches.** Their cost varies by address, and every run creates a room at a
+  fresh random nonce while the VM suite measures one fixed room ID.
+- **Runtime version.** The local validator is Agave 4.4.0; LiteSVM bundles 4.3.2.
 
-1. **The VM maxima in `verification/cu.md` are not worst cases.** A room's
-   nonce alone can push an instruction past them.
-2. **Throughput headroom should carry margin above those maxima.** A
-   per-instruction distribution over many random nonces would replace the
-   single-ID figure. The devnet run gives live samples on the real cluster,
-   but not that distribution.
+Two consequences:
+
+1. **The VM maxima in `verification/cu.md` are not worst cases,** neither across
+   addresses nor across runtime versions.
+2. **Throughput headroom should carry margin above those maxima.** The devnet run gives
+   live samples on the real cluster, but not a distribution over addresses.
 
 ## 8. Open owner decision: upgrade authority
 
@@ -342,3 +350,58 @@ and careful buyers check exactly this.
 
 Phase 2 (graduation) does not exist in this version, so making v1 immutable
 would freeze it at "curve only, graduation fails closed".
+
+## 9. Matcher key rotation
+
+**Use this for every change of matcher key:** the first mainnet key, a scheduled
+rotation, or a suspected compromise.
+
+**What changes on-chain.** There is no dedicated instruction. The admin calls
+`update_config(settings, new_admin)` with the **whole** `Settings`. Only
+`matcher_authority` may differ from the current Config; everything else must be
+copied from a fresh read.
+- `create_room` and `open_door` compare the matcher signer against
+  `Config.matcher_authority` **at execution**. From the slot the update lands,
+  every launch signed by the old key fails (`Matcher`), including signed launches
+  not yet landed and durable-nonce transactions.
+- Rooms and doors already created stay. Rotation does not undo them (see
+  `SECURITY_REVIEW.md`, threat actors).
+
+**Procedure.**
+1. **Create the new key** in KMS, non-exportable (§6). Record its key-version
+   resource name and base58 public key. Grant the service's identity sign-only
+   permission on that version and nothing else.
+2. **Start the new service instance** with the new key
+   (`MATCHER_SIGNER=gcp-kms` or `aws-kms`). It reports `/health` 503
+   `signer_mismatch` and signs nothing, because its key is not yet in Config.
+3. **Read Config** at a recorded slot, and build `Settings` from it with only
+   `matcher_authority` replaced. Diff old and new `Settings` field by field.
+   Exactly one field may differ. A whole-`Settings` update written by hand can
+   silently change fees, thresholds or the recipient.
+4. **Send `update_config`** from the admin key (offline or multisig on mainnet).
+   Record the signature and slot.
+5. **Verify.**
+   - Read Config again and record the slot; `matcher_authority` must equal the
+     new key.
+   - The new instance turns ready.
+   - The old instances turn unready (`signer_mismatch`) on their next snapshot
+     (2 s refresh).
+   - A smoke launch through the new instance lands.
+6. **Retire the old key.**
+   - KMS: disable the old key version, then schedule its destruction.
+   - Session key: delete the file.
+   - Revoke the old service identity's sign permission.
+7. **Record** both public keys, the Config slots and the signature in this
+   section.
+
+**During the switch,** launches fail for at most one snapshot refresh and one
+blockhash window (about 60–90 s). Clients re-request, and get a decision from the
+new key.
+
+**Compromise response.** Do steps 1–5 at once, and pause (`paused = true` in the
+same update) only if the attacker is actively creating rooms. Pausing also stops
+every trade, sell included (`SECURITY_REVIEW.md`).
+
+| date | old key | new key | Config slot | note |
+|---|---|---|---|---|
+| 5 Nov 2026 | `5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN` | `AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv` | none: no deployed Config; the localnet e2e initialises with the new key | both session-generated, devnet/localnet only |

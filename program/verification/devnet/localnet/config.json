@@ -93,10 +93,10 @@
       "on_chain": "false"
     },
     {
-      "expected": "5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN",
+      "expected": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv",
       "field": "matcher_authority",
       "match": true,
-      "on_chain": "5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN"
+      "on_chain": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv"
     },
     {
       "expected": "500000000",
@@ -137,6 +137,6 @@
   ],
   "mismatches": 0,
   "owner": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
-  "slot": 24,
+  "slot": 23,
   "upgrade_authority": "HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky"
 }

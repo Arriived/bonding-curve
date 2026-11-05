@@ -1,5 +1,5 @@
 {
-  "git_commit": "6385fdd2494f3e8e8de5b93dd11753e81338c4b6",
+  "git_commit": "805bae3cc44e1c56d275955da1aa0691e848e2d5",
   "versions": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
@@ -15,13 +15,13 @@
   },
   "source_sha256": {
     "programs/doors_v1/src/contexts.rs": "d1968ade4abeb04fc3d030fcc425a10e4b5ba79a6e2571cad18731cb52e89a8a",
-    "programs/doors_v1/src/lib.rs": "158b5388069e2c43a68243a373b93983e00cb878c60dedb223480714f89c8e26",
+    "programs/doors_v1/src/lib.rs": "46cae03afe3db6712278ddb5f9d5c483db0c164c030d99cfb4fce73340e60c46",
     "programs/doors_v1/src/math.rs": "ada2917208c17acdfed422a8bd9ca536c6679b3fd32b414437a1c99026de5921",
     "programs/doors_v1/src/state.rs": "827dcbf2720b4c5b926018d0a9d1042a81d96b429ba273ab72c45e5c00c9a1e1",
     "programs/doors_v1/src/trading.rs": "48eb2c3635b1a417ce7ecea7399d5a4798a2155359a8c69c32f0e308d87a6682",
-    "programs/doors_v1/src/vaults.rs": "28e9154183ed5c39327a9a5ff576b2b54468170eb8da64d9ca9c1dd410cfbb57",
+    "programs/doors_v1/src/vaults.rs": "0bd09bb0be4b5ab1715cb46b5281e1b0e14f8e03748b889f90a0f5ec97443bf0",
     "programs/doors_v1/tests/cases/sweeps.rs": "13253dcecb3994af5c133450062d6614609bb7d595c0ffbbdea07eb4e63ab32f",
-    "programs/doors_v1/tests/svm.rs": "f161454adbec4f88c1bc05b71e13244fc8eca8186001b0556f93c98a1d0ad682",
+    "programs/doors_v1/tests/svm.rs": "ce96b41c4cf44be07137ade221ddde5d9eb7cf2ad479334e8ff3384de09ea08b",
     "programs/doors_v1/Cargo.toml": "93fba8c1ce66791aa186d4a4fcf72f074bb09c2ef157e4b8babede985112226f",
     "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
     "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",
@@ -30,7 +30,7 @@
     "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
     "Anchor.toml": "77264d6963a22531d18acd7edc1d5bcecbda97e0c2c3c2b60483003abfed3c31"
   },
-  "elf_sha256": "36e22dab7bd77e7b90c4094d0a993d7fa880cf9b40f4da6e19c9a4a105113b31",
+  "elf_sha256": "34d4ce91b68f55482f90d7735d2bc29d82c9e735c7f04f3f16b2111d39bd2d9e",
   "idl_sha256": "cbd6625e826527e2432095bfaf08d0d93dad35f4746842db880c6eaa58861d6e",
   "vm": {
     "litesvm": "0.18.1",

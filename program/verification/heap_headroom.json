@@ -1,0 +1,12 @@
+{
+  "measured_commit": "1558b2edfa43ec97124cd531639ea248bf5e21e4",
+  "measured_tree": "clean checkout of measured_commit in a temporary worktree",
+  "heap_bytes": 32768,
+  "method": "largest extra allocation appended at the end of the instruction that still succeeds, binary-searched in 16-byte steps; worst case = maximum metadata, all writable launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; create_room_takeover_uri70 adds an old_holder takeover at the largest metadata the matcher signs in a legacy transaction (name 32, symbol 10, URI 70)",
+  "free_heap_at_end_bytes_at_least": {
+    "create_room": 688,
+    "open_door": 9568,
+    "create_room_takeover_uri70": 496
+  },
+  "resolution_bytes": 16
+}

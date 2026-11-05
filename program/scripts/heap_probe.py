@@ -111,7 +111,25 @@ fn heap_probe_worst_case_launches() {
         if !prefunded { heap_probe_prefund(&mut f, &ix); prefunded = true; }
         heap_probe_try(&mut f, ix).is_ok()
     });
-    println!("HEAP_PROBE {{\"create_room\":{create},\"open_door\":{open}}}");
+    // create_room takeover (second Room deserialised for old_holder) at the largest metadata
+    // the matcher service signs in a legacy transaction: name 32, symbol 10, URI 70.
+    let takeover = heap_probe_search(|units| {
+        let mut f = heap_probe_fixture();
+        let mut held = heap_probe_launch("Taken", 18, 0, 1);
+        held.uri = "u".repeat(70);
+        f.create(held, None);
+        let old = f.room;
+        f.time(3600);
+        f.rid = 0x7d21_93be_04f5_c6a8;
+        f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+        f.doors.clear();
+        let mut l = heap_probe_launch("Taken", 18, 1_010_000_000, units);
+        l.uri = "u".repeat(70);
+        let ix = f.create_ix(l, Some(old));
+        heap_probe_prefund(&mut f, &ix);
+        heap_probe_try(&mut f, ix).is_ok()
+    });
+    println!("HEAP_PROBE {{\"create_room\":{create},\"open_door\":{open},\"create_room_takeover_uri70\":{takeover}}}");
 }
 '''
 
@@ -153,7 +171,9 @@ def main():
             "heap_bytes": 32 * 1024,
             "method": "largest extra allocation appended at the end of the instruction that still succeeds, "
                       f"binary-searched in {STEP}-byte steps; worst case = maximum metadata, all writable "
-                      "launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog",
+                      "launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; "
+                      "create_room_takeover_uri70 adds an old_holder takeover at the largest metadata the "
+                      "matcher signs in a legacy transaction (name 32, symbol 10, URI 70)",
             "free_heap_at_end_bytes_at_least": {k: v * STEP for k, v in units.items()},
             "resolution_bytes": STEP,
         }
