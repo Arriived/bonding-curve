@@ -1,0 +1,344 @@
+{
+  "launcher": "3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k",
+  "matcher": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv",
+  "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "trader": "vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh",
+  "transactions": [
+    {
+      "block_time": 1793880813,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "mlSgoxGEe3fIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5K7ZPX8pBWXXG8ptBmDUwHRR5HSAX9N+3p0/MBLNfRctJAAAAAN9WzoA+c5UVrO+D0fnqZkonXglLugDSG/GIP0eqlj3BAQAAAAAAAAAAAAAAAAAA",
+        "CbGAphoTDvPIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5K2iD5VSDM1+B0ERkhhjmMwFpKuxwb/KtumkNaX0uqqmK6ieorwgF2cMouVOZ5rLhrytfq556UERzwUcURbPMrwr9CIJWDqFoOwAAAQAAAAAAAA=="
+      ],
+      "fee_lamports": 10000,
+      "landed": true,
+      "name": "create_room",
+      "ok": true,
+      "program_cu": 242771,
+      "signature": "3D3eoTQg2KWHMGHLF8hMTxQiXDstcFSoxyhWXKTKcJeNL6dMEjboESs1FdxScm6xyVdTwG3tQeHuiqsqRhXSF7Cu",
+      "slot": 518934397,
+      "transaction_cu": 242921
+    },
+    {
+      "block_time": 1793880815,
+      "error": null,
+      "error_log": null,
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "create_atas_launcher",
+      "ok": true,
+      "program_cu": null,
+      "signature": "houCu7J6QafDBo1Kr3VjFA47GJDQ1D3cH69bSKxmzqLKbzmo2B1sp7zkzzPqPSjrKeRTRNmriuGSnVM38M8DEWP",
+      "slot": 518934404,
+      "transaction_cu": 66145
+    },
+    {
+      "block_time": 1793880817,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "mlSgoxGEe3fIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5K/fAfkoYXaoIrMyFihvVEJMWvdrPcdxopdlj+6w1XpSRAQAAANH+/uKmajzq/zkyPwCEcv/s4WjvbuLqmVrinGndVj6gAQAAAAAAADmdezTBRNHv"
+      ],
+      "fee_lamports": 10000,
+      "landed": true,
+      "name": "open_door",
+      "ok": true,
+      "program_cu": 150507,
+      "signature": "ZCkFTYohZqCrNsrTG5F63Eti8N4CH48NFuSxxXbMNyRo4WNQXSEJY6vXKPv8C7aQp7GkkoxcePnimWYJExEp18p",
+      "slot": 518934412,
+      "transaction_cu": 150657
+    },
+    {
+      "block_time": 1793880822,
+      "error": null,
+      "error_log": null,
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "create_atas_trader",
+      "ok": true,
+      "program_cu": null,
+      "signature": "5aFQN9yubbnKSnU3WTmcFieLq6ymRvKKUMHtcFTLBVjwg2GHJur4tVKyRbBhkbA1NhP9ZWoTBQhcmzZXbGXhoVyx",
+      "slot": 518934435,
+      "transaction_cu": 70788
+    },
+    {
+      "block_time": 1793880824,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElHIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5KwG2T1/KQVl1xvKbQZg1MB0UeR0gF/Tft6dPzASzX0XLSSi5U5nmsuGvK1+rnnpQRHPBRxRFs8yvCv0IglYOoWg7AXol7cs1AwAAbMXmBQAAAACUGw8AAAAAAHol7cs1AwAAbMXmBQAAAAAAgNiFblFqT6jaoBoAAAAAACSgGSJflYaNpCjjbw4AAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "buy_door0",
+      "ok": true,
+      "program_cu": 59470,
+      "signature": "28GNzAxrM8URnYohacFVeYwYvpUuih1j6TkAqjEBgWUo314NLqnGAz7TUSdJuksjXh2w28WDFyLi3T5rgUriQpQo",
+      "slot": 518934442,
+      "transaction_cu": 59620
+    },
+    {
+      "block_time": 1793880825,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElHIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5KwH3wH5KGF2qCKzMhYob1RCTFr3az3HcaKXZY/usNV6UkQ200W/DKcXK1pWTp6z9c+7Pkk74Ncd3MRxYMM6kP1gCAQg3bGgwAwAAbMXmBQAAAACUGw8AAAAAAIJcWTRmBgAA2IrNCwAAAAAAgNiFblFqT6jaoBoAAAAAAAT8k999EwaIvkKxVw4AAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "buy_door1",
+      "ok": true,
+      "program_cu": 64203,
+      "signature": "62v5rW9uo4okPP5jeUyUAjr9h5XZ9qYHRmS4Nuz5tGVdiyDuJLy5a8BowfoKq8ebWco6h7YBDjv1mk1VvmD8BR3y",
+      "slot": 518934448,
+      "transaction_cu": 64353
+    },
+    {
+      "block_time": 1793880827,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElHIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5KwG2T1/KQVl1xvKbQZg1MB0UeR0gF/Tft6dPzASzX0XLSSi5U5nmsuGvK1+rnnpQRHPBRxRFs8yvCv0IglYOoWg7AL2S9uWaAQAAnJz5AgAAAAC6nQcAAAAAAMXJYk7LBAAAPO7TCAAAAAAAgNiFblFqT6jaoBoAAAAAAJnKs6E7D+QqzxvcYw4AAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "sell_door0",
+      "ok": true,
+      "program_cu": 56547,
+      "signature": "3jNmaNwpJsmfswcWPFSSj2Z5SzYEjgBfvrAXgdW9SzgVAXQiAukuNQW9CD5VFQw5vgZmjtYajYRgLLDCcLBXUjCF",
+      "slot": 518934455,
+      "transaction_cu": 56697
+    },
+    {
+      "block_time": 1793880831,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "MP6ShzKGiKfIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5K7ZPX8pBWXXG8ptBmDUwHRR5HSAX9N+3p0/MBLNfRctJ98B+ShhdqgiszIWKG9UQkxa92s9x3Gil2WP7rDVelJFeSftyzQAAAA=="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "convert_door0_to_door1",
+      "ok": true,
+      "program_cu": 71625,
+      "signature": "5ZF4vnjncCaiysuBjfDrEfUDUhgX7bEoGvq8ivyoQdhuDTRjWiMLArcD5YcCc2ZPWSL52Hpu6EFLi6rquXgt7Z7r",
+      "slot": 518934472,
+      "transaction_cu": 71775
+    },
+    {
+      "block_time": 1793880832,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElHIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5KwANtNFvwynFytaVk6es/XPuz5JO+DXHdzEcWDDOpD9YAgHGRHKLlwEAALZi8wIAAAAAyo0HAAAAAACLDtXZYgYAAPJQxwsAAAAAAIDYhW5Rak+o2qAaAAAAAAB5tmoU8xkGQnapylcOAAAA"
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "buy_room_token",
+      "ok": true,
+      "program_cu": 45026,
+      "signature": "7pMv26dNxJ2RHXKp9RJFFMpWdmYAGy5R5hPWD4UtW3ePxyMW4rdv1R9S1EMFJ9mMAcgd35wYA1fXebh8CWx7RgS",
+      "slot": 518934479,
+      "transaction_cu": 45176
+    },
+    {
+      "block_time": 1793880835,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "w0wK8SJIb8bIEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5K0aIBAAAAAAAI/v0cAIAAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "retire_pending",
+      "ok": true,
+      "program_cu": 30219,
+      "signature": "4gnziV9jgrs8291UUbyq73gHhF677B53E2Mwr9uzu84oYiP7S7vQv7gVXiqV6znupocWDhDYaXyngZ9nrdHkg3Lc",
+      "slot": 518934488,
+      "transaction_cu": 30369
+    },
+    {
+      "block_time": 1793880837,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "Fmhu3iadDj7IEvK5kyvOrQNM15l8kPVHjNWhcYisEsnIPCf2omq5Kyi5U5nmsuGvK1+rnnpQRHPBRxRFs8yvCv0IglYOoWg7AGKiDQAAAAAAAAAAAAAAAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "claim_door_fees",
+      "ok": true,
+      "program_cu": 44837,
+      "signature": "vMRt77WHK2tJXtEV9rLiUaCrPF75r4fNvNQ8gHHHJrNthbRqBxiV5zQixTioWtRfoyJnKM9fc9jR6PCFDXCUbW9",
+      "slot": 518934496,
+      "transaction_cu": 44987
+    }
+  ],
+  "verify": {
+    "after_claim": {
+      "door0_accrued_sol": 0,
+      "door0_claimed_sol": 893538
+    },
+    "after_retire": {
+      "pending_reserve_sol": 0,
+      "reserve": "197908792",
+      "reserve_increase": "297030",
+      "retired": "10485037859"
+    },
+    "curve_integral_of_sold": "197908792",
+    "door1_nonce": "17280668841797197113",
+    "door_count": 2,
+    "doors": [
+      {
+        "accrued_sol": 0,
+        "backing_covers_circulating": true,
+        "backing_exactly_equals_circulating": true,
+        "circulating_door_supply": "882397366623",
+        "claimed_sol": 893538,
+        "creator": "3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k",
+        "door": "DGfQCL85ojzWpHR5TSHrWakC93XnqphuioKuYrBcTWNt",
+        "door.backing": "882397366623",
+        "door_vault_balance": "999117602633377",
+        "fee_recipient": "3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k",
+        "index": 0,
+        "mint": {
+          "decimals": 6,
+          "extensions": "[MetadataPointer, TokenMetadata]",
+          "freeze_authority": "None",
+          "metadata_update_authority": "None",
+          "mint": "G2pgxFP1G4CDYgSPtGtWRiiUDkj6KURDQ6mtKPfvkGwa",
+          "mint_authority": "None",
+          "name": "Doors Devnet Smoke",
+          "ok": true,
+          "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "supply": "1000000000000000",
+          "symbol": "DOORS"
+        },
+        "room_token_backing_vault_balance": "882397366623"
+      },
+      {
+        "accrued_sol": 594060,
+        "backing_covers_circulating": true,
+        "backing_exactly_equals_circulating": true,
+        "circulating_door_supply": "4388842602598",
+        "claimed_sol": 0,
+        "creator": "vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh",
+        "door": "Hg7wieGk448wbm2hFS7xovu4oAt6jsngq4MGs6rPjJdv",
+        "door.backing": "4388842602598",
+        "door_vault_balance": "995611157397402",
+        "fee_recipient": "vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh",
+        "index": 1,
+        "mint": {
+          "decimals": 6,
+          "extensions": "[MetadataPointer, TokenMetadata]",
+          "freeze_authority": "None",
+          "metadata_update_authority": "None",
+          "mint": "F8jjEuzv4GjJoGZWpcQM7Wr1SJMt9okjx3cpPqt3Zg1d",
+          "mint_authority": "None",
+          "name": "Doors Devnet Smoke",
+          "ok": true,
+          "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "supply": "1000000000000000",
+          "symbol": "DOORS"
+        },
+        "room_token_backing_vault_balance": "4388842602598"
+      }
+    ],
+    "fee_split": {
+      "expected_from_trade_events": {
+        "door0": 893538,
+        "door1": 594060,
+        "fee_total": 2974380,
+        "founder": 0,
+        "pending_reserve": 297030,
+        "protocol": 1189752
+      },
+      "fee_vault_covers_counters": true,
+      "fee_vault_lamports_before_retire": 3624620,
+      "match": true,
+      "on_chain_counters_before_retire_and_claim": {
+        "door0": 893538,
+        "door1": 594060,
+        "fee_total": 2974380,
+        "founder": 0,
+        "pending_reserve": 297030,
+        "protocol": 1189752
+      },
+      "trades": [
+        {
+          "buy": true,
+          "curve_lamports": 99009900,
+          "door_or_reserve_share": 594060,
+          "fee": 990100,
+          "founder_share": 0,
+          "protocol_share": 396040,
+          "route": "door0",
+          "tokens": "3529589466490",
+          "tx": "buy_door0"
+        },
+        {
+          "buy": true,
+          "curve_lamports": 99009900,
+          "door_or_reserve_share": 594060,
+          "fee": 990100,
+          "founder_share": 0,
+          "protocol_share": 396040,
+          "route": "door1",
+          "tokens": "3506445235976",
+          "tx": "buy_door1"
+        },
+        {
+          "buy": false,
+          "curve_lamports": 49912988,
+          "door_or_reserve_share": 299478,
+          "fee": 499130,
+          "founder_share": 0,
+          "protocol_share": 199652,
+          "route": "door0",
+          "tokens": "1764794733245",
+          "tx": "sell_door0"
+        },
+        {
+          "buy": true,
+          "curve_lamports": 49504950,
+          "door_or_reserve_share": 297030,
+          "fee": 495050,
+          "founder_share": 0,
+          "protocol_share": 198020,
+          "route": "room",
+          "tokens": "1750391211206",
+          "tx": "buy_room_token"
+        }
+      ]
+    },
+    "reserve": "197908792",
+    "reserve_covers_curve_integral": true,
+    "reserve_vault_covers_reserve": true,
+    "reserve_vault_lamports": "198559032",
+    "retired": "10485037859",
+    "room": "EU1JFQmgJ2rpkUFqoEbWhpJwbMnyb5Aw4qdv6jRyP1Yv",
+    "room_id": "9322226392838275944",
+    "room_mint": {
+      "decimals": 6,
+      "extensions": "[MetadataPointer, TokenMetadata]",
+      "freeze_authority": "None",
+      "metadata_update_authority": "None",
+      "mint": "2Gsfm3tDz9D67W8Tq2BSo5Kvk7juPRAiwhJKzdvy6QAX",
+      "mint_authority": "None",
+      "name": "Doors Devnet Smoke",
+      "ok": true,
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "supply": "1000000000000000",
+      "symbol": "DOORS"
+    },
+    "room_vault_balance": "992967883781714",
+    "room_vault_covers_unsold": true,
+    "sold": "7032116218286",
+    "status": 0,
+    "zero_data_rent": 650240
+  }
+}

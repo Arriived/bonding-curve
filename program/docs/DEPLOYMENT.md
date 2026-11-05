@@ -8,9 +8,9 @@
 |---|---|
 | program ID, upgrade authority, matcher authority | generated; public keys in §2 |
 | build of the deploy source | done; 46 SBF tests passing and 1 ignored (the reproduction of open finding M-7), including the 10,000-iteration property run; ELF pinned in `devnet/DEPLOY_ELF.sha256` (§3) |
-| **devnet deployment** | **PENDING.** The deploy wallet has no devnet SOL. The devnet RPC faucet is closed, the web faucet refused the owner's accounts, and every on-chain proof-of-work faucet was empty or paid less than its fee. See §5. |
+| **devnet deployment** | **DONE**, 5 November 2026: deploy slot 518,934,300, on-chain bytes equal the pinned ELF, Config initialised and read back with 0 of 22 fields differing (§5) |
 | end-to-end test, localnet | **PASS**, 33 of 33 checks (§7) |
-| **end-to-end test, devnet** | **PENDING.** It is built and switched by one line (§7); it exits 3 with a PENDING message until §5 is done. |
+| **end-to-end test, devnet** | **PASS**, 33 of 33 checks (§7). The matcher service's own e2e also passes on devnet (`services/matcher`, `claude/matcher-service`). |
 | upgrade-authority policy for mainnet | open owner decision (§8) |
 
 ## 2. Program ID and authorities
@@ -94,35 +94,60 @@ image exists. What stands in for it:
 2. **The deployed bytes are compared with the pinned ELF.** `deploy.sh` dumps
    the deployed program and fails unless its hash equals the pinned ELF.
 
-## 5. Devnet deployment — PENDING
+## 5. Devnet deployment — done
 
-The deploy wallet `2eKSWypmuDsBtH6hsZa4u6CgABkdS8vHtNozWPBhB1a2` needs about
-3.5 devnet SOL. Every route tried has failed:
+**Funding.** The owner funded the deploy wallet
+`2eKSWypmuDsBtH6hsZa4u6CgABkdS8vHtNozWPBhB1a2` with 5 SOL. Read at finalized slot
+518,932,847. Earlier, every free route had failed: the RPC faucet is closed, the
+web faucet refused the owner's accounts, and the proof-of-work faucets were empty.
 
-| route | result |
-|---|---|
-| `solana airdrop` / `requestAirdrop` | `410 "The RPC faucet is closed on this cluster"` |
-| faucet.solana.com, by the owner | refused for three GitHub accounts: per-8-hour limit, or accounts too new or with too few public repos |
-| on-chain proof-of-work faucet (`PoWSNH2hEZogtCg1Zgm51FnkmJperzYDgPK4fvs8taL`), owner-approved | 24 faucets at slot 518,709,929; 23 empty, and the one funded faucet pays 100 lamports per claim against a 5,000-lamport fee plus receipt rent |
+**First attempt: failed, and recovered.**
+- **What failed:** `deploy.sh` stopped while writing the program buffer with
+  `Data writes to account failed: Custom error: Max retries exceeded`.
+- **Why:** by default the CLI sends buffer writes to validator TPUs over QUIC,
+  which this HTTPS-only environment cannot reach. Localnet worked because the
+  validator was local.
+- **What it left behind:** a funded buffer, `HA3N7h9bMKAuLMhwUMPdvcZruB1U3vg6u1iLDLqroYfh`
+  (2.65658092 SOL, owned by the upgrade authority).
+- **Recovery:** the buffer was closed back to the deploy wallet (4.99998 SOL at
+  slot 518,934,105).
+- **Change to `deploy.sh`:** it now passes `--use-rpc --max-sign-attempts 20`, and
+  prints the buffer-recovery commands on any failure.
 
-**Once funded**, from `program/` on the deploy source:
+**Second attempt: deployed.**
 
 ```sh
 devnet/deploy.sh https://api.devnet.solana.com <keys_dir> verification/devnet/devnet
 ```
 
-`deploy.sh` records the program ID, deploy signature, deploy slot, ProgramData
-account and the on-chain ELF hash. It also initialises Config and checks every
-field. Then run the end-to-end test against devnet (§7).
-
-**Cost on devnet** (Rent sysvar at slot 518,695,292: 5,080 lamports per byte):
-
-| item | cost |
+| item | value |
 |---|---|
-| ProgramData for the 525,032-byte ELF | 2.668 SOL |
-| program account | 0.00083 SOL |
-| upgrade-authority top-up for Config rent | 0.05 SOL |
-| e2e wallet top-ups | 0.6 SOL each, two wallets |
+| program ID | `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` |
+| deploy signature | `4stW8KGcsvMQmpxahMkFuzQCDhB71gtRNmtktK4suupD1jpBhX9793b4ozNT9C1KXF9AA8njRBvyW82Espn1E866` |
+| deploy slot | 518,934,300 |
+| ProgramData | `4SbbsdYLxSgVP42JRpGj6DZVSBp9tVas8iTRQfiFjMNi`, 2,656,580,920 lamports |
+| upgrade authority | `HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky` (session-generated; the mainnet decision is §8) |
+| on-chain bytes | equal to the pinned ELF `c36ba443…ed29` |
+| Config | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw`, read back at slot 518,934,315: 0 of 22 fields differ |
+| `Config.matcher_authority` | `AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv` (the rotated dev key, §9) |
+
+Full evidence is in `verification/devnet/devnet/`, and the tables are in §7.
+
+**Spent.**
+- ProgramData: 2.6566 SOL.
+- Config top-up: 0.05 SOL.
+- e2e wallet top-ups:
+  - program e2e: 0.6 SOL each, two wallets;
+  - service e2e: a further 0.95 SOL to the launcher.
+- **Remaining,** at finalized slot 518,937,413 (`--lamports` reads):
+
+  | wallet | balance |
+  |---|---|
+  | deploy wallet | 136,805,960 lamports |
+  | launcher | 249,675,695 lamports |
+  | trader | 186,579,080 lamports |
+
+  The smoke wallets also hold the room and door tokens bought during the tests.
 
 ## 6. Mainnet: what differs
 
@@ -159,19 +184,14 @@ It exits non-zero if any check fails. The checker was itself tested: tampering
 four conditions in a copy of the outputs produced four FAILs and exit code 1.
 
 **Which cluster it runs against: one line.** The file `devnet/e2e-target`
-contains `localnet`.
+contains `devnet`.
 
 | `devnet/e2e-target` | what `e2e.sh` does | status |
 |---|---|---|
 | `localnet` | Starts a fresh `solana-test-validator` and funds the wallets locally. Deploys the pinned ELF and initialises Config through `deploy.sh`, then runs the test. Outputs go to `verification/devnet/localnet/`. | **PASS**, 33/33 |
-| `devnet` | Requires the §5 deployment. Tops up the two e2e wallets from the deploy wallet, then runs the same test against devnet. Outputs go to `verification/devnet/devnet/`. Until the program is deployed there, it prints `PENDING: … is not deployed on devnet yet` and exits 3; this was verified by flipping the line. | **PENDING** (`verification/devnet/devnet/PENDING.md`) |
+| `devnet` | Requires the §5 deployment. Tops up the two e2e wallets from the deploy wallet, then runs the same test against devnet. Outputs go to `verification/devnet/devnet/`. | **PASS**, 33/33 |
 
-**Switching to devnet once it is deployed:**
-
-```sh
-echo devnet > devnet/e2e-target
-devnet/e2e.sh <keys_dir>
-```
+**Switching between them:** `echo localnet > devnet/e2e-target`, or `echo devnet`.
 
 **Limits of the localnet result:**
 
@@ -181,7 +201,29 @@ devnet/e2e.sh <keys_dir>
   3.63 SOL).
 - Its slots are local.
 
-The devnet run replaces all four, and its tables replace the ones below.
+The devnet run below has none of these limits.
+
+### Devnet run
+
+'''+rep+'''
+```text
+'''+"
+".join(checks)+"
+
+"+summary+'''
+```
+
+**Live devnet CU against the VM.** The VM column is what LiteSVM (Agave 4.3.2)
+observed for this ELF at fixed fixture addresses. These are observations, not
+upper bounds. Live devnet figures exceeded them for:
+
+'''+"".join(f"- `{n}`: {d:,} CU above the VM observed maximum;
+" for n,d in above)+'''
+That is real-cluster confirmation that no VM figure is a ceiling.
+
+**Against the service's 400,000 CU limit.** The worst tested launch is 326,893
+VM CU (a prefunded takeover `create_room`). Adding the largest drift seen here,
+12,003, still leaves about 61,000 CU of margin.
 
 ### Localnet run
 

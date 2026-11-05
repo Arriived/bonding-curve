@@ -2,7 +2,7 @@
 set -euo pipefail
 # Deploy doors_v1 and initialise Config on one cluster. Run once per cluster.
 # Usage: devnet/deploy.sh <cluster_url> <keys_dir> <out_dir>
-# Devnet status: PENDING (deploy wallet unfunded; see docs/DEPLOYMENT.md section 5).
+# Devnet: deployed 5 November 2026 (docs/DEPLOYMENT.md section 5).
 # keys_dir holds program.json, upgrade-authority.json, matcher-authority.json,
 # deploy-wallet.json, smoke-launcher.json, smoke-trader.json. Only public keys,
 # signatures and hashes are written to out_dir. Run from program/ after
@@ -15,7 +15,7 @@ SO=target/deploy/doors_v1.so
 pk() { solana-keygen pubkey "$KEYS/$1.json"; }
 PROGRAM=$(pk program); MATCHER=$(pk matcher-authority); WALLET=$(pk deploy-wallet)
 
-# Only the pinned deploy ELF (436c002 + program-ID patch) may be deployed.
+# Only the pinned deploy ELF (devnet/DEPLOY_ELF.sha256) may be deployed.
 grep -q "declare_id!(\"$PROGRAM\")" programs/doors_v1/src/lib.rs
 EXPECTED=$(cut -d' ' -f1 devnet/DEPLOY_ELF.sha256)
 ACTUAL=$(sha256sum "$SO" | cut -d' ' -f1)
@@ -30,10 +30,16 @@ echo "$ACTUAL  $SO" > "$OUT/elf.sha256"
 # A pre-generated buffer keypair stops the CLI printing an ephemeral seed phrase.
 BUFDIR=$(mktemp -d)
 trap 'rm -rf "$BUFDIR"' EXIT
+# A failed write leaves a funded buffer (the ELF's full rent) owned by the upgrade authority.
+trap 'echo "deploy failed: recover any stranded buffer with" >&2
+      echo "  solana program show --buffers --buffer-authority $(pk upgrade-authority) --url $URL" >&2
+      echo "  solana program close <buffer> --authority $KEYS/upgrade-authority.json --recipient $WALLET --keypair $KEYS/deploy-wallet.json --url $URL" >&2' ERR
 solana-keygen new --no-bip39-passphrase --silent --outfile "$BUFDIR/buffer.json" >/dev/null
 solana program deploy "$SO" --url "$URL" --keypair "$KEYS/deploy-wallet.json" \
   --program-id "$KEYS/program.json" --upgrade-authority "$KEYS/upgrade-authority.json" \
-  --buffer "$BUFDIR/buffer.json" --output json > "$OUT/deploy.json"
+  --buffer "$BUFDIR/buffer.json" --use-rpc --max-sign-attempts 20 --output json > "$OUT/deploy.json"
+# --use-rpc: buffer writes go through the JSON-RPC endpoint. The default sends them to validator TPUs over
+# QUIC, which an HTTPS-only network (this environment) cannot reach: devnet failed with "Max retries exceeded".
 cat "$OUT/deploy.json"
 solana program show "$PROGRAM" --url "$URL" --output json > "$OUT/program_show.json"
 cat "$OUT/program_show.json"
