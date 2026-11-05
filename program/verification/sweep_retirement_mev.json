@@ -1,0 +1,20 @@
+[
+  {
+    "all_accounting_invariants_hold": true,
+    "attacker_profit_after_network_fee": -903908930,
+    "attacker_tokens_after": 0,
+    "fixed": true,
+    "legacy_pending_before": 12000000000,
+    "route": "room",
+    "single_transaction": true
+  },
+  {
+    "all_accounting_invariants_hold": true,
+    "attacker_profit_after_network_fee": -1200005000,
+    "attacker_tokens_after": 0,
+    "fixed": true,
+    "legacy_pending_before": 12000000000,
+    "route": "door",
+    "single_transaction": true
+  }
+]

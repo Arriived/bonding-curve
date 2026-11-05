@@ -13,7 +13,7 @@
   "meteora_dynamic_config": "11111111111111111111111111111111",
   "graduation_trigger_lamports": "85018013680",
   "paused": false,
-  "matcher_authority": "5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN",
+  "matcher_authority": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv",
   "live_min_reserve_lamports": "500000000",
   "live_max_idle_seconds": "21600",
   "live_new_seconds": "3600",

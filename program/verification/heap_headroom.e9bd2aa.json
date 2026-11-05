@@ -1,0 +1,11 @@
+{
+  "measured_commit": "e9bd2aa72ac1c7ee66fc1999c92c74d460aa7ba4",
+  "heap_bytes": 32768,
+  "method": "largest extra allocation appended at the end of the instruction that still succeeds, binary-searched in 16-byte steps; worst case = maximum metadata, all writable launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog",
+  "free_heap_at_end_bytes_at_least": {
+    "create_room": 800,
+    "open_door": 10256
+  },
+  "resolution_bytes": 16,
+  "measured_tree": "clean checkout of measured_commit in a temporary worktree"
+}

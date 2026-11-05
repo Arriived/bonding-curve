@@ -1,0 +1,81 @@
+{
+  "door_buy_delta_cu": 8950,
+  "kind": "executed compiled Anchor SBF in LiteSVM; same fixture, same input (1,010,000 lamports)",
+  "room_buy_delta_cu": [
+    9178,
+    8954
+  ],
+  "rows": [
+    {
+      "pending_before": 0,
+      "program_cu": 44344,
+      "route": "room",
+      "settled": false,
+      "step": 0,
+      "token_cpi_cu": [
+        2427
+      ],
+      "token_cpis": 1
+    },
+    {
+      "pending_before": 6000,
+      "program_cu": 53522,
+      "route": "room",
+      "settled": true,
+      "step": 1,
+      "token_cpi_cu": [
+        2307,
+        2427
+      ],
+      "token_cpis": 2
+    },
+    {
+      "pending_before": 0,
+      "program_cu": 44571,
+      "route": "room",
+      "settled": false,
+      "step": 2,
+      "token_cpi_cu": [
+        2427
+      ],
+      "token_cpis": 1
+    },
+    {
+      "pending_before": 6000,
+      "program_cu": 53525,
+      "route": "room",
+      "settled": true,
+      "step": 3,
+      "token_cpi_cu": [
+        2307,
+        2427
+      ],
+      "token_cpis": 2
+    },
+    {
+      "pending_before": 6000,
+      "program_cu": 69260,
+      "route": "door",
+      "settled": true,
+      "step": 4,
+      "token_cpi_cu": [
+        2307,
+        2307,
+        2427
+      ],
+      "token_cpis": 3
+    },
+    {
+      "pending_before": 0,
+      "program_cu": 60310,
+      "route": "door",
+      "settled": false,
+      "step": 5,
+      "token_cpi_cu": [
+        2307,
+        2427
+      ],
+      "token_cpis": 2
+    }
+  ]
+}
