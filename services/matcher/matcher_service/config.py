@@ -18,6 +18,7 @@ class Config:
     env: str                 # "production" | "development"
     rpc_url: str
     program_id: str
+    lookup_table: str
     signer: str              # "gcp-kms" | "aws-kms" | "keyfile"
     keyfile: str | None
     gcp_key_version: str | None
@@ -53,6 +54,7 @@ def load() -> Config:
         env=env,
         rpc_url=os.environ["MATCHER_RPC_URL"],
         program_id=os.environ.get("MATCHER_PROGRAM_ID", "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"),
+        lookup_table=os.environ["MATCHER_LOOKUP_TABLE"],
         signer=signer,
         keyfile=os.environ.get("MATCHER_KEYFILE"),
         gcp_key_version=os.environ.get("MATCHER_GCP_KEY_VERSION"),

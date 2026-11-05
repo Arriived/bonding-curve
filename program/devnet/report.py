@@ -31,7 +31,7 @@ def main():
     L = [f"### {label}", "",
          "| item | value |", "|---|---|",
          f"| program ID | `{deploy['programId']}` |",
-         f"| deploy signature | `{deploy['signature']}` |",
+         f"| deployment | `{deploy.get('signature') or deploy['method']}` |",
          *([f"| upgrade signature (`devnet/upgrade.sh`) | `{upgrade['signature']}` |"] if upgrade else []),
          f"| {'last upgrade' if upgrade else 'deploy'} slot (`lastDeploySlot`) | {show['lastDeploySlot']:,} |",
          f"| ProgramData account | `{show['programdataAddress']}` |",

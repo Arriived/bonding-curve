@@ -666,3 +666,25 @@ every trade, sell included (`SECURITY_REVIEW.md`).
 | date | old key | new key | Config slot | note |
 |---|---|---|---|---|
 | 5 Nov 2026 | `5Bb2HVR9XeTeNBeM28W2ecdKcwycwPMJqGXmcWtuRrCN` | `AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv` | none: no deployed Config; the localnet e2e initialises with the new key | both session-generated, devnet/localnet only |
+
+## 10. Launch address table
+
+The matcher needs one finalized, frozen v0 address lookup table on each
+cluster. The table contains Config, Token-2022, classic SPL Token, the wrapped
+SOL mint, ATA and System in that order. Review the account audit and packet
+measurements in [the matcher corrections](../../services/matcher/CORRECTIONS.md#17-v0-lookup-table-membership-and-uri-limits).
+
+For mainnet, confirm the pinned IDL address and the target RPC with the
+deployment operator. From the repository root, run the provisioning script
+with the approved funded fee payer from the existing key procedures.
+
+```bash
+python services/matcher/scripts/provision_lookup_table.py \
+  --rpc "$MAINNET_RPC_URL" --keypair "$KEYS_DIR/deploy-wallet.json" \
+  > lookup-table.mainnet.json
+```
+
+The script creates, extends and freezes the table in one transaction. Keep
+the resulting JSON with the deployment evidence. It contains the ordered
+addresses, freeze signature, freeze slot and finalized verification slot.
+Set `MATCHER_LOOKUP_TABLE` to the recorded address on that cluster.

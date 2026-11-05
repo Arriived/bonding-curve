@@ -2,17 +2,21 @@
 nothing is signed-and-returned and nothing is recorded."""
 import base64
 import json
+import struct
 import time
 
 import pytest
 from conftest import PROGRAM, config, room
 from solders.keypair import Keypair
+from solders.message import to_bytes_versioned
+from solders.pubkey import Pubkey
 from solders.signature import Signature
-from solders.transaction import Transaction
+from solders.transaction import VersionedTransaction
 
 from matcher_service.chain import RpcError, StaleState
 from matcher_service.config import Budget, Config
 from matcher_service.decide import Refusal
+from matcher_service.lookup_table import ACTIVE, ALT_PROGRAM, expected_addresses
 from matcher_service.ops import Metrics, logger
 from matcher_service.service import Service
 from matcher_service.signer import GcpKmsSigner, KeyfileSigner, Signer, SignerUnavailable, _crc32c
@@ -20,6 +24,16 @@ from matcher_service.store import Store
 from matcher_service.txbuild import Builder
 
 NOW = 1_800_000_000
+LOOKUP_TABLE = Pubkey.new_unique()
+
+
+def lookup_account(addresses=None, authority=None, slot=1000, last_extended_slot=2, deactivation_slot=ACTIVE):
+    meta = struct.pack("<IQQBB", 1, deactivation_slot, last_extended_slot, 0, int(authority is not None))
+    meta = (meta + (bytes(authority) if authority is not None else b"")).ljust(56, b"\x00")
+    addresses = expected_addresses(PROGRAM) if addresses is None else addresses
+    data = meta + b"".join(bytes(key) for key in addresses)
+    return {"context": {"slot": slot}, "value": {"owner": str(ALT_PROGRAM), "executable": False,
+                                                "data": [base64.b64encode(data).decode(), "base64"]}}
 
 
 class FakeRpc:
@@ -40,6 +54,13 @@ class FakeRpc:
         if self.down:
             raise RpcError("getBlockHeight: timeout")
         return 5000
+
+    def call(self, method, params):
+        assert method == "getAccountInfo"
+        assert params == [str(LOOKUP_TABLE), {"encoding": "base64", "commitment": "finalized"}]
+        if self.down:
+            raise RpcError("getAccountInfo: connection refused")
+        return lookup_account()
 
 
 class Snap:
@@ -102,7 +123,8 @@ class BrokenSigner(Signer):
 
 
 def cfg(tmp_path):
-    return Config(env="development", rpc_url="x", program_id=PROGRAM, signer="keyfile", keyfile=None,
+    return Config(env="development", rpc_url="x", program_id=PROGRAM, lookup_table=str(LOOKUP_TABLE),
+                  signer="keyfile", keyfile=None,
                   gcp_key_version=None, aws_key_id=None, db_path=str(tmp_path / "d.sqlite3"), matcher_version=1,
                   budget=Budget(coherence_slots=30, max_lag_slots=30, max_age_seconds=8, refresh_seconds=2),
                   cu_limit=400_000, max_cu_price=1_000_000, rate_ip_per_min=30, rate_launcher_per_min=6,
@@ -128,9 +150,9 @@ def test_happy_path_signs_and_records(tmp_path, kp):
     svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
     out = svc.route(dict(REQ))
     assert out["decision"]["kind"] == "door" and rows(svc) == 1
-    tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
+    tx = VersionedTransaction.from_bytes(base64.b64decode(out["transaction_base64"]))
     i = list(tx.message.account_keys).index(kp[0].pubkey())
-    assert tx.signatures[i].verify(kp[0].pubkey(), bytes(tx.message))
+    assert tx.signatures[i].verify(kp[0].pubkey(), to_bytes_versioned(tx.message))
     assert tx.signatures[0] == Signature.default()          # launcher's slot left empty
     assert svc.store.get(out["id"])["record"]["state"]["slot"] == 1000
 
@@ -210,7 +232,7 @@ def test_concurrent_new_rooms_for_one_name_are_both_signed_under_one_name_lock(t
     assert a["decision"]["identity"] != b["decision"]["identity"]
     assert a["decision"]["name_key"] == b["decision"]["name_key"] and a["decision"]["name_key"]
     for out in (a, b):
-        tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
+        tx = VersionedTransaction.from_bytes(base64.b64decode(out["transaction_base64"]))
         data = bytes(tx.message.instructions[-1].data)
         assert data[-17:] == b"\x01" + bytes.fromhex(out["decision"]["name_key"])
     # the same launcher can hold several unexpired new-room decisions: nothing is held off-chain
@@ -231,7 +253,7 @@ def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
     import struct
     svc = make(tmp_path, kp, Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)]))
     out = svc.route(dict(REQ))
-    tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
+    tx = VersionedTransaction.from_bytes(base64.b64decode(out["transaction_base64"]))
     data = bytes(tx.message.instructions[-1].data)
     terms, door_nonce, expires = data[-48:-16], *struct.unpack("<QQ", data[-16:])
     assert expires == 1000 + 150 == out["expires_at_slot"]            # blockhash slot + 150
@@ -239,7 +261,7 @@ def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
     assert terms.hex() == svc.chain.snap.config["launch_terms_hash"]
     (tmp_path / "n").mkdir()
     created = make(tmp_path / "n", kp, Snap(1000)).route(dict(REQ, name="Fresh", symbol="FRSH"))
-    cdata = bytes(Transaction.from_bytes(base64.b64decode(created["transaction_base64"])).message.instructions[-1].data)
+    cdata = bytes(VersionedTransaction.from_bytes(base64.b64decode(created["transaction_base64"])).message.instructions[-1].data)
     assert cdata[-17] == 1                                              # Some(name_key): 1 + 16 bytes
     assert struct.unpack("<Q", cdata[-33:-25])[0] == 0                  # door 0 is nonce 0
 
@@ -368,7 +390,7 @@ def test_door_first_buy_defaults_to_a_two_percent_price_limit(tmp_path, kp):
     q = rec["first_buy_quote"]
     assert q["tokens"] == quote.first_buy_tokens(r, 1_000_000_000) and q["max_slippage_bps"] == 200
     assert q["min_tokens_out"] == q["tokens"] * 9800 // 10000 == rec["launch_min_tokens_out"]
-    data = bytes(Transaction.from_bytes(base64.b64decode(out["transaction_base64"])).message.instructions[-1].data)
+    data = bytes(VersionedTransaction.from_bytes(base64.b64decode(out["transaction_base64"])).message.instructions[-1].data)
     name_len = struct.unpack_from("<I", data, 8)[0]
     o = 12 + name_len
     o += 4 + struct.unpack_from("<I", data, o)[0]          # symbol

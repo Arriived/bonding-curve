@@ -273,7 +273,7 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
     `MATCHER_TRUSTED_PROXY_HOPS`;
   - the body size was unbounded, and any string became a rate-limiter key;
   - lone surrogates in metadata caused a 500.
-- **Seam: v0 launches are blocked.** v0 support must wait for program finding M-7: a
+- **Historical v0 seam, superseded by §17.** At the time, v0 support waited for program finding M-7: a
   prefunded maximum-metadata takeover exhausts the program heap. The legacy size cap is what
   keeps it unreachable today (README "What remains" 7).
 - **The matcher key used by tests and the e2e is rotated** (`program/docs/DEPLOYMENT.md` §9).
@@ -403,3 +403,95 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
   sweeps a test wallet's SOL to the deploy wallet, keeping the devnet balance usable as upgrade budget.
   On 5 November it returned 3,918,053,521 lamports (program `DEPLOYMENT.md` §5). Never point it at a
   wallet with real holdings.
+
+## 17. v0 lookup-table membership and URI limits
+
+Measured on `claude/matcher-service` at `9c976d9` using the pinned NameLock IDL, the
+service's instruction builder, and its `scripts/max_uri.py` wire-size functions.
+The six-address comparison in §16 and the README includes two addresses used only
+by `create_room`. Classic SPL Token and its wrapped SOL mint are absent from
+`open_door`, including the takeover path. Only four lookup-eligible addresses
+appear on every launch path.
+
+| Address | Base58 | Marginal bytes saved on `create_room` | Marginal bytes saved on `open_door` |
+|---|---|---:|---:|
+| Config PDA | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw` | 31 | 31 |
+| Token-2022 | `TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb` | 31 | 31 |
+| ATA program | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` | 31 | 31 |
+| System program | `11111111111111111111111111111111` | 31 | 31 |
+| Classic SPL Token | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` | 31 | 0 |
+| Wrapped SOL mint | `So11111111111111111111111111111111111111112` | 31 | 0 |
+| Doors program | `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` | 0 | 0 |
+| Compute Budget program | `ComputeBudget111111111111111111111111111111` | 0 | 0 |
+| Configured matcher authority | Read from Config | 0 | 0 |
+
+The Doors and Compute Budget program IDs are top-level instruction targets, so
+v0 keeps them in the static keys. The matcher authority is a required signer
+and is also static. The launch instructions get Clock and Rent through syscalls,
+so there are no sysvar account metas to move. The MetadataPointer initializer
+and the metadata interface instructions both target Token-2022 in `vaults.rs`.
+The ALT program appears only in table provisioning. Launcher and destination
+accounts, room and door PDAs, mints and vaults, both locks, and their optional
+old holders depend on the launch. [Solana v0 message rules](https://docs.rs/solana-message/latest/solana_message/v0/struct.Message.html)
+
+| Launch shape, with max name and symbol lengths and a priority fee | Legacy URI bytes | v0 URI bytes, four shared addresses | v0 URI bytes, six fixed addresses |
+|---|---:|---:|---:|
+| New room | 51 | 139 | 200 |
+| One dead holder, for either lock | 19 | 107 | 169 |
+| Two different dead holders | Empty URI exceeds packet limit | 75 | 137 |
+
+The measured saving for six loaded keys is 186 bytes before the 36-byte
+v0 lookup overhead, or 150 bytes net. With four keys the net saving is
+88 bytes. The builder comparison caps the URI at the program's 200-byte limit.
+
+The owner clarified that the table may contain fixed addresses used by a
+subset of launch paths. That resolves the initial membership discrepancy.
+The provisioning script uses the six eligible addresses in the original comparison,
+ordered as Config, Token-2022, classic SPL Token, wrapped SOL, ATA and System.
+
+For a new room, the builder can serialize 201 URI bytes in a 1,232-byte
+packet. The program metadata validation caps the accepted URI at 200 bytes.
+The boundary tests check metadata rejection at 201 bytes and packet rejection
+at 202 bytes. For both takeover shapes, packet size is the first limit.
+
+The verifier decodes the signed v0 message, resolves the frozen table indexes
+and compares the landed wire message and loaded addresses with the signed
+record. It also reads historical legacy records.
+
+To reproduce, run the following from `services/matcher` with its Python dependencies installed.
+
+```python
+import sys
+
+from solders.compute_budget import set_compute_unit_limit
+
+sys.path.insert(0, "scripts")
+import max_uri as m
+
+builder = m.txbuild.Builder(m.PROGRAM)
+payer, matcher = m.Keypair().pubkey(), m.Keypair().pubkey()
+shapes, _ = m.shapes(builder, payer, matcher)
+reference = m.static_alt(builder)
+budget = set_compute_unit_limit(400_000).program_id
+all_keys = [*reference.addresses, builder.program, budget, matcher]
+shared = [
+    key for key in reference.addresses
+    if all(any(a.pubkey == key for a in build("").accounts) for build in shapes.values())
+]
+
+def v0_size(keys):
+    table = m.AddressLookupTableAccount(reference.key, keys)
+    return lambda ix, signer: m.wire_len_v0(ix, signer, table)
+
+for name, build in shapes.items():
+    ix = build("")
+    sizes = [m.wire_len, v0_size(shared), v0_size(all_keys)]
+    print(name, "URI maxima", [m.largest(build, payer, size) for size in sizes])
+    print("Empty-URI packet bytes", [size(ix, payer) for size in sizes])
+    print("Marginal savings", [
+        v0_size([other for other in all_keys if other != key])(ix, payer)
+        - sizes[-1](ix, payer)
+        for key in all_keys
+    ])
+print("Key order", *all_keys)
+```

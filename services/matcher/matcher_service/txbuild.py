@@ -24,10 +24,10 @@ import struct
 from solders.compute_budget import set_compute_unit_limit, set_compute_unit_price
 from solders.hash import Hash
 from solders.instruction import AccountMeta, Instruction
-from solders.message import Message
+from solders.message import Message, MessageV0
 from solders.pubkey import Pubkey
 from solders.signature import Signature
-from solders.transaction import Transaction
+from solders.transaction import Transaction, VersionedTransaction
 
 from .chain import pda
 
@@ -153,12 +153,19 @@ class Builder:
         return self._instruction("open_door", values, launch_data), room, d
 
 
-def build_message(launch_ix, payer, blockhash, cu_limit, cu_price):
+def build_message(launch_ix, payer, blockhash, cu_limit, cu_price, lookup_table=None):
     ixs = [set_compute_unit_limit(cu_limit)]
     if cu_price:
         ixs.append(set_compute_unit_price(cu_price))
     ixs.append(launch_ix)
+    if lookup_table is not None:
+        return MessageV0.try_compile(payer, ixs, [lookup_table], Hash.from_string(blockhash))
     return Message.new_with_blockhash(ixs, payer, Hash.from_string(blockhash))
+
+
+def wire_size(message):
+    signatures = [Signature.default()] * message.header.num_required_signatures
+    return len(bytes(VersionedTransaction.populate(message, signatures)))
 
 
 def assemble(message, matcher_pubkey, matcher_signature: bytes):
@@ -166,7 +173,8 @@ def assemble(message, matcher_pubkey, matcher_signature: bytes):
     signers = list(message.account_keys[: message.header.num_required_signatures])
     sigs = [Signature.default()] * len(signers)
     sigs[signers.index(matcher_pubkey)] = Signature.from_bytes(matcher_signature)
-    tx = Transaction.populate(message, sigs)
+    tx_type = VersionedTransaction if isinstance(message, MessageV0) else Transaction
+    tx = tx_type.populate(message, sigs)
     wire = bytes(tx)
     if len(wire) > PACKET_LIMIT:
         raise TxTooLarge(f"transaction is {len(wire)} bytes > {PACKET_LIMIT}; shorten the metadata")

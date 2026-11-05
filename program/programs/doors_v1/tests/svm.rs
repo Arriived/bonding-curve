@@ -122,6 +122,29 @@ impl Fixture {
         let mut svm = LiteSVM::new()
             .with_transaction_history(0)
             .with_log_bytes_limit(None);
+        if let Some(dir) = std::env::var_os("DOORS_SVM_CLUSTER_PROGRAMS") {
+            let dir = PathBuf::from(dir);
+            let manifest: Value =
+                serde_json::from_slice(&std::fs::read(dir.join("manifest.json")).unwrap()).unwrap();
+            for (name, program) in [
+                ("token-2022", spl_token_2022_interface::ID),
+                ("spl-token", spl_token_interface::ID),
+                ("ata", ATA),
+            ] {
+                let entry = &manifest["programs"][name];
+                assert_eq!(entry["address"].as_str().unwrap(), program.to_string());
+                let loader: Pubkey = entry["loader"].as_str().unwrap().parse().unwrap();
+                let elf = std::fs::read(dir.join(format!("{name}.so"))).unwrap();
+                let hash = solana_sha256_hasher::hash(&elf)
+                    .to_bytes()
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>();
+                assert_eq!(entry["sha256"].as_str().unwrap(), hash);
+                svm.add_program_with_loader(program, &elf, loader)
+                    .unwrap_or_else(|error| panic!("loading deployed {name}: {error}"));
+            }
+        }
         // LiteSVM bundles token programs, but does not populate the native mint.
         // Match the canonical initialized classic-SPL native-mint account.
         let native = spl_token_interface::state::Mint {

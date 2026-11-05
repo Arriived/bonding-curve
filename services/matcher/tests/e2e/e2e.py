@@ -44,10 +44,10 @@ sys.path.insert(0, str(SERVICE))
 from fastapi.testclient import TestClient  # noqa: E402
 from solders.instruction import AccountMeta, Instruction  # noqa: E402
 from solders.keypair import Keypair  # noqa: E402
-from solders.message import Message  # noqa: E402
+from solders.message import Message, MessageV0, to_bytes_versioned  # noqa: E402
 from solders.pubkey import Pubkey  # noqa: E402
 from solders.signature import Signature  # noqa: E402
-from solders.transaction import Transaction  # noqa: E402
+from solders.transaction import Transaction, VersionedTransaction  # noqa: E402
 
 from matcher_service.app import create_app  # noqa: E402
 from matcher_service.chain import ChainState, RpcClient, RpcError, pda  # noqa: E402
@@ -104,10 +104,12 @@ def confirm(rpc, sig, timeout=60):
 
 
 def sign_as_launcher(tx_b64, launcher):
-    tx = Transaction.from_bytes(base64.b64decode(tx_b64))
+    tx = VersionedTransaction.from_bytes(base64.b64decode(tx_b64))
+    if not isinstance(tx.message, MessageV0):
+        fail("matcher must return a v0 launch")
     sigs = list(tx.signatures)
-    sigs[0] = launcher.sign_message(bytes(tx.message))
-    return Transaction.populate(tx.message, sigs)
+    sigs[0] = launcher.sign_message(to_bytes_versioned(tx.message))
+    return VersionedTransaction.populate(tx.message, sigs)
 
 
 def init_config(rpc, keys):
@@ -156,7 +158,7 @@ def start_localnet(keys):
 
 def main():
     keys = sys.argv[1]
-    target = (HERE / "target").read_text().strip()
+    target = os.environ.get("DOORS_E2E_TARGET", (HERE / "target").read_text().strip())
     if target not in URLS:
         fail(f"tests/e2e/target must be localnet or devnet, not {target!r}")
     proc = ledger = None
@@ -183,8 +185,20 @@ def main():
 
 def run(rpc, keys, target):
     launcher, trader = kp(keys, "smoke-launcher"), kp(keys, "smoke-trader")
+    if target == "localnet":
+        sys.path.insert(0, str(SERVICE / "scripts"))
+        from provision_lookup_table import provision
+        table = provision(rpc, kp(keys, "deploy-wallet"), PROGRAM)
+    else:
+        evidence = SERVICE / "idl/lookup-table.devnet.json"
+        if not evidence.is_file():
+            fail(f"missing {evidence}: provision and verify the devnet lookup table first")
+        table = json.loads(evidence.read_text())
+    print(f"   lookup table {table['table']} freeze {table['freeze_signature']} slot {table['freeze_slot']}",
+          flush=True)
     db = tempfile.mkdtemp() + "/decisions.sqlite3"
-    cfg = Config(env="development", rpc_url=URLS[target], program_id=PROGRAM, signer="keyfile",
+    cfg = Config(env="development", rpc_url=URLS[target], program_id=PROGRAM, lookup_table=table["table"],
+                 signer="keyfile",
                  keyfile=str(Path(keys) / "matcher-authority.json"), gcp_key_version=None, aws_key_id=None,
                  db_path=db, matcher_version=1, budget=Budget(30, 60, 15, 1), cu_limit=400_000,
                  max_cu_price=1_000_000, rate_ip_per_min=1000, rate_launcher_per_min=1000, trust_forwarded_for=False)
@@ -226,6 +240,25 @@ def run(rpc, keys, target):
         accepted.append(out["id"])
         return tx, sig
 
+    step("0. v0 launch at maximum name and symbol lengths with an IPFS metadata URI")
+    long_name = f"V0 Room {os.urandom(12).hex().upper()}"
+    long_symbol = "V0" + os.urandom(4).hex().upper()
+    digest = hashlib.sha256(b"doors v0 metadata fixture").digest()
+    cid = "b" + base64.b32encode(b"\x01\x70\x12\x20" + digest).decode().lower().rstrip("=")
+    uri = f"ipfs://{cid}"
+    assert (len(long_name.encode()), len(long_symbol.encode())) == (32, 10)
+    out = route(launcher, long_name, long_symbol, uri=uri, cu_price_micro_lamports=1, first_buy_lamports=101)
+    if out["decision"]["kind"] != "new_room":
+        fail("expected the long-metadata v0 launch to create a room")
+    tx, sig = land(out, launcher, "maximum name and symbol with IPFS")
+    landed = rpc.call("getTransaction", [sig, {"encoding": "json", "commitment": "confirmed",
+                                               "maxSupportedTransactionVersion": 0}])
+    if landed["version"] != 0 or not landed["meta"]["loadedAddresses"]["readonly"]:
+        fail("landed long-metadata transaction did not load v0 table addresses")
+    print(f"   metadata bytes {len(long_name.encode())}/{len(long_symbol.encode())}/{len(uri.encode())}, "
+          f"packet bytes {len(bytes(tx))}, CU {landed['meta']['computeUnitsConsumed']}, slot {landed['slot']}",
+          flush=True)
+
     step("1. new identity -> new room, accepted by the program")
     a = route(launcher, name, symbol)
     if a["decision"]["kind"] != "new_room":
@@ -244,7 +277,7 @@ def run(rpc, keys, target):
     lose = sign_as_launcher(r2["transaction_base64"], trader)
     lsig = send(rpc, lose, skip_preflight=True)
     lst = confirm(rpc, lsig)
-    if lst.get("err") != {"InstructionError": [len(Transaction.from_bytes(base64.b64decode(r2["transaction_base64"]))
+    if lst.get("err") != {"InstructionError": [len(VersionedTransaction.from_bytes(base64.b64decode(r2["transaction_base64"]))
                                                    .message.instructions) - 1, {"Custom": 6013}]}:
         fail(f"second new room under a held NameLock: expected Holder (6013), got {lst.get('err')}")
     if rpc.call("getAccountInfo", [d2["room"], {"encoding": "base64"}])["value"] is not None:
@@ -340,22 +373,19 @@ def run(rpc, keys, target):
 
     step("4a. tampered decision (Launch.rule changed after the matcher signed) is rejected")
     d = route(trader, name, symbol)
-    tx = Transaction.from_bytes(base64.b64decode(d["transaction_base64"]))
+    tx = VersionedTransaction.from_bytes(base64.b64decode(d["transaction_base64"]))
     m = tx.message
     ixs = list(m.instructions)
     launch_ix = ixs[-1]
     data = bytearray(bytes(launch_ix.data))
-    data[-13] ^= 0x01  # Launch.rule (u8) sits before face (u32) and max_fee (u64)
+    data[-61] ^= 0x01  # Launch.rule precedes face, max_fee, terms hash, door nonce and expiry
     from solders.instruction import CompiledInstruction
     ixs[-1] = CompiledInstruction(launch_ix.program_id_index, bytes(data), bytes(launch_ix.accounts))
-    forged = Message.new_with_compiled_instructions(m.header.num_required_signatures,
-                                                    m.header.num_readonly_signed_accounts,
-                                                    m.header.num_readonly_unsigned_accounts,
-                                                    list(m.account_keys), m.recent_blockhash, ixs)
+    forged = MessageV0(m.header, list(m.account_keys), m.recent_blockhash, ixs, m.address_table_lookups)
     sigs = list(tx.signatures)
-    sigs[0] = trader.sign_message(bytes(forged))
+    sigs[0] = trader.sign_message(to_bytes_versioned(forged))
     try:
-        send(rpc, Transaction.populate(forged, sigs))
+        send(rpc, VersionedTransaction.populate(forged, sigs))
         fail("tampered decision was accepted by the RPC")
     except RpcError as e:
         if "SignatureFailure" not in str(e) and "signature verification" not in str(e):
@@ -364,19 +394,23 @@ def run(rpc, keys, target):
 
     step("4b. decision with the matcher signature stripped is rejected by the program")
     m = tx.message
-    keys_ = list(m.account_keys)
+    from matcher_service.lookup_table import loaded_addresses
+    loaded_writable, loaded_readonly = loaded_addresses(m, svc.launch_table())
+    static_len = len(m.account_keys)
+    keys_ = list(m.account_keys) + loaded_writable + loaded_readonly
     h = m.header
     n_sig, ro_sig, ro_unsig = h.num_required_signatures, h.num_readonly_signed_accounts, h.num_readonly_unsigned_accounts
     def writable(i):
-        return i < n_sig - ro_sig or n_sig <= i < len(keys_) - ro_unsig
+        return (i < n_sig - ro_sig or n_sig <= i < static_len - ro_unsig
+                or static_len <= i < static_len + len(loaded_writable))
     from solders.hash import Hash
     # Same instructions, but only the launcher signs: the matcher is demoted to a non-signer account.
     rebuilt = [Instruction(keys_[ix.program_id_index], bytes(ix.data),
                            [AccountMeta(keys_[i], keys_[i] == trader.pubkey(), writable(i)) for i in bytes(ix.accounts)])
                for ix in m.instructions]
     bh = rpc.latest_blockhash()[0]
-    stx = Transaction([trader], Message.new_with_blockhash(rebuilt, trader.pubkey(), Hash.from_string(bh)),
-                      Hash.from_string(bh))
+    stripped = MessageV0.try_compile(trader.pubkey(), rebuilt, [svc.launch_table()], Hash.from_string(bh))
+    stx = VersionedTransaction(stripped, [trader])
     sig = send(rpc, stx, skip_preflight=True)
     st = confirm(rpc, sig)
     if not st.get("err") or "3010" not in json.dumps(st["err"]):

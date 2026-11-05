@@ -9,9 +9,9 @@ intentional: it refuses rather than guesses.
 
 - **Rules:** ported from `research/doors_into_one_room/scripts/narrative/matcher.py`, with the
   calibration in `research/doors_into_one_room/NARRATIVE_DETECTION.md`.
-- **Program:** `doors_v1` at `claude/program-v1` `e9bd2aa`, deploy ELF `36e22dab…3b31`, program ID
-  `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG`. Its IDL is pinned in `idl/doors_v1.deployed.json`.
-  It is not on devnet yet.
+- **Program:** `doors_v1` at `71d32f3` on devnet, with program ID
+  `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` and ABI pinned in
+  `idl/doors_v1.deployed.json`. See `program/docs/DEPLOYMENT.md` §5.
 - **Conflicts with the brief:** [CORRECTIONS.md](CORRECTIONS.md).
 
 ## What a decision is
@@ -19,6 +19,21 @@ intentional: it refuses rather than guesses.
 The program has no separate decision message, so **the matcher co-signs the launch transaction
 itself**. `POST /route` returns that transaction with the matcher's signature in place and the
 launcher's signature slot empty. The launcher's wallet signs as fee payer and submits.
+
+**The matcher returns v0 transactions.** Wallets must preserve the v0 message
+and the matcher's signature when filling the launcher's signature slot.
+Independent builders can still use legacy transactions that fit the packet
+limit and obtain the configured matcher's signature. The on-chain launch
+instructions support both formats.
+
+The service verifies the table owner, ordered contents, frozen authority and
+activation from finalized RPC before signing. With maximum-length names and
+symbols and a priority fee, the URI limits measured by
+`python scripts/max_uri.py` are **200 bytes for a new room**, **169 for a
+takeover with one dead holder**, and **137 for two different dead holders**.
+The latter two shapes return `413 tx_too_large` at 170 and 138 bytes,
+respectively, for those name and symbol lengths. A new room reaches the
+program's 200-byte metadata limit first. Lengths count UTF-8 bytes.
 
 Changing anything invalidates the matcher signature:
 
@@ -157,6 +172,7 @@ start if `MATCHER_PRIVATE_KEY`, `MATCHER_SECRET_KEY` or `MATCHER_KEYPAIR` is set
 | `MATCHER_ENV` | `development` | `production` refuses the keyfile signer |
 | `MATCHER_RPC_URL` | required | Solana JSON-RPC endpoint (`confirmed` commitment) |
 | `MATCHER_PROGRAM_ID` | `D7Ys…NVJG` | must equal the pinned IDL's address |
+| `MATCHER_LOOKUP_TABLE` | required | frozen launch address table for the selected cluster |
 | `MATCHER_SIGNER` | `gcp-kms` in production, else `keyfile` | `gcp-kms`, `aws-kms` or `keyfile` |
 | `MATCHER_GCP_KEY_VERSION` | — | `projects/*/locations/*/keyRings/*/cryptoKeys/*/cryptoKeyVersions/*` |
 | `MATCHER_AWS_KEY_ID` | — | key ID, ARN or alias |
@@ -225,6 +241,7 @@ only and is not stored in any layer.
 ```bash
 docker run -d --name matcher -p 8080:8080 -v matcher-data:/data \
   -e MATCHER_RPC_URL=https://<your-rpc> \
+  -e MATCHER_LOOKUP_TABLE=<frozen-table-address> \
   -e MATCHER_GCP_KEY_VERSION=projects/<p>/locations/<l>/keyRings/<r>/cryptoKeys/<k>/cryptoKeyVersions/1 \
   doors-matcher
 ```
@@ -269,7 +286,7 @@ pip install -r requirements-dev.txt
 python -m pytest -q tests
 ```
 
-The unit tests (108) cover:
+The unit tests cover:
 
 - **the research matcher's 14 worked examples**, through the research module and through the
   service;
@@ -293,17 +310,22 @@ The unit tests (108) cover:
   limit not spendable by others, rate limits per IP and per launcher, health, metrics, decision lookup;
 - **first-buy price limit:** the quote against the program's reference vector, the 2% default, explicit
   limits, refusal of an explicit 0 and of an unfillable buy;
+- **v0 launches:** all packet and URI boundaries, finalized frozen table contents and state, and
+  landed verifier decoding for v0 and legacy records;
 - **layout:** the decoder offsets equal the deployed layout file.
 
-**End to end:** `python3 tests/e2e/e2e.py <keys_dir>`. Its target is the single line in
-`tests/e2e/target`:
+**End to end:** `python3 tests/e2e/e2e.py <keys_dir>`. Set `DOORS_E2E_TARGET` to select the cluster, or use the single line in
+`tests/e2e/target`. The devnet run reads the table address and freeze evidence from
+`idl/lookup-table.devnet.json`. The status column records the pre-v0 runs.
 
 | target | what it does | status |
 |---|---|---|
 | `localnet` | Starts `solana-test-validator` with the pinned deploy ELF as an upgradeable program, owned by the real upgrade-authority key, and initialises Config with the real matcher key. | **PASS** |
 | `devnet` | The same test against the program deployed on devnet (`program/docs/DEPLOYMENT.md` §5), using the smoke wallets' own devnet balances. Step 6 (blockhash expiry) runs on localnet only. | **PASS**, 5 November 2026: every on-chain step, and all four decisions verify AGREE. `tests/e2e/target` is `devnet`. |
 
-The test runs these steps:
+The test first lands a priority-fee v0 launch with the maximum name and symbol lengths and
+a realistic IPFS URI. It records the landing slot, packet size and compute units, and checks
+the lookup addresses reported by the RPC. The remaining steps are as follows.
 
 1. A new identity gets a new room, and the program accepts it.
 2. The same identity from another wallet gets a floor door.
@@ -358,13 +380,9 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    with the same freshness checks.
 6. ~~Program changes recommended in CORRECTIONS~~: done in the program (`e9bd2aa`). There is now an
    explicit `expires_at_slot` (§1), and door addresses are not tied to `door_count` (§3).
-7. **v0 transactions with a lookup table** for longer metadata (§10). **Recommended next, and no longer
-   blocked:** finding M-7 is closed (the v0 maximum takeover fits the heap with 1,280 bytes to spare), and
-   a launch uses at most 49 of its 64 instruction-trace entries (M-8). The NameLock (item 8) made it
-   pressing: at name 32 and symbol 10, legacy transactions now cap the URI at 51 bytes for a new room and
-   19 for a takeover, and a takeover of two locks held by different dead rooms does not fit at all. With
-   a lookup table of the six accounts every launch shares, the same shapes take 200, 169 and 137
-   (`scripts/max_uri.py`, which prints both). Today a longer launch is refused with 413 `tx_too_large`.
+7. **v0 launch support.** The builder uses the fixed addresses listed in
+   [CORRECTIONS.md](CORRECTIONS.md#17-v0-lookup-table-membership-and-uri-limits).
+   Configure a finalized, frozen table on each deployment cluster.
 8. ~~H-1~~: **closed on-chain.** `create_room` creates a `NameLock` PDA keyed by the name key this
    service signs (`rules.name_lock_key`), atomically with the room, so two rooms can never hold one key
    while the first is live. The key is equal for two launches exactly when the text rule routes them

@@ -14,13 +14,14 @@ import struct
 import time
 
 from solders.pubkey import Pubkey
+from solders.message import to_bytes_versioned
 from solders.signature import Signature
-from solders.transaction import Transaction
 
 from . import __version__, quote, rules, txbuild
 from .chain import RpcError, StaleState
 from .decide import RULE_CODE, Refusal, decide
 from .layouts import LayoutError
+from .lookup_table import LookupTableError, load_frozen_table
 from .signer import SignerUnavailable
 
 
@@ -43,6 +44,15 @@ class Service:
     def __init__(self, cfg, rpc, chain, signer, store, builder, log, metrics):
         self.cfg, self.rpc, self.chain, self.signer = cfg, rpc, chain, signer
         self.store, self.builder, self.log, self.metrics = store, builder, log, metrics
+        self.lookup_address = Pubkey.from_string(cfg.lookup_table)
+        self._lookup_table = None
+
+    def launch_table(self):
+        if self._lookup_table is None:
+            table, _ = load_frozen_table(self.rpc, self.lookup_address, self.cfg.program_id)
+            # The finalized table has no authority. Its entries cannot change.
+            self._lookup_table = table
+        return self._lookup_table
 
     # -- readiness -------------------------------------------------------------------------------
     def health(self):
@@ -65,6 +75,11 @@ class Service:
         if out["matcher_pubkey"] != snap.config["matcher_authority"]:
             out.update(ready=False, reason=f"signer key {out['matcher_pubkey']} != Config.matcher_authority "
                                            f"{snap.config['matcher_authority']}")
+            return out
+        try:
+            out["lookup_table"] = str(self.launch_table().key)
+        except (RpcError, LookupTableError) as e:
+            out.update(ready=False, reason=str(e))
             return out
         out["ready"] = True
         return out
@@ -134,6 +149,12 @@ class Service:
         if cu_price > self.cfg.max_cu_price:
             raise Refusal("invalid_request", f"cu_price_micro_lamports above {self.cfg.max_cu_price}")
 
+        try:
+            table = self.launch_table()
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot read launch lookup table: {e}", 503)
+        except LookupTableError as e:
+            raise Refusal("inconsistent_state", str(e), 503)
         snap, freshness, cluster_slot = self._fresh_snapshot()
         try:
             matcher = self.signer.pubkey
@@ -197,13 +218,12 @@ class Service:
         else:
             ix, room_pk, door = self.builder.open_door_ix(launcher, matcher, room_id, door_nonce, identity,
                                                           d.old_holder_room_id, launch)
-        message = txbuild.build_message(ix, launcher, blockhash, self.cfg.cu_limit, cu_price)
-        placeholder = len(bytes(Transaction.populate(message, [Signature.default()] *
-                                                      message.header.num_required_signatures)))
+        message = txbuild.build_message(ix, launcher, blockhash, self.cfg.cu_limit, cu_price, table)
+        placeholder = txbuild.wire_size(message)
         if placeholder > txbuild.PACKET_LIMIT:
             raise Refusal("tx_too_large", f"transaction would be {placeholder} bytes > {txbuild.PACKET_LIMIT}; "
-                                          "shorten the metadata (v0 lookup tables are not supported in v1)", 413)
-        msg_bytes = bytes(message)
+                                          "shorten the UTF-8 name, symbol or URI", 413)
+        msg_bytes = to_bytes_versioned(message)
         try:
             sig = self.signer.sign(msg_bytes)
         except SignerUnavailable as e:

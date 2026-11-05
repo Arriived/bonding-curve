@@ -1,7 +1,7 @@
 name: program-v1
 on:
   push:
-    branches: [claude/program-v1]
+    branches: [claude/program-v1, claude/matcher-service, codex/matcher-v0-ci]
     paths:
       - 'program/programs/**'
       - 'program/test-fixtures/**'
@@ -11,6 +11,8 @@ on:
       - 'program/dependency-policy.json'
       - 'program/Anchor.toml'
       - 'program/idl/**'
+      - 'program/devnet/**'
+      - 'services/matcher/**'
       - '.github/workflows/program-v1.yml'
   workflow_dispatch:
 permissions:
@@ -77,6 +79,43 @@ jobs:
         run: |
           python3 scripts/build_evidence.py
           python3 scripts/report_cu.py
+      - uses: actions/setup-python@v5
+        if: github.ref_name != 'claude/program-v1'
+        with:
+          python-version: '3.13'
+      - name: Matcher unit suite and v0 packet measurements
+        if: github.ref_name != 'claude/program-v1'
+        run: |
+          set -o pipefail
+          mkdir -p verification/matcher-v0
+          python -m pip install -r ../services/matcher/requirements-dev.txt
+          python -m pytest ../services/matcher/tests -q | tee verification/matcher-v0/pytest.log
+          python ../services/matcher/scripts/max_uri.py --json > verification/matcher-v0/packet-limits.json
+      - name: SBF suite with the deployed SPL programs
+        if: github.ref_name != 'claude/program-v1'
+        run: |
+          set -o pipefail
+          sha256sum -c devnet/DEPLOY_ELF.sha256
+          python scripts/fetch_cluster_programs.py --out "$RUNNER_TEMP/doors-cluster-programs"
+          cp "$RUNNER_TEMP/doors-cluster-programs/manifest.json" verification/matcher-v0/cluster-programs.json
+          cp verification/svm_report.json verification/matcher-v0/svm-bundled.json
+          DOORS_SVM_CLUSTER_PROGRAMS="$RUNNER_TEMP/doors-cluster-programs" \
+            cargo test --locked --test svm -- --nocapture | tee verification/matcher-v0/svm-cluster.log
+          cp verification/svm_report.json verification/matcher-v0/svm-cluster.json
+          cp verification/matcher-v0/svm-bundled.json verification/svm_report.json
+      - name: Program and matcher end to end on localnet
+        if: github.ref_name != 'claude/program-v1'
+        run: |
+          set -o pipefail
+          keys=$(mktemp -d)
+          for role in upgrade-authority matcher-authority deploy-wallet smoke-launcher smoke-trader; do
+            solana-keygen new --silent --no-bip39-passphrase --outfile "$keys/$role.json" >/dev/null
+          done
+          cargo build --locked --release --manifest-path devnet/Cargo.toml
+          DOORS_E2E_TARGET=localnet DOORS_LOCALNET_GENESIS=1 \
+            bash devnet/e2e.sh "$keys" | tee verification/matcher-v0/program-localnet.log
+          DOORS_E2E_TARGET=localnet DOORS_DEPLOY_ELF="$(pwd)/target/deploy/doors_v1.so" \
+            python ../services/matcher/tests/e2e/e2e.py "$keys" | tee verification/matcher-v0/matcher-localnet.log
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4

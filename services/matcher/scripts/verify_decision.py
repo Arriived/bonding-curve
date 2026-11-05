@@ -43,9 +43,11 @@ from matcher_service import rules  # noqa: E402  (program fold/identity port onl
 from matcher_service.chain import RpcClient, RpcError, pda  # noqa: E402
 from matcher_service.layouts import decode_door, decode_mint_face, decode_room  # noqa: E402
 from matcher_service.store import Store  # noqa: E402
-from solders.message import Message  # noqa: E402
+from matcher_service.lookup_table import load_frozen_table, loaded_addresses  # noqa: E402
+from solders.message import MessageV0, from_bytes_versioned, to_bytes_versioned  # noqa: E402
 from solders.pubkey import Pubkey  # noqa: E402
 from solders.signature import Signature  # noqa: E402
+from solders.transaction import VersionedTransaction  # noqa: E402
 
 REPO = HERE.parent.parent.parent
 RESEARCH = REPO / "research/doors_into_one_room/scripts/narrative/matcher.py"
@@ -276,12 +278,14 @@ def name_holder_at(hist, lock_pda, key_hex, upto_slot):
     return holder
 
 
-def decode_launch_ix(msg, program, idl_path):
+def decode_launch_ix(msg, program, idl_path, resolved=()):
     idl = json.load(open(idl_path))
     names = {bytes(i["discriminator"]): i for i in idl["instructions"]}
-    keys = [str(k) for k in msg.account_keys]
-    launches = [ix for ix in msg.instructions if keys[ix.program_id_index] == program]
-    others = [keys[ix.program_id_index] for ix in msg.instructions if keys[ix.program_id_index] not in (program, COMPUTE_BUDGET)]
+    static = [str(k) for k in msg.account_keys]
+    keys = static + [str(k) for k in resolved]
+    launches = [ix for ix in msg.instructions if static[ix.program_id_index] == program]
+    others = [static[ix.program_id_index] for ix in msg.instructions
+              if static[ix.program_id_index] not in (program, COMPUTE_BUDGET)]
     if len(launches) != 1 or others:
         raise ValueError(f"message must hold exactly one doors instruction and only compute-budget others; got {others}")
     ix = launches[0]
@@ -303,6 +307,22 @@ def decode_launch_ix(msg, program, idl_path):
     if spec["name"] == "create_room":
         launch["name_key"] = r.take(16).hex() if r.u("B") else None
     return spec["name"], room_id, accounts, launch
+
+
+def landed_message_matches(result, recorded_message, loaded):
+    if result is None:
+        return False
+    wire, encoding = result["transaction"]
+    if encoding != "base64":
+        return False
+    tx = VersionedTransaction.from_bytes(base64.b64decode(wire, validate=True))
+    if to_bytes_versioned(tx.message) != recorded_message:
+        return False
+    if isinstance(tx.message, MessageV0):
+        observed = result["meta"].get("loadedAddresses")
+        expected = {kind: [str(k) for k in keys] for kind, keys in zip(("writable", "readonly"), loaded)}
+        return observed == expected
+    return True
 
 
 def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None):
@@ -355,7 +375,7 @@ def verify(record, rpc_url, chain_ok=True):
 
     # 2. signature
     msg_bytes = base64.b64decode(txr["message_base64"])
-    msg = Message.from_bytes(msg_bytes)
+    msg = from_bytes_versioned(msg_bytes)
     matcher = Pubkey.from_string(txr["matcher"])
     sig = Signature.from_string(record["id"])
     check("matcher signature verifies over the recorded message", sig.verify(matcher, msg_bytes))
@@ -370,7 +390,14 @@ def verify(record, rpc_url, chain_ok=True):
     check("message blockhash is the recorded one", str(msg.recent_blockhash) == txr["blockhash"])
 
     # 3. instruction content
-    name, room_id, acc, launch = decode_launch_ix(msg, program, HERE.parent / "idl/doors_v1.deployed.json")
+    loaded = ([], [])
+    if isinstance(msg, MessageV0):
+        if len(msg.address_table_lookups) != 1:
+            raise ValueError("expected one launch lookup table in v0 decision")
+        table, _ = load_frozen_table(rpc, msg.address_table_lookups[0].account_key, program)
+        loaded = loaded_addresses(msg, table)
+    name, room_id, acc, launch = decode_launch_ix(msg, program, HERE.parent / "idl/doors_v1.deployed.json",
+                                                  loaded[0] + loaded[1])
     want = "create_room" if dec["kind"] == "new_room" else "open_door"
     check("instruction matches the decision kind", name == want, name)
     for k in ("name", "symbol", "uri", "first_buy_lamports", "max_fee_lamports"):
@@ -502,6 +529,10 @@ def verify(record, rpc_url, chain_ok=True):
         t = hist.tx(s)
         if record["id"] in t["transaction"]["signatures"]:
             landed = {"signature": s, "slot": t["slot"], "ok": t["meta"]["err"] is None, "err": t["meta"]["err"]}
+            raw = rpc.call("getTransaction", [s, {"encoding": "base64", "commitment": "confirmed",
+                                                  "maxSupportedTransactionVersion": 0}])
+            check("landed message and loaded addresses match the signed decision",
+                  landed_message_matches(raw, msg_bytes, loaded))
             break
     return checks, landed
 
