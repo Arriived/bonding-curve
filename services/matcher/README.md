@@ -119,8 +119,8 @@ Refusals return `{"error": code, "message": ...}`:
 | HTTP | codes |
 |---|---|
 | 401 | `unauthenticated` (missing, wrong, stale or reused launcher signature) |
-| 422 | `invalid_request`, `invalid_metadata`, `fee_limit`, `first_buy_unfillable` |
-| 409 | `in_flight` (a new-room decision for the same folded name or identity is unexpired); `graduated_identity` |
+| 422 | `invalid_request`, `invalid_metadata`, `fee_limit`, `first_buy_unfillable`, `insufficient_funds` (new room only: the launcher's balance does not cover the launch) |
+| 409 | `in_flight` (a new-room decision for the same folded name or identity is unexpired); `launcher_in_flight` (this launcher already holds an unexpired new-room decision; the message names it); `graduated_identity` |
 | 413 | `tx_too_large` |
 | 429 | `rate_limited` |
 | 503 | `rpc_unavailable`, `stale_state`, `inconsistent_state`, `signer_unavailable`, `signer_mismatch`, `store_unavailable`, `program_paused`, `nonce_exhausted` |
@@ -360,9 +360,25 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    **Do not add any instruction to a launch transaction either** (`RequestHeapFrame`, a memo,
    anything). A prefunded `create_room` with a first buy and a priority fee already uses 64 of the
    64 allowed instruction-trace entries (finding M-8).
-8. **Open self-review finding for the service: H-1.** Name reservations are free.
-   Requests are now signed (M-3 is fixed), but keys are free too. The SlugLock
-   analysis and the remedies are in `program/docs/SECURITY_REVIEW.md`.
+8. **H-1, interim in place; the on-chain NameLock is a mainnet blocker.**
+
+   A new-room decision holds its name only if two conditions hold:
+   - **One hold per launcher:** the launcher holds no other unexpired new-room
+     decision.
+   - **Proof of funds:** the launcher's confirmed balance covers the launch:
+     - rent for every account `create_room` makes, priced by the cluster's own
+       `getMinimumBalanceForRentExemption`;
+     - Config's flat fees;
+     - the first buy;
+     - signature fees (`matcher_service/funds.py`).
+
+   So holding a name costs one funded wallet per name held, about 0.028 SOL plus
+   the first buy, though none of it is spent. That raises the cost of squatting;
+   it does not remove it.
+
+   **Until the program enforces the consolidation rule itself, this service
+   enforces it.** The program does not: for 9 of the 16 routed-together pair
+   classes there is no on-chain floor at all (`scripts/slug_coverage.py`).
 9. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
    decision mix. Plus an on-call runbook for key rotation and RPC failover.
 10. **An archival RPC** for the verifier, and a public, independently operated verifier run over the

@@ -74,6 +74,12 @@ class RpcClient:
     def block_height(self):
         return int(self.call("getBlockHeight", [{"commitment": "confirmed"}]))
 
+    def balance(self, pubkey):
+        return int(self.call("getBalance", [str(pubkey), {"commitment": "confirmed"}])["value"])
+
+    def min_balance(self, data_len):
+        return int(self.call("getMinimumBalanceForRentExemption", [int(data_len)]))
+
     def latest_blockhash(self):
         r = self.call("getLatestBlockhash", [{"commitment": "confirmed"}])
         return r["value"]["blockhash"], int(r["value"]["lastValidBlockHeight"]), int(r["context"]["slot"])

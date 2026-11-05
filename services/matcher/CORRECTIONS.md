@@ -326,3 +326,16 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
 - **e2e step 3b front-runs with 1 SOL, not 5,** to fit the devnet budget. It now
   asserts, from the moved state, that the same first buy would fall below the
   signed limit, rather than assuming a large buy is enough.
+
+## 15. H-1 interim (5 November 2026)
+
+- **What the owner decided:** take the interim fix now, and treat the on-chain NameLock as a mainnet
+  blocker.
+- **Implemented (`service.py`, `funds.py`):**
+  - one in-flight new-room decision per launcher (`409 launcher_in_flight`, naming the held
+    decision so a lost response can be recovered from `/decision/{id}`);
+  - proof of funds at decision time (`422 insufficient_funds`). The required amount is computed
+    from the program's own account sizes, with rent priced by the cluster's rent RPC.
+- **Tests:** `test_one_in_flight_new_room_decision_per_launcher`, `test_new_room_needs_proof_of_funds`.
+- **What it does not do:** stop a squatter with N funded wallets holding N names. That needs the
+  NameLock, recorded as a mainnet blocker in `program/docs/SECURITY_REVIEW.md`.

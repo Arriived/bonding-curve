@@ -18,7 +18,7 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction
 
-from . import __version__, quote, rules, txbuild
+from . import __version__, funds, quote, rules, txbuild
 from .chain import RpcError, StaleState
 from .decide import RULE_CODE, Refusal, decide
 from .inflight import InFlight
@@ -191,8 +191,26 @@ class Service:
         nk = d.candidate_keys["name"]
         identity = bytes.fromhex(d.identity)
         if d.kind == "new_room":
+            # H-1 interim (1/2): one in-flight new-room decision per launcher.
+            mine = self.inflight.conflict([f"launcher:{launcher}"], height)
+            if mine:
+                raise Refusal("launcher_in_flight", f"this launcher already holds an unexpired new-room decision "
+                                                    f"({mine}); fetch it from /decision/{{id}} or retry after it "
+                                                    "lands or expires", 409)
+            # H-1 interim (2/2): proof of funds. A hold is only granted to a launcher who could pay for it.
+            try:
+                need, rent = funds.required_lamports(
+                    self.rpc, funds.create_room_sizes(name, symbol, uri, first_buy, d.old_holder_room_id is None),
+                    fee_needed, first_buy)
+                have = self.rpc.balance(launcher)
+            except RpcError as e:
+                raise Refusal("rpc_unavailable", f"cannot check the launcher's balance: {e}", 503)
+            if have < need:
+                raise Refusal("insufficient_funds", f"launcher holds {have} lamports; this launch needs {need} "
+                                                    f"(rent {rent}, fees {fee_needed}, first buy {first_buy}, "
+                                                    f"signatures {funds.SIGNATURE_FEES})", 422)
             token, busy = self.inflight.claim([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
-                                               f"id:{d.identity}"], height, last_valid)
+                                               f"id:{d.identity}", f"launcher:{launcher}"], height, last_valid)
             if token:
                 held.append(token)
             if busy:

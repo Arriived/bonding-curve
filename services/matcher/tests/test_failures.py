@@ -23,8 +23,17 @@ NOW = 1_800_000_000
 
 
 class FakeRpc:
-    def __init__(self, slot=1000, down=False, blockhash_down=False):
+    def __init__(self, slot=1000, down=False, blockhash_down=False, balance=100 * 10 ** 9):
         self._slot, self.down, self.blockhash_down, self.errors = slot, down, blockhash_down, 0
+        self._balance = balance
+
+    def balance(self, pubkey):
+        if self.down:
+            raise RpcError("getBalance: timeout")
+        return self._balance
+
+    def min_balance(self, n):
+        return (128 + n) * 5080          # the devnet/mainnet rent rate (program/docs/DEPLOYMENT.md)
 
     def slot(self):
         if self.down:
@@ -448,3 +457,30 @@ def test_rpc_retries_rate_limits_then_gives_up():
     with pytest.raises(RpcError):
         RpcClient("http://x", transport=httpx.MockTransport(handler(99))).slot()
     assert len(calls) == RpcClient.RATE_LIMIT_RETRIES + 1
+
+
+def test_one_in_flight_new_room_decision_per_launcher(tmp_path, kp):
+    """H-1 interim: a launcher holding an unexpired new-room decision cannot take a second name."""
+    svc = make(tmp_path, kp, Snap(1000))
+    who = str(Keypair().pubkey())
+    first = svc.route(dict(REQ, launcher=who))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ, launcher=who, name="Another Name", symbol="ANO"))
+    assert e.value.code == "launcher_in_flight" and e.value.status == 409 and first["id"] in e.value.message
+    assert svc.route(dict(REQ, launcher=str(Keypair().pubkey()), name="Another Name", symbol="ANO"))
+
+
+def test_new_room_needs_proof_of_funds(tmp_path, kp):
+    """H-1 interim: the launcher must hold the launch's rent, fees, first buy and signature fees."""
+    from matcher_service import funds
+    need, rent = funds.required_lamports(FakeRpc(), funds.create_room_sizes(
+        REQ["name"], REQ["symbol"], REQ["uri"], 10 ** 9, True), 0, 10 ** 9)
+    assert rent > 27_000_000 and need == rent + 10 ** 9 + funds.SIGNATURE_FEES
+    poor = make(tmp_path, kp, Snap(1000), rpc=FakeRpc(balance=need - 1))
+    with pytest.raises(Refusal) as e:
+        poor.route(dict(REQ, first_buy_lamports=10 ** 9))
+    assert e.value.code == "insufficient_funds" and rows(poor) == 0
+    assert poor.inflight.conflict([f"name:{'ELON'}", "x"], 0) is None        # nothing was held
+    (tmp_path / "ok").mkdir()
+    ok = make(tmp_path / "ok", kp, Snap(1000), rpc=FakeRpc(balance=need))
+    assert ok.route(dict(REQ, first_buy_lamports=10 ** 9))["decision"]["kind"] == "new_room"
