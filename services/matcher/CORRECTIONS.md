@@ -390,3 +390,16 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
   Shorter names and symbols leave more room, byte for byte. Moving to v0 is README "What remains" item 7.
 - **Correction, README item 7** still said a launch uses 64 of 64 trace entries and that v0 was blocked
   by M-7. Neither was true after the M-8 change. It now gives the current figures.
+- **Results:**
+  - unit tests 116/116;
+  - service e2e PASS on localnet and on devnet against `71d32f3`, which was upgraded at slot
+    519,081,470;
+  - on devnet, step 1b rejected the second `create_room` under one NameLock with 6013 at slot
+    519,081,838; re-requested, it became a T2n door.
+- **Correction, the verifier:** the floor-door path of `recompute()` lacked the new `old_name_holder`
+  field, so the first localnet run reported DISAGREE on a correct decision. Fixed, with a unit test
+  over every path.
+- **New: `scripts/sweep_test_positions.py`.** It sells every test position back to its curve and
+  sweeps a test wallet's SOL to the deploy wallet, keeping the devnet balance usable as upgrade budget.
+  On 5 November it returned 3,918,053,521 lamports (program `DEPLOYMENT.md` §5). Never point it at a
+  wallet with real holdings.
