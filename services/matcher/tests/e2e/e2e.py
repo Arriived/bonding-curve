@@ -13,7 +13,7 @@ Sequence (every step asserts; any failure exits 1):
   2. same identity from another wallet -> door via the floor; accepted; door index 1, random door nonce
   3. same name, different symbol -> door via T2n; accepted
   3b. a door launch with a first buy and the default 2% price limit fills exactly the quoted tokens
-      when nothing moves, and is rejected on-chain (Slippage) when a large buy lands first
+      when nothing moves, and is rejected on-chain (Slippage) when a 1 SOL buy lands first
   4. tampered decisions are rejected: instruction data changed after the matcher signed
      (SignatureFailure), and the matcher signature stripped (AccountNotSigner, landed on-chain)
   5. replaying an accepted decision is rejected (single use)
@@ -295,7 +295,14 @@ def run(rpc, keys, target):
     print(f"   unmoved: filled exactly the quoted {got:,} base units (limit {q['min_tokens_out']:,})", flush=True)
     f_ = route(trader, name, symbol, first_buy_lamports=100_000_000)
     q = first_buy_record(f_)
-    moved = door0_buy(5_000_000_000)                       # lands before the signed launch: price moves far past 2%
+    # A 1 SOL buy lands before the signed launch. Check, from the moved state, that the same first buy
+    # would now get fewer tokens than the signed limit, i.e. the price moved further than 2%.
+    moved = door0_buy(1_000_000_000)
+    from matcher_service import quote as qmod
+    svc.chain.refresh()
+    after = qmod.first_buy_tokens(svc.chain.current().rooms[int(room_id)], 100_000_000)
+    if after is None or after >= q["min_tokens_out"]:
+        fail(f"front-run did not move the price past the 2% limit: {after} vs limit {q['min_tokens_out']}")
     ftx = sign_as_launcher(f_["transaction_base64"], trader)
     sig = send(rpc, ftx, skip_preflight=True)
     st = confirm(rpc, sig)
@@ -303,7 +310,8 @@ def run(rpc, keys, target):
                                               "maxSupportedTransactionVersion": 0}])["meta"]["logMessages"]
     if not st.get("err") or not any("Error Code: Slippage" in l for l in logs):
         fail(f"front-run first buy: expected Error Code: Slippage, got {st.get('err')}")
-    print(f"   front-run by a 5 SOL buy at slot {moved}: rejected on-chain with Slippage ({sig})", flush=True)
+    print(f"   front-run by a 1 SOL buy at slot {moved} (quote now {after:,} < limit {q['min_tokens_out']:,}): "
+          f"rejected on-chain with Slippage ({sig})", flush=True)
 
     step("4a. tampered decision (Launch.rule changed after the matcher signed) is rejected")
     d = route(trader, name, symbol)

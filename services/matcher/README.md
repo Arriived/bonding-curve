@@ -305,7 +305,7 @@ The test runs these steps:
 3. A buy through door 0.
 4. The same name with a different symbol gets a T2n door.
    - A door launch with a first buy and the default 2% limit fills exactly the quoted tokens when nothing
-     moves, and is rejected on-chain with `Slippage` when a 5 SOL buy lands first.
+     moves, and is rejected on-chain with `Slippage` when a 1 SOL buy lands first.
 5. A decision tampered after signing is rejected at signature verification.
 6. A decision with the matcher signature stripped is rejected on-chain with `AccountNotSigner` (3010).
 7. Replaying an accepted decision is rejected with `AlreadyProcessed`.
