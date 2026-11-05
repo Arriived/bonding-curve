@@ -23,6 +23,7 @@ use spl_token_2022_interface::{
 use std::{collections::BTreeMap, path::PathBuf};
 
 include!("cases/sweeps.rs");
+include!("cases/liveness_delay.rs");
 
 fn p(seeds: &[&[u8]]) -> Pubkey {
     Pubkey::find_program_address(seeds, &ID).0
@@ -406,6 +407,9 @@ impl Fixture {
             data: vec![1],
         };
         self.send(ix, false, "create_ata");
+    }
+    fn c(&self) -> Config {
+        Config::try_deserialize(&mut &self.svm.get_account(&self.cfg).unwrap().data[..]).unwrap()
     }
     fn r(&self) -> Room {
         Room::try_deserialize(&mut &self.svm.get_account(&self.room).unwrap().data[..]).unwrap()
@@ -2327,11 +2331,10 @@ fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
     takeover_heap_case(70);
 }
 
-/// Reproduction of open finding SECURITY_REVIEW.md M-7: fails with "memory allocation
-/// failed, out of memory" until the launch path's heap use is reduced or the heap enlarged.
+/// M-7 regression: maximum-size takeover with every new account prefunded.
+/// Runs with the stock 32 KiB heap, without a larger frame or custom allocator.
 #[test]
-#[ignore = "open finding M-7 (SECURITY_REVIEW.md): reproduces a heap exhaustion; run with --ignored"]
-fn prefunded_v0_maximum_takeover_exhausts_the_heap() {
+fn prefunded_v0_maximum_takeover_fits_the_heap() {
     takeover_heap_case(200);
 }
 
@@ -2416,6 +2419,12 @@ fn launch_instruction_trace_budget() {
         let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(400_000)];
         if price {
             ixs.push(ComputeBudgetInstruction::set_compute_unit_price(1));
+            // Real composition margin: two additional valid instructions. The
+            // stock heap size is intentional; M-7 must fit without enlarging it.
+            ixs.push(ComputeBudgetInstruction::request_heap_frame(32 * 1024));
+            ixs.push(
+                ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(64 * 1024 * 1024),
+            );
         }
         ixs.push(ix);
         let tx = Transaction::new(
@@ -2462,6 +2471,9 @@ fn launch_instruction_trace_budget() {
     }
     for r in &rows {
         println!("TRACE {r}");
+        assert!(r["succeeded"].as_bool().unwrap(), "launch failed: {r}");
+        assert!(r["logged_invocations"].as_u64().unwrap() <= 54,
+            "keep at least ten trace entries free, including a priority fee and extra instructions: {r}");
     }
     let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification");
     std::fs::write(

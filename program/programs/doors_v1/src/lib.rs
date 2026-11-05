@@ -35,6 +35,10 @@ pub mod doors_v1 {
     ) -> Result<()> {
         require!(new_admin != Pubkey::default(), Error::Authority);
         let c = &mut ctx.accounts.config;
+        require!(
+            c.liveness().matches_settings(&settings),
+            Error::LivenessTimelock
+        );
         c.apply(settings.clone())?;
         c.admin = new_admin;
         emit!(ConfigChanged {
@@ -42,6 +46,83 @@ pub mod doors_v1 {
             matcher: c.matcher_authority,
             founder_share_bps: c.founder_share_bps,
             settings,
+        });
+        Ok(())
+    }
+    pub fn schedule_liveness(
+        ctx: Context<ScheduleLiveness>,
+        thresholds: LivenessThresholds,
+    ) -> Result<()> {
+        let a = ctx.accounts;
+        let now = Clock::get()?.unix_timestamp;
+        require!(now >= 0, Error::Clock);
+        let activate_at = now
+            .checked_add(LIVENESS_CHANGE_DELAY_SECONDS)
+            .ok_or(Error::Overflow)?;
+        require!(thresholds != a.config.liveness(), Error::BadConfig);
+        let bump = pda(&a.pending, &[b"pending_liveness"])?;
+        if a.pending.data_is_empty() {
+            create_pda(
+                &a.admin.to_account_info(),
+                &a.pending,
+                &a.system_program.to_account_info(),
+                &crate::ID,
+                PendingLiveness::LEN,
+                PendingLiveness::LEN,
+                &[b"pending_liveness"],
+            )?;
+        } else {
+            require_keys_eq!(*a.pending.owner, crate::ID, Error::Account);
+            let old = PendingLiveness::try_deserialize(&mut &a.pending.try_borrow_data()?[..])?;
+            require!(old.bump == bump, Error::Pda);
+        }
+        PendingLiveness {
+            thresholds,
+            activate_at,
+            active: true,
+            bump,
+        }
+        .try_serialize(&mut &mut a.pending.try_borrow_mut_data()?[..])?;
+        emit!(LivenessScheduled {
+            admin: a.admin.key(),
+            previous: a.config.liveness(),
+            thresholds,
+            scheduled_at: now,
+            activate_at
+        });
+        Ok(())
+    }
+    pub fn cancel_liveness(ctx: Context<CancelLiveness>) -> Result<()> {
+        let pending = &mut ctx.accounts.pending;
+        require!(pending.active, Error::NoPendingLiveness);
+        pending.active = false;
+        emit!(LivenessCancelled {
+            admin: ctx.accounts.admin.key(),
+            thresholds: pending.thresholds,
+            activate_at: pending.activate_at
+        });
+        Ok(())
+    }
+    pub fn apply_liveness(ctx: Context<ApplyLiveness>) -> Result<()> {
+        let pending = &mut ctx.accounts.pending;
+        require!(pending.active, Error::NoPendingLiveness);
+        let now = Clock::get()?.unix_timestamp;
+        require!(now >= pending.activate_at, Error::LivenessDelay);
+        let c = &mut ctx.accounts.config;
+        let previous = c.liveness();
+        c.set_liveness(pending.thresholds);
+        pending.active = false;
+        emit!(LivenessApplied {
+            previous,
+            thresholds: c.liveness(),
+            applied_at: now
+        });
+        // Preserve the existing decision verifier's ConfigChanged replay.
+        emit!(ConfigChanged {
+            admin: c.admin,
+            matcher: c.matcher_authority,
+            founder_share_bps: c.founder_share_bps,
+            settings: c.settings()
         });
         Ok(())
     }
@@ -887,6 +968,26 @@ pub struct ConfigChanged {
     pub settings: Settings,
 }
 #[event]
+pub struct LivenessScheduled {
+    pub admin: Pubkey,
+    pub previous: LivenessThresholds,
+    pub thresholds: LivenessThresholds,
+    pub scheduled_at: i64,
+    pub activate_at: i64,
+}
+#[event]
+pub struct LivenessCancelled {
+    pub admin: Pubkey,
+    pub thresholds: LivenessThresholds,
+    pub activate_at: i64,
+}
+#[event]
+pub struct LivenessApplied {
+    pub previous: LivenessThresholds,
+    pub thresholds: LivenessThresholds,
+    pub applied_at: i64,
+}
+#[event]
 pub struct RoomCreated {
     pub room: Pubkey,
     pub room_id: u64,
@@ -1009,4 +1110,10 @@ pub enum Error {
     Expired,
     #[msg("Door nonce must be 0 for create_room and non-zero for open_door")]
     DoorNonce,
+    #[msg("Liveness thresholds must use the seven-day scheduling path")]
+    LivenessTimelock,
+    #[msg("No active liveness change is scheduled")]
+    NoPendingLiveness,
+    #[msg("The seven-day liveness change delay has not elapsed")]
+    LivenessDelay,
 }

@@ -20,6 +20,32 @@ pub struct UpdateConfig<'info> {
     pub config: Box<Account<'info, Config>>,
 }
 #[derive(Accounts)]
+pub struct ScheduleLiveness<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    #[account(seeds=[b"config"],bump=config.bump,has_one=admin)]
+    pub config: Box<Account<'info, Config>>,
+    /// CHECK: singleton PDA, created or validated in the handler.
+    #[account(mut)]
+    pub pending: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+#[derive(Accounts)]
+pub struct CancelLiveness<'info> {
+    pub admin: Signer<'info>,
+    #[account(seeds=[b"config"],bump=config.bump,has_one=admin)]
+    pub config: Box<Account<'info, Config>>,
+    #[account(mut,seeds=[b"pending_liveness"],bump=pending.bump)]
+    pub pending: Box<Account<'info, PendingLiveness>>,
+}
+#[derive(Accounts)]
+pub struct ApplyLiveness<'info> {
+    #[account(mut,seeds=[b"config"],bump=config.bump)]
+    pub config: Box<Account<'info, Config>>,
+    #[account(mut,seeds=[b"pending_liveness"],bump=pending.bump)]
+    pub pending: Box<Account<'info, PendingLiveness>>,
+}
+#[derive(Accounts)]
 #[instruction(room_id:u64)]
 pub struct CreateRoom<'info> {
     #[account(mut)]

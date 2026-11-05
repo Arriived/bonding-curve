@@ -370,3 +370,14 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 11. **The branch tip** is fixed, and the service targets it (CORRECTIONS §4). On any later program
     change, update `idl/`, `txbuild.encode_launch` and `program/devnet/DEPLOY_ELF.sha256` together,
     and rerun both test suites.
+# 5 November security remediation
+
+New-room decisions require proof of funds for rent, launch fees, the first buy
+and the actual message's network/priority fee. One launcher may hold only one
+in-flight new-room reservation. Funding failures refuse before reservation or
+signing; the decision record includes the funding calculation.
+
+**Mainnet is blocked until the program implements an on-chain NameLock.** The
+interim funded-wallet reservation is still operator-enforced and is not a
+substitute for that lock. See [the remediation record](../../program/docs/AUDIT_REMEDIATION.md).
+

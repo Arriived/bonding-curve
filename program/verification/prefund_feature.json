@@ -1,0 +1,16 @@
+[
+  {
+    "cluster": "devnet",
+    "feature": "6sPDzwyARRExKH52LECxcGoqziH8G7SZofwuxi8Ja331",
+    "context_slot": 518985675,
+    "owner": "Feature111111111111111111111111111111111111",
+    "activated_at": 454464000
+  },
+  {
+    "cluster": "mainnet-beta",
+    "feature": "6sPDzwyARRExKH52LECxcGoqziH8G7SZofwuxi8Ja331",
+    "context_slot": 465758702,
+    "owner": "Feature111111111111111111111111111111111111",
+    "activated_at": 422928004
+  }
+]

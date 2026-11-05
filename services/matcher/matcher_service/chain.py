@@ -78,6 +78,27 @@ class RpcClient:
         r = self.call("getLatestBlockhash", [{"commitment": "confirmed"}])
         return r["value"]["blockhash"], int(r["value"]["lastValidBlockHeight"]), int(r["context"]["slot"])
 
+    @staticmethod
+    def _lamports(value):
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 2 ** 64:
+            raise RpcError("invalid lamport amount from RPC")
+        return value
+
+    def balance(self, pubkey, min_slot):
+        r = self.call("getBalance", [str(pubkey), {"commitment": "confirmed", "minContextSlot": min_slot}])
+        slot = int(r["context"]["slot"])
+        if slot < min_slot:
+            raise RpcError("getBalance: context older than launch snapshot")
+        return slot, self._lamports(r["value"])
+
+    def minimum_balance(self, size):
+        return self._lamports(self.call("getMinimumBalanceForRentExemption", [size, {"commitment": "confirmed"}]))
+
+    def fee_for_message(self, message):
+        r = self.call("getFeeForMessage", [base64.b64encode(bytes(message)).decode(), {"commitment": "confirmed"}])
+        # Null means the blockhash is no longer usable; do not sign a decision.
+        return self._lamports(r["value"])
+
     def account(self, pubkey, min_slot=None):
         cfg = {"encoding": "base64", "commitment": "confirmed"}
         if min_slot:

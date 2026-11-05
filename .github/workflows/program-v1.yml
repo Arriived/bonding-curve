@@ -1,7 +1,7 @@
 name: program-v1
 on:
   push:
-    branches: [claude/program-v1]
+    branches: [claude/program-v1, codex/m8-h1-m6]
     paths:
       - 'program/programs/**'
       - 'program/test-fixtures/**'
@@ -11,6 +11,7 @@ on:
       - 'program/dependency-policy.json'
       - 'program/Anchor.toml'
       - 'program/idl/**'
+      - 'services/matcher/**'
       - '.github/workflows/program-v1.yml'
   workflow_dispatch:
 permissions:
@@ -65,10 +66,18 @@ jobs:
         run: |
           mkdir -p target/idl
           anchor idl build -o target/idl/doors_v1.json
-          cmp idl/doors_v1.json target/idl/doors_v1.json
           python3 scripts/check_layouts.py
       - name: Execute SBF tests and mixed-operation property test
         run: cargo test --locked --test svm -- --nocapture
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify matcher regressions
+        run: |
+          python -m pip install -r ../services/matcher/requirements-dev.txt
+          python -m pytest ../services/matcher/tests -q
+      - name: Check committed IDL
+        run: cmp idl/doors_v1.json target/idl/doors_v1.json
       - name: Format check
         run: cargo fmt -- --check
       - name: Verify committed build inputs

@@ -94,21 +94,20 @@ pub fn create_pda<'a>(
         )?;
         return Ok(bump);
     }
-    deposit(user, target, system, rent.saturating_sub(target.lamports()))?;
-    if space > 0 {
-        invoke_signed(
-            &system_instruction::allocate(target.key, space as u64),
-            &[target.clone(), system.clone()],
-            &[&signed],
-        )?;
-    }
-    if owner != &anchor_lang::system_program::ID {
-        invoke_signed(
-            &system_instruction::assign(target.key, owner),
-            &[target.clone(), system.clone()],
-            &[&signed],
-        )?;
-    }
+    // SIMD-0312 is active on devnet and mainnet (recorded in verification/
+    // prefund_feature.json). Preserve every prefunded lamport, top up rent only,
+    // and allocate + assign in one CPI rather than three. Besides trace margin
+    // this avoids repeatedly allocating CPI serialization on the SBF bump heap.
+    invoke_signed(
+        &system_instruction::create_account_allow_prefund(
+            target.key,
+            Some((user.key, rent.saturating_sub(target.lamports()))),
+            space as u64,
+            owner,
+        ),
+        &[target.clone(), user.clone(), system.clone()],
+        &[&signed],
+    )?;
     Ok(bump)
 }
 pub fn token(ai: &AccountInfo, mint: &Pubkey, owner: &Pubkey, program: &Pubkey) -> Result<u64> {

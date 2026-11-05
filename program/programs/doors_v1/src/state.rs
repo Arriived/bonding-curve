@@ -68,6 +68,39 @@ impl Settings {
     }
 }
 
+pub const LIVENESS_CHANGE_DELAY_SECONDS: i64 = 7 * 24 * 60 * 60;
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub struct LivenessThresholds {
+    pub live_min_reserve_lamports: u64,
+    pub live_max_idle_seconds: u64,
+    pub live_new_seconds: u64,
+    pub live_min_volume_lamports: u64,
+    pub pool_min_window_lp_fee: u64,
+}
+impl LivenessThresholds {
+    pub fn matches_settings(&self, s: &Settings) -> bool {
+        self.live_min_reserve_lamports == s.live_min_reserve_lamports
+            && self.live_max_idle_seconds == s.live_max_idle_seconds
+            && self.live_new_seconds == s.live_new_seconds
+            && self.live_min_volume_lamports == s.live_min_volume_lamports
+            && self.pool_min_window_lp_fee == s.pool_min_window_lp_fee
+    }
+}
+
+// Separate singleton PDA keeps the deployed Config and Room layouts unchanged.
+// Scheduling/replacing a change always starts a fresh full seven-day delay.
+#[account]
+pub struct PendingLiveness {
+    pub thresholds: LivenessThresholds,
+    pub activate_at: i64,
+    pub active: bool,
+    pub bump: u8,
+}
+impl PendingLiveness {
+    pub const LEN: usize = 8 + 40 + 8 + 1 + 1;
+}
+
 #[account]
 pub struct Config {
     pub admin: Pubkey,
@@ -95,6 +128,46 @@ pub struct Config {
 }
 impl Config {
     pub const LEN: usize = 248;
+    pub fn liveness(&self) -> LivenessThresholds {
+        LivenessThresholds {
+            live_min_reserve_lamports: self.live_min_reserve_lamports,
+            live_max_idle_seconds: self.live_max_idle_seconds,
+            live_new_seconds: self.live_new_seconds,
+            live_min_volume_lamports: self.live_min_volume_lamports,
+            pool_min_window_lp_fee: self.pool_min_window_lp_fee,
+        }
+    }
+    pub fn set_liveness(&mut self, t: LivenessThresholds) {
+        self.live_min_reserve_lamports = t.live_min_reserve_lamports;
+        self.live_max_idle_seconds = t.live_max_idle_seconds;
+        self.live_new_seconds = t.live_new_seconds;
+        self.live_min_volume_lamports = t.live_min_volume_lamports;
+        self.pool_min_window_lp_fee = t.pool_min_window_lp_fee;
+    }
+    pub fn settings(&self) -> Settings {
+        Settings {
+            protocol_fee_recipient: self.protocol_fee_recipient,
+            fee_bps: self.fee_bps,
+            door_share_bps: self.door_share_bps,
+            door_fee_lamports: self.door_fee_lamports,
+            room_fee_lamports: self.room_fee_lamports,
+            convert_fee_lamports: self.convert_fee_lamports,
+            v_sol_lamports: self.v_sol_lamports,
+            v_tok: self.v_tok,
+            supply: self.supply,
+            r_star_lamports: self.r_star_lamports,
+            meteora_dynamic_config: self.meteora_dynamic_config,
+            graduation_trigger_lamports: self.graduation_trigger_lamports,
+            paused: self.paused,
+            matcher_authority: self.matcher_authority,
+            live_min_reserve_lamports: self.live_min_reserve_lamports,
+            live_max_idle_seconds: self.live_max_idle_seconds,
+            live_new_seconds: self.live_new_seconds,
+            live_min_volume_lamports: self.live_min_volume_lamports,
+            pool_min_window_lp_fee: self.pool_min_window_lp_fee,
+            founder_share_bps: self.founder_share_bps,
+        }
+    }
     // Only immutable room economics are bound here. Flat fees have their own
     // signed maximum, and operational settings remain administratively mutable.
     pub fn launch_terms_hash(&self) -> [u8; 32] {

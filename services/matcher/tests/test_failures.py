@@ -25,6 +25,18 @@ NOW = 1_800_000_000
 class FakeRpc:
     def __init__(self, slot=1000, down=False, blockhash_down=False):
         self._slot, self.down, self.blockhash_down, self.errors = slot, down, blockhash_down, 0
+        self.balance_lamports = 10 ** 12
+        self.network_fee = 10_000
+        self.height = 5000
+
+    def minimum_balance(self, size):
+        return (128 + size) * 5080
+
+    def balance(self, pubkey, min_slot):
+        return max(self._slot, min_slot), self.balance_lamports
+
+    def fee_for_message(self, message):
+        return self.network_fee
 
     def slot(self):
         if self.down:
@@ -39,7 +51,7 @@ class FakeRpc:
     def block_height(self):
         if self.down:
             raise RpcError("getBlockHeight: timeout")
-        return 5000
+        return self.height
 
 
 class Snap:
@@ -370,6 +382,99 @@ def test_a_refused_new_room_decision_releases_its_in_flight_claim(tmp_path, kp):
     assert e.value.code == "signer_unavailable"
     svc.signer = KeyfileSigner(kp[1], "development")
     assert svc.route(dict(REQ))["decision"]["kind"] == "new_room"   # not blocked by the failed claim
+
+
+def test_one_new_room_reservation_per_funded_launcher(tmp_path, kp):
+    svc = make(tmp_path, kp, Snap(1000))
+    svc.route(dict(REQ))
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ, name="Different name", symbol="DIFF"))
+    assert e.value.code == "in_flight" and rows(svc) == 1
+    # A different funded launcher can reserve the other name.
+    svc.route(dict(REQ, name="Different name", symbol="DIFF", launcher=str(Keypair().pubkey())))
+    assert rows(svc) == 2
+
+
+def test_unfunded_launcher_gets_no_signature_or_reservation(tmp_path, kp):
+    rpc = FakeRpc()
+    rpc.balance_lamports = 0
+    svc = make(tmp_path, kp, Snap(1000), rpc=rpc)
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "insufficient_funds" and rows(svc) == 0
+    rpc.balance_lamports = 10 ** 12
+    assert svc.route(dict(REQ))["decision"]["kind"] == "new_room"
+
+
+def test_funding_covers_rent_launch_fees_first_buy_and_priority_fee(tmp_path, kp):
+    rpc = FakeRpc()
+    rpc.network_fee = 410_000
+    svc = make(tmp_path, kp, Snap(1000, cfg=config(room_fee_lamports=7, door_fee_lamports=11)), rpc=rpc)
+    request = dict(REQ, first_buy_lamports=1_010_000_000, max_fee_lamports=18,
+                   cu_price_micro_lamports=1_000_000)
+    out = svc.route(request)
+    proof = svc.store.get(out["id"])["record"]["funding_check"]
+    assert proof["network_fee_lamports"] == 410_000
+    assert proof["launch_fees_lamports"] == 18
+    assert proof["first_buy_lamports"] == request["first_buy_lamports"]
+    assert proof["required_lamports"] == proof["rent_lamports"] + 18 + 1_010_000_000 + 410_000
+    # A fresh service with the same deterministic room nonce has the same rent budget.
+    (tmp_path / "boundary").mkdir()
+    other = make(tmp_path / "boundary", kp, Snap(1000, cfg=svc.chain.snap.config.copy()), rpc=rpc)
+    room_id = int(out["decision"]["room_id"])
+    other._fresh_nonce = lambda snap: room_id
+    rpc.balance_lamports = proof["required_lamports"] - 1
+    with pytest.raises(Refusal) as e:
+        other.route(request)
+    assert e.value.code == "insufficient_funds" and rows(other) == 0
+    rpc.balance_lamports += 1
+    assert other.route(request)["decision"]["kind"] == "new_room"
+
+
+@pytest.mark.parametrize("method", ["minimum_balance", "balance", "fee_for_message"])
+def test_funding_rpc_failure_refuses_without_claim(tmp_path, kp, method):
+    rpc = FakeRpc()
+    original = getattr(rpc, method)
+    def unavailable(*args):
+        raise RpcError("funding RPC unavailable")
+    setattr(rpc, method, unavailable)
+    svc = make(tmp_path, kp, Snap(1000), rpc=rpc)
+    with pytest.raises(Refusal) as e:
+        svc.route(dict(REQ))
+    assert e.value.code == "rpc_unavailable" and rows(svc) == 0
+    setattr(rpc, method, original)
+    assert svc.route(dict(REQ))["decision"]["kind"] == "new_room"
+
+
+def test_launcher_reservation_expires_with_its_blockhash(tmp_path, kp):
+    rpc = FakeRpc()
+    svc = make(tmp_path, kp, Snap(1000), rpc=rpc)
+    svc.route(dict(REQ))
+    rpc.height = 5151
+    rpc.latest_blockhash = lambda: ("11111111111111111111111111111111", 5301, 1151)
+    svc.route(dict(REQ, name="Another name", symbol="NEXT"))
+    assert rows(svc) == 2
+
+
+def test_concurrent_different_names_cannot_share_a_funded_launcher(tmp_path, kp):
+    import threading
+    gate, entered = threading.Event(), threading.Semaphore(0)
+    svc = make(tmp_path, kp, Snap(1000), signer=GatedSigner(kp[1], gate, entered))
+    results = []
+    def go(request):
+        try:
+            results.append(svc.route(request)["decision"]["kind"])
+        except Refusal as e:
+            results.append(e.code)
+    first = threading.Thread(target=go, args=(dict(REQ),))
+    first.start()
+    assert entered.acquire(timeout=10)
+    second = threading.Thread(target=go, args=(dict(REQ, name="Another name", symbol="NEXT"),))
+    second.start()
+    second.join(timeout=10)
+    gate.set()
+    first.join(timeout=10)
+    assert sorted(results) == ["in_flight", "new_room"] and rows(svc) == 1
 
 
 def test_lone_surrogate_metadata_is_refused_not_a_server_error(tmp_path, kp):

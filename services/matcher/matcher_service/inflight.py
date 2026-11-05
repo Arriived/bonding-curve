@@ -10,6 +10,8 @@ decision's `last_valid_block_height` passes:
   - name/identity reservation: while a new-room decision for folded name N (or identity I) is in
     flight, another launch with name N or identity I is refused with retry-after. Otherwise both would
     be told "new room" and the T2n rule would be silently bypassed by the second one.
+  - launcher reservation: a verified funded launcher may hold at most one new-room
+    decision, across all names. The launcher, name and identity share one atomic claim.
 
 Door addresses need no tracking: each door decision carries a random signed door nonce, so
 concurrent door launches into one room have independent addresses (a nonce collision fails cleanly

@@ -18,7 +18,7 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction
 
-from . import __version__, quote, rules, txbuild
+from . import __version__, funding, quote, rules, txbuild
 from .chain import RpcError, StaleState
 from .decide import RULE_CODE, Refusal, decide
 from .inflight import InFlight
@@ -191,13 +191,6 @@ class Service:
         nk = d.candidate_keys["name"]
         identity = bytes.fromhex(d.identity)
         if d.kind == "new_room":
-            token, busy = self.inflight.claim([f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
-                                               f"id:{d.identity}"], height, last_valid)
-            if token:
-                held.append(token)
-            if busy:
-                raise Refusal("in_flight", f"a new-room decision for this name is in flight ({busy}); "
-                                           "retry after it lands or expires", 409)
             room_id = self._fresh_nonce(snap)
             door_nonce = 0          # door 0 is always at nonce 0
         else:
@@ -222,6 +215,44 @@ class Service:
         if placeholder > txbuild.PACKET_LIMIT:
             raise Refusal("tx_too_large", f"transaction would be {placeholder} bytes > {txbuild.PACKET_LIMIT}; "
                                           "shorten the metadata (v0 lookup tables are not supported in v1)", 413)
+        funding_check = None
+        if d.kind == "new_room":
+            # Check before claiming anything, then atomically reserve all keys
+            # before signing. Parallel requests cannot acquire separate names
+            # using the same funded launcher, even while its signature is pending.
+            try:
+                sizes = funding.creation_rent_sizes(name, symbol, uri, room_pk, self.cfg.program_id, first_buy)
+                rents = {size: self.rpc.minimum_balance(size) for size in set(sizes)}
+                rent = sum(rents[size] for size in sizes)
+                network_fee = self.rpc.fee_for_message(message)  # includes the requested priority fee
+                balance_slot, balance = self.rpc.balance(launcher, max(snap.slot, bh_slot))
+            except RpcError as e:
+                raise Refusal("rpc_unavailable", f"cannot verify launch funds: {e}", 503)
+            required = rent + fee_needed + first_buy + network_fee
+            if balance < required:
+                raise Refusal("insufficient_funds", f"launcher needs {required} lamports for rent, launch fees, "
+                                                    f"first buy and network fees; holds {balance}", 409)
+            funding_check = {"balance_slot": balance_slot, "balance_lamports": balance,
+                             "required_lamports": required, "rent_lamports": rent,
+                             "launch_fees_lamports": fee_needed, "first_buy_lamports": first_buy,
+                             "network_fee_lamports": network_fee,
+                             "rent_by_size": {str(k): v for k, v in rents.items()}}
+            # Re-read the height after RPC work, so expired claims do not extend
+            # the hold and expired blockhashes never acquire a reservation.
+            try:
+                height = self.rpc.block_height()
+            except RpcError as e:
+                raise Refusal("rpc_unavailable", f"cannot verify reservation expiry: {e}", 503)
+            if height > last_valid:
+                raise Refusal("stale_state", "launch blockhash expired during funding check", 503)
+            token, busy = self.inflight.claim([
+                f"launcher:{launcher}",
+                f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
+                f"id:{d.identity}"], height, last_valid)
+            if busy:
+                raise Refusal("in_flight", f"this launcher or name already has a new-room decision in flight "
+                                           f"({busy}); retry after it expires", 409)
+            held.append(token)
         msg_bytes = bytes(message)
         try:
             sig = self.signer.sign(msg_bytes)
@@ -244,6 +275,7 @@ class Service:
                         "max_slippage_bps": req.get("max_slippage_bps"), "max_fee_lamports": max_fee,
                         "cu_price_micro_lamports": cu_price},
             "first_buy_quote": first_buy_quote,
+            "funding_check": funding_check,
             "launch_min_tokens_out": min_out,
             "state": {"slots": snap.slots, "slot": snap.slot, "clock_unix": snap.clock_unix,
                       "cluster_slot_at_decision": cluster_slot, "freshness": freshness, "budget": vars(self.cfg.budget),
