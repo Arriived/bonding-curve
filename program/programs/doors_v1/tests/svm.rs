@@ -2463,6 +2463,34 @@ fn launch_instruction_trace_budget() {
     for r in &rows {
         println!("TRACE {r}");
     }
+    // Regression guard (finding M-8): every shape succeeds, and every launch keeps at least 12 of the
+    // 64 entries free. This program's own account creations cost nothing extra when prefunded (one
+    // CPI either way). The bound of +2 is the Associated Token program's own transfer + allocate +
+    // assign for a prefunded user ATA, which this program cannot change (create_room nets +1: its
+    // prefunded grad_payer needs no CPI at all).
+    let get = |ins: &str, pre: bool, price: bool| {
+        rows.iter()
+            .find(|r| {
+                r["instruction"] == ins
+                    && r["prefunded"] == pre
+                    && r["priority_fee_instruction"] == price
+            })
+            .unwrap()["logged_invocations"]
+            .as_u64()
+            .unwrap()
+    };
+    for r in &rows {
+        assert!(r["succeeded"].as_bool().unwrap(), "{r}");
+        assert!(r["logged_invocations"].as_u64().unwrap() <= 64 - 12, "{r}");
+    }
+    for ins in ["create_room", "open_door"] {
+        for price in [false, true] {
+            assert!(
+                get(ins, true, price) <= get(ins, false, price) + 2,
+                "{ins}: prefunding adds entries"
+            );
+        }
+    }
     let out = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification");
     std::fs::write(
         out.join("trace_budget.json"),
@@ -2473,4 +2501,147 @@ fn launch_instruction_trace_budget() {
             + "\n",
     )
     .unwrap();
+}
+
+// M-6: the shared liveness gate changes only after a 7-day public delay. update_config cannot change
+// it; propose_gate records the change and emits it; apply_gate (anyone) takes effect only once the
+// delay has passed; cancel_gate withdraws it; a new proposal restarts the clock.
+#[test]
+fn liveness_gate_changes_are_timelocked_for_seven_days() {
+    let mut f = Fixture::new(0);
+    let gate_key = p(&[b"gate"]);
+    let config = |f: &Fixture| {
+        Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap()
+    };
+    let before = config(&f).gate();
+    // 1. update_config cannot touch the gate, even by the admin.
+    let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
+    s.live_min_reserve_lamports = u64::MAX;
+    f.fail_error(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings: s,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        Some("GateTimelock"),
+    );
+    // 2. The admin proposes a mass-kill (every mature room would read as dead).
+    let kill = Gate {
+        live_min_reserve_lamports: u64::MAX,
+        ..before
+    };
+    let propose = |f: &Fixture, g: Gate| {
+        instr(
+            a::ProposeGate {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+                pending: gate_key,
+                system_program: anchor_lang::system_program::ID,
+            },
+            ix::ProposeGate { gate: g },
+        )
+    };
+    let apply = |f: &Fixture| {
+        instr(
+            a::ApplyGate {
+                config: f.cfg,
+                pending: gate_key,
+                admin: f.user.pubkey(),
+            },
+            ix::ApplyGate {},
+        )
+    };
+    let meta = f.checked(propose(&f, kill), false, "propose_gate");
+    assert!(meta.logs.iter().any(|l| l.starts_with("Program data: ")));
+    let pending =
+        PendingGate::try_deserialize(&mut &f.svm.get_account(&gate_key).unwrap().data[..]).unwrap();
+    assert_eq!(pending.gate, kill);
+    assert_eq!(
+        pending.effective_at - pending.proposed_at,
+        GATE_DELAY_SECONDS
+    );
+    assert_eq!(config(&f).gate(), before); // nothing changes yet
+                                           // A non-admin cannot propose.
+    let stranger = Keypair::new();
+    f.svm.airdrop(&stranger.pubkey(), 1_000_000_000).unwrap();
+    let mut forged = propose(&f, kill);
+    forged.accounts[0] = AccountMeta::new(stranger.pubkey(), true);
+    let tx = Transaction::new(
+        &[&stranger],
+        Message::new(&[forged], Some(&stranger.pubkey())),
+        f.svm.latest_blockhash(),
+    );
+    assert!(
+        f.svm.send_transaction(tx).is_err(),
+        "a non-admin proposed a gate change"
+    );
+    // 3. Applying early fails, at the last second too.
+    f.time(GATE_DELAY_SECONDS - 1);
+    f.fail_error(apply(&f), false, Some("GateTimelock"));
+    // 4. Cancel withdraws it; a new proposal restarts the clock.
+    f.checked(
+        instr(
+            a::CancelGate {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+                pending: gate_key,
+            },
+            ix::CancelGate {},
+        ),
+        false,
+        "cancel_gate",
+    );
+    assert!(f.svm.get_account(&gate_key).is_none());
+    let tighter = Gate {
+        live_max_idle_seconds: before.live_max_idle_seconds / 2,
+        ..before
+    };
+    f.checked(propose(&f, tighter), false, "propose_gate");
+    f.time(GATE_DELAY_SECONDS - 1);
+    f.fail_error(apply(&f), false, Some("GateTimelock"));
+    f.time(1);
+    // 5. After the full delay anyone can apply it; Config changes and the pending account closes.
+    let anyone = Keypair::new();
+    f.svm.airdrop(&anyone.pubkey(), 1_000_000_000).unwrap();
+    let tx = Transaction::new(
+        &[&anyone],
+        Message::new(&[apply(&f)], Some(&anyone.pubkey())),
+        f.svm.latest_blockhash(),
+    );
+    f.svm
+        .send_transaction(tx)
+        .expect("apply_gate after the delay");
+    assert_eq!(config(&f).gate(), tighter);
+    assert!(f.svm.get_account(&gate_key).is_none());
+    // Every other Config field is unchanged.
+    let after = config(&f).settings();
+    let mut expected = defaults(f.matcher.pubkey(), f.user.pubkey());
+    expected.live_max_idle_seconds = tighter.live_max_idle_seconds;
+    assert_eq!(
+        serde_json::to_string(&format!("{:?}", after)).unwrap(),
+        serde_json::to_string(&format!("{:?}", expected)).unwrap()
+    );
+}
+
+#[test]
+fn allow_prefund_instruction_matches_the_system_interface_builder() {
+    use anchor_lang::solana_program::system_instruction::create_account_allow_prefund;
+    use doors_v1::vaults::allow_prefund_ix;
+    let (t, u, o) = (
+        Pubkey::new_unique(),
+        Pubkey::new_unique(),
+        Pubkey::new_unique(),
+    );
+    for (payer, space) in [(Some((&u, 1_234_567u64)), 165u64), (None, 0)] {
+        assert_eq!(
+            allow_prefund_ix(&t, payer, space, &o),
+            create_account_allow_prefund(&t, payer, space, &o)
+        );
+    }
 }

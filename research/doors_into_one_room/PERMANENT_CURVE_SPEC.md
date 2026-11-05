@@ -238,6 +238,17 @@ Rent model verified in `outputs/narrative/rent_confirmation.json`: `(128 + data_
 
 Exact packed field offsets are in `outputs/account_sizes.md`.
 
+**Creating an account takes one CPI, whoever funded it.**
+- **Fresh accounts:** a handler-created PDA (vaults, mints, `SlugLock`) uses
+  `create_account`.
+- **Prefunded accounts:** a PDA a third party has already sent lamports to uses
+  `CreateAccountAllowPrefund` (SIMD-0312, active on devnet since slot
+  454,464,000 and mainnet since slot 422,928,004). Anchor's `init` does the same
+  for `Room` and `Door`.
+- **Why it matters:** prefunding can no longer add trace entries. Previously each
+  prefunded account cost transfer + allocate + assign, which let a third party
+  push a launch to the trace limit (M-8).
+
 **Accounts created with each room** (except the shared `Config`):
 
 <!-- BEGIN GENERATED ROOM ACCOUNTS -->
@@ -336,7 +347,22 @@ fields retain their order. Replace the old reserve bytes with
 `live_min_volume_lamports`, `pool_min_window_lp_fee` (all u64).
 The matcher key is mandatory; there is no unsigned or `None` bypass.
 Admin key rotation is recorded on-chain. Gate thresholds are shared by
-routing, takeover and release, and changes are admin actions logged on-chain.
+routing, takeover and release.
+
+**Gate changes are timelocked for 7 days** (5 November 2026, `SECURITY_REVIEW.md` M-6).
+The gate is the five thresholds `live_min_reserve_lamports`, `live_max_idle_seconds`,
+`live_new_seconds`, `live_min_volume_lamports` and `pool_min_window_lp_fee`.
+
+| instruction | signer | effect |
+|---|---|---|
+| `update_config` | admin | rejected (`GateTimelock`) if `settings` changes any gate threshold; other fields change at once |
+| `propose_gate(gate)` | admin | creates or replaces the PDA `PendingGate` `["gate"]`, with `effective_at = now + GATE_DELAY_SECONDS` (604,800 s, a program constant). Emits `GateChangeProposed { current, proposed, proposed_at, effective_at }`. Replacing a proposal restarts the clock. |
+| `apply_gate()` | anyone | only once `now >= effective_at` (`GateTimelock` before). Copies the gate into Config, emits `ConfigChanged` (full settings) and `GateChangeApplied`, and closes `PendingGate` to the admin. |
+| `cancel_gate()` | admin | closes `PendingGate`; emits `GateChangeCancelled` |
+
+This keeps the one lever against cheap wash-traded liveness. It removes the
+surprise, though: no change can make rooms dead, or free their names, without
+seven days' public notice. `initialize_config` sets the first gate directly.
 The trailing window and bucket size are fixed by the versioned schema.
 Curve and trade-fee parameters are copied into each room and remain immutable.
 
@@ -1309,13 +1335,16 @@ These are meta counts, not legacy/v0 packet-size measurements.
 
 | instruction | metas with optionals | writable metas | signers |
 |---|---:|---:|---:|
+| apply_gate | 3 | 3 | 0 |
 | buy | 15 | 10 | 1 |
+| cancel_gate | 3 | 2 | 1 |
 | claim_door_fees | 17 | 9 | 1 |
 | claim_founder_fees | 17 | 9 | 1 |
 | convert | 20 | 14 | 1 |
 | create_room | 23 | 15 | 2 |
 | initialize_config | 5 | 2 | 1 |
 | open_door | 19 | 11 | 2 |
+| propose_gate | 4 | 2 | 1 |
 | release_slug | 4 | 2 | 1 |
 | retire_pending | 9 | 6 | 0 |
 | sell | 15 | 10 | 1 |

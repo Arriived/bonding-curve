@@ -35,6 +35,8 @@ pub mod doors_v1 {
     ) -> Result<()> {
         require!(new_admin != Pubkey::default(), Error::Authority);
         let c = &mut ctx.accounts.config;
+        // The liveness gate changes only through propose_gate + apply_gate, after GATE_DELAY_SECONDS.
+        require!(settings.gate() == c.gate(), Error::GateTimelock);
         c.apply(settings.clone())?;
         c.admin = new_admin;
         emit!(ConfigChanged {
@@ -42,6 +44,67 @@ pub mod doors_v1 {
             matcher: c.matcher_authority,
             founder_share_bps: c.founder_share_bps,
             settings,
+        });
+        Ok(())
+    }
+    pub fn propose_gate(ctx: Context<ProposeGate>, gate: Gate) -> Result<()> {
+        let a = ctx.accounts;
+        let now = Clock::get()?.unix_timestamp;
+        let bump = if a.pending.data_is_empty() {
+            create_pda(
+                &a.admin.to_account_info(),
+                &a.pending,
+                &a.system_program.to_account_info(),
+                &crate::ID,
+                PendingGate::LEN,
+                PendingGate::LEN,
+                &[b"gate"],
+            )?
+        } else {
+            require_keys_eq!(*a.pending.owner, crate::ID, Error::Account);
+            PendingGate::try_deserialize(&mut &a.pending.try_borrow_data()?[..])?;
+            pda(&a.pending, &[b"gate"])?
+        };
+        let effective_at = now.checked_add(GATE_DELAY_SECONDS).ok_or(Error::Overflow)?;
+        PendingGate {
+            gate,
+            proposed_at: now,
+            effective_at,
+            bump,
+        }
+        .try_serialize(&mut &mut a.pending.try_borrow_mut_data()?[..])?;
+        emit!(GateChangeProposed {
+            current: a.config.gate(),
+            proposed: gate,
+            proposed_at: now,
+            effective_at,
+        });
+        Ok(())
+    }
+    /// Permissionless once the delay has passed: the change is already public and committed.
+    pub fn apply_gate(ctx: Context<ApplyGate>) -> Result<()> {
+        let now = Clock::get()?.unix_timestamp;
+        let p = &ctx.accounts.pending;
+        require!(now >= p.effective_at, Error::GateTimelock);
+        let gate = p.gate;
+        let c = &mut ctx.accounts.config;
+        c.set_gate(gate);
+        emit!(ConfigChanged {
+            admin: c.admin,
+            matcher: c.matcher_authority,
+            founder_share_bps: c.founder_share_bps,
+            settings: c.settings(),
+        });
+        emit!(GateChangeApplied {
+            gate,
+            applied_at: now
+        });
+        Ok(())
+    }
+    pub fn cancel_gate(ctx: Context<CancelGate>) -> Result<()> {
+        emit!(GateChangeCancelled {
+            cancelled: ctx.accounts.pending.gate,
+            cancelled_at: Clock::get()?.unix_timestamp,
         });
         Ok(())
     }
@@ -887,6 +950,23 @@ pub struct ConfigChanged {
     pub settings: Settings,
 }
 #[event]
+pub struct GateChangeProposed {
+    pub current: Gate,
+    pub proposed: Gate,
+    pub proposed_at: i64,
+    pub effective_at: i64,
+}
+#[event]
+pub struct GateChangeApplied {
+    pub gate: Gate,
+    pub applied_at: i64,
+}
+#[event]
+pub struct GateChangeCancelled {
+    pub cancelled: Gate,
+    pub cancelled_at: i64,
+}
+#[event]
 pub struct RoomCreated {
     pub room: Pubkey,
     pub room_id: u64,
@@ -1009,4 +1089,8 @@ pub enum Error {
     Expired,
     #[msg("Door nonce must be 0 for create_room and non-zero for open_door")]
     DoorNonce,
+    #[msg(
+        "Liveness-gate changes take effect only through propose_gate + apply_gate, after the delay"
+    )]
+    GateTimelock,
 }

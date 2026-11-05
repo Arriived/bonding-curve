@@ -79,6 +79,10 @@ LAYOUTS = {
     "FeeVault (program-owned, no data; SOL fees)": [],
     "GradPayer (SYSTEM-owned PDA, no data; holds DAMM v2 rent, signs as payer)": [],
     "SlugLock": [("anchor discriminator", 8), ("room_id: u64", 8), ("bump: u8", 1)],
+    # PDA ["gate"]: at most one, admin-paid, closed on apply/cancel (SECURITY_REVIEW.md M-6).
+    "PendingGate": [
+        ("anchor discriminator", 8), ("gate: Gate (5 x u64 liveness thresholds)", 40),
+        ("proposed_at: i64", 8), ("effective_at: i64 (proposed_at + 7 days)", 8), ("bump: u8", 1)],
     "Door": [
         ("anchor discriminator", 8), ("room: Pubkey", 32), ("index: u32", 4), ("mint: Pubkey", 32),
         ("door_vault: Pubkey", 32), ("room_token_vault: Pubkey", 32), ("creator: Pubkey", 32),

@@ -262,3 +262,33 @@ pub struct ReleaseSlug<'info> {
               constraint=slug.room_id==room.room_id @ Error::Identity)]
     pub slug: Account<'info, SlugLock>,
 }
+#[derive(Accounts)]
+pub struct ProposeGate<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    #[account(seeds=[b"config"],bump=config.bump,has_one=admin)]
+    pub config: Box<Account<'info, Config>>,
+    /// CHECK: PDA ["gate"]; created by the handler, or validated and overwritten when it exists.
+    #[account(mut)]
+    pub pending: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+#[derive(Accounts)]
+pub struct ApplyGate<'info> {
+    #[account(mut,seeds=[b"config"],bump=config.bump)]
+    pub config: Box<Account<'info, Config>>,
+    #[account(mut,close=admin,seeds=[b"gate"],bump=pending.bump)]
+    pub pending: Account<'info, PendingGate>,
+    /// CHECK: receives the pending account's rent; must be the current admin.
+    #[account(mut,address=config.admin @ Error::Authority)]
+    pub admin: UncheckedAccount<'info>,
+}
+#[derive(Accounts)]
+pub struct CancelGate<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    #[account(seeds=[b"config"],bump=config.bump,has_one=admin)]
+    pub config: Box<Account<'info, Config>>,
+    #[account(mut,close=admin,seeds=[b"gate"],bump=pending.bump)]
+    pub pending: Account<'info, PendingGate>,
+}
