@@ -49,6 +49,9 @@ fn launch(name: &str) -> Launch {
         face: 0,
         max_fee_lamports: 0,
         expected_terms_hash: [0; 32],
+        // 0 = filled by the fixture: door nonce from room state, expiry from the VM clock.
+        door_nonce: 0,
+        expires_at_slot: 0,
     }
 }
 fn defaults(matcher: Pubkey, recipient: Pubkey) -> Settings {
@@ -88,9 +91,9 @@ struct DoorKeys {
     user: Pubkey,
 }
 impl DoorKeys {
-    fn new(room: Pubkey, i: u32, user: Pubkey) -> Self {
-        let door = p(&[b"door", room.as_ref(), &i.to_le_bytes()]);
-        let mint = p(&[b"door_mint", room.as_ref(), &i.to_le_bytes()]);
+    fn new(room: Pubkey, nonce: u64, user: Pubkey) -> Self {
+        let door = p(&[b"door", room.as_ref(), &nonce.to_le_bytes()]);
+        let mint = p(&[b"door_mint", room.as_ref(), &nonce.to_le_bytes()]);
         Self {
             door,
             mint,
@@ -279,7 +282,23 @@ impl Fixture {
             }
         }
     }
-    fn create_ix(&self, mut l: Launch, holder: Option<Pubkey>) -> Instruction {
+    /// A deterministic, non-zero door nonce for the next door of this fixture's room.
+    /// Production nonces are random; tests need the same value in open_ix and open.
+    fn next_door_nonce(&self) -> u64 {
+        (self.r().door_count as u64 + 1).wrapping_mul(0x9e37_79b9_7f4a_7c15)
+    }
+    /// Fill the fixture defaults: door nonce and an expiry one full window ahead.
+    fn fill(&self, mut l: Launch, door: bool) -> Launch {
+        if door && l.door_nonce == 0 {
+            l.door_nonce = self.next_door_nonce();
+        }
+        if l.expires_at_slot == 0 {
+            l.expires_at_slot = self.svm.get_sysvar::<Clock>().slot + MAX_LAUNCH_WINDOW_SLOTS;
+        }
+        l
+    }
+    fn create_ix(&self, l: Launch, holder: Option<Pubkey>) -> Instruction {
+        let mut l = self.fill(l, false);
         let config = self.svm.get_account(&self.cfg).unwrap();
         l.expected_terms_hash = Config::try_deserialize(&mut &config.data[..])
             .unwrap()
@@ -342,7 +361,8 @@ impl Fixture {
         }
     }
     fn open_ix(&self, l: Launch, holder: Option<Pubkey>) -> Instruction {
-        let d = DoorKeys::new(self.room, self.r().door_count, self.user.pubkey());
+        let l = self.fill(l, true);
+        let d = DoorKeys::new(self.room, l.door_nonce, self.user.pubkey());
         instr(
             a::OpenDoor {
                 user: self.user.pubkey(),
@@ -363,7 +383,8 @@ impl Fixture {
         )
     }
     fn open(&mut self, l: Launch) {
-        let d = DoorKeys::new(self.room, self.r().door_count, self.user.pubkey());
+        let l = self.fill(l, true);
+        let d = DoorKeys::new(self.room, l.door_nonce, self.user.pubkey());
         self.checked(self.open_ix(l, None), true, "open_door");
         self.doors.push(d.clone());
         self.make_ata(d.mint, spl_token_2022_interface::ID);
@@ -594,7 +615,7 @@ impl Fixture {
                 self.audit_mint(d.mint);
                 assert_eq!(
                     key,
-                    p(&[b"door", self.room.as_ref(), &d.index.to_le_bytes()])
+                    p(&[b"door", self.room.as_ref(), &d.nonce.to_le_bytes()])
                 );
             }
         }
@@ -1910,4 +1931,119 @@ fn config_rejects_total_launch_fee_overflow_and_confiscatory_trade_fees() {
     f.trade(Some(0), true, 1_010_000);
     f.trade(Some(0), false, f.balance(f.doors[0].user));
     f.audit();
+}
+
+#[test]
+fn door_nonces_do_not_contend_and_a_dropped_open_blocks_nothing() {
+    let mut f = Fixture::new(0);
+    let mut a = launch("Concurrent A");
+    a.door_nonce = 0x1111_1111_1111_1111;
+    let mut b = launch("Concurrent B");
+    b.door_nonce = 0x2222_2222_2222_2222;
+    // Both are built (and co-signed) against the same room state.
+    let ia = f.open_ix(a.clone(), None);
+    let ib = f.open_ix(b.clone(), None);
+    assert_ne!(ia.accounts, ib.accounts);
+    // A is "dropped": B lands first, and nothing about A's reservation blocks it.
+    f.checked(ib, true, "open_door");
+    let kb = DoorKeys::new(f.room, b.door_nonce, f.user.pubkey());
+    assert_eq!(f.r().door_count, 2);
+    let db = Door::try_deserialize(&mut &f.svm.get_account(&kb.door).unwrap().data[..]).unwrap();
+    assert_eq!((db.index, db.nonce), (1, b.door_nonce));
+    // A built earlier still lands afterwards: its address never depended on door_count.
+    f.checked(ia, true, "open_door");
+    let ka = DoorKeys::new(f.room, a.door_nonce, f.user.pubkey());
+    let da = Door::try_deserialize(&mut &f.svm.get_account(&ka.door).unwrap().data[..]).unwrap();
+    assert_eq!((da.index, da.nonce, f.r().door_count), (2, a.door_nonce, 3));
+    f.doors.push(kb);
+    f.doors.push(ka);
+    f.audit();
+}
+
+#[test]
+fn door_nonce_collisions_fail_cleanly_and_door_zero_is_nonce_zero() {
+    let mut f = Fixture::new(0);
+    let mut l = launch("First nonce");
+    l.door_nonce = 0x3333;
+    f.open(l.clone());
+    // Re-using an existing door's nonce cannot overwrite it: the PDA exists.
+    let mut again = launch("Same nonce, other face");
+    again.door_nonce = 0x3333;
+    f.fail(f.open_ix(again, None), true);
+    // Nonce 0 is door 0's address in every room, so open_door with it cannot create a door.
+    let mut zero = launch("Zero nonce");
+    zero.door_nonce = 0x4444; // build with a real nonce, then point it at door 0 with nonce 0
+    let mut ix = f.open_ix(zero.clone(), None);
+    let fresh = DoorKeys::new(f.room, 0x4444, f.user.pubkey());
+    let d0 = DoorKeys::new(f.room, 0, f.user.pubkey());
+    for m in ix.accounts.iter_mut() {
+        for (from, to) in [
+            (fresh.door, d0.door),
+            (fresh.mint, d0.mint),
+            (fresh.vault, d0.vault),
+            (fresh.backing, d0.backing),
+            (fresh.user, d0.user),
+        ] {
+            if m.pubkey == from {
+                m.pubkey = to;
+            }
+        }
+    }
+    let mut z = f.fill(zero, false);
+    z.door_nonce = 0;
+    ix.data = ix::OpenDoor { launch: z }.data();
+    f.fail(ix, true);
+    assert_eq!(f.r().door_count, 2);
+    // create_room must use nonce 0 for door 0.
+    let mut g = Fixture::empty(0);
+    let mut bad = launch("Non-zero door 0 nonce");
+    bad.door_nonce = 9;
+    g.fail_error(g.create_ix(bad, None), true, Some("DoorNonce"));
+}
+
+#[test]
+fn launch_expiry_window_is_enforced_on_both_launch_paths() {
+    let mut f = Fixture::empty(0);
+    let slot = 50_000;
+    f.svm.warp_to_slot(slot);
+    let with = |name: &str, expires: u64| {
+        let mut l = launch(name);
+        l.expires_at_slot = expires;
+        l
+    };
+    // create_room: one slot late, and one slot too far ahead, both fail.
+    f.fail_error(
+        f.create_ix(with("Expiry room", slot - 1), None),
+        true,
+        Some("Expired"),
+    );
+    f.fail_error(
+        f.create_ix(
+            with("Expiry room", slot + MAX_LAUNCH_WINDOW_SLOTS + 1),
+            None,
+        ),
+        true,
+        Some("Expired"),
+    );
+    // Inclusive at the current slot.
+    f.create(with("Expiry room", slot), None);
+    // open_door: the same three boundaries.
+    f.fail_error(
+        f.open_ix(with("Expiry door", slot - 1), None),
+        true,
+        Some("Expired"),
+    );
+    f.fail_error(
+        f.open_ix(
+            with("Expiry door", slot + MAX_LAUNCH_WINDOW_SLOTS + 1),
+            None,
+        ),
+        true,
+        Some("Expired"),
+    );
+    f.open(with("Expiry door", slot + MAX_LAUNCH_WINDOW_SLOTS));
+    // A launch signed for this window is dead once the chain moves past it.
+    let late = f.open_ix(with("Held decision", slot + 10), None);
+    f.svm.warp_to_slot(slot + 11);
+    f.fail_error(late, true, Some("Expired"));
 }

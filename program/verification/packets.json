@@ -1,20 +1,20 @@
 {
   "edge_cu_samples": {
     "buy_door": [
-      63126,
-      75189,
-      63087
+      66565,
+      63628,
+      75550
     ],
     "buy_room": [
-      47647
+      46531
     ],
     "convert": [
-      85259,
-      85259
+      76366,
+      76366
     ],
     "create_ata": [
       17251,
-      21751
+      20251
     ],
     "create_lookup_table": [
       10667
@@ -23,27 +23,27 @@
       12690
     ],
     "initialize_config": [
-      11847
+      13347
     ],
     "open_door": [
-      125865
+      121429
     ],
     "sell_door": [
-      60467,
-      72501
+      63530,
+      60564
     ],
     "sell_room": [
-      45276
+      43785
     ]
   },
   "first_buy_lamports": 1010000000,
-  "legacy_bytes": 1270,
+  "legacy_bytes": 1318,
   "metadata_bytes": {
     "name": 32,
     "symbol": 10,
     "uri": 200
   },
   "packet_limit": 1232,
-  "transaction_cu": 252981,
-  "v0_bytes": 686
+  "transaction_cu": 279455,
+  "v0_bytes": 734
 }

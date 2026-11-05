@@ -428,9 +428,14 @@
         "bytes": 4
       },
       {
-        "field": "reserved",
+        "field": "nonce",
         "offset": 303,
-        "bytes": 25
+        "bytes": 8
+      },
+      {
+        "field": "reserved",
+        "offset": 311,
+        "bytes": 17
       }
     ]
   },

@@ -128,6 +128,30 @@ Additional size checks are recorded at slots 464,036,284–464,036,304 in `outpu
 All current rent-dependent spec figures are regenerated. The trigger remains a Config value snapshotted into each Room; a later rent/default change does not rewrite an old room's curve or graduation trigger. Runtime graduation uses the rent sysvar, not this calibration coefficient.
 <!-- END GENERATED RENT CORRECTION -->
 
+### 0.F Pre-audit: door nonces and explicit launch expiry
+
+Two changes surfaced by the matcher service (`services/matcher/CORRECTIONS.md`
+§1 and §3 on `claude/matcher-service`); details and measurements in
+`program/docs/CORRECTIONS.md`.
+
+- **Door addresses come from a signed nonce, not `door_count`.** `Launch`
+  gains `door_nonce: u64`. `Door` and `DoorMint` are seeded
+  `["door", room, door_nonce u64 LE]` and `["door_mint", room, door_nonce]`.
+  `create_room`'s door 0 uses nonce 0; `open_door` requires a non-zero nonce,
+  chosen at random by the matcher and covered by its signature. Concurrent
+  opens into one room no longer contend on an index, and an open that never
+  lands blocks nothing. A nonce collision fails `init` cleanly; the client
+  requests a fresh decision. `door_count` and `Door.index` remain a
+  creation-order statistic and the `("door", index)` metadata label, but no
+  address depends on them. `Door` stores `nonce: u64` in former reserved bytes
+  (size unchanged, 328), and `DoorOpened` appends `nonce`.
+- **Signed launches carry `expires_at_slot: u64`.** `create_room` and
+  `open_door` reject (`Expired`) when the executing slot is past it, or when
+  it is more than `MAX_LAUNCH_WINDOW_SLOTS` = 150 slots ahead, the runtime's
+  recent-blockhash window (`MAX_PROCESSING_AGE`). A durable-nonce transaction
+  therefore cannot keep a co-signed launch alive past its signed window. The
+  matcher sets it to its blockhash's slot + 150.
+
 ### 0.A Conflicts found in this revision's rulings
 
 Rulings 1 (free launch), 3 (no ticker locks) and 4 (room token inherits
@@ -234,8 +258,8 @@ Exact packed field offsets are in `outputs/account_sizes.md`.
 <!-- BEGIN GENERATED DOOR ACCOUNTS -->
 | account | seeds / derivation | data bytes | rent (lamports) |
 |---|---|---|---|
-| Door | `["door", room, index u32 LE]` | 328 | 2,316,480 |
-| DoorMint (max metadata) | `["door_mint", room, index]` | 638 | 3,891,280 |
+| Door | `["door", room, door_nonce u64 LE]` (door 0: nonce 0) | 328 | 2,316,480 |
+| DoorMint (max metadata) | `["door_mint", room, door_nonce]` | 638 | 3,891,280 |
 | DoorVault | `["door_vault", door]` | 165 | 1,488,440 |
 | DoorRoomVault | `["door_room_vault", door]` | 165 | 1,488,440 |
 | trader's Token-2022 ATA | `ATA program` | 170 | 1,513,840 |
@@ -334,8 +358,8 @@ All earlier field offsets remain unchanged; exact appended offsets and the
 additional launch rent are regenerated in `outputs/account_sizes.md`.
 
 **`Door`** (328 bytes). Backing, vaults and fee fields are unchanged.
-Use its reserve bytes for `matcher_version: u16`, `rule: u8`, `face: u32`,
-leaving the remainder reserved. `RoomCreated` and `DoorOpened` include these
+Use its reserve bytes for `matcher_version: u16`, `rule: u8`, `face: u32`
+and `nonce: u64` (its PDA seed, §0.F), leaving the remainder reserved. `RoomCreated` and `DoorOpened` include these
 text-routing fields. V1 neither computes nor transmits image hashes/digests,
 including shadow evidence. The matcher signs these instruction arguments
 along with the whole routing transaction. The user-supplied metadata URI
@@ -582,6 +606,11 @@ instruction account selected by that signed decision; the opener cannot choose
 or substitute another room. The opener pays rent and transaction fees; the
 door fee defaults to zero.
 
+**Launch window and address (§0.F):** reject unless the executing slot is
+at or before `expires_at_slot` and at most 150 slots before it. The door is
+created at `["door", room, door_nonce]`; `door_nonce` must be non-zero
+(`create_room` requires 0 for door 0).
+
 **Routing checks:** evaluate the shared liveness gate on the target at
 execution. Derive the candidate identity and read its SlugLock. If a distinct
 holder is live, reject the route: exact floor wins. Verify and read a distinct
@@ -596,8 +625,9 @@ recursively requiring the new lock to have an older holder.
       `("room", …), ("door", index)`.
    2. Create `DoorVault` and mint 10¹⁵ into it.
    3. Mint authority → None, metadata update authority → None.
-2. **Accounts.** Create `DoorRoomVault` (empty) and `Door` (`backing = 0`).
-   `room.door_count += 1`.
+2. **Accounts.** Create `DoorRoomVault` (empty) and `Door` (`backing = 0`,
+   `nonce = door_nonce`, `index = room.door_count`). `room.door_count += 1`
+   as a statistic; it determines no address.
 3. **Door fee:** default 0; if non-zero, to `room.protocol_accrued_sol`.
 4. **Optional first buy.** Run `buy` through the new door in the same
    instruction.
@@ -1252,18 +1282,18 @@ These are meta counts, not legacy/v0 packet-size measurements.
 
 | instruction | metas with optionals | writable metas | signers |
 |---|---:|---:|---:|
-| buy | 15 | 9 | 1 |
-| claim_door_fees | 17 | 8 | 1 |
-| claim_founder_fees | 17 | 8 | 1 |
-| convert | 20 | 13 | 1 |
+| buy | 15 | 10 | 1 |
+| claim_door_fees | 17 | 9 | 1 |
+| claim_founder_fees | 17 | 9 | 1 |
+| convert | 20 | 14 | 1 |
 | create_room | 23 | 15 | 2 |
 | initialize_config | 5 | 2 | 1 |
-| open_door | 19 | 10 | 2 |
+| open_door | 19 | 11 | 2 |
 | release_slug | 4 | 2 | 1 |
-| retire_pending | 9 | 5 | 0 |
-| sell | 15 | 9 | 1 |
-| set_fee_recipient | 12 | 5 | 1 |
-| sweep_protocol_fees | 17 | 8 | 1 |
+| retire_pending | 9 | 6 | 0 |
+| sell | 15 | 10 | 1 |
+| set_fee_recipient | 12 | 6 | 1 |
+| sweep_protocol_fees | 17 | 9 | 1 |
 | update_config | 2 | 1 | 1 |
 <!-- END GENERATED PROGRAM CONTEXTS -->
 
@@ -1289,12 +1319,12 @@ Writable-account cap: 24,000,000 CU, verified from Agave v4.4.0 source.
 
 | instruction / route | samples | min CU | max CU | execution-only ceiling per room/block |
 |---|---:|---:|---:|---:|
-| buy_door | 3,351 | 62,347 | 75,189 | 319 |
-| sell_door | 1,675 | 59,589 | 72,501 | 331 |
-| buy_room | 841 | 47,222 | 47,647 | 503 |
-| sell_room | 852 | 44,776 | 45,276 | 530 |
-| convert | 802 | 76,653 | 88,715 | 270 |
-| open_door | 4 | 111,215 | 133,833 | 179 |
+| buy_door | 3,351 | 62,616 | 75,550 | 317 |
+| sell_door | 1,675 | 59,704 | 63,530 | 377 |
+| buy_room | 841 | 46,106 | 55,099 | 435 |
+| sell_room | 852 | 43,285 | 43,785 | 548 |
+| convert | 802 | 75,311 | 78,270 | 306 |
+| open_door | 4 | 118,610 | 130,159 | 184 |
 
 The property run executes 10,000 mixed iterations and
 asserts full global liability coverage, token conservation, authority revocation
@@ -1303,21 +1333,22 @@ samples exercise maximum-length room/door metadata, a larger curve position,
 the capped crossing buy and conversion while complete. These are maxima
 observed in these fixtures, not a proof of worst-case CU for every address.
 
-Maximum-metadata creation with an atomic first buy: legacy 1,270 bytes
+Maximum-metadata creation with an atomic first buy: legacy 1,318 bytes
 exceeds the 1,232-byte packet limit; the executed v0 transaction
-uses 686 bytes. Its whole-transaction CU is 252,981.
+uses 734 bytes. Its whole-transaction CU is 279,455.
 
 The ceiling is floor(cap / maximum measured execution CU). Actual scheduling
 also charges signatures, write locks, instruction data and the transaction’s
 requested compute budget. Clients must size that budget; these ceilings are
 not a promise of accepted transactions per block. Pool-phase CU is unmeasured.
 
-Build commit: `f6eb007627d30fdf74d5df2847c0feed1241c535`; ELF SHA-256: `a5bccfaddec3cf5ae690317b25d8a5977c775dd3d414caed854dc182a2f371af`.
+Build commit: `6385fdd2494f3e8e8de5b93dd11753e81338c4b6`; ELF SHA-256: `36e22dab7bd77e7b90c4094d0a993d7fa880cf9b40f4da6e19c9a4a105113b31`.
 Raw samples/statistics, tool versions and source hashes are in
 `program/verification/svm_report.json` and `program/verification/build.json`.
 <!-- END GENERATED PROGRAM CU -->
 
-**Door count.** `door_count: u32` gives about 4.29 billion doors per room. No
+**Door count.** `door_count: u32` is a creation-order statistic (§0.F) and gives
+about 4.29 billion doors per room; door addresses use 64-bit nonces. No
 instruction touches more than two doors. Indexers enumerate doors with
 `getProgramAccounts` on a `room` memcmp, whose cost grows with door count.
 
@@ -1423,8 +1454,11 @@ block (same file, L37). A door allocates 1,296 data bytes: Door 328 + DoorMint
   - a fixed 1B premint whose supply can only decrease through holder burns,
     no mint or freeze authority, metadata with name, ticker
     and image;
-  - a door is verified by checking its `("room", "door")` metadata against
-    the PDA `["door", room, index]`.
+  - a door is verified through its `Door` account: find it by its `mint`
+    field (offset 44), then check the account is the PDA
+    `["door", room, door.nonce]` and its mint is `["door_mint", room,
+    door.nonce]`. The `("door", index)` metadata is a creation-order label
+    and no longer locates the PDA (§0.F).
 - **The room token** carries door 0's name, symbol and image, permanently.
   It and door 0 are twins: same metadata, different mints, same asset, same
   price. The frontend must label which is which.

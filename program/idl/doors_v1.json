@@ -782,6 +782,10 @@
                   0,
                   0,
                   0,
+                  0,
+                  0,
+                  0,
+                  0,
                   0
                 ]
               }
@@ -1050,9 +1054,8 @@
                 "account": "Core"
               },
               {
-                "kind": "account",
-                "path": "core.room.door_count",
-                "account": "Core"
+                "kind": "arg",
+                "path": "launch.door_nonce"
               }
             ]
           }
@@ -2110,6 +2113,16 @@
       "code": 6020,
       "name": "LaunchTerms",
       "msg": "Room economics differ from the signed launch terms"
+    },
+    {
+      "code": 6021,
+      "name": "Expired",
+      "msg": "Signed launch is past its expiry slot, or its expiry is too far ahead"
+    },
+    {
+      "code": 6022,
+      "name": "DoorNonce",
+      "msg": "Door nonce must be 0 for create_room and non-zero for open_door"
     }
   ],
   "types": [
@@ -2368,11 +2381,15 @@
             "type": "u32"
           },
           {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
             "name": "reserved",
             "type": {
               "array": [
                 "u8",
-                25
+                17
               ]
             }
           }
@@ -2411,6 +2428,10 @@
           {
             "name": "face",
             "type": "u32"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
           }
         ]
       }
@@ -2532,6 +2553,14 @@
                 32
               ]
             }
+          },
+          {
+            "name": "door_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "expires_at_slot",
+            "type": "u64"
           }
         ]
       }

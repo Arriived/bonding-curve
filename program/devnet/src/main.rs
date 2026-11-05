@@ -225,6 +225,9 @@ impl Chain {
     fn account(&self, k: &Pubkey) -> Result<Account> {
         self.account_at(k)?.1.ok_or_else(|| anyhow!("account {k} not found"))
     }
+    fn slot(&self) -> Result<u64> {
+        self.rpc("getSlot", json!([{"commitment": "confirmed"}]))?.as_u64().ok_or_else(|| anyhow!("slot"))
+    }
     fn rent(&self, len: usize) -> Result<u64> {
         self.rpc("getMinimumBalanceForRentExemption", json!([len]))?.as_u64().ok_or_else(|| anyhow!("rent"))
     }
@@ -380,11 +383,12 @@ struct DoorKeys {
     backing: Pubkey,
 }
 impl DoorKeys {
-    fn new(room: Pubkey, i: u32) -> Self {
-        let door = p(&[b"door", room.as_ref(), &i.to_le_bytes()]);
+    /// Door PDAs are seeded by the signed door nonce (0 for door 0), not by an index.
+    fn new(room: Pubkey, nonce: u64) -> Self {
+        let door = p(&[b"door", room.as_ref(), &nonce.to_le_bytes()]);
         Self {
             door,
-            mint: p(&[b"door_mint", room.as_ref(), &i.to_le_bytes()]),
+            mint: p(&[b"door_mint", room.as_ref(), &nonce.to_le_bytes()]),
             vault: p(&[b"door_vault", door.as_ref()]),
             backing: p(&[b"door_room_vault", door.as_ref()]),
         }
@@ -401,6 +405,27 @@ fn launch(name: &str, symbol: &str) -> Launch {
         rule: 0,
         face: 0,
         max_fee_lamports: 0,
+        expected_terms_hash: [0; 32],
+        door_nonce: 0,
+        expires_at_slot: 0,
+    }
+}
+/// Fill the signed launch fields that depend on chain state: the Config's launch-terms
+/// hash, the door nonce, and an expiry one full launch window after the current slot.
+fn prepare(c: &Chain, mut l: Launch, door_nonce: u64) -> Result<Launch> {
+    let cfg = Config::try_deserialize(&mut &c.account(&p(&[b"config"]))?.data[..])?;
+    l.expected_terms_hash = cfg.launch_terms_hash();
+    l.door_nonce = door_nonce;
+    l.expires_at_slot = c.slot()? + MAX_LAUNCH_WINDOW_SLOTS;
+    Ok(l)
+}
+/// A random non-zero door nonce from the OS CSPRNG.
+fn door_nonce() -> Result<u64> {
+    loop {
+        let n = random_u64()?;
+        if n != 0 {
+            return Ok(n);
+        }
     }
 }
 fn create_ata_ix(payer: Pubkey, owner: Pubkey, mint: Pubkey, program: Pubkey) -> Instruction {
@@ -477,7 +502,8 @@ impl Ctx {
         )
     }
     fn open_ix(&self, r: &Room, user: Pubkey, matcher: Pubkey, l: Launch) -> Instruction {
-        let d = DoorKeys::new(self.room, r.door_count);
+        let _ = r;
+        let d = DoorKeys::new(self.room, l.door_nonce);
         instr(
             a::OpenDoor {
                 user,
@@ -624,12 +650,14 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     let rid = random_u64()?;
     let ctx = Ctx::new(rid);
     let (lk, tk) = (launcher.pubkey(), trader.pubkey());
+    let n1 = door_nonce()?;
     let d0 = DoorKeys::new(ctx.room, 0);
-    let d1 = DoorKeys::new(ctx.room, 1);
+    let d1 = DoorKeys::new(ctx.room, n1);
     let (name, symbol) = ("Doors Devnet Smoke", "DOORS");
 
     // 1. create_room, signed by the launcher and the matcher; creates door 0.
-    c.send("create_room", &[ctx.create_ix(lk, matcher.pubkey(), launch(name, symbol))], &launcher, &[&matcher])?;
+    let l0 = prepare(&c, launch(name, symbol), 0)?;
+    c.send("create_room", &[ctx.create_ix(lk, matcher.pubkey(), l0)], &launcher, &[&matcher])?;
     let r = c.room(&ctx.room)?;
     // Token accounts that later trades expect (idempotent ATA creation, as clients do).
     c.send(
@@ -643,7 +671,8 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
         &[],
     )?;
     // 2. open_door into the room from a second wallet, same identity (a vamp joining).
-    c.send("open_door", &[ctx.open_ix(&r, tk, matcher.pubkey(), launch(name, symbol))], &trader, &[&matcher])?;
+    let l1 = prepare(&c, launch(name, symbol), n1)?;
+    c.send("open_door", &[ctx.open_ix(&r, tk, matcher.pubkey(), l1)], &trader, &[&matcher])?;
     c.send(
         "create_atas_trader",
         &[
@@ -729,7 +758,8 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
         }));
     }
     let verify = json!({
-        "room": ctx.room.to_string(), "room_id": rid.to_string(), "status": rf.status, "door_count": rf.door_count,
+        "room": ctx.room.to_string(), "room_id": rid.to_string(), "door1_nonce": n1.to_string(),
+        "status": rf.status, "door_count": rf.door_count,
         "room_mint": mint_check(&c, &rf.room_mint)?, "doors": doors,
         "reserve": rf.reserve.to_string(), "sold": rf.sold.to_string(), "retired": rf.retired.to_string(),
         "room_vault_balance": room_vault.to_string(), "room_vault_covers_unsold": room_vault >= U - rf.sold,
@@ -768,12 +798,13 @@ fn fail(dir: &str, smoke_report: &str, out: &str) -> Result<()> {
     let ctx = Ctx::new(rid);
     let r = c.room(&ctx.room)?;
     let (lk, tk) = (launcher.pubkey(), trader.pubkey());
+    let n1: u64 = s["verify"]["door1_nonce"].as_str().ok_or_else(|| anyhow!("door1_nonce"))?.parse()?;
     let d0 = DoorKeys::new(ctx.room, 0);
-    let d1 = DoorKeys::new(ctx.room, 1);
+    let d1 = DoorKeys::new(ctx.room, n1);
     // A fresh room for the create_room cases, so the signature is the only defect.
     let ctx2 = Ctx::new(random_u64()?);
-    let probe = launch("Doors Unsigned Probe", "PROBE");
-    let smoke_launch = launch("Doors Devnet Smoke", "DOORS");
+    let probe = prepare(&c, launch("Doors Unsigned Probe", "PROBE"), 0)?;
+    let smoke_launch = prepare(&c, launch("Doors Devnet Smoke", "DOORS"), door_nonce()?)?;
     let matcher_index = 1; // `matcher` is the second account of both CreateRoom and OpenDoor
 
     // (a) No matcher signature: the matcher account is present but not marked as a signer.

@@ -55,7 +55,7 @@ pub struct CreateRoom<'info> {
     /// CHECK: canonical classic native-WSOL token PDA created by handler.
     #[account(mut)]
     pub fee_wsol: UncheckedAccount<'info>,
-    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",room.key().as_ref(),&0u32.to_le_bytes()],bump)]
+    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",room.key().as_ref(),&0u64.to_le_bytes()],bump)]
     pub door: Box<Account<'info, Door>>,
     /// CHECK: canonical Token-2022 mint, initialized and revoked atomically.
     #[account(mut)]
@@ -131,6 +131,7 @@ pub struct TradeAccounts<'info> {
     pub system_program: Program<'info, System>,
 }
 #[derive(Accounts)]
+#[instruction(launch:Launch)]
 pub struct OpenDoor<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
@@ -140,7 +141,7 @@ pub struct OpenDoor<'info> {
     /// CHECK: derived from launch metadata, existing lock validated even when not selected.
     pub slug: UncheckedAccount<'info>,
     pub old_holder: Option<Box<Account<'info, Room>>>,
-    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",core.room.key().as_ref(),&core.room.door_count.to_le_bytes()],bump)]
+    #[account(init,payer=user,space=Door::LEN,seeds=[b"door",core.room.key().as_ref(),&launch.door_nonce.to_le_bytes()],bump)]
     pub door: Box<Account<'info, Door>>,
     /// CHECK: canonical Token-2022 mint created in handler.
     #[account(mut)]
