@@ -45,6 +45,7 @@ def main():
               ('ReserveVault','["reserve", room]',0),('FeeVault','["fees", room]',0),
               ('GradPayer (System-owned)','["grad_payer", room]',0),
               ('SlugLock','["slug", derived_identity_hash]',sizes['SlugLock']),
+              ('NameLock (when the launch has a name key)','["name", name_key]',sizes['NameLock']),
               ('RoomMint','["room_mint", room]',room_mint),('RoomVault','["room_vault", room]',165),
               ('RetiredVault','["retired", room]',165),('FeeWsol','["fee_wsol", room]',165)]
     doors=[('Door (door 0: nonce 0)','["door", room, door_nonce u64 LE]',sizes['Door']),

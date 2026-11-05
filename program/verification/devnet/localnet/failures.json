@@ -1,7 +1,7 @@
 {
   "cases": [
     {
-      "block_time": 1793899027,
+      "block_time": 1793904471,
       "error": "{\"InstructionError\":[1,{\"Custom\":3010}]}",
       "error_log": "Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.",
       "events": [],
@@ -9,13 +9,13 @@
       "landed": true,
       "name": "create_room_without_matcher_signature",
       "ok": false,
-      "program_cu": 9106,
-      "signature": "5g4TfNmQekmSi6nGM4a6JN4xSiLrjvayK3dL3Ehf6BaBsAQ8pShEgEo8QAh85EVqvH5XGGDAMWLK8iyyhFX1MLm1",
-      "slot": 51,
-      "transaction_cu": 9256
+      "program_cu": 9513,
+      "signature": "LmESHirUDUgRJSKHpBiEBsHA5UH6SFuR9VS47ZGdTkJVbL8Czt18twD987zzATT4z3emkvKuTEYyDZJt9HQ5v9m",
+      "slot": 50,
+      "transaction_cu": 9663
     },
     {
-      "block_time": 1793899028,
+      "block_time": 1793904472,
       "error": "{\"InstructionError\":[1,{\"Custom\":3010}]}",
       "error_log": "Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.",
       "events": [],
@@ -24,8 +24,8 @@
       "name": "open_door_without_matcher_signature",
       "ok": false,
       "program_cu": 9025,
-      "signature": "4HMLCF3G2R49UappKvzwjbPubh8iY8UewsZGXScCo55HEAjxvoHB5e63VLs6qrtHP9Q3XZ2Aq9BtS8cBVmjYDyTv",
-      "slot": 53,
+      "signature": "2c2w3RHgwrpSwv2sFy2mAhD9ToC2auM13Ky5ry3iBLhXpc6owPbybdTvfVVJCeVXYBCzxE4Qtefj3MsN8w9BxWHR",
+      "slot": 52,
       "transaction_cu": 9175
     },
     {
@@ -39,7 +39,7 @@
       "rpc_error": "sendTransaction: {\"code\":-32002,\"data\":{\"accounts\":null,\"err\":\"SignatureFailure\",\"fee\":null,\"innerInstructions\":null,\"loadedAccountsDataSize\":0,\"loadedAddresses\":null,\"logs\":[],\"postBalances\":null,\"postTokenBalances\":null,\"preBalances\":null,\"preTokenBalances\":null,\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0},\"message\":\"Transaction simulation failed: Transaction did not pass signature verification\"}"
     },
     {
-      "block_time": 1793899029,
+      "block_time": 1793904473,
       "error": "{\"InstructionError\":[1,{\"Custom\":1}]}",
       "error_log": "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1",
       "events": [],
@@ -47,27 +47,27 @@
       "landed": true,
       "name": "sell_exceeding_balance",
       "ok": false,
-      "program_cu": 30071,
-      "signature": "a6WGSh4j6j4AM4eazmfSP9oPwbaVS3TGxR2XYJJ4TW3Bs4bwdC88ewhgazLccmdkHjAhuT3A7zGDeX8eowKhj9w",
-      "slot": 56,
-      "transaction_cu": 30221
+      "program_cu": 30073,
+      "signature": "52nrJ5tiQh7i3YadBRRdT9ULKcaYYk7P9J3jEWwvjRGZC434XX7eS6DcGFFx3dHuYo3oPFwPxPPfTTwJnFMkQP1i",
+      "slot": 55,
+      "transaction_cu": 30223
     },
     {
-      "block_time": 1793899030,
+      "block_time": 1793904474,
       "error": "{\"InstructionError\":[1,{\"Custom\":6006}]}",
-      "error_log": "Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:820. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.",
+      "error_log": "Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:879. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.",
       "events": [],
       "fee_lamports": 5000,
       "landed": true,
       "name": "claim_door_fees_by_non_recipient",
       "ok": false,
-      "program_cu": 21151,
-      "signature": "4aQvDauAixuqNcyX5W6z1ijcnefn85mkfDZj2h9gj5hKwbPP11gWQGBP6WEDWAwAguK4Hu2B92cA7cqtK1iVQbhs",
-      "slot": 58,
-      "transaction_cu": 21301
+      "program_cu": 22651,
+      "signature": "4C5U1gyJBsw2vCLG46xYdAKmSVDNqQxZe1EpnJpeMqymBwfpJV1HJFG8VUEYgJMZoxCRf8kPwS5kPhpcMmzLkkR5",
+      "slot": 57,
+      "transaction_cu": 22801
     }
   ],
-  "probe_room": "8AiDLf1N7dy8kqudrJWVBHTFuBgJM8dkVUbEDoeCLQtd",
+  "probe_room": "68sNntoT5oPxKAMZ9ZqTN6QgkiywGZ7eKFpV1qJFaXrq",
   "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
-  "room": "DNxcVgrUbeLFDTKyy3LKCp5ezoSYWNDwuSyWLxpPSEPD"
+  "room": "5LDA8P5ZHt4dDo5i1KTxcgg4oBpaAquFLUfhHXSeBuPJ"
 }

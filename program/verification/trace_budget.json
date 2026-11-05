@@ -6,7 +6,7 @@
       "error": "",
       "first_buy": true,
       "instruction": "create_room",
-      "logged_invocations": 46,
+      "logged_invocations": 47,
       "prefunded": false,
       "priority_fee_instruction": false,
       "succeeded": true
@@ -24,7 +24,7 @@
       "error": "",
       "first_buy": true,
       "instruction": "create_room",
-      "logged_invocations": 47,
+      "logged_invocations": 48,
       "prefunded": false,
       "priority_fee_instruction": true,
       "succeeded": true
@@ -42,7 +42,7 @@
       "error": "",
       "first_buy": true,
       "instruction": "create_room",
-      "logged_invocations": 47,
+      "logged_invocations": 48,
       "prefunded": true,
       "priority_fee_instruction": false,
       "succeeded": true
@@ -60,7 +60,7 @@
       "error": "",
       "first_buy": true,
       "instruction": "create_room",
-      "logged_invocations": 48,
+      "logged_invocations": 49,
       "prefunded": true,
       "priority_fee_instruction": true,
       "succeeded": true

@@ -7,6 +7,8 @@
 | FeeVault (program-owned, no data; SOL fees) | 0 | 650,240 | 0.000650 |
 | GradPayer (SYSTEM-owned PDA, no data; holds DAMM v2 rent, signs as payer) | 0 | 650,240 | 0.000650 |
 | SlugLock | 17 | 736,600 | 0.000737 |
+| NameLock | 33 | 817,880 | 0.000818 |
+| PendingGate | 65 | 980,440 | 0.000980 |
 | Door | 328 | 2,316,480 | 0.002316 |
 | RoomMint (Token-2022 + MetadataPointer + TokenMetadata; name 32 / symbol 10 / uri 200) | 616 | 3,779,520 | 0.003780 |
 | RoomVault (room-token account owned by Room PDA; 1B pre-minted here) | 165 | 1,488,440 | 0.001488 |
@@ -21,9 +23,9 @@
 
 Per-door rent (Door + DoorMint max + DoorVault + DoorRoomVault): 9,677,400 lamports = 0.009677 SOL = $1.45 at $150/SOL (minimum metadata: 8,315,960 = 0.008316 SOL = $1.25)
 Data bytes allocated per door (Door + DoorMint max + DoorVault + DoorRoomVault): 1,393
-Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + RoomMint + RoomVault + RetiredVault + FeeWsol): 18,262,600 lamports = 0.018263 SOL = $2.74
+Per-room rent excluding door accounts (Room + ReserveVault + FeeVault + GradPayer + SlugLock + NameLock + RoomMint + RoomVault + RetiredVault + FeeWsol): 19,080,480 lamports = 0.019080 SOL = $2.86
 Door-mint metadata self-description (door_nonce + program, 5 Nov 2026): DoorMint max 638 -> 735 bytes, +97 bytes, +492,760 lamports per door at a 20-digit nonce
-Launching a room (room accounts + door 0 at max metadata; no room or door fee): 27,940,000 lamports = 0.027940 SOL = $4.19, plus transaction fees
+Launching a room (room accounts + door 0 at max metadata; no room or door fee): 28,757,880 lamports = 0.028758 SOL = $4.31, plus transaction fees
 
 Accounts created at graduation, and their rent:
 
@@ -124,6 +126,25 @@ Field layouts:
 | 0 | 8 | anchor discriminator |
 | 8 | 8 | room_id: u64 |
 | 16 | 1 | bump: u8 |
+
+**NameLock** (33 bytes)
+
+| offset | bytes | field |
+|---|---|---|
+| 0 | 8 | anchor discriminator |
+| 8 | 8 | room_id: u64 |
+| 16 | 16 | key: [u8; 16] |
+| 32 | 1 | bump: u8 |
+
+**PendingGate** (65 bytes)
+
+| offset | bytes | field |
+|---|---|---|
+| 0 | 8 | anchor discriminator |
+| 8 | 40 | gate: Gate (5 x u64 liveness thresholds) |
+| 48 | 8 | proposed_at: i64 |
+| 56 | 8 | effective_at: i64 (proposed_at + 7 days) |
+| 64 | 1 | bump: u8 |
 
 **Door** (328 bytes)
 
