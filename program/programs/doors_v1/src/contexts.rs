@@ -42,7 +42,8 @@ pub struct CreateRoom<'info> {
     /// CHECK: identity-derived PDA, manually initialized or validated before takeover.
     #[account(mut)]
     pub slug: UncheckedAccount<'info>,
-    pub old_holder: Option<Box<Account<'info, Room>>>,
+    /// CHECK: the dead holder of a lock being taken over; read in place by `vaults::holder_dead`.
+    pub old_holder: Option<UncheckedAccount<'info>>,
     /// CHECK: canonical Token-2022 mint, initialized and revoked atomically.
     #[account(mut)]
     pub room_mint: UncheckedAccount<'info>,
@@ -140,7 +141,8 @@ pub struct OpenDoor<'info> {
     pub core: Core<'info>,
     /// CHECK: derived from launch metadata, existing lock validated even when not selected.
     pub slug: UncheckedAccount<'info>,
-    pub old_holder: Option<Box<Account<'info, Room>>>,
+    /// CHECK: the dead holder of a lock being taken over; read in place by `vaults::holder_dead`.
+    pub old_holder: Option<UncheckedAccount<'info>>,
     #[account(init,payer=user,space=Door::LEN,seeds=[b"door",core.room.key().as_ref(),&launch.door_nonce.to_le_bytes()],bump)]
     pub door: Box<Account<'info, Door>>,
     /// CHECK: canonical Token-2022 mint created in handler.

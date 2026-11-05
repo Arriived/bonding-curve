@@ -132,12 +132,13 @@ fn heap_probe_worst_case_launches() {
         if !prefunded { heap_probe_prefund(&mut f, &ix); prefunded = true; }
         heap_probe_try(&mut f, ix).is_ok()
     });
-    // create_room takeover (second Room deserialised for old_holder) at the largest metadata
-    // the matcher service signs in a legacy transaction: name 32, symbol 10, URI 70.
-    let takeover = heap_probe_search(|units| {
+    // create_room takeover of a dead room's identity (old_holder) at a given URI length: 70 is the
+    // largest the matcher service signs in a legacy transaction (name 32, symbol 10), 200 the
+    // program's maximum, reachable in a v0 transaction (finding M-7).
+    let takeover_at = |uri: usize| heap_probe_search(|units| {
         let mut f = heap_probe_fixture();
         let mut held = heap_probe_launch("Taken", 18, 0, 1);
-        held.uri = "u".repeat(70);
+        held.uri = "u".repeat(uri);
         f.create(held, None);
         let old = f.room;
         f.time(3600);
@@ -145,26 +146,33 @@ fn heap_probe_worst_case_launches() {
         f.room = p(&[b"room", &f.rid.to_le_bytes()]);
         f.doors.clear();
         let mut l = heap_probe_launch("Taken", 18, 1_010_000_000, units);
-        l.uri = "u".repeat(70);
+        l.uri = "u".repeat(uri);
         let ix = f.create_ix(l, Some(old));
         heap_probe_prefund(&mut f, &ix);
         heap_probe_try(&mut f, ix).is_ok()
     });
-    // Full v0-size takeover (URI 200): open finding M-7. 0 means it fails even with no probe allocation.
-    let takeover_max = {
+    let takeover = takeover_at(70);
+    let takeover_200 = takeover_at(200);
+    let takeover_max = u16::from(takeover_200 > 0);
+    // open_door into a live room with an identity held by a dead room (old_holder), maximum metadata.
+    let open_takeover = {
         let mut f = heap_probe_fixture();
-        let mut held = heap_probe_launch("Taken", 18, 0, 1);
-        held.uri = "u".repeat(200);
-        f.create(held, None);
-        let old = f.room;
+        f.create(heap_probe_launch("Door identity", 18, 0, 1), None);
+        let dead = f.room;
         f.time(3600);
-        f.rid = 0x7d21_93be_04f5_c6a8;
+        f.rid = 0x51c3_0aa7_9e44_1d02;
         f.room = p(&[b"room", &f.rid.to_le_bytes()]);
         f.doors.clear();
-        let l = heap_probe_launch("Taken", 18, 1_010_000_000, 1);
-        let ix = f.create_ix(l, Some(old));
-        heap_probe_prefund(&mut f, &ix);
-        u16::from(heap_probe_try(&mut f, ix).is_ok())
+        let mut room = launch("Probe room");
+        room.max_fee_lamports = 18;
+        f.create(room, None);
+        f.trade(None, true, 1_010_000);
+        let mut prefunded = false;
+        heap_probe_search(|units| {
+            let ix = f.open_ix(heap_probe_launch("Door identity", 11, 101_000_000, units), Some(dead));
+            if !prefunded { heap_probe_prefund(&mut f, &ix); prefunded = true; }
+            heap_probe_try(&mut f, ix).is_ok()
+        })
     };
     // CU of one worst-case create_room and open_door (no probe allocation), to price the heap
     // request; a launch that cannot run at all records its failure reason instead.
@@ -188,7 +196,7 @@ fn heap_probe_worst_case_launches() {
         heap_probe_prefund(&mut f, &ix);
         cu_of(heap_probe_try(&mut f, ix))
     };
-    println!("HEAP_PROBE {{\"create_room\":{create},\"open_door\":{open},\"create_room_takeover_uri70\":{takeover},\"create_room_takeover_uri200_passes\":{takeover_max}}}");
+    println!("HEAP_PROBE {{\"create_room\":{create},\"open_door\":{open},\"create_room_takeover_uri70\":{takeover},\"create_room_takeover_uri200\":{takeover_200},\"open_door_takeover\":{open_takeover},\"create_room_takeover_uri200_passes\":{takeover_max}}}");
     println!("HEAP_CU {{\"create_room\":{create_cu},\"open_door\":{open_cu}}}");
 }
 '''
@@ -247,7 +255,10 @@ def main():
                       f"binary-searched in {STEP}-byte steps; worst case = maximum metadata, all writable "
                       "launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; "
                       "create_room_takeover_uri70 adds an old_holder takeover at the largest metadata the "
-                      "matcher signs in a legacy transaction (name 32, symbol 10, URI 70)",
+                      "matcher signs in a legacy transaction (name 32, symbol 10, URI 70); "
+                      "create_room_takeover_uri200 is the same at the program's maximum URI (a v0 "
+                      "transaction, finding M-7); open_door_takeover opens a maximum-metadata door "
+                      "whose identity a dead room holds",
             "free_heap_at_end_bytes_at_least": {k: v * STEP for k, v in units.items()},
             "resolution_bytes": STEP,
             "create_room_takeover_uri200_passes": full_takeover,

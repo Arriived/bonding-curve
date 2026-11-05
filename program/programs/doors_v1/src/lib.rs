@@ -126,7 +126,7 @@ pub mod doors_v1 {
         let identity = launch.identity();
         let old = read_slug(&a.slug, &identity)?;
         if let Some(lock) = &old {
-            holder_dead(lock, a.old_holder.as_ref(), &a.config, now)?;
+            holder_dead(lock.room_id, a.old_holder.as_deref(), &a.config, now)?;
         } else {
             require!(a.old_holder.is_none(), Error::Holder);
         }
@@ -359,7 +359,7 @@ pub mod doors_v1 {
         let identity = launch.identity();
         if let Some(lock) = read_slug(&a.slug, &identity)? {
             if lock.room_id != a.core.room.room_id {
-                holder_dead(&lock, a.old_holder.as_ref(), &a.core.config, now)?;
+                holder_dead(lock.room_id, a.old_holder.as_deref(), &a.core.config, now)?;
             } else {
                 require!(a.old_holder.is_none(), Error::Holder);
             }

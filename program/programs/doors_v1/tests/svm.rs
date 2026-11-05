@@ -2315,24 +2315,124 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
     assert!(create_cu < 400_000 && open_cu < 400_000);
 }
 
-// The takeover paths deserialise a second Room (`old_holder`) on top of the worst case
+// The takeover paths read a second Room (`old_holder`, in place) on top of the worst case
 // above: every new account prefunded, non-zero fees, first buy. The create_room takeover
 // uses the largest metadata the matcher service can sign in a legacy transaction
-// (name 32, symbol 10, URI 70: services/matcher txbuild size check); open_door uses the
-// program maximum (URI 200), which fits a legacy transaction. The program maximum for a
-// create_room takeover needs a v0 transaction and exhausts the heap when prefunded:
-// see `prefunded_v0_maximum_takeover_exhausts_the_heap` and SECURITY_REVIEW.md M-7.
+// (name 32, symbol 10, URI 70: services/matcher/scripts/max_uri.py); open_door uses the
+// program maximum (URI 200), which fits a legacy transaction.
 #[test]
 fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
     takeover_heap_case(70);
 }
 
-/// Reproduction of open finding SECURITY_REVIEW.md M-7: fails with "memory allocation
-/// failed, out of memory" until the launch path's heap use is reduced or the heap enlarged.
+/// Formerly the reproduction of finding SECURITY_REVIEW.md M-7 ("memory allocation failed, out of
+/// memory"): the program maximum for a create_room takeover, which needs a v0 transaction. It fits
+/// since the old holder is read in place instead of deserialised into a boxed `Account<Room>`.
 #[test]
-#[ignore = "open finding M-7 (SECURITY_REVIEW.md): reproduces a heap exhaustion; run with --ignored"]
-fn prefunded_v0_maximum_takeover_exhausts_the_heap() {
+fn prefunded_v0_maximum_takeover_fits_the_heap() {
     takeover_heap_case(200);
+}
+
+// The old holder is read in place (`RoomBytes`). It must be exactly what `Account<Room>` accepted:
+// program-owned, Room-sized, Room discriminator, at its canonical room PDA, holding the lock, and dead.
+#[test]
+fn takeover_holder_is_validated_in_place() {
+    let mut f = Fixture::new(0);
+    f.trade(Some(0), true, 5_000_000);
+    let held = f.room;
+    let held_data = f.svm.get_account(&held).unwrap();
+    // RoomBytes reads the same fields as the Borsh layout, including every liveness bucket.
+    let mut r = Room::try_deserialize(&mut &held_data.data[..]).unwrap();
+    r.reserve = 0x0102_0304_0506_0708;
+    r.created_at = 0x1112_1314_1516;
+    r.last_trade_at = 0x2122_2324_2526;
+    for (i, b) in r.liveness_buckets.iter_mut().enumerate() {
+        b.start = 3600 * (i as i64 + 7);
+        b.amount = (i as u128 + 1) << 70;
+    }
+    let mut bytes = Vec::new();
+    r.try_serialize(&mut bytes).unwrap();
+    assert_eq!(bytes.len(), Room::LEN);
+    let view = RoomBytes(&bytes);
+    assert_eq!((view.room_id(), view.bump()), (r.room_id, r.bumps[0]));
+    let cfg = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    for status in [0u8, 1] {
+        r.status = status;
+        let mut b2 = Vec::new();
+        r.try_serialize(&mut b2).unwrap();
+        for now in [
+            0,
+            3600 * 7,
+            3600 * 31,
+            0x1112_1314_1516 + 1,
+            0x2122_2324_2526 + 3600,
+            i64::MAX / 2,
+        ] {
+            for c in [
+                cfg.clone(),
+                Config {
+                    live_min_volume_lamports: 0,
+                    live_min_reserve_lamports: 0,
+                    live_max_idle_seconds: u64::MAX,
+                    ..cfg.clone()
+                },
+            ] {
+                assert_eq!(
+                    RoomBytes(&b2).live(&c, now).unwrap(),
+                    r.live(&c, now).unwrap()
+                );
+            }
+        }
+    }
+    // A second dead room, not the lock's holder.
+    f.time(3600);
+    let other_rid = 0x6a01_33c2_4be8_9d11;
+    f.rid = other_rid;
+    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+    f.doors.clear();
+    f.create(launch("Other dead room"), None);
+    let other = f.room;
+    f.time(3600);
+    // A forged Room: valid bytes and discriminator of the real holder, owned by the program, but not
+    // at a room PDA; and the same bytes owned by the System program.
+    let forged = Pubkey::new_unique();
+    f.svm.set_account(forged, held_data.clone().into()).unwrap();
+    let foreign = Pubkey::new_unique();
+    f.svm
+        .set_account(
+            foreign,
+            Account {
+                owner: anchor_lang::system_program::ID,
+                ..held_data.clone()
+            },
+        )
+        .unwrap();
+    f.rid = 0x0f3e_7c21_9b84_a556;
+    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+    f.doors.clear();
+    for (holder, code) in [
+        (None, "Holder"),
+        (Some(other), "Holder"),
+        (Some(f.cfg), "Holder"),
+        (Some(DoorKeys::new(held, 0, f.user.pubkey()).door), "Holder"),
+        (Some(foreign), "Holder"),
+        (Some(forged), "Pda"),
+    ] {
+        f.fail_error(f.create_ix(launch("First room"), holder), true, Some(code));
+    }
+    f.create(launch("First room"), Some(held));
+    assert_eq!(
+        SlugLock::try_deserialize(
+            &mut &f
+                .svm
+                .get_account(&p(&[b"slug", &launch("First room").identity()]))
+                .unwrap()
+                .data[..]
+        )
+        .unwrap()
+        .room_id,
+        f.rid
+    );
 }
 
 fn takeover_heap_case(create_uri: usize) {
@@ -2370,7 +2470,7 @@ fn takeover_heap_case(create_uri: usize) {
             }
         }
     };
-    let mut next_room = |f: &mut Fixture, rid: u64| {
+    let next_room = |f: &mut Fixture, rid: u64| {
         f.rid = rid;
         f.room = p(&[b"room", &rid.to_le_bytes()]);
         f.doors.clear();
