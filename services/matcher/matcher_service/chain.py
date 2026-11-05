@@ -86,10 +86,13 @@ class RpcClient:
 
     def balance(self, pubkey, min_slot):
         r = self.call("getBalance", [str(pubkey), {"commitment": "confirmed", "minContextSlot": min_slot}])
-        slot = int(r["context"]["slot"])
-        if slot < min_slot:
+        try:
+            slot, value = r["context"]["slot"], r["value"]
+        except (KeyError, TypeError):
+            raise RpcError("getBalance: malformed response")
+        if not isinstance(slot, int) or isinstance(slot, bool) or slot < min_slot:
             raise RpcError("getBalance: context older than launch snapshot")
-        return slot, self._lamports(r["value"])
+        return slot, self._lamports(value)
 
     def minimum_balance(self, size):
         return self._lamports(self.call("getMinimumBalanceForRentExemption", [size, {"commitment": "confirmed"}]))
@@ -97,6 +100,8 @@ class RpcClient:
     def fee_for_message(self, message):
         r = self.call("getFeeForMessage", [base64.b64encode(bytes(message)).decode(), {"commitment": "confirmed"}])
         # Null means the blockhash is no longer usable; do not sign a decision.
+        if not isinstance(r, dict) or "value" not in r:
+            raise RpcError("getFeeForMessage: malformed response")
         return self._lamports(r["value"])
 
     def account(self, pubkey, min_slot=None):

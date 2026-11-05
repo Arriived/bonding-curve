@@ -750,6 +750,39 @@ fn creates_exact_layouts_immutable_mints_and_signed_optional_first_buy() {
 }
 
 #[test]
+fn record_actual_launch_account_sizes_for_matcher_funding_check() {
+    let mut f = Fixture::empty(0);
+    let mut l = launch("Funding room");
+    l.first_buy_lamports = 1_010_000_000;
+    let ix = f.create_ix(l.clone(), None);
+    let keys: std::collections::BTreeSet<_> = ix
+        .accounts
+        .iter()
+        .filter(|a| a.is_writable && f.svm.get_account(&a.pubkey).is_none())
+        .map(|a| a.pubkey)
+        .collect();
+    f.create(l.clone(), None);
+    let mut sizes: Vec<_> = keys
+        .iter()
+        .map(|key| f.svm.get_account(key).unwrap().data.len())
+        .collect();
+    sizes.sort();
+    let out = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../verification/launch_rent_accounts.json");
+    std::fs::write(
+        out,
+        serde_json::to_string_pretty(&json!({
+            "source":"actual accounts created by compiled SBF in LiteSVM",
+            "name":l.name,"symbol":l.symbol,"uri":l.uri,"first_buy":l.first_buy_lamports,
+            "room":f.room.to_string(),"program":ID.to_string(),"sizes":sizes,
+        }))
+        .unwrap()
+            + "\n",
+    )
+    .unwrap();
+}
+
+#[test]
 fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
     let mut f = Fixture::empty(0);
     let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
@@ -2324,8 +2357,8 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
 // uses the largest metadata the matcher service can sign in a legacy transaction
 // (name 32, symbol 10, URI 70: services/matcher txbuild size check); open_door uses the
 // program maximum (URI 200), which fits a legacy transaction. The program maximum for a
-// create_room takeover needs a v0 transaction and exhausts the heap when prefunded:
-// see `prefunded_v0_maximum_takeover_exhausts_the_heap` and SECURITY_REVIEW.md M-7.
+// create_room takeover needs a v0 transaction. The former M-7 reproduction below
+// is now required to pass as well, using the same stock heap.
 #[test]
 fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
     takeover_heap_case(70);
@@ -2414,11 +2447,13 @@ fn takeover_heap_case(create_uri: usize) {
 // [cu_limit, cu_price, launch]. Ordinary metadata; the trace does not depend on metadata length.
 #[test]
 fn launch_instruction_trace_budget() {
-    fn shaped(f: &mut Fixture, ix: Instruction, price: bool) -> (bool, usize, String) {
+    fn shaped(f: &mut Fixture, ix: Instruction, price: bool, extra: bool) -> (bool, usize, String) {
         f.svm.expire_blockhash();
         let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(400_000)];
         if price {
             ixs.push(ComputeBudgetInstruction::set_compute_unit_price(1));
+        }
+        if extra {
             // Real composition margin: two additional valid instructions. The
             // stock heap size is intentional; M-7 must fit without enlarging it.
             ixs.push(ComputeBudgetInstruction::request_heap_frame(32 * 1024));
@@ -2447,7 +2482,13 @@ fn launch_instruction_trace_budget() {
         }
     };
     let mut rows = Vec::new();
-    for (prefunded, price) in [(false, false), (false, true), (true, false), (true, true)] {
+    for (prefunded, price, extra) in [
+        (false, false, false),
+        (false, true, false),
+        (true, false, false),
+        (true, true, false),
+        (true, true, true),
+    ] {
         let mut f = Fixture::empty(0);
         let mut l = launch("Trace room");
         l.first_buy_lamports = 1_010_000_000;
@@ -2455,9 +2496,12 @@ fn launch_instruction_trace_budget() {
         if prefunded {
             prefund(&mut f, &ix);
         }
-        let (ok, invokes, err) = shaped(&mut f, ix, price);
-        rows.push(json!({"instruction":"create_room","first_buy":true,"prefunded":prefunded,
-            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"error":err}));
+        let (ok, invokes, err) = shaped(&mut f, ix, price, extra);
+        rows.push(
+            json!({"instruction":"create_room","first_buy":true,"prefunded":prefunded,
+            "priority_fee_instruction":price,"extra_budget_instructions":if extra {2} else {0},
+            "succeeded":ok,"logged_invocations":invokes,"error":err}),
+        );
         let mut g = Fixture::new(0);
         let mut l = launch("Trace door");
         l.first_buy_lamports = 101_000_000;
@@ -2465,9 +2509,12 @@ fn launch_instruction_trace_budget() {
         if prefunded {
             prefund(&mut g, &ix);
         }
-        let (ok, invokes, err) = shaped(&mut g, ix, price);
-        rows.push(json!({"instruction":"open_door","first_buy":true,"prefunded":prefunded,
-            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"error":err}));
+        let (ok, invokes, err) = shaped(&mut g, ix, price, extra);
+        rows.push(
+            json!({"instruction":"open_door","first_buy":true,"prefunded":prefunded,
+            "priority_fee_instruction":price,"extra_budget_instructions":if extra {2} else {0},
+            "succeeded":ok,"logged_invocations":invokes,"error":err}),
+        );
     }
     for r in &rows {
         println!("TRACE {r}");

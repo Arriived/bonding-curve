@@ -1,5 +1,13 @@
 # Doors v1 Anchor program
 
+The `codex/m8-h1-m6` remediation reduces prefunded creation CPIs, adds funded
+single-launcher reservations in the matcher, and puts all five shared liveness
+thresholds behind a seven-day schedule/apply path with on-chain events. Config
+and Room byte layouts are unchanged. Use the new IDL for the admin instructions.
+The deployed devnet ELF is unchanged; devnet funds remain upgrade budget.
+An on-chain NameLock is a mandatory mainnet blocker. See
+[the remediation record](docs/AUDIT_REMEDIATION.md).
+
 Curve-phase implementation of the [build spec](../research/doors_into_one_room/PERMANENT_CURVE_SPEC.md).
 Work branch: `claude/program-v1`, based on research commit `de1f7fd`.
 No program is deployed by the build or test workflow.

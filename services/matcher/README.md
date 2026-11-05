@@ -353,16 +353,14 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    with the same freshness checks.
 6. ~~Program changes recommended in CORRECTIONS~~: done in the program (`e9bd2aa`). There is now an
    explicit `expires_at_slot` (§1), and door addresses are not tied to `door_count` (§3).
-7. **v0 transactions with a lookup table** for maximum-length metadata (§10). **Blocked by
-   open finding M-7** (`program/docs/SECURITY_REVIEW.md`). At v0-only sizes, a prefunded
-   `create_room` takeover exhausts the program's heap. Legacy transactions cap the metadata
-   below that size, which is the only reason it is unreachable today.
-   **Do not add any instruction to a launch transaction either** (`RequestHeapFrame`, a memo,
-   anything). A prefunded `create_room` with a first buy and a priority fee already uses 64 of the
-   64 allowed instruction-trace entries (finding M-8).
-8. **Open self-review finding for the service: H-1.** Name reservations are free.
-   Requests are now signed (M-3 is fixed), but keys are free too. The SlugLock
-   analysis and the remedies are in `program/docs/SECURITY_REVIEW.md`.
+7. **v0 transactions with a lookup table** for maximum-length metadata (§10) still need client
+   implementation. The M-8/M-7 creation fix on `codex/m8-h1-m6` passes the maximum-metadata
+   prefunded takeover and composition regressions; it must be upgraded on devnet before using
+   that margin there. The current builder continues to sign only its existing legacy shape.
+8. **H-1: on-chain NameLock is mandatory before mainnet.** The interim check requires enough
+   funds for launch and holds at most one new-room reservation per launcher. It does not prevent
+   squatting with multiple funded wallets or replace on-chain enforcement. SlugLock still misses
+   9/16 audited routed pairs. See `program/docs/AUDIT_REMEDIATION.md`.
 9. **Alerting.** On `/health` unready, refusal-rate spikes by code, snapshot age, RPC errors and the
    decision mix. Plus an on-call runbook for key rotation and RPC failover.
 10. **An archival RPC** for the verifier, and a public, independently operated verifier run over the
@@ -370,7 +368,8 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 11. **The branch tip** is fixed, and the service targets it (CORRECTIONS §4). On any later program
     change, update `idl/`, `txbuild.encode_launch` and `program/devnet/DEPLOY_ELF.sha256` together,
     and rerun both test suites.
-# 5 November security remediation
+
+## 5 November security remediation
 
 New-room decisions require proof of funds for rent, launch fees, the first buy
 and the actual message's network/priority fee. One launcher may hold only one
@@ -380,4 +379,3 @@ signing; the decision record includes the funding calculation.
 **Mainnet is blocked until the program implements an on-chain NameLock.** The
 interim funded-wallet reservation is still operator-enforced and is not a
 substitute for that lock. See [the remediation record](../../program/docs/AUDIT_REMEDIATION.md).
-

@@ -96,6 +96,18 @@ fn liveness_change_preserves_the_shared_gate_for_a_full_seven_days() {
         .unwrap());
     f.fail_error(apply_gate(&f), false, Some("LivenessDelay"));
     assert_eq!(f.c().liveness(), before);
+    let release = |f: &Fixture| {
+        instr(
+            a::ReleaseSlug {
+                caller: f.user.pubkey(),
+                config: f.cfg,
+                room: f.room,
+                slug: p(&[b"slug", &f.r().identity]),
+            },
+            ix::ReleaseSlug {},
+        )
+    };
+    f.fail_error(release(&f), false, Some("Live"));
     f.time(1);
     // A fee payer distinct from the Config admin can apply a matured change.
     std::mem::swap(&mut f.user, &mut f.matcher);
@@ -105,6 +117,7 @@ fn liveness_change_preserves_the_shared_gate_for_a_full_seven_days() {
         .r()
         .live(&f.c(), f.svm.get_sysvar::<Clock>().unix_timestamp)
         .unwrap());
+    f.send(release(&f), false, "release_slug_after_timelock");
     f.fail_error(apply_gate(&f), false, Some("NoPendingLiveness"));
 }
 

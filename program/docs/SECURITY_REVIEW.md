@@ -25,6 +25,13 @@ against ELF `34d4ce91…` (`1558b2e`/`805bae3`) and updated in the follow-up of
 
 ## 1. Findings
 
+**Current remediation (5 November, `codex/m8-h1-m6`):** M-8/M-7 use single-CPI
+prefunded PDA creation and pass compiled-program regressions. M-6 uses a seven-day
+shared-gate timelock. H-1 has the interim funded-launcher/one-reservation mitigation,
+but remains a mainnet blocker until on-chain NameLock exists. Details and test
+provenance are in [AUDIT_REMEDIATION.md](AUDIT_REMEDIATION.md). Historical witnesses,
+measurements and remedy evaluations below describe the pre-remediation source.
+
 **Severity** reflects impact once deployed:
 - **High:** breaks a core guarantee or availability for anyone, cheaply.
 - **Medium:** needs conditions, or harms a narrower set of people.
@@ -36,15 +43,15 @@ known (already documented).
 
 | # | severity | status | title |
 |---|---|---|---|
-| H-1 | High | open (owner decision; analysis done) | Free name reservations let anyone block any name. SlugLock does not cover 9 of 16 routed-together pairs, so the reservation is load-bearing |
-| M-1 | Medium | fixed (margin still thin) | Launch heap nearly exhausted: the metadata change overflowed it; after the fix, worst-case `create_room` keeps 688 bytes, a service-signable takeover 496 |
+| H-1 | High | interim service mitigation; mainnet blocked | One funded launcher per reservation; NameLock still required because SlugLock misses 9 of 16 routed-together pairs |
+| M-1 | Medium | fixed; see M-8 follow-up | Original thin launch heap margin; fewer creation CPIs also resolve the maximum-metadata takeover |
 | M-2 | Medium | fixed | Matcher in-flight check and reservation were not atomic: concurrent requests could both get "new room" |
 | M-3 | Medium | fixed | Per-launcher rate limit keyed on an unauthenticated field. Requests are now launcher-signed |
 | M-4 | Medium | fixed | Launch first buys defaulted to no slippage limit. The default is now the quote less 2% |
 | M-5 | Medium | fixed (spec updated) | Pause stopped sells. Pause now stops only new positions; sells and `convert` stay open |
-| M-6 | Medium | open (owner decision; evaluated) | Liveness thresholds are global and mutable: the admin can make any room dead and free its identity |
-| M-7 | Medium | open (`RequestHeapFrame` evaluated: does not resolve it) | A prefunded maximum-metadata `create_room` takeover exhausts the heap (pre-existing; v0-only size) |
-| M-8 | Medium | open | A prefunded `create_room` with a first buy and a priority fee uses 64 of the 64 allowed instruction-trace entries |
+| M-6 | Medium | fixed in remediation | Shared liveness changes require seven days' notice and an on-chain scheduling event |
+| M-7 | Medium | fixed in remediation | Prefunded maximum-metadata takeover passes with the stock heap; reproduction is no longer ignored |
+| M-8 | Medium | fixed in remediation | Single-CPI prefunded creation leaves trace headroom, including priority-fee and composition tests |
 | L-1 | Low | fixed | X-Forwarded-For: the client-supplied leftmost entry was the rate-limit key |
 | L-2 | Low | fixed | `/route` body size unbounded; any string became a rate-limiter key |
 | L-3 | Low | fixed | Lone UTF-16 surrogates in metadata caused a 500, not a refusal |

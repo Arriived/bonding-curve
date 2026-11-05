@@ -7,6 +7,70 @@
   },
   "instructions": [
     {
+      "name": "apply_liveness",
+      "discriminator": [
+        226,
+        14,
+        98,
+        181,
+        38,
+        8,
+        141,
+        14
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  108,
+                  105,
+                  118,
+                  101,
+                  110,
+                  101,
+                  115,
+                  115
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "buy",
       "discriminator": [
         102,
@@ -167,6 +231,76 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "cancel_liveness",
+      "discriminator": [
+        225,
+        200,
+        234,
+        66,
+        91,
+        227,
+        29,
+        176
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  108,
+                  105,
+                  118,
+                  101,
+                  110,
+                  101,
+                  115,
+                  115
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
     },
     {
       "name": "claim_door_fees",
@@ -1308,6 +1442,65 @@
       "args": []
     },
     {
+      "name": "schedule_liveness",
+      "discriminator": [
+        132,
+        196,
+        163,
+        179,
+        185,
+        168,
+        251,
+        22
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "thresholds",
+          "type": {
+            "defined": {
+              "name": "LivenessThresholds"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "sell",
       "discriminator": [
         51,
@@ -1850,6 +2043,19 @@
       ]
     },
     {
+      "name": "PendingLiveness",
+      "discriminator": [
+        235,
+        13,
+        158,
+        126,
+        158,
+        178,
+        23,
+        24
+      ]
+    },
+    {
       "name": "Room",
       "discriminator": [
         156,
@@ -1953,6 +2159,45 @@
         109,
         200,
         226
+      ]
+    },
+    {
+      "name": "LivenessApplied",
+      "discriminator": [
+        146,
+        135,
+        9,
+        56,
+        217,
+        146,
+        56,
+        27
+      ]
+    },
+    {
+      "name": "LivenessCancelled",
+      "discriminator": [
+        156,
+        226,
+        133,
+        10,
+        103,
+        38,
+        137,
+        111
+      ]
+    },
+    {
+      "name": "LivenessScheduled",
+      "discriminator": [
+        232,
+        198,
+        29,
+        62,
+        74,
+        96,
+        180,
+        161
       ]
     },
     {
@@ -2123,6 +2368,21 @@
       "code": 6022,
       "name": "DoorNonce",
       "msg": "Door nonce must be 0 for create_room and non-zero for open_door"
+    },
+    {
+      "code": 6023,
+      "name": "LivenessTimelock",
+      "msg": "Liveness thresholds must use the seven-day scheduling path"
+    },
+    {
+      "code": 6024,
+      "name": "NoPendingLiveness",
+      "msg": "No active liveness change is scheduled"
+    },
+    {
+      "code": 6025,
+      "name": "LivenessDelay",
+      "msg": "The seven-day liveness change delay has not elapsed"
     }
   ],
   "types": [
@@ -2561,6 +2821,150 @@
           {
             "name": "expires_at_slot",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LivenessApplied",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": {
+              "defined": {
+                "name": "LivenessThresholds"
+              }
+            }
+          },
+          {
+            "name": "thresholds",
+            "type": {
+              "defined": {
+                "name": "LivenessThresholds"
+              }
+            }
+          },
+          {
+            "name": "applied_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LivenessCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "thresholds",
+            "type": {
+              "defined": {
+                "name": "LivenessThresholds"
+              }
+            }
+          },
+          {
+            "name": "activate_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LivenessScheduled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous",
+            "type": {
+              "defined": {
+                "name": "LivenessThresholds"
+              }
+            }
+          },
+          {
+            "name": "thresholds",
+            "type": {
+              "defined": {
+                "name": "LivenessThresholds"
+              }
+            }
+          },
+          {
+            "name": "scheduled_at",
+            "type": "i64"
+          },
+          {
+            "name": "activate_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LivenessThresholds",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "live_min_reserve_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "live_max_idle_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "live_new_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "live_min_volume_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "pool_min_window_lp_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PendingLiveness",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "thresholds",
+            "type": {
+              "defined": {
+                "name": "LivenessThresholds"
+              }
+            }
+          },
+          {
+            "name": "activate_at",
+            "type": "i64"
+          },
+          {
+            "name": "active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

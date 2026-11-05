@@ -4,6 +4,12 @@
 
 ## 1. Status
 
+**5 November remediation:** the M-8/M-7 creation fix, interim H-1 funds/reservation
+checks and seven-day M-6 liveness timelock are on `codex/m8-h1-m6`, not the deployed
+ELF described below. No upgrade or e2e spending is included; keep the devnet balance
+as upgrade budget. **Mainnet is blocked until an on-chain NameLock is implemented.**
+See [AUDIT_REMEDIATION.md](AUDIT_REMEDIATION.md).
+
 | part | status |
 |---|---|
 | program ID, upgrade authority, matcher authority | generated; public keys in §2 |

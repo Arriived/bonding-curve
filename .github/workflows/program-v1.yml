@@ -74,6 +74,7 @@ jobs:
           python-version: '3.13'
       - name: Verify matcher regressions
         run: |
+          test -f verification/launch_rent_accounts.json
           python -m pip install -r ../services/matcher/requirements-dev.txt
           python -m pytest ../services/matcher/tests -q
       - name: Check committed IDL

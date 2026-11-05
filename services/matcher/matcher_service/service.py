@@ -245,6 +245,12 @@ class Service:
                 raise Refusal("rpc_unavailable", f"cannot verify reservation expiry: {e}", 503)
             if height > last_valid:
                 raise Refusal("stale_state", "launch blockhash expired during funding check", 503)
+            try:
+                snap.check_fresh(self.rpc.slot(), self.cfg.budget)
+            except RpcError as e:
+                raise Refusal("rpc_unavailable", f"cannot recheck launch freshness: {e}", 503)
+            except StaleState as e:
+                raise Refusal("stale_state", f"snapshot aged out during funding check: {e}", 503)
             token, busy = self.inflight.claim([
                 f"launcher:{launcher}",
                 f"name:{nk}" if len(nk) >= rules.NAME_EQUAL_MIN_LEN else None,
