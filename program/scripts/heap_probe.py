@@ -12,10 +12,13 @@ Method (no change to the committed program):
      non-zero flat fees, and an atomic first buy that settles a pending backlog;
   4. write program/verification/heap_headroom.json, then remove the worktree.
 
-Run from anywhere: python3 program/scripts/heap_probe.py [commit]   (default HEAD; a non-HEAD
-commit writes verification/heap_headroom.<short>.json instead, for before/after comparisons)
+Run from anywhere: python3 program/scripts/heap_probe.py [commit] [--heap-frame BYTES]
+(default HEAD; a non-HEAD commit writes verification/heap_headroom.<short>.json instead, for
+before/after comparisons). --heap-frame adds ComputeBudgetInstruction::request_heap_frame(BYTES)
+to every probe transaction and writes heap_headroom[.<short>].frame<BYTES>.json; the result also
+records the whole-transaction and program CU of one worst-case create_room, to price the request.
 """
-import json, os, re, shutil, subprocess, sys, tempfile
+import argparse, json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]          # program/
@@ -31,21 +34,35 @@ PROBE = """
 """
 
 TEST = r'''
-fn heap_probe_try(f: &mut Fixture, ix: Instruction) -> Result<(), String> {
+const HEAP_FRAME: u32 = __HEAP_FRAME__;
+fn heap_probe_try(f: &mut Fixture, ix: Instruction) -> Result<(u64, u64), String> {
     f.svm.expire_blockhash(); // a fresh blockhash per attempt, so retries are distinct transactions
+    let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(1_400_000)];
+    if HEAP_FRAME > 0 {
+        ixs.push(ComputeBudgetInstruction::request_heap_frame(HEAP_FRAME));
+    }
+    ixs.push(ix);
     let tx = Transaction::new(
         &vec![&f.user, &f.matcher],
-        Message::new(
-            &[ComputeBudgetInstruction::set_compute_unit_limit(1_400_000), ix],
-            Some(&f.user.pubkey()),
-        ),
+        Message::new(&ixs, Some(&f.user.pubkey())),
         f.svm.latest_blockhash(),
     );
+    let prefix = format!("Program {ID} consumed ");
     match f.svm.send_transaction(tx) {
-        Ok(_) => Ok(()),
+        Ok(m) => Ok((
+            m.compute_units_consumed,
+            m.logs
+                .iter()
+                .find_map(|l| l.strip_prefix(&prefix).and_then(|s| s.split_whitespace().next()))
+                .and_then(|n| n.parse().ok())
+                .unwrap_or(0),
+        )),
         Err(e) => {
             let oom = e.meta.logs.iter().any(|l| l.contains("out of memory"));
-            if oom { Err("oom".into()) } else { panic!("non-heap failure: {:#?}", e.meta.logs) }
+            let trace = format!("{:?}", e.err).contains("MaxInstructionTraceLengthExceeded")
+                || e.meta.logs.iter().any(|l| l.contains("Max instruction trace length exceeded"));
+            if oom { Err("oom".into()) } else if trace { Err("trace".into()) }
+            else { panic!("non-heap failure: {:#?}", e.meta.logs) }
         }
     }
 }
@@ -82,7 +99,9 @@ fn heap_probe_prefund(f: &mut Fixture, ix: &Instruction) {
     }
 }
 fn heap_probe_search(mut ok: impl FnMut(u16) -> bool) -> u16 {
-    assert!(ok(1), "worst case fails even without the probe allocation");
+    if !ok(1) {
+        return 0; // fails even without the probe allocation
+    }
     let (mut lo, mut hi) = (1u16, 4096u16); // 4096 * 16 = 64 KiB > the 32 KiB heap
     assert!(!ok(hi));
     while hi - lo > 1 {
@@ -129,7 +148,46 @@ fn heap_probe_worst_case_launches() {
         heap_probe_prefund(&mut f, &ix);
         heap_probe_try(&mut f, ix).is_ok()
     });
-    println!("HEAP_PROBE {{\"create_room\":{create},\"open_door\":{open},\"create_room_takeover_uri70\":{takeover}}}");
+    // Full v0-size takeover (URI 200): open finding M-7. 0 means it fails even with no probe allocation.
+    let takeover_max = {
+        let mut f = heap_probe_fixture();
+        let mut held = heap_probe_launch("Taken", 18, 0, 1);
+        held.uri = "u".repeat(200);
+        f.create(held, None);
+        let old = f.room;
+        f.time(3600);
+        f.rid = 0x7d21_93be_04f5_c6a8;
+        f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+        f.doors.clear();
+        let l = heap_probe_launch("Taken", 18, 1_010_000_000, 1);
+        let ix = f.create_ix(l, Some(old));
+        heap_probe_prefund(&mut f, &ix);
+        u16::from(heap_probe_try(&mut f, ix).is_ok())
+    };
+    // CU of one worst-case create_room and open_door (no probe allocation), to price the heap
+    // request; a launch that cannot run at all records its failure reason instead.
+    let cu_of = |r: Result<(u64, u64), String>| match r {
+        Ok((tx, program)) => format!("{{\"tx_cu\":{tx},\"program_cu\":{program}}}"),
+        Err(why) => format!("{{\"failed\":\"{why}\"}}"),
+    };
+    let create_cu = {
+        let mut f = heap_probe_fixture();
+        let ix = f.create_ix(heap_probe_launch("Prefunded max room", 18, 1_010_000_000, 1), None);
+        heap_probe_prefund(&mut f, &ix);
+        cu_of(heap_probe_try(&mut f, ix))
+    };
+    let open_cu = {
+        let mut f = heap_probe_fixture();
+        let mut room = launch("Probe room");
+        room.max_fee_lamports = 18;
+        f.create(room, None);
+        f.trade(None, true, 1_010_000);
+        let ix = f.open_ix(heap_probe_launch("Prefunded max door", 11, 101_000_000, 1), None);
+        heap_probe_prefund(&mut f, &ix);
+        cu_of(heap_probe_try(&mut f, ix))
+    };
+    println!("HEAP_PROBE {{\"create_room\":{create},\"open_door\":{open},\"create_room_takeover_uri70\":{takeover},\"create_room_takeover_uri200_passes\":{takeover_max}}}");
+    println!("HEAP_CU {{\"create_room\":{create_cu},\"open_door\":{open_cu}}}");
 }
 '''
 
@@ -143,8 +201,12 @@ def run(cmd, cwd, **kw):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("commit", nargs="?", default="HEAD")
+    ap.add_argument("--heap-frame", type=int, default=0)
+    args = ap.parse_args()
     head = run(["git", "rev-parse", "HEAD"], REPO).stdout.strip()
-    commit = run(["git", "rev-parse", sys.argv[1] if len(sys.argv) > 1 else "HEAD"], REPO).stdout.strip()
+    commit = run(["git", "rev-parse", args.commit], REPO).stdout.strip()
     tmp = Path(tempfile.mkdtemp(prefix="heap-probe-"))
     wt = tmp / "wt"
     run(["git", "worktree", "add", "--detach", str(wt), commit], REPO)
@@ -157,7 +219,7 @@ def main():
             s = s[:j] + PROBE + s[j:]
         lib.write_text(s)
         tests = wt / "program/programs/doors_v1/tests/svm.rs"
-        tests.write_text(tests.read_text() + TEST)
+        tests.write_text(tests.read_text() + TEST.replace("__HEAP_FRAME__", str(args.heap_frame)))
         prog = wt / "program"
         env = dict(os.environ)
         run(["rustup", "override", "set", "1.99.0-x86_64-unknown-linux-gnu"], prog)
@@ -165,10 +227,13 @@ def main():
         out = run(["cargo", "test", "--locked", "--test", "svm", "heap_probe_worst_case_launches", "--",
                    "--nocapture"], prog, env=env).stdout
         units = json.loads(re.search(r"HEAP_PROBE (\{.*\})", out)[1])
+        cu = json.loads(re.search(r"HEAP_CU (\{.*\})", out)[1])
+        full_takeover = bool(units.pop("create_room_takeover_uri200_passes"))
         result = {
             "measured_commit": commit,
             "measured_tree": "clean checkout of measured_commit in a temporary worktree",
-            "heap_bytes": 32 * 1024,
+            "heap_frame_requested_bytes": args.heap_frame or None,
+            "allocator_heap_bytes": 32 * 1024,
             "method": "largest extra allocation appended at the end of the instruction that still succeeds, "
                       f"binary-searched in {STEP}-byte steps; worst case = maximum metadata, all writable "
                       "launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; "
@@ -176,8 +241,13 @@ def main():
                       "matcher signs in a legacy transaction (name 32, symbol 10, URI 70)",
             "free_heap_at_end_bytes_at_least": {k: v * STEP for k, v in units.items()},
             "resolution_bytes": STEP,
+            "create_room_takeover_uri200_passes": full_takeover,
+            "worst_launch_cu": cu,
+            "zero_means": "the launch fails even with no probe allocation (out of memory, or the 64-entry "
+                          "instruction trace exceeded: see worst_launch_cu)",
         }
-        name = "heap_headroom.json" if commit == head else f"heap_headroom.{commit[:7]}.json"
+        name = "heap_headroom" + ("" if commit == head else f".{commit[:7]}") + \
+            (f".frame{args.heap_frame}" if args.heap_frame else "") + ".json"
         (HERE / "verification" / name).write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result, indent=2))
     finally:

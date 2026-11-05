@@ -133,8 +133,10 @@ use the same definition. Conversion, retirement, claims and donations add no
 volume. The [program review](docs/BUG_SWEEP.md) records the correction and
 adversarial regression coverage.
 
-Measured CU is VM execution cost, not a cluster throughput benchmark. The
-spec reports the compute-only ceiling from the actual writable-account cap.
+Measured CU is VM execution cost observed in LiteSVM (Agave 4.3.2) at fixed
+addresses: an observed maximum, not an upper bound (live Agave 4.4.0 runs have
+exceeded it), and not a cluster throughput benchmark. The spec reports a
+per-room count at the observed maximum against the writable-account cap.
 Signature, lock, data and requested compute-budget costs also constrain
 accepted transactions. Pool-phase compute remains unmeasured.
 

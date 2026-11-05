@@ -339,6 +339,22 @@ Admin key rotation is recorded on-chain. Gate thresholds are shared by
 routing, takeover and release, and changes are admin actions logged on-chain.
 The trailing window and bucket size are fixed by the versioned schema.
 Curve and trade-fee parameters are copied into each room and remain immutable.
+
+**Pause stops new positions, never exits** (5 November 2026, `SECURITY_REVIEW.md` M-5).
+
+| while `paused` | instructions |
+|---|---|
+| **rejected** (`Paused`) | `buy` on either route, `create_room`, `open_door` (no new position and no new room or door), and `retire_pending` |
+| **still open** | `sell` on either route, `convert`, every fee claim, `set_fee_recipient`, `release_slug` |
+
+A holder can therefore always exit at the curve price. Each `sell` and
+`convert` asserts its own reserve, backing and fee invariants (§4), and none
+of them depends on buys being possible. `retire_pending` stays paused, so a
+seller during a pause does not get the unsettled pending backlog; it remains
+for the holders at settlement.
+
+**The cost of this.** An exploit in the sell or convert path can no longer be
+stopped with a pause, only with a program upgrade.
 Append `founder_share_bps: u16`, default **0**, without moving existing fields.
 Validate `door_share_bps + founder_share_bps <= 10,000` and each share in
 `0..=10,000`. Changes to these Config values affect newly created rooms only.
@@ -691,7 +707,7 @@ token-2022 and system programs, and event authority.
 
 Same accounts.
 
-1. **Validate.**
+1. **Validate** (not gated by pause, above).
 2. `g = R(q) − R(q − tokens_in)`; `F = ceil(g·b/10⁴)`; require
    `g − F ≥ min_lamports_out`.
 3. **Tokens:**
@@ -760,7 +776,7 @@ sells).
 
 ### `convert(door_a, door_b, amount)`, any status
 
-1. Validate both doors are in `room`, `door_a ≠ door_b`, `amount > 0`.
+1. Validate both doors are in `room`, `door_a ≠ door_b`, `amount > 0`. Not gated by pause.
 2. The user signs `TransferChecked(user A ATA → DoorVault A, amount)`.
 3. The Door A PDA signs `TransferChecked(DoorRoomVault A → DoorRoomVault B,
    amount)`.
