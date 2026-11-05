@@ -9,8 +9,10 @@ under review was largely written by the reviewer. Read every "clean" verdict as
 reported as uncertain.
 
 Every number below comes from a re-runnable script or test, named where it is
-used. Most refer to program ELF `34d4ce91…d9e`: program source `1558b2e`; tests and
-`verification/build.json` at `805bae3`.
+used. Unless a finding says otherwise, they refer to program ELF `c36ba443…ed29`,
+commit `b6fe25d` (`verification/build.json`). This review was first written
+against ELF `34d4ce91…` (`1558b2e`/`805bae3`) and updated in the follow-up of
+5 November.
 
 **Contents**
 
@@ -34,14 +36,15 @@ known (already documented).
 
 | # | severity | status | title |
 |---|---|---|---|
-| H-1 | High | open | Free, unauthenticated name reservations let anyone block any name from getting a room |
+| H-1 | High | open (owner decision; analysis done) | Free name reservations let anyone block any name. SlugLock does not cover 9 of 16 routed-together pairs, so the reservation is load-bearing |
 | M-1 | Medium | fixed (margin still thin) | Launch heap nearly exhausted: the metadata change overflowed it; after the fix, worst-case `create_room` keeps 688 bytes, a service-signable takeover 496 |
 | M-2 | Medium | fixed | Matcher in-flight check and reservation were not atomic: concurrent requests could both get "new room" |
-| M-3 | Medium | open | Per-launcher rate limit keys on an unauthenticated field |
-| M-4 | Medium | open | The service signs door launches whose first buy has no slippage limit by default |
-| M-5 | Medium | open (spec) | Pause stops sells: holders cannot exit while the admin keeps the program paused |
-| M-6 | Medium | open (spec) | Liveness thresholds are global and mutable: the admin can make any room dead and free its identity |
-| M-7 | Medium | open | A prefunded maximum-metadata `create_room` takeover exhausts the heap (pre-existing; v0-only size) |
+| M-3 | Medium | fixed | Per-launcher rate limit keyed on an unauthenticated field. Requests are now launcher-signed |
+| M-4 | Medium | fixed | Launch first buys defaulted to no slippage limit. The default is now the quote less 2% |
+| M-5 | Medium | fixed (spec updated) | Pause stopped sells. Pause now stops only new positions; sells and `convert` stay open |
+| M-6 | Medium | open (owner decision; evaluated) | Liveness thresholds are global and mutable: the admin can make any room dead and free its identity |
+| M-7 | Medium | open (`RequestHeapFrame` evaluated: does not resolve it) | A prefunded maximum-metadata `create_room` takeover exhausts the heap (pre-existing; v0-only size) |
+| M-8 | Medium | open | A prefunded `create_room` with a first buy and a priority fee uses 64 of the 64 allowed instruction-trace entries |
 | L-1 | Low | fixed | X-Forwarded-For: the client-supplied leftmost entry was the rate-limit key |
 | L-2 | Low | fixed | `/route` body size unbounded; any string became a rate-limiter key |
 | L-3 | Low | fixed | Lone UTF-16 surrogates in metadata caused a 500, not a refusal |
@@ -75,19 +78,68 @@ The attacker needs only HTTP requests. Rate limits do not stop it:
 **Affected code:** `services/matcher/matcher_service/service.py` (`inflight.claim`),
 `inflight.py`, `app.py`.
 
-**Exploitable today?** Yes, against any running service. Nothing is deployed.
+**Exploitable today?** Yes, against any running service. Requests are now signed
+(M-3), but keys are free, so the attack costs one generated key per request.
 
-**Why it is not fixed here.** The reservation exists for a reason. Without it, two
-same-name launches inside one window would both get "new room", silently
-bypassing the T2n rule (M-2). Every remedy changes the API or the economics, so
-this is the owner's decision:
+**Is the reservation earning anything? Yes: SlugLock does not cover it.**
 
-| remedy | effect |
-|---|---|
-| launcher-signed requests (sign the request body with the launcher key) | binds a reservation to a key holder; Sybil keys are free, so add the next row |
-| check the launcher can pay rent + fees at decision time; one in-flight new-room decision per launcher | makes each live reservation cost a funded wallet |
-| shorter hold, e.g. release on the decision's `expires_at_slot` | same window today; shortening needs a shorter launch window |
-| no hold, and let the second launch land as a duplicate-name room | removes the DoS, gives up T2n under concurrency |
+*How the slug is derived.*
+- `SlugLock = PDA(["slug", identity])`, with
+  `identity = sha256(fold(symbol) ‖ 0x00 ‖ fold(name))` (`Launch::identity`,
+  `state.rs`).
+- `fold` is ASCII-only. It uppercases, maps `0 1 3 4 5 7 8` to `O I E A S T B`,
+  reads `rn` as `m` and `vv` as `w`, and drops non-alphanumeric ASCII. It keeps
+  every non-ASCII byte.
+
+*What the matcher routes together.*
+- **T3:** equal folded symbol **and** folded name.
+- **T2n:** equal folded name of at least 4 characters, **any** symbol.
+- Its fold is broader than the program's: NFKC, homoglyph tables, stopwords
+  (COIN, TOKEN, THE, OFFICIAL, …), camelCase splitting, invisible characters.
+
+`services/matcher/scripts/slug_coverage.py` computes, for each class of
+routed-together pair, whether both launches derive the same SlugLock:
+
+| pair class | example | matcher | same SlugLock? |
+|---|---|---|---|
+| identical | `Pepe`/`PEPE` twice | T3 | yes |
+| ASCII case, punctuation, `$` | `Pepe!`/`$PEPE` vs `Pepe`/`PEPE` | T3 | yes |
+| ASCII digit look-alike, `rn`→`m`, spacing | `P3P3` vs `Pepe` | T3 | yes |
+| stopword | `Pepe Coin` vs `Pepe`, same symbol | T3 | **no** |
+| homoglyph (Cyrillic, Greek) | `Реpe` vs `Pepe` | T3 | **no** |
+| NFKC full-width | `Ｐｅｐｅ` vs `Pepe` | T3 | **no** |
+| zero-width character | `Pe\u200bpe` vs `Pepe` | T3 | **no** |
+| **any T2n pair** | `Pepe`/`PEPE` vs `Pepe`/`FROG` | T2n | **no**: the symbol is part of the identity |
+
+**9 of the 16 tested routed-together pairs derive different SlugLocks.** For
+those, two concurrent new-room launches both land as live rooms. That is exactly
+the duplicate the matcher's routing exists to prevent. SlugLock covers only pairs
+whose ASCII folds are byte-identical, so **the reservation is load-bearing and
+H-1 needs its own remedy.**
+
+One fact makes an on-chain remedy possible: every routed-together pair shares the
+matcher's folded name key `nk`. T3 and T2n both require name equality.
+
+**Remedies, with their API cost (owner decision):**
+
+| remedy | removes the DoS? | closes the duplicate gap? | cost |
+|---|---|---|---|
+| **A. On-chain NameLock.** `create_room` also takes a matcher-signed `name_key_hash = sha256(nk)` (with the symbol key added below the 4-character T2n minimum). It inits `PDA(["name", name_key_hash])`, with SlugLock's live/dead takeover rules. The second concurrent launch fails on-chain and re-requests as a door. The reservation can then be dropped. | yes | yes, for every routed-together pair | Program, IDL and service change. +1 account and +32 bytes of instruction data per `create_room`, 65 bytes of the legacy packet budget. The largest service-signable URI falls from 102 to 37, and from 70 to 5 for a takeover (computed with the service's own builder, with a cu-price instruction). Rent: one more 17-byte PDA, 736,600 lamports per room. **Trace: one more PDA creation is +1 CPI (+3 when prefunded), and a prefunded `create_room` with a priority fee is already at 64/64 entries, so A requires M-8 fixed first.** Trust: same as today, since the matcher already decides routing. |
+| B. Signed requests (done) + one in-flight new-room reservation per launcher + a balance check (launcher holds rent + fees + first buy) at decision time | partly: each held name costs one funded wallet (~0.028 SOL, not spent) | yes (unchanged) | Service only. One `getBalance` RPC per new-room request. A determined squatter still holds N names with N funded wallets. |
+| C. No hold: let concurrent same-narrative launches both land | yes | **no**: duplicate rooms under concurrency, i.e. during hype, when copycats launch within seconds | Service only. The tie-break later prefers the higher-reserve room. |
+
+**Recommendation.**
+- **Now: B.** It is cheap, service-only, and turns a free attack into one that
+  needs a funded wallet per name held.
+- **Before mainnet: A, after M-8.** It moves the routing rule's core guarantee
+  on-chain, and makes the reservation unnecessary. It cannot land while launches
+  sit at the trace limit. Its real cost is 65 bytes of legacy
+  transaction space, which matters only for metadata near the URI limit; and the
+  v0 support it would need for long metadata is itself blocked by M-7.
+- Not C.
+
+Nothing here is implemented without your decision. M-2's regression test stays
+either way.
 
 ### M-1 — Launch heap nearly exhausted (fixed; margin still thin)
 
@@ -110,7 +162,7 @@ allocation in a throwaway worktree and binary-searches it, in 16-byte steps:
 | commit | free heap at end, `create_room` | free heap at end, `open_door` |
 |---|---|---|
 | `e9bd2aa` (before; `verification/heap_headroom.e9bd2aa.json`) | ≥ 800 bytes | ≥ 10,256 bytes |
-| `1558b2e` (after; `verification/heap_headroom.json`) | ≥ 688 bytes | ≥ 9,568 bytes |
+| `1558b2e`, and `b6fe25d` after the pause change (after; `verification/heap_headroom.json`) | ≥ 688 bytes | ≥ 9,568 bytes |
 
 On `1558b2e`, a `create_room` **takeover** at the largest size the matcher signs
 (name 32, symbol 10, URI 70), prefunded with a first buy, ends with **≥ 496
@@ -174,54 +226,106 @@ request between check and signature and fails on the previous code.
 **Not fixed: replicas.** Running more than one service replica still needs this
 state shared (README, known).
 
-### M-3 — Per-launcher rate limit is unauthenticated (open)
+### M-3 — Per-launcher rate limit was unauthenticated (fixed)
 
-**Attack.**
-- **Evasion.** The per-launcher limit (6 a minute) keys on the request's
-  `launcher` field, which nothing authenticates. Any request can name any key,
-  so the limit is evaded by naming a fresh pubkey each time.
-- **Targeted DoS.** It can also be aimed. Six requests a minute naming a victim's
-  wallet keep that wallet rate-limited, and the victim cannot launch through this
-  service.
+**Attack (before).**
+- **Evasion.** The per-launcher limit (6 a minute) keyed on the request's
+  `launcher` field, which nothing authenticated. Naming a fresh pubkey evaded it.
+- **Targeted DoS.** Naming a victim's wallet six times a minute kept the victim
+  rate-limited.
 
-**Affected code:** `app.py`.
+**Fix (`services/matcher/matcher_service/auth.py`, `app.py`).**
+- Every `/route` request must carry `issued_at` and the launcher's ed25519
+  signature over a canonical message: a fixed prefix plus a JSON array of every
+  request field.
+- `issued_at` must be within ±120 s, and each signature is accepted once.
+  Unknown fields are refused, so nothing unsigned can be smuggled in.
+- The per-launcher limiter keys on the verified launcher. A request naming
+  someone else's key without their signature is refused (401) before it reaches
+  the limiter.
 
-**Fix (owner decision; API change):** launcher-signed requests, as in H-1. Until
-then, the per-launcher limit is a courtesy, not a control.
+**Cost to the caller:** one `signMessage` by the launcher's wallet per request,
+on top of signing the returned transaction. That is one extra wallet prompt in a
+browser.
 
-### M-4 — Door first buys default to no slippage limit (open)
+**Tests:** `test_route_requires_a_fresh_single_use_signature_by_the_launcher`
+(unsigned, wrong key, altered after signing, stale, replayed, unknown field) and
+`test_a_victims_launcher_limit_cannot_be_spent_by_someone_else`. The e2e now
+signs every request.
 
-**What happens.** `min_tokens_out` defaults to 0 in `/route`.
-- **`create_room`:** the room does not exist before the transaction, so its first
-  buy cannot be front-run.
-- **`open_door`:** the room already trades, so a first buy with min 0 can be
-  sandwiched for its whole size.
+**Not fixed by this:** keys are free, so this does not stop H-1.
 
-The program enforces whatever minimum is signed. The default is a service choice.
+### M-4 — Launch first buys defaulted to no slippage limit (fixed)
 
-**Fix (owner decision; API change):** require `min_tokens_out` whenever
-`first_buy_lamports > 0` on a door decision. Or have the service compute it from
-the snapshot quote and a stated maximum slippage, and refuse when absent.
+**Before.** `min_tokens_out` defaulted to 0. An `open_door` first buy into a
+trading room could be sandwiched for its whole size.
 
-### M-5 — Pause stops sells (open: spec and audit decision)
+**Fix (`services/matcher/matcher_service/quote.py`, `service.py`).** With
+`first_buy_lamports > 0`:
+- **Omitted `min_tokens_out`:** the service quotes the buy against the snapshot.
+  The quote ports the program's integer math line for line, including the
+  pending-backlog settlement a buy performs first. It signs
+  `floor(quote × (10,000 − max_slippage_bps) / 10,000)`.
+- **Default `max_slippage_bps`: 200 (2%),** per `DESIGN.md` §3 ("the frontend
+  default should be ≤ 2–3%"); the spec itself gives no number (CORRECTIONS).
+  Allowed range: 1–5,000.
+- **An explicit `min_tokens_out`** is kept, and an explicit 0 is refused.
+- **An unfillable buy** is refused, before signing.
+- The rule applies to new rooms too, for uniformity. Their quote is exact,
+  because nothing can trade before creation.
 
-**What happens.**
-- `trade()` rejects every buy **and sell** while `Config.paused`.
-- So do `convert`, `retire_pending` and both launch paths.
-- Claims, `set_fee_recipient` and `release_slug` still work.
+**Tests.**
+- **Quote parity:** the program's reference vector (101 lamports → 3,612,416 base
+  units).
+- **Defaults:** the 2% default, explicit limits, refusal of 0 and of an unfillable
+  buy.
+- **On-chain, localnet e2e step 3b:**
+  - an unmoved door first buy fills **exactly** the quoted tokens;
+  - the same launch front-run by a 5 SOL buy is rejected with `Slippage`.
 
-The 2 November remediation kept pause as a privileged control
-(`AUDIT_FIXES.md`). For holders the effect is plain: **while paused, no one can
-redeem door or room tokens for SOL.**
+**Residual.** The verifier checks the signed minimum against the *recorded*
+quote. It does not recompute the quote from history, because that needs every
+fee split to rebuild the pending backlog.
 
-**Fix options (owner):**
-- let sells and door sells run while paused;
-- or bound the pause (an expiry slot in Config);
-- or put pause behind the same multisig or timelock as upgrades.
+### M-5 — Pause stopped sells (fixed; spec updated)
 
-Disclose it either way (§2, Config admin).
+**Before.** `trade()` rejected every buy **and sell** while `Config.paused`, and
+so did `convert`. Holders could not exit while the admin kept the program paused.
 
-### M-6 — Global liveness thresholds can strip a room's identity (open: spec)
+**Fix (`lib.rs`).**
+
+| while `paused` | instructions |
+|---|---|
+| rejected | buys on both routes, `create_room`, `open_door`, `retire_pending` |
+| open | sells on both routes, `convert`, claims, `set_fee_recipient`, `release_slug` |
+
+**Invariant review: does anything need buys and sells paused together? No.**
+- **I1, reserve ≥ R(sold).** The reserve leaves only by a sell, by exactly
+  `R(q) − R(q − t)`, and sell proceeds telescope. Any sequence of sells from
+  `sold = s` pays at most `R(s) ≤ reserve`. Buys are irrelevant to this bound.
+- **B1, backing.** A door sell moves equal amounts in both directions; `convert`
+  moves equal amounts between two doors. Both are asserted per instruction.
+- **S1, room vault** and **fee coverage** are per-instruction assertions too.
+- **Status.** A sell that takes a capped room below the trigger sets status 0,
+  while paused as well. Buys stay blocked by the pause and resume on unpause.
+
+**Two consequences, by design and stated in the spec:**
+1. **No emergency stop for the sell path.** An exploit in the sell or convert path
+   can no longer be stopped by pausing, only by an upgrade.
+2. **Sellers forgo the pending backlog.** `retire_pending` stays paused, so a
+   seller during a pause does not receive the unsettled backlog; it stays with the
+   holders at settlement. Letting `retire_pending` run while paused would give
+   sellers their share first. That is an owner choice; it was outside this change.
+
+**Test:** `pause_blocks_new_positions_but_holders_can_still_exit`.
+- While paused it checks:
+  - buys, `open_door` and `retire_pending` fail with `Paused`;
+  - a convert and complete exits from two doors and the room token succeed, with
+    every invariant audited;
+  - claims work.
+- After unpausing, buys work again.
+
+### M-6 — Global liveness thresholds can strip a room's identity (open: owner decision)
 
 **What happens.** The liveness thresholds live in Config and are read at execution
 by:
@@ -229,17 +333,44 @@ by:
 - `create_room` takeover (is the old holder dead?);
 - `release_slug`.
 
-The spec intends this: "Gate thresholds are shared by routing, takeover and
-release" (§3, Config). It means the admin can:
-- set `live_min_reserve_lamports` above every reserve, which makes every mature
-  room dead at once;
-- then let anyone release its SlugLock, or take over its exact identity with a
-  new room.
+The admin can set `live_min_reserve_lamports` above every reserve, which makes
+every mature room dead at once and frees each name for takeover.
 
-The old room keeps trading, but its name now belongs to someone else.
+**Evaluated: snapshot the four thresholds into each Room at creation,** as the
+curve and fee parameters already are.
 
-**Fix options (owner):** snapshot thresholds per room like the curve parameters; or
-timelock threshold changes; or disclose it as an admin power (§2).
+| cost | figure |
+|---|---|
+| `Room` size | 1,315 → 1,347 bytes (four `u64`s appended; 1,355 if `pool_min_window_lp_fee` is snapshotted too) |
+| rent per room | +162,560 lamports (+203,200 with the pool field), `scripts/account_sizes.py` formula |
+| program | `Room::live` reads the room's own copy. Callers: `open_door`, `holder_dead` (both launch paths), `release_slug`. `create_room` copies them. Tiny CU. |
+| IDL / layouts | Room layout grows; `RoomCreated` should carry the snapshot for the verifier |
+| service | decoder, `liveness.py` per room, `verify_decision.py` replay |
+
+The cost is small. **Not implemented, because two things argue for the mutable
+version:**
+1. **The design defines one shared gate.** `NARRATIVE_DETECTION.md` (Config: "one
+   shared set of liveness thresholds") and spec §3 ("Gate thresholds are shared by
+   routing, takeover and release"). Snapshotting changes spec-defined behaviour.
+2. **There is one legitimate use for changing the gate on existing rooms:**
+   tightening it against cheap wash-traded liveness. Keeping a dead room live
+   costs about 0.02 SOL a day (I-3). Once thresholds are snapshotted, a room
+   created under a lax gate can be kept live cheaply forever, and nothing can
+   free its name.
+
+That defensive power and the harmful one are the same power: tightening the gate
+frees names.
+
+**Recommendation.** Keep the shared gate, but put threshold changes behind a delay:
+- a pending-change slot in Config, effective after, for example, 7 days, with an
+  event when it is set;
+- ideally under the same multisig as upgrades.
+
+That preserves the defence against squatters, and gives every founder a week's
+notice before a change can free their name. If the owner prefers that no change
+can ever reach an existing room, snapshot instead, accepting the I-3 trade-off.
+
+Until either is done, §2 states this power plainly.
 
 ### M-7 — Prefunded maximum-metadata takeover exhausts the heap (open, pre-existing)
 
@@ -269,12 +400,96 @@ timelock threshold changes; or disclose it as an admin power (§2).
 `#[ignore]` with this finding's ID. Run it with
 `cargo test --test svm -- --ignored`.
 
-**Fix (open):** one of the M-1 remedies.
+**Evaluated: `ComputeBudgetInstruction::RequestHeapFrame`. It does not resolve
+M-7, for two independent reasons.**
+
+1. **The program's allocator never uses the extra frame.** The program uses the
+   stock entrypoint allocator: `custom_heap_default!` in
+   `solana-program-entrypoint` 3.1.1 builds
+   `BumpAllocator::with_fixed_address_range(HEAP_START_ADDRESS, HEAP_LENGTH)`, with
+   `HEAP_LENGTH = 32 * 1024` fixed at compile time. The runtime maps the larger
+   frame, but this allocator still allocates only within the first 32 KiB.
+   Measured with `heap_probe.py --heap-frame 262144`
+   (`verification/heap_headroom.frame262144.json`):
+
+   | path | free heap at end, no request | with a 256 KiB request |
+   |---|---|---|
+   | `open_door`, prefunded, maximum metadata, first buy | ≥ 9,568 bytes | ≥ 9,568 bytes |
+   | `create_room` takeover, URI 70, prefunded | ≥ 496 bytes | ≥ 496 bytes |
+   | `create_room`, prefunded, maximum metadata, first buy | ≥ 688 bytes | **cannot run:** trace limit exceeded (M-8) |
+   | v0 maximum takeover (the ignored reproduction) | fails | **still fails** |
+
+2. **The launch that needs it has no room for one more instruction.** A prefunded
+   `create_room` with a first buy already uses 63 of the transaction's 64
+   instruction-trace entries (M-8). The request is one more top-level
+   instruction: entry 64, or 65 alongside the matcher's priority-fee instruction.
+   So the request would *break* the very launches it was meant to protect.
+
+**Cost, had it helped** (measured on `open_door`, the worst launch that still
+runs):
+- **CU:** program CU rose 218,311 → 219,375 (+1,064) and transaction CU
+  218,461 → 219,731 (+1,270), in the same heap-probe runs.
+- **Lamports:** no charge of its own. The fee is per signature plus priority fee
+  × requested CU limit.
+
+**A launch built by a third party without the request** behaves exactly as today,
+since the allocator is unchanged. If it runs out of heap, the program panics with
+`memory allocation failed, out of memory`. That is a clean failure: the runtime
+rolls back every account change atomically and charges only the network fee.
+
+Even with a custom allocator sized above 32 KiB (excluded from this task), a
+transaction without the frame request could not corrupt anything. The VM
+bounds-checks every heap access, so going past the mapped frame is an access
+violation, the same atomic, clean failure.
+
+**Status.** M-7 stays open, and the ignored reproduction stays ignored. Fixing it
+needs one of the M-1 remedies. Each also has to fit the trace budget (M-8), so
+fewer CPIs on the creation path solves both, where a bigger heap solves neither
+on its own.
 
 **Until then:**
 - the matcher service must not sign v0 launches (recorded in its README);
 - the program could reject takeover metadata above the legacy-reachable size. That
   narrows a spec limit, so it is the owner's call.
+
+### M-8 — Prefunded launches sit at the instruction-trace limit (open, new)
+
+**What happens.** A transaction may contain at most 64 instruction entries
+(`MAX_INSTRUCTION_TRACE_LENGTH`), counting every top-level instruction and every
+CPI. Prefunding a PDA, which anyone can do, turns its single `create_account` CPI
+into transfer + allocate + assign.
+
+`launch_instruction_trace_budget` (`verification/trace_budget.json`) counts the
+runtime's invocation log lines. The trace does not depend on metadata length.
+Each launch has a first buy:
+
+| launch | `[cu_limit, launch]` | `[cu_limit, cu_price, launch]` (matcher with a priority fee) |
+|---|---|---|
+| `create_room` | 46 | 47 |
+| `create_room`, every new account prefunded | **63** | **64 (the limit)** |
+| `open_door` | 27 | 28 |
+| `open_door`, every new account prefunded | 35 | 36 |
+
+**Exploitable today?** Not as shipped: 64 entries still execute. But the margin is
+zero. Any extra instruction makes the prefunded `create_room` fail with
+`Max instruction trace length exceeded`, as does any extra CPI on the creation
+path. Examples:
+- `RequestHeapFrame` (above);
+- a memo;
+- a future change to the program.
+
+The heap probe showed exactly this failure when the heap request was added.
+
+**Fix (open, a design change):** fewer CPIs on the creation path. For example:
+- create the room and door accounts at a fixed size in one `create_account` each,
+  rather than allocate + assign after a prefund transfer;
+- or move the optional first buy into a separate instruction.
+
+Any change must keep the prefunding test passing.
+
+**Until fixed:**
+- the matcher service must not add any instruction to launch transactions;
+- the test pins the counts, so a regression shows up there.
 
 ### L-1 — X-Forwarded-For leftmost entry trusted (fixed)
 
@@ -429,10 +644,10 @@ remains").
 Room, ReserveVault, FeeVault and RoomVault. All of a room's doors therefore
 serialise on one account.
 
-**Ceilings.** By measured maximum CU and the 24,000,000 CU writable-account cap,
-the ceilings per room per block are:
+**Counts at the observed maximum.** By observed maximum CU (LiteSVM, Agave 4.3.2;
+not an upper bound) and the 24,000,000 CU writable-account cap, per room per block:
 
-| route | max CU | ceiling |
+| route | observed max CU | per room/block at that CU |
 |---|---|---|
 | buy_door | 69,450 | 345 |
 | sell_door | 57,430 | 417 |
@@ -441,7 +656,9 @@ the ceilings per room per block are:
 | convert | 68,846 | 348 |
 | open_door | 149,950 | 160 |
 
-Source: `verification/cu.md`. These are not worst cases.
+Source: `verification/cu.md`. These are not worst cases, and the live runtime has
+exceeded the VM maxima: across two localnet runs, `claim_door_fees` by 4,500 and 10,500 CU, and
+`convert` by 5,773 and 1,273.
 
 **What it allows.** A spammer can raise the local fee market on one room by
 write-locking it. They pay every signature and priority fee themselves. It does
@@ -484,9 +701,9 @@ route their own trades through it to earn the 60% door share back.
 ### A competitor trying to make rooms unusable rather than profit
 
 **At most, today:**
-- **Block names through the matcher, for free (H-1).** This is the cheapest
-  attack in the system, and it is open.
-- **Rate-limit a specific wallet (M-3).**
+- **Block names through the matcher, almost for free (H-1).** Requests are now
+  signed, but keys cost nothing, so this is still the cheapest attack in the
+  system. It is open, pending your choice of remedy.
 - **Flood a popular room with clone doors.** Each costs about 0.0097 SOL of
   permanent rent.
 - **Spam a room's write lock.** They pay every fee. It raises costs for
@@ -494,12 +711,17 @@ route their own trades through it to earn the 60% door share back.
 
 **Cannot:**
 - freeze a room, drain it, or put it in a state that permanently breaks trading;
-- stop holders selling (only the admin's pause can, M-5);
+- stop holders selling. Nothing can now, not even the admin's pause (M-5);
+- rate-limit someone else's wallet (fixed, M-3);
 - break launches signed by the current service by prefunding their accounts.
   The margin is thin (M-1) but tested at every size the service signs.
 
-**Can, but not through today's service:** make a maximum-metadata takeover launch
-fail by prefunding its accounts. That size needs a v0 transaction (M-7, open).
+**Can, but not through today's service:**
+- make a maximum-metadata takeover launch fail by prefunding its accounts. That
+  size needs a v0 transaction (M-7, open);
+- make a prefunded launch fail by adding one instruction. Today's launches have
+  no room for one: they sit at the 64-entry trace limit (M-8, open). A launch
+  built by the matcher adds none.
 
 ### An MEV searcher
 
@@ -517,8 +739,9 @@ fail by prefunding its accounts. That size needs a v0 transaction (M-7, open).
 - **Bounded loss.** A trader's worst case is their own slippage setting, plus
   the fee.
 
-**The weak spot** is a launch's first buy into an existing room, where the
-service defaults the minimum to zero (M-4).
+**Launch first buys** now carry a minimum by default: the quoted amount less 2%
+(M-4, fixed). A launch front-run past that limit fails, and the launcher spends
+nothing but the network fee.
 
 ### A compromised matcher key
 
@@ -557,7 +780,7 @@ it can:
 
 | power | effect on existing holders |
 |---|---|
-| **pause** | **stops all buys and sells, conversions, fee settlement and launches, in every room, for as long as it likes. Holders cannot exit while paused (M-5).** Claims still work. |
+| **pause** | stops buys, launches and fee settlement in every room, for as long as it likes. **Sells and conversions keep working, so holders can always exit at the curve price** (M-5, changed 5 November). Claims still work. |
 | change liveness thresholds | decides which rooms accept new doors, and can make any room "dead" at once, so its name can be released or taken over (M-6) |
 | change `protocol_fee_recipient` | redirects all future and **already accrued, unswept** protocol fees in every room |
 | change `convert_fee_lamports` | applies to conversions in existing rooms, up to each user's signed cap |
@@ -571,8 +794,12 @@ it can:
 - move reserves, backing or door and founder fees;
 - mint or freeze any token (those authorities are revoked).
 
-**Plainly, for users:** an admin can halt trading indefinitely and can strip a
-room of its name. Nothing else the admin can do takes holders' money directly.
+**Plainly, for users:**
+- **The admin can stop new buying at any time**, for as long as it likes, but
+  cannot stop you selling.
+- **The admin can strip a room of its name** by changing the liveness rules (M-6).
+  The room keeps trading, but someone else can take over its identity.
+- **Nothing the admin can do takes holders' money directly.**
 
 ### A compromised upgrade authority
 
@@ -589,9 +816,13 @@ the reserves are gone.
 matters more than any finding above.** The options:
 - **Single hot key:** one theft takes everything.
 - **Multisig:** needs several keys.
-- **Timelock:** gives holders time to exit, provided pause cannot be used during
-  that window to stop them (M-5).
+- **Timelock:** gives holders time to exit before a change lands. Pause can no
+  longer stop them exiting (M-5).
 - **Immutable:** removes the risk and the ability to fix bugs or add graduation.
+
+Since pause no longer stops sells (M-5), **the upgrade authority is the only way
+to stop an exploit in the sell or convert path.** An immutable program would have
+no way at all.
 
 ---
 
@@ -637,15 +868,15 @@ defect found. Program code: `program/programs/doors_v1/src/`.
 
 | item | verdict |
 |---|---|
-| `/route` input validation | Types, integer ranges and UTF-8 byte limits equal `Launch::validate`. Body cap and surrogates are now fixed (L-2, L-3). Oversize transactions are refused before signing. |
+| `/route` input validation | Types, integer ranges and UTF-8 byte limits equal `Launch::validate`. Body cap and surrogates fixed (L-2, L-3). Requests are launcher-signed with unknown fields refused (M-3). First buys always carry a price limit (M-4). Oversize transactions are refused before signing. |
 | routing influence by crafted input | **By design, yes.** Matching a live room's name routes into it. Look-alikes the rules miss get their own room, at the measured recall. Among several matching rooms, the tie-break prefers the highest reserve, so a room's holders can buy their way to winning ties (capital at risk, fees paid). |
-| rate-limit evasion | Per IP: now proxy-correct (L-1). Per launcher: not a control (M-3). |
+| rate-limit evasion | Per IP: proxy-correct (L-1). Per launcher: keyed on the signature-verified launcher (M-3, fixed); evasion needs a new key per request, which is free (H-1). |
 | decision store rewrite / fork | No fork (process lock plus `BEGIN IMMEDIATE`). Rewrite is possible for the operator until the head is published (I-9). |
 | concurrent identical launches, duplicates, retries | New-room: the second request is refused (M-2 fixed). Door: each request gets its own random nonce; both can land if the launcher signs both, each paying its own rent. Retries after a timeout see `409` until the first decision expires (about 60–90 s); there is no idempotency key. |
 | service assumes, program does not enforce | Text rules (T2n, normalisation, tie-break); single-replica in-flight state; the decision log. |
 | program enforces, service relies on | Exact-identity floor, room liveness at execution, launch expiry, door nonce rules, signed fee cap, terms hash. A stale snapshot can only make a launch fail on-chain, never route it wrongly past these checks. |
 | expiry seam | `expires_at_slot = blockhash slot + 150`. Slots advance at least as fast as block height, so the program's expiry never outlives the blockhash. Durable nonces are caught by the program (localnet e2e step 6c). |
-| CU seam | Worst tested launch 326,893 CU (prefunded takeover `create_room`), under the service's 400,000 limit (asserted in SBF). The VM is not an upper bound for the live runtime: on the Agave 4.4.0 local validator, `convert` and `claim_door_fees` ran 5,773 and 4,500 CU above their VM maxima (`DEPLOYMENT.md` §7). |
+| CU seam | Worst tested launch 326,893 CU (prefunded takeover `create_room`), under the service's 400,000 limit (asserted in SBF). The VM is not an upper bound for the live runtime: on the Agave 4.4.0 local validator, `claim_door_fees` ran 4,500 and 10,500 CU above its VM maximum in two runs, and `convert` 5,773 and 1,273 (`DEPLOYMENT.md` §7). |
 | key seam | The service refuses to sign unless its key equals `Config.matcher_authority` in the snapshot. A KMS signature is verified before use. |
 
 ### Supply chain
