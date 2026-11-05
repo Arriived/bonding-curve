@@ -44,6 +44,13 @@ pub struct CreateRoom<'info> {
     pub slug: UncheckedAccount<'info>,
     /// CHECK: the dead holder of a lock being taken over; read in place by `vaults::holder_dead`.
     pub old_holder: Option<UncheckedAccount<'info>>,
+    /// CHECK: PDA ["name", name_key], present iff name_key is; created by the handler, or validated
+    /// and taken over from a dead holder.
+    #[account(mut)]
+    pub name_lock: Option<UncheckedAccount<'info>>,
+    /// CHECK: the NameLock's dead holder when it is taken over; read in place by `vaults::holder_dead`.
+    /// May be the same account as `old_holder`.
+    pub old_name_holder: Option<UncheckedAccount<'info>>,
     /// CHECK: canonical Token-2022 mint, initialized and revoked atomically.
     #[account(mut)]
     pub room_mint: UncheckedAccount<'info>,
@@ -263,6 +270,18 @@ pub struct ReleaseSlug<'info> {
     #[account(mut,close=caller,seeds=[b"slug",room.identity.as_ref()],bump=slug.bump,
               constraint=slug.room_id==room.room_id @ Error::Identity)]
     pub slug: Account<'info, SlugLock>,
+}
+#[derive(Accounts)]
+pub struct ReleaseName<'info> {
+    #[account(mut)]
+    pub caller: Signer<'info>,
+    #[account(seeds=[b"config"],bump=config.bump)]
+    pub config: Box<Account<'info, Config>>,
+    #[account(seeds=[b"room",&room.room_id.to_le_bytes()],bump=room.bumps[0])]
+    pub room: Box<Account<'info, Room>>,
+    #[account(mut,close=caller,seeds=[b"name",name_lock.key.as_ref()],bump=name_lock.bump,
+              constraint=name_lock.room_id==room.room_id @ Error::Identity)]
+    pub name_lock: Account<'info, NameLock>,
 }
 #[derive(Accounts)]
 pub struct ProposeGate<'info> {

@@ -469,6 +469,7 @@ impl Ctx {
     }
     fn create_ix(&self, user: Pubkey, matcher: Pubkey, l: Launch) -> Instruction {
         let d = DoorKeys::new(self.room, 0);
+        let key = smoke_name_key(&l.name);
         instr(
             a::CreateRoom {
                 user,
@@ -480,6 +481,8 @@ impl Ctx {
                 grad_payer: p(&[b"grad_payer", self.room.as_ref()]),
                 slug: p(&[b"slug", &l.identity()]),
                 old_holder: None,
+                name_lock: Some(p(&[b"name", &key])),
+                old_name_holder: None,
                 room_mint: p(&[b"room_mint", self.room.as_ref()]),
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
@@ -498,6 +501,7 @@ impl Ctx {
             ix::CreateRoom {
                 room_id: self.rid,
                 launch: l,
+                name_key: Some(key),
             },
         )
     }
@@ -642,7 +646,43 @@ fn mint_check(c: &Chain, mint: &Pubkey) -> Result<Value> {
     }))
 }
 
+/// The matcher service's NameLock key (services/matcher rules.name_lock_key) for the smoke's own names
+/// only: "Doors Smoke " + six upper-case hex digits. For that form the service's normalisation reduces to
+/// "DOORSSMOKE" + the tag with its digits folded (0->O, 1->I, 3->E, 4->A, 5->S, 7->T, 8->B), class N.
+/// Any other name is refused rather than keyed wrongly. `smoke_key_matches_the_service` pins it to vectors
+/// computed with the service's rules.py.
+fn smoke_name_key(name: &str) -> [u8; NAME_KEY_LEN] {
+    let tag = name.strip_prefix("Doors Smoke ").expect("smoke name");
+    assert!(tag.len() == 6 && tag.bytes().all(|c| c.is_ascii_digit() || (b'A'..=b'F').contains(&c)));
+    let folded: String = tag
+        .chars()
+        .map(|c| match c {
+            '0' => 'O',
+            '1' => 'I',
+            '3' => 'E',
+            '4' => 'A',
+            '5' => 'S',
+            '7' => 'T',
+            '8' => 'B',
+            c => c,
+        })
+        .collect();
+    let nk = format!("DOORSSMOKE{folded}");
+    let h = solana_sha256_hasher::hashv(&[b"doors-v1:name-key:v1\0N\0", nk.as_bytes()]);
+    h.to_bytes()[..NAME_KEY_LEN].try_into().unwrap()
+}
+fn smoke_key_matches_the_service() {
+    for (name, key) in [
+        ("Doors Smoke 0A1B2C", "2f06537ec8ddfa6f5057dc7d33ee1237"),
+        ("Doors Smoke FFE387", "10a09ffa681e7b0fc073e86e91d3f1a0"),
+        ("Doors Smoke 4578BD", "40bd7fa8d5a4143caf668ae8d0b26612"),
+    ] {
+        let got: String = smoke_name_key(name).iter().map(|b| format!("{b:02x}")).collect();
+        assert_eq!(got, key, "smoke name key differs from the service's for {name}");
+    }
+}
 fn smoke(dir: &str, out: &str) -> Result<()> {
+    smoke_key_matches_the_service();
     let mut c = Chain::new();
     let launcher = key(dir, "smoke-launcher")?;
     let trader = key(dir, "smoke-trader")?;
@@ -761,8 +801,13 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
             "accrued_sol": door.accrued_sol, "claimed_sol": door.claimed_sol,
         }));
     }
+    let name_key = smoke_name_key(name);
+    let name_lock = p(&[b"name", &name_key]);
+    let nl = NameLock::try_deserialize(&mut &c.account(&name_lock)?.data[..])?;
     let verify = json!({
         "room": ctx.room.to_string(), "room_id": rid.to_string(), "door1_nonce": n1.to_string(),
+        "name_lock": {"address": name_lock.to_string(), "key": name_key.iter().map(|b| format!("{b:02x}")).collect::<String>(),
+                      "room_id": nl.room_id.to_string(), "ok": nl.room_id == rid && nl.key == name_key},
         "status": rf.status, "door_count": rf.door_count,
         "room_mint": mint_check(&c, &rf.room_mint)?, "doors": doors,
         "reserve": rf.reserve.to_string(), "sold": rf.sold.to_string(), "retired": rf.retired.to_string(),
@@ -896,5 +941,13 @@ fn main() -> Result<()> {
         Some("fail") => fail(arg(2)?, arg(3)?, arg(4)?),
         Some("selftest") => selftest(arg(2)?),
         _ => bail!("usage: doors-devnet init|config|smoke|fail ..."),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn smoke_name_key_equals_the_service_vectors() {
+        super::smoke_key_matches_the_service();
     }
 }

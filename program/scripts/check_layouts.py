@@ -21,7 +21,7 @@ def main():
             return sum(size(f['type']) for f in types[normal(name)]['fields'])
         raise ValueError(ty)
     out={}
-    for name in ['Config','Room','Door','SlugLock','PendingGate']:
+    for name in ['Config','Room','Door','SlugLock','NameLock','PendingGate']:
         actual=types[normal(name)]['fields'];expected=A.LAYOUTS[name][1:];assert len(actual)==len(expected),(name,len(actual),len(expected))
         rows=[];offset=8
         for field,(label,n) in zip(actual,expected):

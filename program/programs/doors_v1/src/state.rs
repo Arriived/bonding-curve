@@ -453,6 +453,23 @@ impl SlugLock {
     pub const LEN: usize = 17;
 }
 
+/// Length of a NameLock key. The matcher service computes it (its grouping key, hashed); the
+/// program never computes a fold for it, it only enforces one key -> one room, atomically.
+/// 16 bytes: a second preimage costs 2^128 work; accidental collision odds at 10^9 names are ~10^-21.
+pub const NAME_KEY_LEN: usize = 16;
+
+/// PDA `["name", key]`: the room that holds a matcher-signed name key (finding H-1). Released or taken
+/// over under the same rule as `SlugLock` (`live_rule`), when its room is not live.
+#[account]
+pub struct NameLock {
+    pub room_id: u64,
+    pub key: [u8; NAME_KEY_LEN],
+    pub bump: u8,
+}
+impl NameLock {
+    pub const LEN: usize = 8 + 8 + NAME_KEY_LEN + 1;
+}
+
 /// Longest a signed launch may remain valid ahead of the executing slot. Equals the
 /// runtime's recent-blockhash window, `MAX_PROCESSING_AGE` (solana-clock 4.0.0).
 pub const MAX_LAUNCH_WINDOW_SLOTS: u64 = 150;

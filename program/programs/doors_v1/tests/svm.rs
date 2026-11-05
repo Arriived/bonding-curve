@@ -297,7 +297,32 @@ impl Fixture {
         }
         l
     }
+    /// The fixture's name key: name only (like the matcher's T2n key), from the program's own fold and
+    /// hash. The service computes its own key; the program treats it as opaque.
+    fn name_key(l: &Launch) -> [u8; NAME_KEY_LEN] {
+        let mut x = l.clone();
+        x.symbol = "~".into(); // folds to nothing
+        x.identity()[..NAME_KEY_LEN].try_into().unwrap()
+    }
+    /// The room that holds a NameLock, as the service resolves it from chain state.
+    fn name_holder(&self, key: &[u8; NAME_KEY_LEN]) -> Option<Pubkey> {
+        let lock = self.svm.get_account(&p(&[b"name", key]))?;
+        let lock = NameLock::try_deserialize(&mut &lock.data[..]).ok()?;
+        Some(p(&[b"room", &lock.room_id.to_le_bytes()]))
+    }
     fn create_ix(&self, l: Launch, holder: Option<Pubkey>) -> Instruction {
+        let key = Self::name_key(&l);
+        let name_holder = self.name_holder(&key);
+        self.create_ix_named(l, holder, Some(key), Some(p(&[b"name", &key])), name_holder)
+    }
+    fn create_ix_named(
+        &self,
+        l: Launch,
+        holder: Option<Pubkey>,
+        name_key: Option<[u8; NAME_KEY_LEN]>,
+        name_lock: Option<Pubkey>,
+        old_name_holder: Option<Pubkey>,
+    ) -> Instruction {
         let mut l = self.fill(l, false);
         let config = self.svm.get_account(&self.cfg).unwrap();
         l.expected_terms_hash = Config::try_deserialize(&mut &config.data[..])
@@ -315,6 +340,8 @@ impl Fixture {
                 grad_payer: p(&[b"grad_payer", self.room.as_ref()]),
                 slug: p(&[b"slug", &l.identity()]),
                 old_holder: holder,
+                name_lock,
+                old_name_holder,
                 room_mint: p(&[b"room_mint", self.room.as_ref()]),
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
@@ -333,6 +360,7 @@ impl Fixture {
             ix::CreateRoom {
                 room_id: self.rid,
                 launch: l,
+                name_key,
             },
         )
     }
@@ -1595,6 +1623,148 @@ fn liveness_boundary_release_takeover_and_exact_floor() {
     f.time(3600);
     f.create(launch("First room"), Some(live));
     assert_eq!(f.r().created_at, created + 7200);
+}
+// NameLock (H-1): the matcher signs a name key; the program enforces one key -> one live room, at
+// account creation, under the same liveness rule as SlugLock.
+#[test]
+fn name_lock_one_key_one_live_room() {
+    let mut f = Fixture::new(0);
+    let first = f.room;
+    let base = launch("First room");
+    let key = Fixture::name_key(&base);
+    let lock_addr = p(&[b"name", &key]);
+    let lock = |f: &Fixture| {
+        NameLock::try_deserialize(&mut &f.svm.get_account(&lock_addr).unwrap().data[..]).unwrap()
+    };
+    assert_eq!((lock(&f).room_id, lock(&f).key), (f.rid, key));
+    let next = |f: &mut Fixture, rid: u64| {
+        f.rid = rid;
+        f.room = p(&[b"room", &rid.to_le_bytes()]);
+        f.doors.clear();
+    };
+    // Same name key, different symbol: a different SlugLock identity, so only the NameLock stops
+    // a second room. This is the H-1 race, now atomic on-chain.
+    let mut other_symbol = base.clone();
+    other_symbol.symbol = "FROG".into();
+    assert_ne!(other_symbol.identity(), base.identity());
+    next(&mut f, 0x1d4e_6f80_a2b3_c4d5);
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, Some(key), Some(lock_addr), None),
+        true,
+        Some("Holder"),
+    );
+    f.fail_error(
+        f.create_ix_named(
+            other_symbol.clone(),
+            None,
+            Some(key),
+            Some(lock_addr),
+            Some(first),
+        ),
+        true,
+        Some("Live"),
+    );
+    // Key and account must come together, at the key's PDA.
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, Some(key), None, None),
+        true,
+        Some("NameLock"),
+    );
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, None, Some(lock_addr), None),
+        true,
+        Some("NameLock"),
+    );
+    f.fail_error(
+        f.create_ix_named(
+            other_symbol.clone(),
+            None,
+            Some([7; NAME_KEY_LEN]),
+            Some(lock_addr),
+            None,
+        ),
+        true,
+        Some("Pda"),
+    );
+    f.fail_error(
+        f.create_ix_named(other_symbol.clone(), None, None, None, Some(first)),
+        true,
+        Some("Holder"),
+    );
+    // release_name is refused while the room is live, then closes the lock and pays its rent.
+    let release = |f: &Fixture, room: Pubkey| {
+        instr(
+            a::ReleaseName {
+                caller: f.user.pubkey(),
+                config: f.cfg,
+                room,
+                name_lock: lock_addr,
+            },
+            ix::ReleaseName {},
+        )
+    };
+    f.fail(release(&f, first), false);
+    f.time(3600);
+    let rent = f.svm.get_account(&lock_addr).unwrap().lamports;
+    let before = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
+    f.send(release(&f, first), false, "release_name");
+    assert!(f.svm.get_account(&lock_addr).is_none());
+    assert_eq!(
+        f.svm.get_account(&f.user.pubkey()).unwrap().lamports,
+        before + rent - 5000
+    );
+    // A free key: no old name holder may be passed. Prefunding the lock PDA does not block creation.
+    f.fail_error(
+        f.create_ix_named(
+            other_symbol.clone(),
+            None,
+            Some(key),
+            Some(lock_addr),
+            Some(first),
+        ),
+        true,
+        Some("Holder"),
+    );
+    let r0 = f.svm.minimum_balance_for_rent_exemption(0);
+    f.svm.airdrop(&lock_addr, r0).unwrap();
+    f.create(other_symbol.clone(), None);
+    let second = f.room;
+    assert_eq!(lock(&f).room_id, f.rid);
+    // Takeover in place once the holder is dead, without a release, and with the SlugLock and the
+    // NameLock held by two different dead rooms: `first` holds base's identity, `second` the name.
+    f.time(3600);
+    next(&mut f, 0x2e5f_7091_b3c4_d5e6);
+    f.fail_error(
+        f.create_ix_named(
+            base.clone(),
+            Some(first),
+            Some(key),
+            Some(lock_addr),
+            Some(first),
+        ),
+        true,
+        Some("Holder"),
+    );
+    f.fail_error(
+        f.create_ix_named(base.clone(), Some(first), Some(key), Some(lock_addr), None),
+        true,
+        Some("Holder"),
+    );
+    f.send(
+        f.create_ix_named(
+            base.clone(),
+            Some(first),
+            Some(key),
+            Some(lock_addr),
+            Some(second),
+        ),
+        true,
+        "create_room",
+    );
+    assert_eq!(lock(&f).room_id, f.rid);
+    // release_name checks the room named in the lock.
+    f.time(3600);
+    f.fail(release(&f, second), false);
 }
 #[test]
 fn fold_and_integer_math_match_reference_vectors() {

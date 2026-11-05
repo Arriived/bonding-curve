@@ -559,6 +559,17 @@ pub fn read_slug(ai: &AccountInfo, identity: &[u8; 32]) -> Result<Option<SlugLoc
 }
 /// The lock's holder must be the canonical `Room` of `lock_room_id`, and not live. The room is read
 /// in place (`RoomBytes`): owner, exact size and discriminator are what `Account<Room>` checked.
+pub fn read_name(ai: &AccountInfo, key: &[u8; NAME_KEY_LEN]) -> Result<Option<NameLock>> {
+    pda(ai, &[b"name", key])?;
+    if ai.data_is_empty() {
+        require_keys_eq!(*ai.owner, anchor_lang::system_program::ID, Error::Account);
+        return Ok(None);
+    }
+    require_keys_eq!(*ai.owner, crate::ID, Error::Account);
+    Ok(Some(NameLock::try_deserialize(
+        &mut &ai.try_borrow_data()?[..],
+    )?))
+}
 pub fn holder_dead(
     lock_room_id: u64,
     holder: Option<&AccountInfo>,

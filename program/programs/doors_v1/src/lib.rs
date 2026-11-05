@@ -108,7 +108,12 @@ pub mod doors_v1 {
         });
         Ok(())
     }
-    pub fn create_room(ctx: Context<CreateRoom>, room_id: u64, launch: Launch) -> Result<()> {
+    pub fn create_room(
+        ctx: Context<CreateRoom>,
+        room_id: u64,
+        launch: Launch,
+        name_key: Option<[u8; NAME_KEY_LEN]>,
+    ) -> Result<()> {
         require_top_level_launch()?;
         let a = ctx.accounts;
         launch.validate()?;
@@ -130,6 +135,23 @@ pub mod doors_v1 {
         } else {
             require!(a.old_holder.is_none(), Error::Holder);
         }
+        // Matcher-keyed name floor (H-1): the key is the matcher's, uniqueness is the program's.
+        let name_old = match (&name_key, a.name_lock.as_ref()) {
+            (None, None) => {
+                require!(a.old_name_holder.is_none(), Error::Holder);
+                None
+            }
+            (Some(key), Some(lock)) => {
+                let old = read_name(lock, key)?;
+                if let Some(held) = &old {
+                    holder_dead(held.room_id, a.old_name_holder.as_deref(), &a.config, now)?;
+                } else {
+                    require!(a.old_name_holder.is_none(), Error::Holder);
+                }
+                Some(old.is_some())
+            }
+            _ => return err!(Error::NameLock),
+        };
         let room_info = a.room.to_account_info();
         let rk = a.room.key();
         let rid = room_id.to_le_bytes();
@@ -219,6 +241,27 @@ pub mod doors_v1 {
             bump: slug_b,
         }
         .try_serialize(&mut &mut a.slug.try_borrow_mut_data()?[..])?;
+        if let (Some(key), Some(lock), Some(taken)) = (&name_key, a.name_lock.as_ref(), name_old) {
+            let bump = if taken {
+                pda(lock, &[b"name", key])?
+            } else {
+                create_pda(
+                    &user,
+                    lock,
+                    &system,
+                    &crate::ID,
+                    NameLock::LEN,
+                    NameLock::LEN,
+                    &[b"name", key],
+                )?
+            };
+            NameLock {
+                room_id,
+                key: *key,
+                bump,
+            }
+            .try_serialize(&mut &mut lock.try_borrow_mut_data()?[..])?;
+        }
         let r = &mut a.room;
         r.room_id = room_id;
         r.bumps = [
@@ -280,7 +323,8 @@ pub mod doors_v1 {
             founder_share_bps: r.founder_share_bps,
             matcher_version: launch.matcher_version,
             rule: launch.rule,
-            face: launch.face
+            face: launch.face,
+            name_key
         });
         if launch.first_buy_lamports > 0 {
             create_user_ata(
@@ -640,6 +684,21 @@ pub mod doors_v1 {
         });
         Ok(())
     }
+    /// Permissionless, like release_slug and under the same rule: a NameLock whose room is not live
+    /// is closed and its rent paid to the caller.
+    pub fn release_name(ctx: Context<ReleaseName>) -> Result<()> {
+        require!(
+            !ctx.accounts
+                .room
+                .live(&ctx.accounts.config, Clock::get()?.unix_timestamp)?,
+            Error::Live
+        );
+        emit!(NameReleased {
+            key: ctx.accounts.name_lock.key,
+            room: ctx.accounts.room.key()
+        });
+        Ok(())
+    }
     pub fn release_slug(ctx: Context<ReleaseSlug>) -> Result<()> {
         require!(
             !ctx.accounts
@@ -976,6 +1035,7 @@ pub struct RoomCreated {
     pub matcher_version: u16,
     pub rule: u8,
     pub face: u32,
+    pub name_key: Option<[u8; NAME_KEY_LEN]>,
 }
 #[event]
 pub struct DoorOpened {
@@ -1040,6 +1100,11 @@ pub struct SlugReleased {
     pub identity: [u8; 32],
     pub room: Pubkey,
 }
+#[event]
+pub struct NameReleased {
+    pub key: [u8; NAME_KEY_LEN],
+    pub room: Pubkey,
+}
 
 #[error_code]
 pub enum Error {
@@ -1093,4 +1158,6 @@ pub enum Error {
         "Liveness-gate changes take effect only through propose_gate + apply_gate, after the delay"
     )]
     GateTimelock,
+    #[msg("name_key and the name_lock account must be given together")]
+    NameLock,
 }
