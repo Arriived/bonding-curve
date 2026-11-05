@@ -153,7 +153,7 @@ pub fn execute_trade<'a>(
                 Some(rs),
                 6,
             )?;
-            let ix = d.d.index.to_le_bytes();
+            let ix = d.d.nonce.to_le_bytes();
             let b = [d.d.bumps[0]];
             transfer(
                 &d.vault,
@@ -196,7 +196,7 @@ pub fn execute_trade<'a>(
         if let Some(d) = route.as_mut() {
             require!(input <= d.d.backing, Error::Balance);
             transfer(user_token, &d.mint, &d.vault, user, tp, input, None, 6)?;
-            let ix = d.d.index.to_le_bytes();
+            let ix = d.d.nonce.to_le_bytes();
             let b = [d.d.bumps[0]];
             transfer(
                 &d.backing,

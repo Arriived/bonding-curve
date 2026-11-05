@@ -49,6 +49,8 @@ pub mod doors_v1 {
         require_top_level_launch()?;
         let a = ctx.accounts;
         launch.validate()?;
+        require!(launch.door_nonce == 0, Error::DoorNonce);
+        launch_window(&launch)?;
         require!(!a.config.paused, Error::Paused);
         let fee = add(a.config.room_fee_lamports, a.config.door_fee_lamports)?;
         require!(fee <= launch.max_fee_lamports, Error::FeeLimit);
@@ -284,6 +286,8 @@ pub mod doors_v1 {
         require_top_level_launch()?;
         let a = ctx.accounts;
         launch.validate()?;
+        require!(launch.door_nonce != 0, Error::DoorNonce);
+        launch_window(&launch)?;
         let now = Clock::get()?.unix_timestamp;
         require!(!a.core.config.paused, Error::Paused);
         let fee = a.core.config.door_fee_lamports;
@@ -436,8 +440,8 @@ pub mod doors_v1 {
         let before_q = a.core.room.sold;
         let fl = a.core.fees.lamports();
         let fk = known(&a.core.room, &[&a.door_a, &a.door_b]);
-        let ia = a.door_a.index.to_le_bytes();
-        let ib = a.door_b.index.to_le_bytes();
+        let ia = a.door_a.nonce.to_le_bytes();
+        let ib = a.door_b.nonce.to_le_bytes();
         let ba = [a.door_a.bumps[0]];
         let bb = [a.door_b.bumps[0]];
         let sa: &[&[u8]] = &[b"door", rk.as_ref(), &ia, &ba];
@@ -605,10 +609,11 @@ fn initialize_door<'a>(
     tp: &AccountInfo<'a>,
     now: i64,
 ) -> Result<()> {
+    // The address comes from the signed nonce; `index` is a creation-order statistic.
     let i = r.door_count;
-    let ib = i.to_le_bytes();
+    let nb = l.door_nonce.to_le_bytes();
     let bb = [db];
-    let ds: &[&[u8]] = &[b"door", rk.as_ref(), &ib, &bb];
+    let ds: &[&[u8]] = &[b"door", rk.as_ref(), &nb, &bb];
     let (mb, vb) = create_mint(
         user,
         mint,
@@ -619,7 +624,7 @@ fn initialize_door<'a>(
         Some(i),
         system,
         tp,
-        &[b"door_mint", rk.as_ref(), &ib],
+        &[b"door_mint", rk.as_ref(), &nb],
         &[b"door_vault", di.key.as_ref()],
         ds,
     )?;
@@ -644,6 +649,7 @@ fn initialize_door<'a>(
     d.matcher_version = l.matcher_version;
     d.rule = l.rule;
     d.face = l.face;
+    d.nonce = l.door_nonce;
     r.door_count = r.door_count.checked_add(1).ok_or(Error::Overflow)?;
     emit!(DoorOpened {
         room: rk,
@@ -652,8 +658,21 @@ fn initialize_door<'a>(
         mint: mint.key(),
         matcher_version: l.matcher_version,
         rule: l.rule,
-        face: l.face
+        face: l.face,
+        nonce: l.door_nonce
     });
+    Ok(())
+}
+/// A signed launch executes only at or before `expires_at_slot`, and never more than
+/// `MAX_LAUNCH_WINDOW_SLOTS` ahead of the executing slot: the same bound the runtime puts
+/// on a recent blockhash (MAX_PROCESSING_AGE = 150), but independent of how the
+/// transaction is built, so a durable-nonce transaction cannot outlive it.
+fn launch_window(l: &Launch) -> Result<()> {
+    let slot = Clock::get()?.slot;
+    require!(
+        slot <= l.expires_at_slot && l.expires_at_slot - slot <= MAX_LAUNCH_WINDOW_SLOTS,
+        Error::Expired
+    );
     Ok(())
 }
 fn require_top_level_launch() -> Result<()> {
@@ -882,6 +901,7 @@ pub struct DoorOpened {
     pub matcher_version: u16,
     pub rule: u8,
     pub face: u32,
+    pub nonce: u64,
 }
 #[event]
 pub struct Trade {
@@ -980,4 +1000,8 @@ pub enum Error {
     FeeLimit,
     #[msg("Room economics differ from the signed launch terms")]
     LaunchTerms,
+    #[msg("Signed launch is past its expiry slot, or its expiry is too far ahead")]
+    Expired,
+    #[msg("Door nonce must be 0 for create_room and non-zero for open_door")]
+    DoorNonce,
 }

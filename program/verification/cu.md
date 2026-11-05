@@ -11,12 +11,12 @@ Writable-account cap: 24,000,000 CU, verified from Agave v4.4.0 source.
 
 | instruction / route | samples | min CU | max CU | execution-only ceiling per room/block |
 |---|---:|---:|---:|---:|
-| buy_door | 3,351 | 62,347 | 75,189 | 319 |
-| sell_door | 1,675 | 59,589 | 72,501 | 331 |
-| buy_room | 841 | 47,222 | 47,647 | 503 |
-| sell_room | 852 | 44,776 | 45,276 | 530 |
-| convert | 802 | 76,653 | 88,715 | 270 |
-| open_door | 4 | 111,215 | 133,833 | 179 |
+| buy_door | 3,351 | 62,616 | 75,550 | 317 |
+| sell_door | 1,675 | 59,704 | 63,530 | 377 |
+| buy_room | 841 | 46,106 | 55,099 | 435 |
+| sell_room | 852 | 43,285 | 43,785 | 548 |
+| convert | 802 | 75,311 | 78,270 | 306 |
+| open_door | 4 | 118,610 | 130,159 | 184 |
 
 The property run executes 10,000 mixed iterations and
 asserts full global liability coverage, token conservation, authority revocation
@@ -25,15 +25,15 @@ samples exercise maximum-length room/door metadata, a larger curve position,
 the capped crossing buy and conversion while complete. These are maxima
 observed in these fixtures, not a proof of worst-case CU for every address.
 
-Maximum-metadata creation with an atomic first buy: legacy 1,270 bytes
+Maximum-metadata creation with an atomic first buy: legacy 1,318 bytes
 exceeds the 1,232-byte packet limit; the executed v0 transaction
-uses 686 bytes. Its whole-transaction CU is 252,981.
+uses 734 bytes. Its whole-transaction CU is 279,455.
 
 The ceiling is floor(cap / maximum measured execution CU). Actual scheduling
 also charges signatures, write locks, instruction data and the transaction’s
 requested compute budget. Clients must size that budget; these ceilings are
 not a promise of accepted transactions per block. Pool-phase CU is unmeasured.
 
-Build commit: `f6eb007627d30fdf74d5df2847c0feed1241c535`; ELF SHA-256: `a5bccfaddec3cf5ae690317b25d8a5977c775dd3d414caed854dc182a2f371af`.
+Build commit: `6385fdd2494f3e8e8de5b93dd11753e81338c4b6`; ELF SHA-256: `36e22dab7bd77e7b90c4094d0a993d7fa880cf9b40f4da6e19c9a4a105113b31`.
 Raw samples/statistics, tool versions and source hashes are in
 `program/verification/svm_report.json` and `program/verification/build.json`.

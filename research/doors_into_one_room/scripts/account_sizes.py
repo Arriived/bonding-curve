@@ -76,7 +76,8 @@ LAYOUTS = {
         ("accrued_sol: u64", 8), ("accrued_wsol: u64", 8), ("claimed_sol: u64", 8), ("claimed_wsol: u64", 8),
         ("buy_volume: u128 (gross lamports)", 16), ("sell_volume: u128", 16), ("trades: u64", 8),
         ("created_at: i64", 8), ("matcher_version: u16", 2), ("rule: u8", 1),
-        ("face: u32 (door index)", 4), ("reserved: [u8; 25]", 25)],
+        ("face: u32 (door index)", 4),
+        ("nonce: u64 (Door PDA seed, Launch.door_nonce; 0 for door 0)", 8), ("reserved: [u8; 17]", 17)],
 }
 
 

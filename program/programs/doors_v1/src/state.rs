@@ -297,7 +297,9 @@ pub struct Door {
     pub matcher_version: u16,
     pub rule: u8,
     pub face: u32,
-    pub reserved: [u8; 25],
+    // Door PDA seed (Launch.door_nonce). `index` is creation order only.
+    pub nonce: u64,
+    pub reserved: [u8; 17],
 }
 impl Door {
     pub const LEN: usize = 328;
@@ -310,6 +312,10 @@ pub struct SlugLock {
 impl SlugLock {
     pub const LEN: usize = 17;
 }
+
+/// Longest a signed launch may remain valid ahead of the executing slot. Equals the
+/// runtime's recent-blockhash window, `MAX_PROCESSING_AGE` (solana-clock 4.0.0).
+pub const MAX_LAUNCH_WINDOW_SLOTS: u64 = 150;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Launch {
@@ -326,6 +332,12 @@ pub struct Launch {
     pub max_fee_lamports: u64,
     // Required by create_room; open_door uses its room's immutable snapshot.
     pub expected_terms_hash: [u8; 32],
+    // Door PDA seed. 0 for create_room's door 0; a matcher-chosen random non-zero
+    // u64 for open_door, so concurrent opens into one room never contend on an index.
+    pub door_nonce: u64,
+    // Last slot at which this signed launch may execute (inclusive). Bounds a
+    // co-signed launch even if its transaction uses a durable nonce.
+    pub expires_at_slot: u64,
 }
 impl Launch {
     pub fn validate(&self) -> Result<()> {

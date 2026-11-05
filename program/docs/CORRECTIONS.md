@@ -175,3 +175,119 @@ in [DEPLOYMENT.md](DEPLOYMENT.md).
    run uses a fresh random room nonce, while the SVM suite measures one fixed
    room ID. The throughput headroom derived from `verification/cu.md` needs
    margin above those maxima.
+
+## Pre-audit program changes (5 November 2026)
+
+### The broken branch tip, and its fix
+
+- **What was broken.** At `8ce373f`, 10 of 38 SBF tests failed with the runtime's
+  `UnbalancedInstruction` ("sum of account balances before and after instruction do not match").
+- **The cause.**
+  1. The tip's new `settle_pending` debited FeeVault and credited ReserveVault by direct lamport
+     edits.
+  2. `buy` then made a System Program CPI depositing into ReserveVault.
+  3. The runtime syncs a caller's lamport edits only for accounts passed to that CPI. ReserveVault
+     was passed and FeeVault was not, so the CPI saw ReserveVault up by `n` with no matching
+     decrease.
+  4. The retirement token transfer inside `settle_pending` passes neither vault, which is why it
+     succeeded.
+- **The fix (`6385fdd`).** `settle_pending` does the accounting and the retirement transfer and
+  returns the lamports to move. `execute_trade` applies FeeVault → ReserveVault after its last CPI,
+  as the sell path already did for its own debits; `retire_pending` applies it directly, with no
+  CPI after.
+- **One stale test expectation.** `direct_donations_and_holder_burns_preserve_coverage_and_quotes`
+  predated the tip's own settle-before-buy rule. It now expects settle, then advance. The tip
+  author's `sweeps.rs` changes already encoded that rule.
+- **Result:** 38 of 38 tests pass, including the 10,000-iteration property test. The IDL is
+  unchanged by the fix.
+
+### Door addresses from a signed nonce (matcher service correction 3)
+
+- **The change.** `Launch.door_nonce: u64` seeds `["door", room, nonce]` and
+  `["door_mint", room, nonce]`.
+  - Door 0 uses nonce 0, and `create_room` rejects anything else (`DoorNonce`).
+  - `open_door` requires a non-zero nonce. Nonce 0 resolves to door 0's existing address, so `init`
+    fails first.
+  - `Door.nonce` is stored in former reserved bytes (`Door` stays 328 bytes; `account_sizes.py` is
+    updated), and `DoorOpened` appends `nonce`.
+- **What still reads `door_count`:** only `initialize_door`, which records `Door.index`, increments
+  the count, and writes the `("door", index)` metadata label.
+  - Concurrent opens into one room still serialise on the room's write lock and get distinct
+    indices.
+  - No address depends on either.
+- **The matcher service:** it reads a room's door count from `DoorOpened` events and orders faces by
+  `Door.index`. Both still hold: every door, door 0 included, emits one `DoorOpened`, and indices
+  stay contiguous.
+- **Tested in SBF:**
+  - two opens built against the same room state land in either order;
+  - a dropped open blocks nothing;
+  - a nonce collision fails with no state change;
+  - nonce 0 cannot open a door;
+  - `create_room` with a non-zero nonce fails with `DoorNonce`.
+- **Correction to the spec's verification path.** The spec said a door is verified by checking its
+  `("door", index)` metadata against `["door", room, index]`. That no longer holds, because the
+  address comes from the nonce. Door mint metadata is unchanged in this task, since adding the nonce
+  would change mint sizes and rent. Verification now goes through the `Door` account: find it by its
+  `mint` field, then check `["door", room, door.nonce]` (spec §0.F and its verification bullet).
+  **Owner decision:** whether door metadata should also carry the nonce.
+
+### Explicit launch expiry (matcher service correction 1)
+
+- **The change.** `Launch.expires_at_slot: u64`. `create_room` and `open_door` reject (`Expired`)
+  in either of two cases:
+  - the executing slot is past `expires_at_slot`;
+  - `expires_at_slot` is more than `MAX_LAUNCH_WINDOW_SLOTS` = 150 slots ahead of it.
+- **Why 150.** It is the runtime's recent-blockhash window (`MAX_PROCESSING_AGE`, `solana-clock`
+  4.0.0). The matcher sets `expires_at_slot` = its blockhash's slot + 150. Slots advance at least as
+  fast as block heights, so the explicit expiry is never later than the blockhash's. The upper cap
+  makes a misconfigured, far-future expiry unusable rather than long-lived.
+- **What it closes:** a co-signed launch kept alive by a durable nonce past its window. The matcher
+  service's localnet e2e test demonstrates it: a durable-nonce launch, still valid to the runtime,
+  is rejected on-chain with `Expired`.
+- **What it does not close:** a compromised matcher key can still sign fresh launches, with any
+  window, at any time it holds the key. The remedy for that is rotating `Config.matcher_authority`.
+  Rotation invalidates every launch signed by the old key, held ones included, because the program
+  checks the signer against Config at execution.
+- **Tested in SBF:** inclusive at the current slot; one slot late fails; 151 slots ahead fails;
+  exactly 150 ahead succeeds; a launch held past its expiry fails. All on both launch paths.
+
+### Verification of this change set
+
+- **Program tests:** SBF suite 41 of 41, including the 10,000-iteration property test. The IDL
+  matches `anchor idl build` byte for byte, `check_layouts.py` passes, and `cargo fmt` is clean.
+- **Dependency audit not re-run.** `scripts/audit_dependencies.py --check` needs `api.osv.dev`,
+  which this environment's proxy refuses (403). The lockfiles are byte-identical to those the
+  recorded audit covers: Cargo.lock `1f20992f…0a5`, launch_proxy `e98c1572…eba`. These changes add
+  no dependency.
+- **Program e2e (`devnet/e2e.sh`, localnet):** 33 of 33 checks, deploying the repinned ELF
+  `36e22dab…3b31` through `deploy.sh`.
+- **The pin check works both ways:** under the old pin, `deploy.sh` refused the new ELF and named
+  both hashes.
+- **Devnet:** still pending funding.
+
+**VM CU, same suite, before (deployed `436c002` ELF) → after (this ELF),** in min–max CU per
+instruction:
+
+| instruction | before | after |
+|---|---|---|
+| buy_door | 66,677–71,380 | 62,616–75,550 |
+| sell_door | 64,089–68,603 | 59,704–63,530 |
+| buy_room | 45,722–46,147 | 46,106–55,099 |
+| sell_room | 43,276–43,776 | 43,285–43,785 |
+| convert | 81,205–85,715 | 75,311–78,270 |
+| open_door | 118,833–121,715 | 118,610–130,159 |
+
+**What drives the changes:**
+
+- **The higher buy maxima** (buy_room +8,952, buy_door +4,170) come from the tip's own
+  settle-before-buy: a buy with pending fees now performs the retirement transfer CPI. The two
+  changes in this task add one Clock read and the nonce checks to the launch paths only.
+- **The other movements** are consistent with PDA bump-search cost. It varies with every address,
+  so it moves with any change to seeds, here the door nonce. The VM suite measures fixed fixture
+  addresses, and live localnet runs earlier fell both above and below the VM maxima
+  (`services/matcher/CORRECTIONS.md` §9 on that branch). **These maxima are not worst cases.**
+
+**Throughput headroom.** The execution-only ceiling for the heaviest trade moved from 279 (convert)
+to 306 (convert) per room per block. buy_door went from 336 to 317, buy_room from 520 to 435, and
+open_door from 197 to 184. The binding trade ceiling did not fall, so headroom did not materially
+change. The ceilings carry the same bump-search caveat.

@@ -403,7 +403,7 @@ pub fn door_check(
     backing: &AccountInfo,
 ) -> Result<()> {
     require_keys_eq!(d.room, rkey, Error::Account);
-    pda(di, &[b"door", rkey.as_ref(), &d.index.to_le_bytes()])?;
+    pda(di, &[b"door", rkey.as_ref(), &d.nonce.to_le_bytes()])?;
     require_keys_eq!(mint.key(), d.mint, Error::Account);
     require_keys_eq!(vault.key(), d.door_vault, Error::Account);
     require_keys_eq!(backing.key(), d.room_token_vault, Error::Account);
