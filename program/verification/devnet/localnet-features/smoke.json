@@ -1,0 +1,350 @@
+{
+  "launcher": "3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k",
+  "matcher": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv",
+  "program": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "trader": "vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh",
+  "transactions": [
+    {
+      "block_time": 1793916622,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "mlSgoxGEe3d2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfn/GLS+nRdw39kJKdZokpVZ7kgd2sQjMhjBAb4e6TqrL9AAAAANcG4wpMRqjh32Vlxwt+DiFgSzP0Pygcs8fYYBlX9Dk/AQAAAAAAAAAAAAAAAAAA",
+        "CbGAphoTDvN2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfnwBFDDfjSZwJVFawohvTK2QPJFaxL67mqY0cRPWCpysx5tfqHF96gqAouVOZ5rLhrytfq556UERzwUcURbPMrwr9CIJWDqFoOwAAAQAAAAAAAAFTYc5bWcqW3xopMCYwn3x4"
+      ],
+      "fee_lamports": 10000,
+      "landed": true,
+      "name": "create_room",
+      "ok": true,
+      "program_cu": 241303,
+      "signature": "5BR4Ezcoik1JmoDhTEkiBuKc1FWNRYakRuHhrUruJzRyBMonE7tR7kpRRSpyKFJdkifWzZewfQKNLWZJomEZTQW6",
+      "slot": 27,
+      "transaction_cu": 241453
+    },
+    {
+      "block_time": 1793916623,
+      "error": null,
+      "error_log": null,
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "create_atas_launcher",
+      "ok": true,
+      "program_cu": null,
+      "signature": "3SGyhs9QMUBjBsyLNKfRn77wXimngmpGNCT6VX2Dind69w3JusHfCxRtN2Jyo8oEo49j2uk7fUCZb9PJkW1hT9xd",
+      "slot": 30,
+      "transaction_cu": 59263
+    },
+    {
+      "block_time": 1793916625,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "mlSgoxGEe3d2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfn7L7/yOHmHV5evQu8p8pvqGDIehy0iYY0PZPt6jJbFjVAQAAAK9+MadyTj5ylnhfjmF83o/QogUX2WChyajTl7lEBk4iAQAAAAAAAK2xiDvQr66Z"
+      ],
+      "fee_lamports": 10000,
+      "landed": true,
+      "name": "open_door",
+      "ok": true,
+      "program_cu": 137853,
+      "signature": "3CDEtKJsYeUED3koSERYTJNczXKG6V1YDGugV1AKVBoMkycvbMemodagPj7VqFCirHvjWMCFsbm6dpGfmjQ9M2Be",
+      "slot": 33,
+      "transaction_cu": 138003
+    },
+    {
+      "block_time": 1793916625,
+      "error": null,
+      "error_log": null,
+      "events": [],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "create_atas_trader",
+      "ok": true,
+      "program_cu": null,
+      "signature": "PfeZP9keRUvtE3LsFW7wspwdtP581Mi5g7ABrrLf3FHHgUoe3vpbXjwDMZ5JXH7NeNXRfVjrqQsENmnWYj52Eru",
+      "slot": 35,
+      "transaction_cu": 64215
+    },
+    {
+      "block_time": 1793916626,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElF2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfnwHxi0vp0XcN/ZCSnWaJKVWe5IHdrEIzIYwQG+Huk6qy/Si5U5nmsuGvK1+rnnpQRHPBRxRFs8yvCv0IglYOoWg7AXol7cs1AwAAbMXmBQAAAACUGw8AAAAAAHol7cs1AwAAbMXmBQAAAAAAgNiFblFqT6jaoBoAAAAAACSgGSJflYaNpCjjbw4AAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "buy_door0",
+      "ok": true,
+      "program_cu": 58501,
+      "signature": "5UBeMRH9mJ1HBEpz1JFrEhLtdJ2jb5C34ttj2aNQ3cMJPq8tJ6teDi6XFmaGU725qfX1eVu5uHsEsLH6J63sVudM",
+      "slot": 38,
+      "transaction_cu": 58651
+    },
+    {
+      "block_time": 1793916628,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElF2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfnwGy+/8jh5h1eXr0LvKfKb6hgyHoctImGND2T7eoyWxY1Q200W/DKcXK1pWTp6z9c+7Pkk74Ncd3MRxYMM6kP1gCAQg3bGgwAwAAbMXmBQAAAACUGw8AAAAAAIJcWTRmBgAA2IrNCwAAAAAAgNiFblFqT6jaoBoAAAAAAAT8k999EwaIvkKxVw4AAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "buy_door1",
+      "ok": true,
+      "program_cu": 60234,
+      "signature": "4RrqBEYMdh6RANMgzr6xfQ2DDVB49t2EyGRBoAaS2uJ1CU2DkSK5dfEybjQHq3T5mpQXUzkB1hoLvSnojDsxDWnz",
+      "slot": 41,
+      "transaction_cu": 60384
+    },
+    {
+      "block_time": 1793916629,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElF2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfnwHxi0vp0XcN/ZCSnWaJKVWe5IHdrEIzIYwQG+Huk6qy/Si5U5nmsuGvK1+rnnpQRHPBRxRFs8yvCv0IglYOoWg7AL2S9uWaAQAAnJz5AgAAAAC6nQcAAAAAAMXJYk7LBAAAPO7TCAAAAAAAgNiFblFqT6jaoBoAAAAAAJnKs6E7D+QqzxvcYw4AAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "sell_door0",
+      "ok": true,
+      "program_cu": 55583,
+      "signature": "TAF1NtdzM6Tp5kgSUiTYTAYQqQgY4E8DGeYYdYyXVvM8HixVAqECUhepXCc9NBigKUvzWCF14Pep2esApFmJF3n",
+      "slot": 44,
+      "transaction_cu": 55733
+    },
+    {
+      "block_time": 1793916630,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "MP6ShzKGiKd2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfn/GLS+nRdw39kJKdZokpVZ7kgd2sQjMhjBAb4e6TqrL9svv/I4eYdXl69C7ynym+oYMh6HLSJhjQ9k+3qMlsWNVeSftyzQAAAA=="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "convert_door0_to_door1",
+      "ok": true,
+      "program_cu": 67139,
+      "signature": "5HmQXQ2akL8Wn6fv5F9WKmnTn53hESTBcHj97APiVqzjfZbewKFRknWtmY4cDoRKygYUjEY7gweaYJFrKSh65vG4",
+      "slot": 46,
+      "transaction_cu": 67289
+    },
+    {
+      "block_time": 1793916631,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "GP7amP0rElF2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfnwANtNFvwynFytaVk6es/XPuz5JO+DXHdzEcWDDOpD9YAgHGRHKLlwEAALZi8wIAAAAAyo0HAAAAAACLDtXZYgYAAPJQxwsAAAAAAIDYhW5Rak+o2qAaAAAAAAB5tmoU8xkGQnapylcOAAAA"
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "buy_room_token",
+      "ok": true,
+      "program_cu": 41552,
+      "signature": "eqi59URFjRayf7jzWsC4fy9kggQTQfgVyPLAKiR2C45pm3iJJJkZLLwyB1FHMiTxCWUofNJEBRFQs6u3HsN13mw",
+      "slot": 49,
+      "transaction_cu": 41702
+    },
+    {
+      "block_time": 1793916632,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "w0wK8SJIb8Z2UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfn0aIBAAAAAAAI/v0cAIAAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "retire_pending",
+      "ok": true,
+      "program_cu": 29734,
+      "signature": "4Mw9hkjFdoNhW4QfVzjstAasRBk2JAyfo872NTXVopk3m43XXQAJZrEsTMs3oi5UrqADXF6HXYV4FsX5mM3dpJkK",
+      "slot": 52,
+      "transaction_cu": 29884
+    },
+    {
+      "block_time": 1793916633,
+      "error": null,
+      "error_log": null,
+      "events": [
+        "Fmhu3iadDj52UCAFMyVtjGeeBR6HAAG5F4OxZRU/OLikOunCJEYfnyi5U5nmsuGvK1+rnnpQRHPBRxRFs8yvCv0IglYOoWg7AGKiDQAAAAAAAAAAAAAAAAA="
+      ],
+      "fee_lamports": 5000,
+      "landed": true,
+      "name": "claim_door_fees",
+      "ok": true,
+      "program_cu": 44853,
+      "signature": "3TZkofGvVbFm4FuxHGHYS2k3ZfWP7muV75ZcuxpvePoZijYXfdrDpfkKmzoi2Demj7s64JZ8Nyir1JroDEZfvgMP",
+      "slot": 54,
+      "transaction_cu": 45003
+    }
+  ],
+  "verify": {
+    "after_claim": {
+      "door0_accrued_sol": 0,
+      "door0_claimed_sol": 893538
+    },
+    "after_retire": {
+      "pending_reserve_sol": 0,
+      "reserve": "197908792",
+      "reserve_increase": "297030",
+      "retired": "10485037859"
+    },
+    "curve_integral_of_sold": "197908792",
+    "door1_nonce": "11073981842637500845",
+    "door_count": 2,
+    "doors": [
+      {
+        "accrued_sol": 0,
+        "backing_covers_circulating": true,
+        "backing_exactly_equals_circulating": true,
+        "circulating_door_supply": "882397366623",
+        "claimed_sol": 893538,
+        "creator": "3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k",
+        "door": "HFtT5sTPWyYKthCCNZGyn4bCnYSZw6L9WrYmbDSrmeFE",
+        "door.backing": "882397366623",
+        "door_vault_balance": "999117602633377",
+        "fee_recipient": "3jyDH3Z5qLac28FKveDJF3Kp9Znkhu38QSv83SvBnX9k",
+        "index": 0,
+        "mint": {
+          "decimals": 6,
+          "extensions": "[MetadataPointer, TokenMetadata]",
+          "freeze_authority": "None",
+          "metadata_update_authority": "None",
+          "mint": "FUNkFtpYpXyKaPg13kRU7tLnqwrLcvU7CcdL2mcybnHU",
+          "mint_authority": "None",
+          "name": "Doors Smoke 0C4500",
+          "ok": true,
+          "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "supply": "1000000000000000",
+          "symbol": "D0C450"
+        },
+        "room_token_backing_vault_balance": "882397366623"
+      },
+      {
+        "accrued_sol": 594060,
+        "backing_covers_circulating": true,
+        "backing_exactly_equals_circulating": true,
+        "circulating_door_supply": "4388842602598",
+        "claimed_sol": 0,
+        "creator": "vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh",
+        "door": "D3gSN6D8pUoJcBbch1io1gRU1rgufFGtV1HkkjS123DE",
+        "door.backing": "4388842602598",
+        "door_vault_balance": "995611157397402",
+        "fee_recipient": "vWDZPiFpy3rikaPdyuL7o9CkbCrvpkbiVuuUMrG3KEh",
+        "index": 1,
+        "mint": {
+          "decimals": 6,
+          "extensions": "[MetadataPointer, TokenMetadata]",
+          "freeze_authority": "None",
+          "metadata_update_authority": "None",
+          "mint": "Cp3xKCqXBcDraz977jjAqeSEfKC79jLZa281FJxQ711b",
+          "mint_authority": "None",
+          "name": "Doors Smoke 0C4500",
+          "ok": true,
+          "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "supply": "1000000000000000",
+          "symbol": "D0C450"
+        },
+        "room_token_backing_vault_balance": "4388842602598"
+      }
+    ],
+    "fee_split": {
+      "expected_from_trade_events": {
+        "door0": 893538,
+        "door1": 594060,
+        "fee_total": 2974380,
+        "founder": 0,
+        "pending_reserve": 297030,
+        "protocol": 1189752
+      },
+      "fee_vault_covers_counters": true,
+      "fee_vault_lamports_before_retire": 3865260,
+      "match": true,
+      "on_chain_counters_before_retire_and_claim": {
+        "door0": 893538,
+        "door1": 594060,
+        "fee_total": 2974380,
+        "founder": 0,
+        "pending_reserve": 297030,
+        "protocol": 1189752
+      },
+      "trades": [
+        {
+          "buy": true,
+          "curve_lamports": 99009900,
+          "door_or_reserve_share": 594060,
+          "fee": 990100,
+          "founder_share": 0,
+          "protocol_share": 396040,
+          "route": "door0",
+          "tokens": "3529589466490",
+          "tx": "buy_door0"
+        },
+        {
+          "buy": true,
+          "curve_lamports": 99009900,
+          "door_or_reserve_share": 594060,
+          "fee": 990100,
+          "founder_share": 0,
+          "protocol_share": 396040,
+          "route": "door1",
+          "tokens": "3506445235976",
+          "tx": "buy_door1"
+        },
+        {
+          "buy": false,
+          "curve_lamports": 49912988,
+          "door_or_reserve_share": 299478,
+          "fee": 499130,
+          "founder_share": 0,
+          "protocol_share": 199652,
+          "route": "door0",
+          "tokens": "1764794733245",
+          "tx": "sell_door0"
+        },
+        {
+          "buy": true,
+          "curve_lamports": 49504950,
+          "door_or_reserve_share": 297030,
+          "fee": 495050,
+          "founder_share": 0,
+          "protocol_share": 198020,
+          "route": "room",
+          "tokens": "1750391211206",
+          "tx": "buy_room_token"
+        }
+      ]
+    },
+    "name_lock": {
+      "address": "Ce91ohzdocwKjk3eTdh8angL6nGA6kKzyYcPiUyhKd8y",
+      "key": "5361ce5b59ca96df1a293026309f7c78",
+      "ok": true,
+      "room_id": "692509682938168576"
+    },
+    "reserve": "197908792",
+    "reserve_covers_curve_integral": true,
+    "reserve_vault_covers_reserve": true,
+    "reserve_vault_lamports": "198799672",
+    "retired": "10485037859",
+    "room": "8xqyLfRFWLVv1r2rGP87y93kPXUv84LxsLXZc4kJWBsk",
+    "room_id": "692509682938168576",
+    "room_mint": {
+      "decimals": 6,
+      "extensions": "[MetadataPointer, TokenMetadata]",
+      "freeze_authority": "None",
+      "metadata_update_authority": "None",
+      "mint": "EYt4pgy1ZtzBX7cEyGUg7ir2BEjATsjEdDFtZxmAe7ZQ",
+      "mint_authority": "None",
+      "name": "Doors Smoke 0C4500",
+      "ok": true,
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "supply": "1000000000000000",
+      "symbol": "D0C450"
+    },
+    "room_vault_balance": "992967883781714",
+    "room_vault_covers_unsold": true,
+    "sold": "7032116218286",
+    "status": 0,
+    "zero_data_rent": 890880
+  }
+}

@@ -604,3 +604,115 @@ observed maximum (12,003 at `b6fe25d`), `claim_door_fees` 13,500, `sell_door` 6,
 are not directly comparable with the `b6fe25d` run. The worst tested VM launch, 303,780 CU, plus the
 largest drift is still about 70,600 under the service's 400,000 limit.
 
+
+## M-7 fixed, NameLock (H-1 closed), stack signer seeds (5 November 2026)
+
+Owner decisions in the brief: M-7 by the targeted fix (less heap on the takeover path, no custom
+allocator), then the matcher-keyed NameLock, in one pass.
+
+**M-7: the old holder is read in place (`8f54026`).**
+- **What was large:** a takeover's only extra deserialisation was `old_holder:
+  Option<Box<Account<Room>>>`. That is a full 1,315-byte `Room` boxed on the heap to read six fields.
+  Nothing else on the takeover path is takeover-specific; `read_slug` deserialises a 17-byte
+  `SlugLock` on the stack.
+- **Fix:** `old_holder` is an `UncheckedAccount`, read by `state::RoomBytes` at the layout's
+  offsets. `vaults::holder_dead` checks owner, exact size, the `Room` discriminator and the
+  canonical room PDA, which is what `Account<Room>` checked. Liveness goes through one function,
+  `state::live_rule`, which `Room::live` also calls.
+- **Tests:**
+  - `takeover_holder_is_validated_in_place`: forged, foreign-owned, non-Room and wrong-holder
+    accounts, plus `RoomBytes` against a serialised `Room` across statuses, clocks and gate settings;
+  - the former ignored reproduction is now `prefunded_v0_maximum_takeover_fits_the_heap`, run
+    every time.
+- **Measured** (`heap_probe.py`, which now also searches the URI-200 and `open_door` takeovers):
+
+  | path | `1de13c9` | `8f54026` |
+  |---|---|---|
+  | worst `create_room` | ≥ 848 | ≥ 848 |
+  | `open_door` | ≥ 9,568 | ≥ 9,568 |
+  | takeover, URI 70 | ≥ 624 | ≥ 1,936 |
+  | takeover, URI 200 (v0) | **fails** | ≥ 1,280 |
+  | `open_door` takeover | ≥ 8,256 | ≥ 9,568 |
+
+  The boxed holder cost exactly 1,312 bytes. **M-7 is closed.**
+- **Correction to the brief's premise.** "M-7 first, so the NameLock lands on recovered headroom":
+  the recovered heap is on the *takeover* path only. A fresh launch never read an old holder, so
+  the worst plain `create_room` gained nothing (848 before and after).
+
+**NameLock (`f87f341`).**
+- **Design:** see `SECURITY_REVIEW.md` H-1 and spec §0.G. Key: 16 bytes, signed by the matcher.
+  Lock: `NameLock { room_id, key, bump }`, 33 bytes; it stores its key so that `release_name` can
+  derive its address.
+- **Cost:**
+  - trace: +1 entry, so the worst launch uses 49 of 64 (`trace_budget.json`);
+  - rent: 817,880 lamports per room;
+  - CU: +6,290 on the worst `create_room` (295,753 → 302,043 VM CU);
+  - URI length: the largest URI the service can sign in a legacy transaction falls from 102 to 51
+    for a new room, and from 70 to 19 for a takeover (`services/matcher/scripts/max_uri.py`).
+- **Heap: thinner than expected, and the reason.** At `f87f341` the worst `create_room` kept only
+  **≥ 272 bytes** (848 before). The takeovers lost 160 (1,936 → 1,776; URI 200: 1,280 → 1,104).
+  The cause was not the NameLock as such but `create_pda`, which every created account goes
+  through:
+  - `seeds.to_vec()` allocated an exact-size `Vec` and `push(bump)` then grew it, stranding the
+    first buffer: 96–144 bytes per account;
+  - the NameLock added one more call;
+  - and on the takeover path the NameLock is overwritten in place, with no `create_pda`. That is
+    why takeovers lost less.
+
+**`create_pda` signer seeds on the stack (`71d32f3`).** A fixed `[&[u8]; 4]` (`MAX_SEEDS` = 3 plus the
+bump): same seeds, same CPI, no allocation. Measured:
+
+| path | `1de13c9` (before) | `8f54026` (M-7) | `f87f341` (+ NameLock) | `71d32f3` (+ stack seeds) |
+|---|---|---|---|---|
+| worst `create_room` (prefunded, max metadata, first buy) | ≥ 848 | ≥ 848 | ≥ 272 | **≥ 1,520** |
+| `open_door`, same conditions | ≥ 9,568 | ≥ 9,568 | ≥ 9,568 | ≥ 9,920 |
+| takeover, URI 70 (service maximum) | ≥ 624 | ≥ 1,936 | ≥ 1,776 | **≥ 2,816** |
+| takeover, URI 200 (v0 maximum) | **fails** | ≥ 1,280 | ≥ 1,104 | **≥ 2,160** |
+| `open_door` takeover | ≥ 8,256 | ≥ 9,568 | ≥ 9,568 | ≥ 9,920 |
+
+Files: `verification/heap_headroom.1de13c9.json`, `.8f54026.json`, `.f87f341.json` and
+`heap_headroom.json` (`71d32f3`). Every launch path now has more free heap than at any point since the
+metadata change, and the worst one has more than twice its old 688-byte low. CU fell too: the worst
+`create_room` uses 299,139 VM CU (302,043 at `f87f341`), and the worst service-signable takeover 306,064
+(`cargo test --locked --test svm prefunded_maximum_metadata -- --nocapture`).
+
+**Correction, `SECURITY_REVIEW.md` H-1:** the earlier NameLock estimate assumed a 32-byte key and a
+17-byte lock (URI 37 / 5, rent 736,600). The implementation uses a 16-byte key and a 33-byte lock
+(URI 51 / 19, rent 817,880).
+
+**Correction, the verification script:** the first full SBF run of `8f54026` reported 2 failures. Both
+were the script's: its clean worktree had not built the `launch_proxy` test fixture, which CI builds
+separately and two tests load. With the fixture built, both pass. `program/scripts/verify_commit.sh` (new) builds it, runs the full suite and then the heap probe.
+
+**Devnet upgrade to `71d32f3`** (`DEPLOYMENT.md` §5):
+- signature `2tbUeyfjRfg1q9ujavtnW7hmpcVoH2s8T1NHXfE8pp6azpY62u6ekZ6QBhYPkQSkLUGHnhEdUnYP6YncqfVA9ecT`,
+  slot 519,081,470;
+- ProgramData grew from 552,840 to 571,264 bytes, costing 93,593,920 lamports of permanent rent plus
+  6,260,000 in fees;
+- on-chain bytes equal the pinned ELF `0f9c6dec…9434`. Config was read back at slot 519,081,523 with
+  0 of 22 fields differing.
+
+Results:
+- program e2e: 34/34 on devnet and localnet;
+- service e2e: PASS on devnet and localnet, including the live NameLock race (second `create_room`
+  rejected with 6013 at slot 519,081,838);
+- test positions sold back and swept: the deploy wallet holds 6,396,200,441 lamports at slot
+  519,084,911.
+
+**Correction, the live-versus-VM `create_room` gap.** This document and `DEPLOYMENT.md` attributed the
+gap to "PDA bump searches or the runtime version, not separated". Now separated
+(`scripts/bump_drift.py`, plus two new localnet variants of `e2e.sh`):
+- **Bump search** is the moving part: −6,000 to +7,500 CU between runs.
+- **The runtime version is not a cause:** devnet runs Agave 4.4.0-beta.1 and the local validator 4.4.0.
+- **The constant part is the cluster's token programs.** Corrected for bumps, the three devnet runs
+  sit at +18,003 / +21,110 / +16,610. Localnet matches it (+19,862) only with devnet's Token-2022,
+  SPL Token and ATA programs loaded. Devnet's feature set adds about +3,000.
+- **So the gap is not widening** (12,003 → 25,610 → 19,610 was bump luck).
+- **Margin:** the service's 400,000 limit keeps about 49,000 CU above the worst case, allowing 15
+  unlucky extra bump tries.
+- **Recommendation:** run the SBF suite against the cluster's token programs.
+
+**Correction, `DEPLOYMENT.md` §7 earlier text:** "the smoke launch's metadata and addresses differ"
+was offered as a reason the runs were not comparable. Metadata differences are small: localnet with the
+same names lands within 2,518 of the VM. The addresses matter only through the bump term above.
+
