@@ -36,15 +36,15 @@ known (already documented).
 
 | # | severity | status | title |
 |---|---|---|---|
-| H-1 | High | interim fix in; **NameLock is a mainnet blocker** | Free name reservations let anyone block any name. SlugLock does not cover 9 of 16 routed-together pairs, so the reservation is load-bearing |
-| M-1 | Medium | fixed (margin still thin) | Launch heap nearly exhausted: the metadata change overflowed it; after the fix, worst-case `create_room` keeps 688 bytes, a service-signable takeover 496 (848 and 624 after the M-8 change at `54215ae`) |
+| H-1 | High | **fixed on-chain** (NameLock, `f87f341`); the service reservation is removed | Free name reservations let anyone block any name. SlugLock does not cover 9 of 16 routed-together pairs, so the reservation was load-bearing; the NameLock covers all 16 |
+| M-1 | Medium | fixed | Launch heap nearly exhausted: the metadata change overflowed it; after the fix, worst-case `create_room` kept 688 bytes, a service-signable takeover 496. At `71d32f3` (stack signer seeds), ≥ 1,520 and ≥ 2,816 |
 | M-2 | Medium | fixed | Matcher in-flight check and reservation were not atomic: concurrent requests could both get "new room" |
 | M-3 | Medium | fixed | Per-launcher rate limit keyed on an unauthenticated field. Requests are now launcher-signed |
 | M-4 | Medium | fixed | Launch first buys defaulted to no slippage limit. The default is now the quote less 2% |
 | M-5 | Medium | fixed (spec updated) | Pause stopped sells. Pause now stops only new positions; sells and `convert` stay open |
 | M-6 | Medium | fixed (7-day timelock) | Liveness thresholds were global and changeable at once: the admin could make every room dead in one transaction |
-| M-7 | Medium | open (`RequestHeapFrame` evaluated: does not resolve it) | A prefunded maximum-metadata `create_room` takeover exhausts the heap (pre-existing; v0-only size) |
-| M-8 | Medium | fixed | A prefunded `create_room` with a first buy and a priority fee used 64 of the 64 allowed instruction-trace entries; now 48 |
+| M-7 | Medium | **fixed** (`8f54026`: old holder read in place) | A prefunded maximum-metadata `create_room` takeover exhausted the heap (pre-existing; v0-only size). It now keeps ≥ 1,280 bytes |
+| M-8 | Medium | fixed | A prefunded `create_room` with a first buy and a priority fee used 64 of the 64 allowed instruction-trace entries; 48 after the fix, 49 with the NameLock |
 | L-1 | Low | fixed | X-Forwarded-For: the client-supplied leftmost entry was the rate-limit key |
 | L-2 | Low | fixed | `/route` body size unbounded; any string became a rate-limiter key |
 | L-3 | Low | fixed | Lone UTF-16 surrogates in metadata caused a 500, not a refusal |
@@ -55,14 +55,14 @@ known (already documented).
 | I-2 | Info | open | The design's door-fee rebate lowers the cost of sandwiching every trade in a room |
 | I-3 | Info | known | Keeping a dead room live costs about 0.02 SOL a day |
 | I-4 | Info | known | The on-chain identity floor is ASCII-oriented; non-ASCII look-alikes rely on the matcher |
-| I-5 | Info | open | Door decisions reserve nothing; only deterministic routing makes this safe |
+| I-5 | Info | open | No decision reserves anything now; only deterministic routing keeps a door decision safe |
 | I-6 | Info | open | Claiming SOL fees requires the recipient to hold a classic WSOL account |
 | I-7 | Info | known | Fees accumulated near the cap can block buys until holders sell |
 | I-8 | Info | open (doc) | The narrative spec describes a `set_matcher_authority` instruction that does not exist |
 | I-9 | Info | known | Decision log: the operator can rewrite it until its head is published |
 | I-10 | Info | known | One room, one write lock: every door's trades serialise on the room |
 
-### H-1 — Free name reservations block any name (open)
+### H-1 — Free name reservations block any name (fixed on-chain)
 
 **Attack.**
 1. Ask `/route` for a new-room decision for a target name. Any launcher pubkey
@@ -147,18 +147,79 @@ Tests: `test_one_in_flight_new_room_decision_per_launcher` and
 0.028 SOL plus any first buy, none of it spent. A squatter with N funded wallets
 can still hold N names.
 
-**A (the on-chain NameLock) is a mainnet blocker, not an option.** Until it
-exists, the consolidation rule is enforced by a service the owner operates, not by
-the program. For 9 of the 16 routed-together pair classes there is no on-chain
-floor at all.
-- **It needs a free trace budget.** It adds one PDA creation per room. After the
-  M-8 fix a prefunded `create_room` with a priority fee uses 48 of 64 trace entries,
-  so it fits.
-- **Its remaining cost** is 65 bytes of legacy transaction space.
+**A (the on-chain NameLock): implemented (`f87f341`), and B removed.** Owner decision: the matcher puts
+its folded-name key in the signed payload, and the program uses it as a PDA seed.
+
+- **Key.** 16 bytes: `sha256("doors-v1:name-key:v1" 0 class 0 payload)[:16]`.
+  - Class N: the folded name, when it has at least 4 characters.
+  - Class P: the folded symbol and name, for shorter names with a symbol.
+  - Otherwise none.
+  - **Why it is exact.** T3 and T2n both need equal folded names, so two room-creating launches route
+    together exactly when their keys are equal. `services/matcher/tests/test_rules.py` checks this
+    both ways over every pair of the slug-coverage classes, the research examples and edge cases.
+    The verifier derives the key independently from the research matcher.
+  - **Why 16 bytes, not 32.** Each byte costs URI length in a legacy transaction (below). A second
+    preimage still costs 2^128 work. The chance of an accidental collision among 10^9 names is about
+    10^-21. A colliding key could only make the matcher's own routing consolidate two names, never
+    take funds.
+- **Alongside SlugLock, not instead of it.** The two give different guarantees.
+  - SlugLock is a floor that trusts nothing: the program's own fold of the metadata.
+  - NameLock covers what the matcher routes together, but trusts the matcher for the key.
+  - Removing SlugLock would make the exact-identity floor depend on the matcher key.
+- **One rule.**
+  - Takeover in `create_room` and the new permissionless `release_name` both use `live_rule`.
+  - `release_slug` and the SlugLock takeover use the same function.
+  - The old holders are read in place (M-7).
+- **Coverage.** `slug_coverage.py`: **0 of 16** routed-together pair classes are now without an
+  on-chain floor (9 before).
+- **The race is gone, and so is the reservation.** PDA creation is atomic: of two concurrent new-room
+  launches under one key, the second fails (`Holder`, 6013) while the first room is live, and nothing
+  is created. The service no longer holds anything:
+  - the in-flight reservation, the per-launcher hold and the proof of funds are removed
+    (`services/matcher/CORRECTIONS.md` §16);
+  - H-1's reservation squatting no longer exists;
+  - the service e2e (step 1b) shows the race on devnet: both decisions signed, the second rejected
+    on-chain, and once re-requested it becomes a T2n door.
+- **Not covered by the NameLock:**
+  - **Founder position.** Without the reservation, the faster of two racing launchers becomes the
+    room's founder. That matters only while `founder_share_bps > 0`.
+  - **Faces from floor doors.** A room can gain a face whose key differs from its door 0's: a floor
+    door is routed by identity, not text, so `the pepe`/X can join the room of `thepepe`/X. A new
+    room under that second face's key is then not blocked on-chain, if the matcher's snapshot misses
+    the door (a door landing in the same moment). The reservation never covered this either.
+  - **Rooms from before the upgrade** (devnet only) hold no NameLock. The matcher still sees them as
+    rooms.
+- **Squatting is now paid and on-chain.** A squatter must actually create the room (about 0.0288 SOL
+  of rent at maximum metadata) and keep it live: activity and reserve, or 1 hour. A blocked launcher
+  is not refused: the matcher routes it as a door into the earlier room, which is the consolidation
+  rule working.
+- **Cost.**
+  - Rent: 817,880 lamports per room (33-byte `NameLock`), +2.9% on a maximum-metadata launch.
+  - Trace: +1 entry, so the worst launch uses 49 of 64.
+  - Heap: the worst `create_room` fell from ≥ 848 to ≥ 272 bytes at `f87f341`. That traced to
+    `create_pda` stranding a `Vec` per created account; with signer seeds on the stack (`71d32f3`) it
+    keeps ≥ 1,520 (M-1).
+  - CU: +6,290 on the worst `create_room` (295,753 → 302,043 VM CU). The stack-seed change (M-1) then
+    saved 2,904, so 299,139 at `71d32f3`.
+  - Transaction bytes, the significant cost: at name 32 and symbol 10 the largest URI the service
+    can sign in a legacy transaction falls:
+
+    | shape | before | now |
+    |---|---|---|
+    | new room | 102 | **51** |
+    | takeover | 70 | **19** |
+    | two locks held by different dead rooms | — | **does not fit** |
+
+    Measured by `services/matcher/scripts/max_uri.py`. **Correction:** this review's earlier estimate
+    (37 / 5, for a 32-byte key) assumed a 17-byte lock. The lock stores its key so that `release_name`
+    can derive its address, which makes it 33 bytes.
+  - With a v0 transaction and a lookup table of the six shared accounts, the same shapes fit 200,
+    169 and 137 bytes. Moving the service to v0 is no longer blocked (M-7 is fixed), and is
+    recommended (service README, "What remains" item 7).
 
 M-2's regression test stays.
 
-### M-1 — Launch heap nearly exhausted (fixed; margin still thin)
+### M-1 — Launch heap nearly exhausted (fixed)
 
 **Background.** The SBF heap is 32 KiB and a bump allocator: nothing is ever
 freed. `mint_check` deserialised the whole `TokenMetadata` (name, symbol, URI,
@@ -180,12 +241,14 @@ allocation in a throwaway worktree and binary-searches it, in 16-byte steps:
 |---|---|---|
 | `e9bd2aa` (before; `verification/heap_headroom.e9bd2aa.json`) | ≥ 800 bytes | ≥ 10,256 bytes |
 | `1558b2e`, and `b6fe25d` after the pause change (after) | ≥ 688 bytes | ≥ 9,568 bytes |
-| `54215ae`, after the M-8 change (`verification/heap_headroom.json`) | ≥ 848 bytes | ≥ 9,568 bytes |
+| `54215ae`, after the M-8 change | ≥ 848 bytes | ≥ 9,568 bytes |
+| `f87f341`, with the NameLock (`heap_headroom.f87f341.json`) | ≥ 272 bytes | ≥ 9,568 bytes |
+| `71d32f3`, signer seeds on the stack (`verification/heap_headroom.json`) | **≥ 1,520 bytes** | ≥ 9,920 bytes |
 
 On `1558b2e`, a `create_room` **takeover** at the largest size the matcher signs
 (name 32, symbol 10, URI 70), prefunded with a first buy, ends with **≥ 496
-bytes**, about 1.5% of the heap; **≥ 624** at `54215ae`. That is the thinnest margin
-on any path reachable today.
+bytes**, about 1.5% of the heap; ≥ 624 at `54215ae`, and **≥ 2,816** at `71d32f3`
+(M-7 and the stack signer seeds).
 
 **Exploitable today?** On `e9bd2aa`, no. The worst case passed with 800 bytes to
 spare (`prefunded_maximum_metadata_launches_fit_the_heap` passes there). With the
@@ -201,11 +264,16 @@ binding constraint on every future addition to a launch.
 `solana-cpi` 3.1.0 clones it into a `StableInstruction`. A prefunded launch makes
 about 40 CPIs, and nothing is ever freed.
 
-**The remedies are design changes,** left to the owner and audit:
-- a custom upward-growing allocator plus `request_heap_frame` in launch
-  transactions;
-- or allocation-free CPI wrappers;
-- or fewer CPIs on the creation path.
+**Remedies taken since,** without a custom allocator (owner decision):
+- fewer CPIs on the creation path (M-8, `54215ae`): +160 bytes;
+- the takeover's old holder read in place (M-7, `8f54026`): +1,312 on takeovers;
+- `create_pda` signer seeds on a stack array instead of `to_vec()` + `push`, which
+  stranded 96–144 bytes per created account, about 12 per `create_room` (`71d32f3`):
+  +1,248 on the worst `create_room` measured against the NameLock commit.
+
+The worst launch now keeps ≥ 1,520 bytes, about 4.6% of the heap. It is still the
+budget every future addition to a launch spends, so `heap_probe.py` stays part of
+the evidence for any program change (`scripts/verify_commit.sh`).
 
 See also M-7.
 
@@ -219,6 +287,8 @@ stays under the matcher's 400,000 CU limit:
 | takeover | 326,893 CU | 303,780 CU | 268,677 CU | 258,819 CU |
 
 (`cargo test --locked --test svm prefunded_maximum_metadata -- --nocapture` prints them.)
+At `71d32f3` (M-7, NameLock, stack seeds): prefunded 299,139 / 207,696 CU; takeover 306,064
+(URI 70) and 306,979 (URI 200, now passing) / 256,558 CU.
 
 ### M-2 — In-flight check and reservation not atomic (fixed)
 
@@ -383,7 +453,7 @@ days with an on-chain event.
 notice. Watchers, founders and the matcher service see `GateChangeProposed` the
 moment it lands.
 
-### M-7 — Prefunded maximum-metadata takeover exhausts the heap (open, pre-existing)
+### M-7 — Prefunded maximum-metadata takeover exhausts the heap (fixed, pre-existing)
 
 **Attack.**
 1. A launch takes over a dead room's identity: `create_room` with `old_holder`.
@@ -395,7 +465,7 @@ moment it lands.
 
 **Affected code:** `create_room` (`lib.rs`) plus the allocation pattern in M-1.
 
-**Exploitable today?**
+**Exploitable before the fix?**
 - **Through the matcher service, no.** It signs only legacy transactions, and
   their 1,232-byte limit caps a takeover `create_room` at a 70-byte URI with a
   32-byte name and 10-byte symbol. Computed with the service's own builder; at
@@ -407,9 +477,29 @@ moment it lands.
   - a future v0-capable service can reach it (README "What remains").
 - **Since when:** it also fails on `e9bd2aa`, so it predates this review.
 
-**Reproduction:** `prefunded_v0_maximum_takeover_exhausts_the_heap`, marked
-`#[ignore]` with this finding's ID. Run it with
-`cargo test --test svm -- --ignored`.
+**Reproduction:** formerly `prefunded_v0_maximum_takeover_exhausts_the_heap`, marked
+`#[ignore]`. It now passes as `prefunded_v0_maximum_takeover_fits_the_heap`, run with the suite.
+
+**Fix (`8f54026`): the targeted option, by owner decision.**
+- **What was large:** the only takeover-specific deserialisation, `old_holder:
+  Option<Box<Account<Room>>>`. That is a full 1,315-byte `Room` boxed on the heap to read six
+  fields (verified: `read_slug` reads a 17-byte `SlugLock` on the stack; nothing else on the path
+  is takeover-specific).
+- **Now:** an `UncheckedAccount` read in place (`state::RoomBytes`), with the checks
+  `Account<Room>` made: owner, exact size, discriminator, canonical room PDA. Liveness comes from
+  one function, `state::live_rule`, shared with `Room::live`.
+- **Tested:** `takeover_holder_is_validated_in_place`. Same precedent as `mint_check` (M-1).
+- **Measured** (`heap_probe.py`; `heap_headroom.1de13c9.json` → `heap_headroom.8f54026.json`): the
+  holder cost 1,312 bytes.
+
+  | path | before | after |
+  |---|---|---|
+  | takeover, URI 70 (service maximum) | ≥ 624 | ≥ 1,936 |
+  | takeover, URI 200 (v0 maximum) | **fails** | ≥ 1,280 |
+  | `open_door` takeover | ≥ 8,256 | ≥ 9,568 |
+
+- **No custom allocator,** by owner decision. The evaluation below stands as the record of why
+  it was considered.
 
 **Evaluated: `ComputeBudgetInstruction::RequestHeapFrame`. On its own it does not
 resolve M-7.** First evaluated at `b6fe25d`, re-measured at `54215ae` after the M-8
@@ -455,22 +545,9 @@ transaction without the frame request could not corrupt anything. The VM
 bounds-checks every heap access, so going past the mapped frame is an access
 violation, the same atomic, clean failure.
 
-**Status.** M-7 stays open, and the ignored reproduction stays ignored. Between
-`b6fe25d` and `54215ae` (the M-8 and M-6 changes) the worst `create_room` gained 160
-bytes and the service-size takeover 128, and the trace was fixed. That is not enough
-for the v0 maximum takeover. Two remedies
-are left. Each changes the program, so each is the owner's call:
-- **a custom global allocator over the requested frame, plus the request in every
-  launch transaction.** The trace now has room for the request (16 entries free).
-  A launch built without the request would fail cleanly with an access violation
-  once it passed 32 KiB, as described above, where today it fails with out of memory.
-- **less heap on the takeover path,** for example not deserialising the old `Room`
-  in full.
-
-**Until then:**
-- the matcher service must not sign v0 launches (recorded in its README);
-- the program could reject takeover metadata above the legacy-reachable size. That
-  narrows a spec limit, so it is the owner's call.
+**Status: fixed.** With the NameLock and the stack signer seeds (H-1, M-1), the v0 maximum takeover
+keeps ≥ 2,160 bytes at `71d32f3`. The matcher service may now sign v0 launches as far as the heap is
+concerned (its README, "What remains" item 7).
 
 ### M-8 — Prefunded launches sat at the instruction-trace limit (fixed)
 
@@ -511,8 +588,9 @@ Any added instruction (a heap request, a memo) or CPI made it fail.
 - Prefunding adds at most 2 entries. Both are the Associated Token program's own
   handling of a prefunded user ATA, which this program cannot change.
 
-**Remaining budget.** 16 entries on the worst launch. That is room for the
-NameLock (+1 PDA creation) and a heap request (+1).
+**Remaining budget.** 16 entries on the worst launch at this fix. The NameLock
+(`f87f341`) then took one: every `create_room` row above is +1, so the worst
+launch uses **49 of 64**, 15 free (`verification/trace_budget.json` at `71d32f3`).
 
 **Heap and CU** (`heap_probe.py`, `verification/heap_headroom.json` at `54215ae`):
 
@@ -955,7 +1033,7 @@ defect found. Program code: `program/programs/doors_v1/src/`.
 | service assumes, program does not enforce | Text rules (T2n, normalisation, tie-break); single-replica in-flight state; the decision log. |
 | program enforces, service relies on | Exact-identity floor, room liveness at execution, launch expiry, door nonce rules, signed fee cap, terms hash. A stale snapshot can only make a launch fail on-chain, never route it wrongly past these checks. |
 | expiry seam | `expires_at_slot = blockhash slot + 150`. Slots advance at least as fast as block height, so the program's expiry never outlives the blockhash. Durable nonces are caught by the program (localnet e2e step 6c). |
-| CU seam | Worst tested launch 303,780 CU at `54215ae` (prefunded takeover `create_room`; 326,893 before M-8), under the service's 400,000 limit (asserted in SBF). The VM is not an upper bound for the live runtime: on devnet after the upgrade, `create_room` ran 25,610 CU above its VM maximum and `claim_door_fees` 13,500 (`DEPLOYMENT.md` §7). The worst launch plus that drift is 329,390, about 70,600 under the limit. |
+| CU seam | Worst tested launch 306,979 VM CU at `71d32f3` (the v0 maximum takeover; 306,064 for the worst the service signs), under the service's 400,000 limit (asserted in SBF). The VM is not an upper bound: live devnet `create_room` runs about 17,000–21,000 CU above it because devnet's deployed Token-2022, SPL Token and ATA programs cost more than LiteSVM's bundled ones, plus a ±7,500 bump-search term that depends on each launch's random addresses (`scripts/bump_drift.py`, `DEPLOYMENT.md` §7). With 15 unlucky extra bump tries on top, about 49,000 CU of margin remains. |
 | key seam | The service refuses to sign unless its key equals `Config.matcher_authority` in the snapshot. A KMS signature is verified before use. |
 
 ### Supply chain
@@ -990,7 +1068,8 @@ versions across both lockfiles:
   - that is one sequential run, so scheduling, write-lock contention and
     priority-fee dynamics under load are unmeasured;
   - live devnet CU exceeded the VM maxima on several routes (`create_room` by
-    12,003 at `b6fe25d` and by 25,610 at `54215ae`);
+    12,003, 25,610 and 19,610 across three upgrades; a constant token-program offset
+    plus per-launch bump search, `DEPLOYMENT.md` §7);
   - nothing has run on mainnet.
 - **Heap headroom on the live runtime and on future runtimes.** Measured on the
   bundled Agave 4.3.2 VM only. An Agave change to CPI or account serialisation

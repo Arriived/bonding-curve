@@ -12,18 +12,35 @@ set -euo pipefail
 #
 # Usage: devnet/e2e.sh <keys_dir>   (run from program/, after building the
 # deploy ELF and `cargo build --release` in devnet/)
+#
+# DOORS_LOCALNET_FEATURES_FROM=<cluster url> (localnet only): start the local validator with that
+# cluster's feature set (--clone-feature-set) and write to verification/devnet/localnet-features/,
+# to separate feature-set effects on CU from everything else. With DOORS_LOCALNET_CLONE_TOKEN_PROGRAMS=1
+# as well, it also clones that cluster's Token-2022, SPL Token and ATA programs in place of the
+# validator's bundled ones, and writes to verification/devnet/localnet-cluster-programs/.
 KEYS="$1"
 cd "$(dirname "$0")/.."
 TARGET=$(tr -d '[:space:]' < devnet/e2e-target)
 pk() { solana-keygen pubkey "$KEYS/$1.json"; }
 PROGRAM=$(pk program)
 OUT="verification/devnet/$TARGET"
+FEATURES=()
+if [ "$TARGET" = localnet ] && [ -n "${DOORS_LOCALNET_FEATURES_FROM:-}" ]; then
+  FEATURES=(--clone-feature-set --url "$DOORS_LOCALNET_FEATURES_FROM")
+  OUT="verification/devnet/localnet-features"
+  if [ "${DOORS_LOCALNET_CLONE_TOKEN_PROGRAMS:-}" = 1 ]; then
+    FEATURES+=(--clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
+               --clone-upgradeable-program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+               --clone ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL)
+    OUT="verification/devnet/localnet-cluster-programs"
+  fi
+fi
 
 case "$TARGET" in
   localnet)
     URL=http://127.0.0.1:8899
     LEDGER=$(mktemp -d)
-    solana-test-validator --ledger "$LEDGER" --reset --quiet --rpc-port 8899 > "$LEDGER/validator.log" 2>&1 &
+    solana-test-validator --ledger "$LEDGER" --reset --quiet --rpc-port 8899 "${FEATURES[@]}" > "$LEDGER/validator.log" 2>&1 &
     VALIDATOR=$!
     trap 'kill "$VALIDATOR" 2>/dev/null || true; wait "$VALIDATOR" 2>/dev/null || true; rm -rf "$LEDGER"' EXIT
     until solana cluster-version --url "$URL" >/dev/null 2>&1; do sleep 1; done

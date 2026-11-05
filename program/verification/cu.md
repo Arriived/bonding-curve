@@ -16,12 +16,12 @@ with every address. Budget with margin above them.
 
 | instruction / route | samples | observed min CU | observed max CU | per room/block at the observed max (not a guarantee) |
 |---|---:|---:|---:|---:|
-| buy_door | 3,351 | 57,124 | 69,497 | 345 |
-| sell_door | 1,675 | 54,215 | 57,474 | 417 |
-| buy_room | 841 | 44,601 | 53,602 | 447 |
-| sell_room | 852 | 41,783 | 42,077 | 570 |
+| buy_door | 3,351 | 57,126 | 69,499 | 345 |
+| sell_door | 1,675 | 54,217 | 57,476 | 417 |
+| buy_room | 841 | 44,603 | 53,604 | 447 |
+| sell_room | 852 | 41,785 | 42,079 | 570 |
 | convert | 802 | 65,855 | 68,866 | 348 |
-| open_door | 4 | 138,533 | 149,974 | 160 |
+| open_door | 4 | 137,813 | 149,254 | 160 |
 
 The property run executes 10,000 mixed iterations and
 asserts full global liability coverage, token conservation, authority revocation
@@ -30,15 +30,15 @@ samples exercise maximum-length room/door metadata, a larger curve position,
 the capped crossing buy and conversion while complete. These are maxima
 observed in these fixtures, not an upper bound for any address or runtime.
 
-Maximum-metadata creation with an atomic first buy: legacy 1,318 bytes
+Maximum-metadata creation with an atomic first buy: legacy 1,369 bytes
 exceeds the 1,232-byte packet limit; the executed v0 transaction
-uses 734 bytes. Its whole-transaction CU is 293,064.
+uses 754 bytes. Its whole-transaction CU is 296,507.
 
 The last column is floor(cap / observed maximum execution CU). Actual scheduling
 also charges signatures, write locks, instruction data and the transaction’s
 requested compute budget. Clients must size that budget; these counts are
 not a promise of accepted transactions per block. Pool-phase CU is unmeasured.
 
-Build commit: `54215ae4b4e2c89758ce813edf23f45d9cdebb0b`; ELF SHA-256: `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9`.
+Build commit: `71d32f3094b0b3149bae95dc1a7bbc7c7b3d6bca`; ELF SHA-256: `0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434`.
 Raw samples/statistics, tool versions and source hashes are in
 `program/verification/svm_report.json` and `program/verification/build.json`.

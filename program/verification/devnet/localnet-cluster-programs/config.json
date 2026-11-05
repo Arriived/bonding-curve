@@ -1,0 +1,142 @@
+{
+  "config": "4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw",
+  "data_len": 248,
+  "fields": [
+    {
+      "expected": "HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky",
+      "field": "admin",
+      "match": true,
+      "on_chain": "HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky"
+    },
+    {
+      "expected": "2eKSWypmuDsBtH6hsZa4u6CgABkdS8vHtNozWPBhB1a2",
+      "field": "protocol_fee_recipient",
+      "match": true,
+      "on_chain": "2eKSWypmuDsBtH6hsZa4u6CgABkdS8vHtNozWPBhB1a2"
+    },
+    {
+      "expected": "100",
+      "field": "fee_bps",
+      "match": true,
+      "on_chain": "100"
+    },
+    {
+      "expected": "6000",
+      "field": "door_share_bps",
+      "match": true,
+      "on_chain": "6000"
+    },
+    {
+      "expected": "0",
+      "field": "founder_share_bps",
+      "match": true,
+      "on_chain": "0"
+    },
+    {
+      "expected": "0",
+      "field": "door_fee_lamports",
+      "match": true,
+      "on_chain": "0"
+    },
+    {
+      "expected": "0",
+      "field": "room_fee_lamports",
+      "match": true,
+      "on_chain": "0"
+    },
+    {
+      "expected": "0",
+      "field": "convert_fee_lamports",
+      "match": true,
+      "on_chain": "0"
+    },
+    {
+      "expected": "30000852995",
+      "field": "v_sol_lamports",
+      "match": true,
+      "on_chain": "30000852995"
+    },
+    {
+      "expected": "1073025606000000",
+      "field": "v_tok",
+      "match": true,
+      "on_chain": "1073025606000000"
+    },
+    {
+      "expected": "1000000000000000",
+      "field": "supply",
+      "match": true,
+      "on_chain": "1000000000000000"
+    },
+    {
+      "expected": "85000000000",
+      "field": "r_star_lamports",
+      "match": true,
+      "on_chain": "85000000000"
+    },
+    {
+      "expected": "11111111111111111111111111111111",
+      "field": "meteora_dynamic_config",
+      "match": true,
+      "on_chain": "11111111111111111111111111111111"
+    },
+    {
+      "expected": "85018013680",
+      "field": "graduation_trigger_lamports",
+      "match": true,
+      "on_chain": "85018013680"
+    },
+    {
+      "expected": "false",
+      "field": "paused",
+      "match": true,
+      "on_chain": "false"
+    },
+    {
+      "expected": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv",
+      "field": "matcher_authority",
+      "match": true,
+      "on_chain": "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv"
+    },
+    {
+      "expected": "500000000",
+      "field": "live_min_reserve_lamports",
+      "match": true,
+      "on_chain": "500000000"
+    },
+    {
+      "expected": "21600",
+      "field": "live_max_idle_seconds",
+      "match": true,
+      "on_chain": "21600"
+    },
+    {
+      "expected": "3600",
+      "field": "live_new_seconds",
+      "match": true,
+      "on_chain": "3600"
+    },
+    {
+      "expected": "5000000000",
+      "field": "live_min_volume_lamports",
+      "match": true,
+      "on_chain": "5000000000"
+    },
+    {
+      "expected": "80000000",
+      "field": "pool_min_window_lp_fee",
+      "match": true,
+      "on_chain": "80000000"
+    },
+    {
+      "expected": "254",
+      "field": "bump",
+      "match": true,
+      "on_chain": "254"
+    }
+  ],
+  "mismatches": 0,
+  "owner": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "slot": 25,
+  "upgrade_authority": "HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky"
+}

@@ -1,16 +1,16 @@
 # Doors v1 deployment
 
-4 November 2026; devnet upgraded to `54215ae` on 5 November 2026 (§5).
+4 November 2026; devnet upgraded to `54215ae`, then to `71d32f3`, on 5 November 2026 (§5).
 
 ## 1. Status
 
 | part | status |
 |---|---|
 | program ID, upgrade authority, matcher authority | generated; public keys in §2 |
-| build of the deploy source | done; 48 SBF tests passing and 1 ignored (the reproduction of open finding M-7), including the 10,000-iteration property run; ELF pinned in `devnet/DEPLOY_ELF.sha256` (§3) |
-| **devnet deployment** | **DONE**, 5 November 2026: deployed at slot 518,934,300 (`b6fe25d`), upgraded at slot 519,010,828 to `54215ae` (M-8, M-6). On-chain bytes equal the pinned ELF; Config read back after the upgrade with 0 of 22 fields differing (§5) |
-| end-to-end test, localnet | **PASS**, 33 of 33 checks (§7) |
-| **end-to-end test, devnet** | **PASS**, 33 of 33 checks (§7). The matcher service's own e2e also passes on devnet (`services/matcher`, `claude/matcher-service`). |
+| build of the deploy source | done; 51 SBF tests passing, 0 ignored (M-7's reproduction now passes), including the 10,000-iteration property run; ELF pinned in `devnet/DEPLOY_ELF.sha256` (§3) |
+| **devnet deployment** | **DONE**, 5 November 2026: deployed at slot 518,934,300 (`b6fe25d`), upgraded at slot 519,010,828 to `54215ae` (M-8, M-6) and at slot 519,081,470 to `71d32f3` (M-7, NameLock, stack signer seeds). On-chain bytes equal the pinned ELF; Config read back after each upgrade with 0 of 22 fields differing (§5) |
+| end-to-end test, localnet | **PASS**, 34 of 34 checks (§7) |
+| **end-to-end test, devnet** | **PASS**, 34 of 34 checks (§7). The matcher service's own e2e also passes on devnet (`services/matcher`, `claude/matcher-service`). |
 | upgrade-authority policy for mainnet | open owner decision (§8) |
 
 ## 2. Program ID and authorities
@@ -56,11 +56,11 @@ matcher: the mainnet key is created inside KMS by the owner (§9).
 
 | | |
 |---|---|
-| source | commit `54215ae` (`verification/build.json` records it with every source hash) |
-| history | Until 5 November the deploy source was `436c002` plus the program-ID patch (ELF `f2cfdb85…b436`; `verification/devnet/deployed_source.patch`, `deployed_elf_vm/`), because the tip `8ce373f` failed 10 of 38 SBF tests. The tip was then fixed (`6385fdd`), extended (`e9bd2aa`, `1558b2e`) and repinned ([CORRECTIONS](CORRECTIONS.md)). `b6fe25d` (ELF `c36ba443…ed29`, 522,776 bytes) was deployed to devnet at slot 518,934,300 and replaced by `54215ae` at slot 519,010,828. |
-| ELF | 552,840 bytes, SHA-256 `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9`, pinned in `devnet/DEPLOY_ELF.sha256`. `deploy.sh` and `upgrade.sh` refuse any other binary. |
-| IDL | byte-identical to `anchor idl build`, SHA-256 `d037777da14bb121775cec48db1482c65d15397f6985794afe7d7deafab3c42d` |
-| tests on this exact source | `cargo test --locked --test svm`: 48 passed, 0 failed, 1 ignored (the reproduction of open finding M-7 in `SECURITY_REVIEW.md`); `cargo fmt --check` clean; `check_layouts.py` passes |
+| source | commit `71d32f3` (`verification/build.json` records it with every source hash) |
+| history | Until 5 November the deploy source was `436c002` plus the program-ID patch (ELF `f2cfdb85…b436`; `verification/devnet/deployed_source.patch`, `deployed_elf_vm/`), because the tip `8ce373f` failed 10 of 38 SBF tests. The tip was then fixed (`6385fdd`), extended (`e9bd2aa`, `1558b2e`) and repinned ([CORRECTIONS](CORRECTIONS.md)). `b6fe25d` (ELF `c36ba443…ed29`, 522,776 bytes) was deployed to devnet at slot 518,934,300 and replaced by `54215ae` (ELF `b30c3462…83b9`, 552,840 bytes) at slot 519,010,828, itself replaced by `71d32f3` at slot 519,081,470. |
+| ELF | 571,264 bytes, SHA-256 `0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434`, pinned in `devnet/DEPLOY_ELF.sha256`. `deploy.sh` and `upgrade.sh` refuse any other binary. |
+| IDL | byte-identical to `anchor idl build`, SHA-256 `17ad0fcd9cc7b19c1cd6e6f28b6b97514b9ccdd7071726a335ac5728b1292e31` |
+| tests on this exact source | `cargo test --locked --test svm`: 51 passed, 0 failed, 0 ignored (`scripts/verify_commit.sh` on a clean worktree); `cargo fmt --check` clean; `check_layouts.py` passes |
 
 **`program/devnet` builds against the tip** (it fills `expected_terms_hash`,
 `door_nonce` and `expires_at_slot`).
@@ -196,6 +196,49 @@ extension, so the next upgrade fits from the deploy wallet alone if the ELF grow
 less than about 35 KB, after fees like this upgrade's. The launcher and trader
 balances can be swept back if more is needed.
 
+### Upgrade to `71d32f3` (M-7, NameLock, stack signer seeds)
+
+Same procedure (`devnet/upgrade.sh`).
+
+| item | value |
+|---|---|
+| before | `lastDeploySlot` 519,010,828, `dataLen` 552,840, 2,809,306,040 lamports (`program_show_before.json`) |
+| upgrade signature | `2tbUeyfjRfg1q9ujavtnW7hmpcVoH2s8T1NHXfE8pp6azpY62u6ekZ6QBhYPkQSkLUGHnhEdUnYP6YncqfVA9ecT` (`upgrade.json`) |
+| upgrade slot | 519,081,470 |
+| after | `dataLen` 571,264, 2,902,899,960 lamports (`program_show.json`) |
+| on-chain bytes | equal to the pinned ELF `0f9c6dec…9434` |
+| Config | read back at slot 519,081,523: 0 of 22 fields differ. Its layout is unchanged; the new `NameLock` is a separate PDA. |
+
+**Cost of the upgrade,** from the deploy wallet: 3,178,005,840 lamports at slot 519,081,257, and
+3,078,151,920 after the upgrade transaction (its post-balance). That is 99,853,920 lamports:
+- 93,593,920 of permanent ProgramData rent for the 18,424 extra bytes;
+- 6,260,000 of transaction fees.
+
+The buffer's 2,902,899,960 came back in the upgrade transaction.
+
+**After the upgrade:**
+- the program e2e topped the trader up with 0.6 SOL (it tops up a wallet below 0.6 SOL);
+- both e2e suites ran on devnet;
+- `services/matcher/scripts/sweep_test_positions.py` then sold every test position back and swept
+  both test wallets to 0.05 SOL. That returned 2,327,352,169 lamports from the launcher (signature
+  `625vMk2S…7YA3`) and 1,590,701,352 from the trader (`4ybM6Dz9…Qvdp`) to the deploy wallet. Most of it
+  was the e2e's 1 SOL front-run buys and earlier door first buys.
+
+**Remaining,** at finalized slot 519,084,911 (`solana balance --lamports`):
+
+| wallet | balance |
+|---|---|
+| deploy wallet | 6,396,200,441 lamports |
+| upgrade authority (Config admin) | 48,084,920 lamports |
+| launcher | 50,000,000 lamports |
+| trader | 50,000,000 lamports |
+| matcher | 0 |
+
+**Upgrade budget.** An upgrade holds a buffer as large as ProgramData while it runs: 2,902,899,960
+lamports for today's ELF (`solana rent 571309`, at 5,080 lamports per byte). The deploy wallet covers
+that more than twice over. Each extra ELF byte adds 5,080 of buffer (returned) and 5,080 of permanent
+extension.
+
 ## 6. Mainnet: what differs
 
 1. **Keys.**
@@ -225,7 +268,7 @@ balances can be swept back if more is needed.
   `open_door`; a buy through door 0; a buy through door 1; a sell; a
   `convert`; a direct room-token buy; `retire_pending`; `claim_door_fees`;
 - the six failure cases;
-- the 33 hard checks below (`devnet/report.py --check`).
+- the 34 hard checks below (`devnet/report.py --check`), including the smoke room's NameLock.
 
 It exits non-zero if any check fails. The checker was itself tested: tampering
 four conditions in a copy of the outputs produced four FAILs and exit code 1.
@@ -235,15 +278,17 @@ contains `devnet`.
 
 | `devnet/e2e-target` | what `e2e.sh` does | status |
 |---|---|---|
-| `localnet` | Starts a fresh `solana-test-validator` and funds the wallets locally. Deploys the pinned ELF and initialises Config through `deploy.sh`, then runs the test. Outputs go to `verification/devnet/localnet/`. | **PASS**, 33/33 |
-| `devnet` | Requires the §5 deployment. Tops up the two e2e wallets from the deploy wallet, then runs the same test against devnet. Outputs go to `verification/devnet/devnet/`. | **PASS**, 33/33 |
+| `localnet` | Starts a fresh `solana-test-validator` and funds the wallets locally. Deploys the pinned ELF and initialises Config through `deploy.sh`, then runs the test. Outputs go to `verification/devnet/localnet/`. | **PASS**, 34/34 |
+| `devnet` | Requires the §5 deployment. Tops up the two e2e wallets from the deploy wallet, then runs the same test against devnet. Outputs go to `verification/devnet/devnet/`. | **PASS**, 34/34 |
 
 **Switching between them:** `echo localnet > devnet/e2e-target`, or `echo devnet`.
 
 **Limits of the localnet result:**
 
-- It uses the test validator's bundled Token-2022 and ATA binaries.
-- It uses the test validator's default feature set.
+- It uses the test validator's bundled Token-2022 and ATA binaries, unless
+  `DOORS_LOCALNET_FEATURES_FROM=<url> DOORS_LOCALNET_CLONE_TOKEN_PROGRAMS=1` clones that cluster's.
+- It uses the test validator's default feature set, unless `DOORS_LOCALNET_FEATURES_FROM=<url>`
+  clones that cluster's (`--clone-feature-set`).
 - It uses the old 6,960 lamports-per-byte rent (ProgramData there costs
   3.85 SOL for this ELF).
 - Its slots are local.
@@ -252,21 +297,21 @@ The devnet run below has none of these limits.
 
 ### Devnet run
 
-After the upgrade to `54215ae`; evidence in `verification/devnet/devnet/`.
+After the upgrade to `71d32f3`; evidence in `verification/devnet/devnet/`.
 
 | item | value |
 |---|---|
 | program ID | `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` |
 | deploy signature | `4stW8KGcsvMQmpxahMkFuzQCDhB71gtRNmtktK4suupD1jpBhX9793b4ozNT9C1KXF9AA8njRBvyW82Espn1E866` |
-| upgrade signature (`devnet/upgrade.sh`) | `qLdPHc7BqBBG2PtS21M2jAp6xoVKUSYkBkzwAP9e5bgx9jwqxa6o5YTrcTd1iD8CepGmsbnQUuysEkdC3Y9JHvw` |
-| last upgrade slot (`lastDeploySlot`) | 519,010,828 |
+| upgrade signature (`devnet/upgrade.sh`) | `2tbUeyfjRfg1q9ujavtnW7hmpcVoH2s8T1NHXfE8pp6azpY62u6ekZ6QBhYPkQSkLUGHnhEdUnYP6YncqfVA9ecT` |
+| last upgrade slot (`lastDeploySlot`) | 519,081,470 |
 | ProgramData account | `4SbbsdYLxSgVP42JRpGj6DZVSBp9tVas8iTRQfiFjMNi` |
 | upgrade authority | `HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky` |
-| ProgramData lamports | 2,809,306,040 |
-| local ELF SHA-256 | `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9` |
-| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9` |
+| ProgramData lamports | 2,902,899,960 |
+| local ELF SHA-256 | `0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434` |
+| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434` |
 | on-chain bytes equal local ELF | yes |
-| Config account | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw` (read at slot 519,010,873, 248 bytes) |
+| Config account | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw` (read at slot 519,081,523, 248 bytes) |
 | Config fields differing from settings | 0 of 22 |
 
 **Config read back against the generated settings:**
@@ -301,17 +346,17 @@ After the upgrade to `54215ae`; evidence in `verification/devnet/devnet/`.
 | step | signature | slot | live program CU | VM observed min–max CU (same ELF) | live − VM observed max |
 |---|---|---|---|---|---|
 | initialize_config | `5N2gocHUhskmF4TFZooVQfvDfFY5p3iAKQmuXriqJNieT5wNU8vmuWoKn7qacQ2JzfcFxAUE5foj57NkywU4ndVD` | 518,934,313 | 13,347 | 13,349–13,349 (n=1) | -2 |
-| create_room | `27NLFYwq8qJqsefs87e2zb5TYbQy8Sd5qKLVQtYAEu8eBYG3bfgQ3kf2whTtK5e6DLSTyy9MvxErEpczFrGHCVD3` | 519,011,563 | 256,432 | 230,822–230,822 (n=1) | +25,610 |
-| create_atas_launcher | `4BhdyJhSeyTM8n2fWskZB3AKnCtWetAKuQLszXzSMX2x2UWD2FaF6yCiqdtre2mUsAn1fcMwo1Wq7NhxA8gaGT2Y` | 519,011,570 | None | not measured | — |
-| open_door | `2cuiQY54XXJS4bvY6rhPnyqiUqMdsPiTAevp65H8y2FLpoWEs94qdwNe4bdajR7WqAmFK2uFZdMk1LPjpk1cBbvx` | 519,011,578 | 144,679 | 138,533–149,974 (n=3) | -5,295 |
-| create_atas_trader | `4H1tcr9wPGJzsH6nFz7DcLwqjHKjTf4adESzvKAqGNyXVD9fCLfNd5iBFp4mY8eCbdhmfQpFXpvGMgwUzdYfcUj6` | 519,011,584 | None | not measured | — |
-| buy_door0 | `5bTTxMYkxk3ZLtCAeWs89xnGQtCiTbXX2HwWztMbZQdzQVu44cB5M66EvgXz93UnpUDUtTx3neVsTeDYQ5uZDkct` | 519,011,592 | 67,004 | 57,124–69,345 (n=3,348) | -2,341 |
-| buy_door1 | `63dDBf1TsrKamfwGRrNBy7yUtenHPzG2F1oLzVxCaQ3q8kBUNSGXvmXqM3CEUfnscL9LNJLstnXwnEnAYkQi9doS` | 519,011,598 | 58,237 | 57,124–69,345 (n=3,348) | -11,108 |
-| sell_door0 | `94EQadnW5HX3NnNZurhmixYmsyz7iRr5u1Lzn2S6GWnxYj9tHuhizZasxi1ysHyQWnxTugjCDT7EGbpswTdZ11G` | 519,011,605 | 64,087 | 54,215–57,229 (n=1,673) | +6,858 |
-| convert_door0_to_door1 | `3iYm5DmpCUMPACHW4RvzYnnMX1CN3VGHE9QGMSsou7Tufsxhw9ekyMuDeZe1Xp2U9bEmwoH1NKQ3ki6cpHtGQCt9` | 519,011,612 | 74,647 | 65,855–68,866 (n=800) | +5,781 |
-| buy_room_token | `mc6tQJmn2TWksF4ekJ6AzEVxUA85XgA7isxo12XpwqAREWF2ub6jpFWa5fouqtG5QKTMq8GFkZfRH4tFNnqRY7t` | 519,011,619 | 42,052 | 44,601–53,602 (n=840) | -11,550 |
-| retire_pending | `4HwYaTARkGJLryBiwvPHED2azPhU1WVde9nT1U7HhgmbMw3TBswzGK1hmasRWDkoBy89ktdwa2z23GgxgRYQjb72` | 519,011,628 | 30,237 | 20,829–29,807 (n=829) | +430 |
-| claim_door_fees | `3KSaKVHnUVegTZaBHseKUXjWgGTLcwf65bz4zFtZuYAPszgNhUAREakYjT5nugmAJMhWnJuQpLKfF3y7BCSf8nJ9` | 519,011,636 | 53,853 | 36,594–40,353 (n=808) | +13,500 |
+| create_room | `2gJDPDe87mSRzdFHxCPeZ4EXjGPyQm6uXnx2jgW4kcrKSteFmoFrkfK58yZ7ew8H1PfvtkbvBEx62fMs3HmMWZdX` | 519,081,602 | 253,875 | 234,265–234,265 (n=1) | +19,610 |
+| create_atas_launcher | `2BXSp7crw1fLzJuo6vBgywAdmjVR9oqYKYN9AxZNtJb1iNEU12qMx94CZciENjQU71eGZjCEk7qvAzxW8ZUjsXEB` | 519,081,610 | None | not measured | — |
+| open_door | `V6RmWkzdNpYLKGEF7QG4Wni96FnTAWPMiQNRL3YUXPpaLXu7jVcTDXF1P64xq8XeEUiT9uYEw1eq41u1ovKLW6S` | 519,081,618 | 142,556 | 137,813–149,254 (n=3) | -6,698 |
+| create_atas_trader | `3kMvromdSPTbZS5aTvSnZJQKhj8H9JstqNuedBTwBvr3MUPeQjxLL8g1fWkdishXBiJxtjjdzKmqNMbdWQb1EGsE` | 519,081,624 | None | not measured | — |
+| buy_door0 | `5qMz1kQfnJ1AeNZ6rkQwfd82wGxobH9RjMEx5sxEUDSHysU8kg1M3FsZuPHBzcaTLHVz88rJJKg6nfhFwESgipb4` | 519,081,648 | 67,006 | 57,126–69,347 (n=3,348) | -2,341 |
+| buy_door1 | `4H1yW75159WUCBKUMQJVDYoxbBp3gsKNXXv3yrWa2SrBD7hvRcvsAGeVYQWoybnviYfwEMNiPRuVws9ETzRh3v3E` | 519,081,654 | 58,239 | 57,126–69,347 (n=3,348) | -11,108 |
+| sell_door0 | `32xrFHgyJhEe15sjcUtHvriztNYV4q9RdMS1FWJcUvQioBGhc11LSiE2KzNduNfSsKGfEVymqMFZEN4LRnttV8Za` | 519,081,660 | 64,089 | 54,217–57,231 (n=1,673) | +6,858 |
+| convert_door0_to_door1 | `2WLHQQuJ4owmpfQc8mq4DHbHYSaLYDE2apc4j6PUMhohFbhhPgPBbMGsyHMJFPnJKMqTZUz8ZPuc2d2HS1Xbf5hY` | 519,081,668 | 74,647 | 65,855–68,866 (n=800) | +5,781 |
+| buy_room_token | `5c3bMndZtKJd2sMEFeCSmPyD2V8ASQDvJdEb7SnYQVHx4evpaaPwbUzama7aHkrKYHGKJTLTXHBdaMrJgFo6Bz73` | 519,081,674 | 43,554 | 44,603–53,604 (n=840) | -10,050 |
+| retire_pending | `3Fj6YspX1hb214mY9qY9Gv4oyxQrNJ3fsjusgjgDBS4xXStbisCPSx2pDf4qxSHqs1vk6L6NbJuMeexi2UgFpzrH` | 519,081,683 | 30,237 | 20,829–29,807 (n=829) | +430 |
+| claim_door_fees | `3h32Gmy7JX8396A7HDD4b48DCJbEbG7SRy1zcL78ZfBNrsQ8X89mWggLhyEZEpp4LVLrBRbuqniAQiRE7kPPL1vt` | 519,081,690 | 47,853 | 36,594–40,353 (n=808) | +7,500 |
 
 ATA rows are client setup (Associated Token program), not doors program CU.
 
@@ -319,21 +364,21 @@ ATA rows are client setup (Associated Token program), not doors program CU.
 
 | case | landed on-chain | signature | slot | error |
 |---|---|---|---|---|
-| create_room_without_matcher_signature | yes | `2LiX37hKguUZnjjPvtiFuocREsEFY8pafzUM3pkDn47j243kuKLoLEm6ewccomaoziQSXh4RkHkarJGtFFFpQKfS` | 519,011,653 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
-| open_door_without_matcher_signature | yes | `419x3kW1iBfBSLcLmpYVhk9FvamXuR6KeLmqxDQj9XYD7tvfeD1mngf6CSGQVydaESTj3LhwCpRYfD3Yt5JcTyk8` | 519,011,660 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| create_room_without_matcher_signature | yes | `2T95M9kVU7KPaUsSPnuw149fz3TG1kgCdjy7eJPSvQcbF9XGWV5GGB4o2fRLM1meRgfKeQ8MXT1jnPwZFozW6zFR` | 519,081,708 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| open_door_without_matcher_signature | yes | `61ehwekXQu6TN6LYzzd4gYvZ1Q3DWDhyzVyVCP3Xt2jgx9x8WJq8vpYivmkYs4cbRJCK4h8oyRuttULRzcYKsxjv` | 519,081,714 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
 | create_room_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
 | open_door_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
-| sell_exceeding_balance | yes | `2ZihaCckjri3bhroiKZxcUiHRoSD7xFqScjY1LfR6kdCWsjgTH3fbfQDSmHVxMHrw39FBCcRc8RSGCgWXhdUdo8c` | 519,011,671 | {"InstructionError":[1,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
-| claim_door_fees_by_non_recipient | yes | `DzQksm6m2igQRJR2RJycLaDS4X66WVqWtmoMz6HJHRLQ3NDT7F3Rzbw1SCHA8hn59tibpMyqFyTouKCz1aPbPhN` | 519,011,677 | {"InstructionError":[1,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:820. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
+| sell_exceeding_balance | yes | `33zRWiZnxxq4E5ugiMT6w1YmAeESxvub4UXEjsPG52syqXZRAt8eYZynYUBT3ns1crCGhqNW65eQb58dJPoB4aM5` | 519,081,724 | {"InstructionError":[1,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
+| claim_door_fees_by_non_recipient | yes | `3wUmh6ZfTt3SCScER4EBKq3QT7t4ELffYHqnuK5S1BbCodyBMrPYDm3d84xLDvd7sWqk3Hi28csPh7KXo6rN3G7B` | 519,081,732 | {"InstructionError":[1,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:879. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
 
 **On-chain state checks after the sequence:**
 
 | check | result |
 |---|---|
-| room mint `59zPq4ktyq51mbhfsNtPn76x2U4sJmFwkpZK8WEQbbdH`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
-| door 0 mint `HsqVoNXfnMxMYKQHELzcnaq112Vas7WE7U1JbbhGT3XA`: supply, authorities | 1000000000000000, None, None, None → ok |
+| room mint `FnqUeuLnb6X2aCLgkUF2S13HjC5pXu9xFEZeSr1XW3zA`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
+| door 0 mint `EWCVyvRKemKYdwZgMn3HLFU6hdvVTintXVyZHCzg1g1V`: supply, authorities | 1000000000000000, None, None, None → ok |
 | door 0 backing vault vs circulating door supply | 882397366623 vs 882397366623 → equal |
-| door 1 mint `Vs7bpFzPH39QPLPSNxyMjoQNmhdU8G8bSyqJLf1KQ1C`: supply, authorities | 1000000000000000, None, None, None → ok |
+| door 1 mint `2cHKmf4Bjv25e7TFjuzj9KQJZ7SfCRVUh4NM7FNLcLRA`: supply, authorities | 1000000000000000, None, None, None → ok |
 | door 1 backing vault vs circulating door supply | 4388842602598 vs 4388842602598 → equal |
 | reserve vs curve integral of `sold` | 197908792 vs 197908792 → covers |
 | ReserveVault lamports − rent vs `reserve` | 197908792 vs 197908792 → covers |
@@ -358,6 +403,7 @@ PASS  smoke step convert_door0_to_door1 landed and succeeded with program CU rec
 PASS  smoke step buy_room_token landed and succeeded with program CU recorded
 PASS  smoke step retire_pending landed and succeeded with program CU recorded
 PASS  smoke step claim_door_fees landed and succeeded with program CU recorded
+PASS  NameLock holds the smoke room under the matcher's name key
 PASS  room mint: 1B supply, no mint/freeze/metadata authority
 PASS  door 0 mint: 1B supply, no mint/freeze/metadata authority
 PASS  door 0 backing vault covers circulating door supply
@@ -377,44 +423,28 @@ PASS  failure case open_door_signature_over_different_routing_data rejected with
 PASS  failure case sell_exceeding_balance rejected with {"Custom":1}
 PASS  failure case claim_door_fees_by_non_recipient rejected with {"Custom":6006}
 
-33 of 33 checks passed
+34 of 34 checks passed
 ```
-
-**Live devnet CU against the VM.** The VM column is what LiteSVM (Agave 4.3.2)
-observed for this ELF at fixed fixture addresses. These are observations, not
-upper bounds. Live devnet figures exceeded them for:
-
-- `create_room`: +25,610 CU above the VM observed maximum;
-- `sell_door0`: +6,858 CU above the VM observed maximum;
-- `convert_door0_to_door1`: +5,781 CU above the VM observed maximum;
-- `retire_pending`: +430 CU above the VM observed maximum;
-- `claim_door_fees`: +13,500 CU above the VM observed maximum;
-
-That is real-cluster confirmation that no VM figure is a ceiling. The smoke launch
-now uses a fresh name and symbol on every run (its SlugLock persists on devnet), so
-its metadata and its PDA addresses differ from the VM fixture's.
-
-**Against the service's 400,000 CU limit.** The worst tested launch is 303,780 VM
-CU at `54215ae` (a prefunded takeover `create_room`; `cargo test --locked --test svm
-prefunded_maximum_metadata -- --nocapture`). Adding the largest drift seen here,
-25,610, leaves about 70,600 CU of margin.
 
 ### Localnet run
 
-Fresh `solana-test-validator`, same ELF; evidence in `verification/devnet/localnet/`.
+Fresh `solana-test-validator`, same ELF; evidence in `verification/devnet/localnet/`. Two more localnet
+runs, identical except for the cluster they borrow from, are in `verification/devnet/localnet-features/`
+(devnet's feature set) and `verification/devnet/localnet-cluster-programs/` (devnet's feature set plus
+its Token-2022, SPL Token and ATA programs). All three pass 34/34.
 
 | item | value |
 |---|---|
 | program ID | `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG` |
-| deploy signature | `2BxBbSRyRairQ4gXPEA5XuQUot7WUjegnPynMt7KzsdJymUajkCDZKDj6SRsxHF3CEDoztHeP6KxbybnaBjQLSbm` |
-| deploy slot (`lastDeploySlot`) | 15 |
+| deploy signature | `32qD4bjtzEASv1rbRGMieyUwrb2Ku8gMv4EHhFePknhqkrDcCqUz8aZxiXfZZwNCvmQfSt8Nfvnx49eyy331HY2o` |
+| deploy slot (`lastDeploySlot`) | 17 |
 | ProgramData account | `4SbbsdYLxSgVP42JRpGj6DZVSBp9tVas8iTRQfiFjMNi` |
 | upgrade authority | `HbvturaYqGpCVqrWV6StwJ3rJdBh2QQr26vyo2Q2nky` |
-| ProgramData lamports | 3,848,970,480 |
-| local ELF SHA-256 | `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9` |
-| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `b30c3462ffdd13ceadd8d1144ac07cfd1e95e280547e01a692dadca8d8c783b9` |
+| ProgramData lamports | 3,977,201,520 |
+| local ELF SHA-256 | `0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434` |
+| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `0f9c6decfa5ff7a7c88763a395c3649580f5b59d001387bc0759ce92a7409434` |
 | on-chain bytes equal local ELF | yes |
-| Config account | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw` (read at slot 22, 248 bytes) |
+| Config account | `4jJfFvgAyPsnX6P95Wd4huf5BCyYaow771kdZpqbbpWw` (read at slot 23, 248 bytes) |
 | Config fields differing from settings | 0 of 22 |
 
 **Config read back against the generated settings:**
@@ -448,18 +478,18 @@ Fresh `solana-test-validator`, same ELF; evidence in `verification/devnet/localn
 
 | step | signature | slot | live program CU | VM observed min–max CU (same ELF) | live − VM observed max |
 |---|---|---|---|---|---|
-| initialize_config | `3vBBhu26ntpyNJPxZnLmi2XNyhom6peGBu6hu46TAbsAG6ff8unwrUut9LS82CFCnLwUWtd8jK9FRKRcAN5jqNS7` | 21 | 13,349 | 13,349–13,349 (n=1) | +0 |
-| create_room | `fdCzXiUq4H1gu72LS9FJ9GijoNjPSGHXDLfyrbA6eqY4bVfxv2jmbc7oKrPB6qJdxHyTJEWdrF2CpgLaNcuBGx6` | 23 | 237,643 | 230,822–230,822 (n=1) | +6,821 |
-| create_atas_launcher | `2X7cBLKh7f3byyLgKMCTz7Lo9QezUQ9MkLNJUQT56Z4AVn5nMZrJtBRH9Yw4VG6yEvFR4mDN4jko8hASijAj62So` | 26 | None | not measured | — |
-| open_door | `4TZYPQJXS9HeNAkXX3YRmkQQJ1gXsAVquGJL7srPcwRaSjxugnJNvtE26QyGsdBA3cLeyeo9SeVuqPj6dqjpE7E6` | 28 | 136,668 | 138,533–149,974 (n=3) | -13,306 |
-| create_atas_trader | `2dyyZpSHzunYxm6m3VkVf2txJdW7cN8woH1CqVKx1MkaYttAdRXC1CQkEpf8wj1z6u5gQDwkex45ZxsB2ePQV1az` | 31 | None | not measured | — |
-| buy_door0 | `58pHGf8FBTW3Wbrw2gobajTS8gnn7q6EzhL4gawkwwV8v1nDejvdLRjH7rriPuKqvDhQathkFPcYyJeVvcGsuwoh` | 33 | 56,999 | 57,124–69,345 (n=3,348) | -12,346 |
-| buy_door1 | `2mFV9aVtKgLtJLjaUghyfzUj5cqQUHAG8mugVHTQwhHTURgxfjcptDEeaW34NqZ85eP8frXrW4fwBzuGqxkUkD6j` | 36 | 63,232 | 57,124–69,345 (n=3,348) | -6,113 |
-| sell_door0 | `54c4WNpnxEEHo5npswxJ79TGoJYF2pv59w5VxTJZZt9VSQ8s6HAHz4vfDUpKazoM4faq5a9STsDgyFFhU6zNaCjS` | 38 | 54,081 | 54,215–57,229 (n=1,673) | -3,148 |
-| convert_door0_to_door1 | `65vcUvUFU2vSZgxDGRJGdzUdgiTTN6zr9G3u1MiuQhN2PB3fABXhtKZazoPLF98orWwwmza5hfkVyxY88mbj3RE3` | 40 | 67,139 | 65,855–68,866 (n=800) | -1,727 |
-| buy_room_token | `4BH97BvmbgU7QnBAStYE1khCmr8p1WByxTGPewoMBGEAnopGjKuZLtHcsrYLVc8CwBiRGnq7DYRTViBtS7oQ8Tzf` | 43 | 43,050 | 44,601–53,602 (n=840) | -10,552 |
-| retire_pending | `5Nfy1JMUbY1HDvUYLoyqwDBqEyfuWqTzDZ4ynsB6uKnMHTy8mGz3JrHSgzedY3ty2Zjbq1ECCzxJxssosN9PF7ZW` | 45 | 29,734 | 20,829–29,807 (n=829) | -73 |
-| claim_door_fees | `5QE92DPC2DrhTqoL3sujC5YYHohVN7pgNxNJdgbd3f71bgf1Mp2r9HEBF2NpvjbMc5eYNLWQksvnmtBoYnGe1DJD` | 48 | 44,853 | 36,594–40,353 (n=808) | +4,500 |
+| initialize_config | `3P1mschvBQ7hgE425TzHWEkYJR5EKtVCEbQdhHKwoSW5jpHReK5qqXGLyMi8v6B54sYbHk77yXTD9x4aQdCwi7mE` | 22 | 13,349 | 13,349–13,349 (n=1) | +0 |
+| create_room | `128ovgheDeujqbVkNTTjBXtUJsSoA5FZjwHdqzBNTg7bUpB7hhWFDv2TbQFaJL8nVHvN2adPeg1HgyehZ6yaJdgd` | 24 | 236,783 | 234,265–234,265 (n=1) | +2,518 |
+| create_atas_launcher | `3Y62X7mw4EFcen2oESc4SJY4y4LbPPy4VX7QGuFiMBNMzttvotT6N4AeNaR4xivRPVsGd96o3iozzisTTeoWYv9T` | 27 | None | not measured | — |
+| open_door | `5DaS3Pn8Uf2nTh82BTbceT67az7vScfgzfw4TJen5LafAN1cjTmZ42fwYGNDwvgj6YPXQvjYmTMJcQqVEMrr4xH7` | 29 | 131,685 | 137,813–149,254 (n=3) | -17,569 |
+| create_atas_trader | `25TL3cxbY9KmeRW9EuuMe17GWeEtkRQ4NKdTyVj4mYyR166h1DrgpMRS8BEtND7UNUVpDm2y5ChRhb3mh95x451D` | 31 | None | not measured | — |
+| buy_door0 | `2bfHPmZXRAEwr9RhSeZjy21jmmVF6ksnr3BMLugMsZcepS2iL9wz2D6MCsjYBgzZZR4E9eaUeaqfKNurdmZjd5rT` | 34 | 61,501 | 57,126–69,347 (n=3,348) | -7,846 |
+| buy_door1 | `2ZpQPGY2caiQsReMdHfcLX51XSYPoWvLfj2DJT84MLsXnugZCqJfdVRS8TVpggTF8Fd6ziBLcSAWuAedCihM38th` | 36 | 57,234 | 57,126–69,347 (n=3,348) | -12,113 |
+| sell_door0 | `V12LxG4sLtLLcBExV4squSXBJVoQcuu1gk9YDT65t7zUGM69k49vBMv8mSExmgijcEMaLakg8BE7YtxdBGXrXwq` | 39 | 58,583 | 54,217–57,231 (n=1,673) | +1,352 |
+| convert_door0_to_door1 | `27tMSRFuHjeLHJk77MHgsF3gPLGu4aVRUMqcDXf22b8wkSi9mt31gg6bFKGdxMCDtGSXyCTcpNdEGArq4xYQwmsB` | 41 | 67,139 | 65,855–68,866 (n=800) | -1,727 |
+| buy_room_token | `31rnDQMcaxGNveyrMDKmvGnF1NdxDL8AjftPf1xmkf6WL6ENisKX2EpiLRVij9iKqAUsQQyzsU4nHeuHGidDLnjs` | 44 | 43,052 | 44,603–53,604 (n=840) | -10,552 |
+| retire_pending | `3ZUZEW2daTGMAniuAwB5KGpKcGVca3R2Z7pbf1BVCFYVJTgfVceVZH69LeRNGPoJ3yjKAP2cx2ukDuwxwvHez8aV` | 46 | 29,734 | 20,829–29,807 (n=829) | -73 |
+| claim_door_fees | `2yB8FnT4PLhsbystym2bT5DCk3pbG4se7HyPsA8dL1q4JTABkebAPb5hWbhozybbrLhbXNrJsDK6UrBrztayybcy` | 49 | 47,853 | 36,594–40,353 (n=808) | +7,500 |
 
 ATA rows are client setup (Associated Token program), not doors program CU.
 
@@ -467,21 +497,21 @@ ATA rows are client setup (Associated Token program), not doors program CU.
 
 | case | landed on-chain | signature | slot | error |
 |---|---|---|---|---|
-| create_room_without_matcher_signature | yes | `5g4TfNmQekmSi6nGM4a6JN4xSiLrjvayK3dL3Ehf6BaBsAQ8pShEgEo8QAh85EVqvH5XGGDAMWLK8iyyhFX1MLm1` | 51 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
-| open_door_without_matcher_signature | yes | `4HMLCF3G2R49UappKvzwjbPubh8iY8UewsZGXScCo55HEAjxvoHB5e63VLs6qrtHP9Q3XZ2Aq9BtS8cBVmjYDyTv` | 53 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| create_room_without_matcher_signature | yes | `4kzCCC5ABzbhLG4DUykN6siHf4VXnWkccd2vhUbkwbsdGsPDP9hgarCUruqeBRc27hBEXDZo7MBq9NdY3j5MPyBn` | 52 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| open_door_without_matcher_signature | yes | `5BdBZrYQY9putinm43ryezjo1w7dxYUC2EXeeQz5i7AKZqLsauxiWayZ3CreebtRuWRL9YfGg494UADhmEVp4gVG` | 54 | {"InstructionError":[1,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
 | create_room_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
 | open_door_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
-| sell_exceeding_balance | yes | `a6WGSh4j6j4AM4eazmfSP9oPwbaVS3TGxR2XYJJ4TW3Bs4bwdC88ewhgazLccmdkHjAhuT3A7zGDeX8eowKhj9w` | 56 | {"InstructionError":[1,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
-| claim_door_fees_by_non_recipient | yes | `4aQvDauAixuqNcyX5W6z1ijcnefn85mkfDZj2h9gj5hKwbPP11gWQGBP6WEDWAwAguK4Hu2B92cA7cqtK1iVQbhs` | 58 | {"InstructionError":[1,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:820. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
+| sell_exceeding_balance | yes | `3qYQPr9bCngVN2nTXsvvV2c5q9VLxnhh14QeSvEZG4kMyRqFpLXtGNxw7nopedC4zqqyG59Hg12CbMJyMsDEVdHg` | 57 | {"InstructionError":[1,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
+| claim_door_fees_by_non_recipient | yes | `4N1VbAMwLKDZv7U8hCAATi2pd6CzX5u8Xopd86ygWwoK6KgUGoVLXVRvjSimDNsvvWv9ZeEF83E41E55NFb3teC1` | 59 | {"InstructionError":[1,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:879. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
 
 **On-chain state checks after the sequence:**
 
 | check | result |
 |---|---|
-| room mint `8KjZenZMVDSibYyrKsG2Jsw6At3fB5pmmaN4hNaDgAMF`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
-| door 0 mint `6rMy9MU2m1MZdCQpRFCLTkfG21jnpBM5g5YcuvsccurR`: supply, authorities | 1000000000000000, None, None, None → ok |
+| room mint `5RXxv4hEzyXHcspuA2KE7j8PrKMKa6yNATAQf39hwTz2`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
+| door 0 mint `FyMR9dKZp1pi8m5ChNXBDwhDyvTR5Em8QA7kLwetSB7Q`: supply, authorities | 1000000000000000, None, None, None → ok |
 | door 0 backing vault vs circulating door supply | 882397366623 vs 882397366623 → equal |
-| door 1 mint `8nSk4tPGkLXBGmqHf7VJYBDMsWv33EN5bgeM7BUSsWj6`: supply, authorities | 1000000000000000, None, None, None → ok |
+| door 1 mint `EPsaw6vabE1qqZqhSf3BKr9p7uY4FSbiLV5dqStyRdZe`: supply, authorities | 1000000000000000, None, None, None → ok |
 | door 1 backing vault vs circulating door supply | 4388842602598 vs 4388842602598 → equal |
 | reserve vs curve integral of `sold` | 197908792 vs 197908792 → covers |
 | ReserveVault lamports − rent vs `reserve` | 197908792 vs 197908792 → covers |
@@ -506,6 +536,7 @@ PASS  smoke step convert_door0_to_door1 landed and succeeded with program CU rec
 PASS  smoke step buy_room_token landed and succeeded with program CU recorded
 PASS  smoke step retire_pending landed and succeeded with program CU recorded
 PASS  smoke step claim_door_fees landed and succeeded with program CU recorded
+PASS  NameLock holds the smoke room under the matcher's name key
 PASS  room mint: 1B supply, no mint/freeze/metadata authority
 PASS  door 0 mint: 1B supply, no mint/freeze/metadata authority
 PASS  door 0 backing vault covers circulating door supply
@@ -525,25 +556,41 @@ PASS  failure case open_door_signature_over_different_routing_data rejected with
 PASS  failure case sell_exceeding_balance rejected with {"Custom":1}
 PASS  failure case claim_door_fees_by_non_recipient rejected with {"Custom":6006}
 
-33 of 33 checks passed
+34 of 34 checks passed
 ```
 
-**Live CU against the VM.** The VM column is what LiteSVM (Agave 4.3.2) observed for
-the pinned ELF itself, at fixed fixture addresses (`verification/svm_report.json`;
-`e2e.sh` refuses a baseline from any other ELF). **These are observations, not upper
-bounds.** Live figures exceeded the VM observed maximum for:
+### Live `create_room` CU against the VM: why the gap moves, and what it is
 
-- `create_room`: +6,821 CU above the VM observed maximum;
-- `claim_door_fees`: +4,500 CU above the VM observed maximum;
+The VM figure is what LiteSVM (Agave 4.3.2) observed for the pinned ELF at one fixed fixture room
+(`verification/svm_report.json`). Three devnet upgrades measured live `create_room` at +12,003, +25,610
+and +19,610 CU above it, which looked like a widening gap. `scripts/bump_drift.py` separates the two
+causes:
 
-Two candidate causes, not separated here:
-- **PDA bump searches.** Their cost varies by address, and every run creates a room at
-  a fresh random nonce.
-- **Runtime version.** The local validator is Agave 4.4.0; LiteSVM bundles 4.3.2.
+| devnet run | live CU | VM CU | measured gap | bump tries live / VM | predicted gap | residual |
+|---|---|---|---|---|---|---|
+| b6fe25d deploy | 242,771 | 230,768 | +12,003 | 26 / 30 | -6,000 | +18,003 |
+| 54215ae upgrade | 256,432 | 230,822 | +25,610 | 33 / 30 | +4,500 | +21,110 |
+| 71d32f3 upgrade | 253,875 | 234,265 | +19,610 | 33 / 31 | +3,000 | +16,610 |
+| 71d32f3 localnet, bundled programs, default features | 236,783 | 234,265 | +2,518 | 34 / 31 | +4,500 | -1,982 |
+| 71d32f3 localnet, devnet feature set | 241,303 | 234,265 | +7,038 | 35 / 31 | +6,000 | +1,038 |
+| 71d32f3 localnet, devnet features + devnet token programs | 246,627 | 234,265 | +12,362 | 26 / 31 | -7,500 | +19,862 |
 
-**Consequence.** No VM figure in `verification/cu.md`, the spec or this document is a
-ceiling. Budget compute with margin above them, and treat the live devnet run as the
-better sample of the real runtime.
+- **Bump search, the term that moves.** `find_program_address` pays 1,500 CU per failed bump. Every
+  launch has a random room id, so it pays a different number of tries than the fixture: −6,000 to
+  +7,500 CU across these runs.
+- **The cluster's token programs, the term that stays.** Corrected for bumps, the three devnet runs
+  sit at +18,003, +21,110 and +16,610: a constant offset, not a trend. Localnet reproduces it only
+  once devnet's own Token-2022, SPL Token and ATA programs replace the validator's bundled ones
+  (+19,862). Devnet's feature set alone accounts for about +3,000 (−1,982 → +1,038). LiteSVM, and so
+  every VM figure, uses the bundled programs.
+- **So the widening does not continue.** The gap is about 17,000–21,000 CU from the deployed token
+  programs, plus or minus the launch's own bump luck.
+
+**Against the service's 400,000 CU limit.** The worst tested launch is 306,979 VM CU at `71d32f3` (the v0
+maximum takeover; the worst the legacy-only service can sign is 306,064). Adding the largest
+bump-corrected offset (21,110) and a further 15 unlucky bump tries (22,500) gives 350,589: about 49,000
+CU of margin. **Recommendation:** load the cluster's token programs into the SBF suite, so the VM figures
+include this offset instead of discovering it live.
 
 ## 8. Open owner decision: upgrade authority
 
