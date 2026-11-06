@@ -113,9 +113,9 @@ jobs:
           done
           cargo build --locked --release --manifest-path devnet/Cargo.toml
           DOORS_E2E_TARGET=localnet DOORS_LOCALNET_GENESIS=1 \
-            bash devnet/e2e.sh "$keys" | tee verification/matcher-v0/program-localnet.log
+            bash devnet/e2e.sh "$keys" 2>&1 | tee verification/matcher-v0/program-localnet.log
           DOORS_E2E_TARGET=localnet DOORS_DEPLOY_ELF="$(pwd)/target/deploy/doors_v1.so" \
-            python ../services/matcher/tests/e2e/e2e.py "$keys" | tee verification/matcher-v0/matcher-localnet.log
+            python ../services/matcher/tests/e2e/e2e.py "$keys" 2>&1 | tee verification/matcher-v0/matcher-localnet.log
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4

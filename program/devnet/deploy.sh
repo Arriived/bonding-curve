@@ -47,16 +47,16 @@ solana program deploy "$SO" --url "$URL" --keypair "$KEYS/deploy-wallet.json" \
 # --use-rpc: buffer writes go through the JSON-RPC endpoint. The default sends them to validator TPUs over
 # QUIC, which an HTTPS-only network (this environment) cannot reach: devnet failed with "Max retries exceeded".
 cat "$OUT/deploy.json"
-solana program show "$PROGRAM" --url "$URL" --output json > "$OUT/program_show.json"
+solana program show "$PROGRAM" --url "$URL" --keypair "$KEYS/deploy-wallet.json" --output json > "$OUT/program_show.json"
 cat "$OUT/program_show.json"
 # Deployed bytes against the local ELF (the dump may be padded past the ELF length).
-solana program dump "$PROGRAM" "$BUFDIR/onchain.so" --url "$URL" >/dev/null
+solana program dump "$PROGRAM" "$BUFDIR/onchain.so" --url "$URL" --keypair "$KEYS/deploy-wallet.json" >/dev/null
 head -c "$(stat -c %s "$SO")" "$BUFDIR/onchain.so" | sha256sum | cut -d' ' -f1 > "$OUT/onchain.sha256"
 [ "$(cat "$OUT/onchain.sha256")" = "$ACTUAL" ]
 
 # A program is executable from the slot after its deploy slot.
 DEPLOY_SLOT=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["lastDeploySlot"])' "$OUT/program_show.json")
-until [ "$(solana slot --url "$URL" --commitment confirmed)" -gt $((DEPLOY_SLOT + 1)) ]; do sleep 1; done
+until [ "$(solana slot --url "$URL" --keypair "$KEYS/deploy-wallet.json" --commitment confirmed)" -gt $((DEPLOY_SLOT + 1)) ]; do sleep 1; done
 
 # The upgrade authority signs (and pays rent for) initialize_config.
 solana transfer --url "$URL" --keypair "$KEYS/deploy-wallet.json" --allow-unfunded-recipient \

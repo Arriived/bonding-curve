@@ -532,3 +532,8 @@ The first replacement build in CI run 42132979503 produced ELF SHA-256
 the old program's hash did not match. The generated IDL, ELF hash, and
 compiled source hash were verified against the downloaded build evidence
 before updating the pin. The complete suites run again with the new pin.
+
+The pinned run 42134984840 passed both SBF profiles and then stopped because
+the localnet CLI expected a default Solana signer on the clean Linux runner.
+The runner now passes its temporary local fee payer explicitly and saves
+standard error with the localnet test output.

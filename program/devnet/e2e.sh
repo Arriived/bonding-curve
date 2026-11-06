@@ -30,7 +30,7 @@ if [ "$TARGET" = localnet ] && [ "$GENESIS" = 1 ]; then
 else
   PROGRAM=$(pk program)
 fi
-OUT=${DOORS_E2E_OUT:-verification/devnet/$TARGET}
+OUT="verification/devnet/$TARGET"
 FEATURES=()
 if [ "$TARGET" = localnet ] && [ -n "${DOORS_LOCALNET_FEATURES_FROM:-}" ]; then
   FEATURES=(--clone-feature-set --url "$DOORS_LOCALNET_FEATURES_FROM")
@@ -46,6 +46,7 @@ fi
 case "$TARGET" in
   localnet)
     URL=http://127.0.0.1:8899
+    LOCAL_CLI=(solana --url "$URL" --keypair "$KEYS/deploy-wallet.json")
     LEDGER=$(mktemp -d)
     if [ "$GENESIS" = 1 ]; then
       sha256sum -c devnet/DEPLOY_ELF.sha256
@@ -54,17 +55,17 @@ case "$TARGET" in
     solana-test-validator --ledger "$LEDGER" --reset --quiet --rpc-port 8899 "${FEATURES[@]}" > "$LEDGER/validator.log" 2>&1 &
     VALIDATOR=$!
     trap 'kill "$VALIDATOR" 2>/dev/null || true; wait "$VALIDATOR" 2>/dev/null || true; rm -rf "$LEDGER"' EXIT
-    until solana cluster-version --url "$URL" >/dev/null 2>&1; do sleep 1; done
+    until "${LOCAL_CLI[@]}" cluster-version >/dev/null 2>&1; do sleep 1; done
     for w in deploy-wallet smoke-launcher smoke-trader; do
-      solana airdrop 20 "$(pk "$w")" --url "$URL" >/dev/null
+      "${LOCAL_CLI[@]}" airdrop 20 "$(pk "$w")" >/dev/null
     done
     rm -rf "$OUT"
     if [ "$GENESIS" = 1 ]; then
       mkdir -p "$OUT"
-      solana airdrop 20 "$(pk upgrade-authority)" --url "$URL" >/dev/null
+      "${LOCAL_CLI[@]}" airdrop 20 "$(pk upgrade-authority)" >/dev/null
       printf '{"programId":"%s","method":"validator genesis"}\n' "$PROGRAM" > "$OUT/deploy.json"
-      solana program show "$PROGRAM" --url "$URL" --output json > "$OUT/program_show.json"
-      solana program dump "$PROGRAM" "$LEDGER/onchain.so" --url "$URL" >/dev/null
+      "${LOCAL_CLI[@]}" program show "$PROGRAM" --output json > "$OUT/program_show.json"
+      "${LOCAL_CLI[@]}" program dump "$PROGRAM" "$LEDGER/onchain.so" >/dev/null
       cp devnet/DEPLOY_ELF.sha256 "$OUT/elf.sha256"
       head -c "$(stat -c %s target/deploy/doors_v1.so)" "$LEDGER/onchain.so" \
         | sha256sum | cut -d' ' -f1 > "$OUT/onchain.sha256"
@@ -78,14 +79,16 @@ case "$TARGET" in
     ;;
   devnet)
     URL=https://api.devnet.solana.com
-    if ! solana program show "$PROGRAM" --url "$URL" >/dev/null 2>&1 || [ ! -f "$OUT/deploy.json" ]; then
+    OUT=${DOORS_E2E_OUT:-$OUT}
+    DEVNET_CLI=(solana --url "$URL" --keypair "$KEYS/deploy-wallet.json")
+    if ! "${DEVNET_CLI[@]}" program show "$PROGRAM" >/dev/null 2>&1 || [ ! -f "$OUT/deploy.json" ]; then
       echo "PENDING: $PROGRAM is not deployed on devnet yet (deploy wallet $(pk deploy-wallet) unfunded)." >&2
       echo "Fund it, run: devnet/deploy.sh $URL <keys_dir> $OUT   then rerun this test." >&2
       exit 3
     fi
     # Smoke wallets pay rent for two rooms, two doors and about 0.25 SOL of trades.
     for w in smoke-launcher smoke-trader; do
-      BAL=$(solana balance "$(pk "$w")" --url "$URL" --lamports | cut -d' ' -f1)
+      BAL=$("${DEVNET_CLI[@]}" balance "$(pk "$w")" --lamports | cut -d' ' -f1)
       if [ "$BAL" -lt 600000000 ]; then
         solana transfer --url "$URL" --keypair "$KEYS/deploy-wallet.json" --allow-unfunded-recipient "$(pk "$w")" 0.6 >/dev/null
       fi
