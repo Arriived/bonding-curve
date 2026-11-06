@@ -1895,6 +1895,35 @@ fn audit_settings(f: &mut Fixture, settings: Settings) {
 }
 
 #[test]
+fn paired_doors_stress_config_passes_unchanged_room_validation() {
+    let mut f = Fixture::empty(0);
+    let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
+    settings.graduation_trigger_lamports = 120_000_000_000;
+    settings.validate().expect("120 SOL stress configuration");
+    f.send(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        "paired_doors_stress_config",
+    );
+    let account = f.svm.get_account(&f.cfg).unwrap();
+    let config = Config::try_deserialize(&mut &account.data[..]).unwrap();
+    assert_eq!(config.graduation_trigger_lamports, 120_000_000_000);
+    println!(
+        "PAIRED_DOORS_STRESS_CONFIG accepted_trigger_lamports={}",
+        config.graduation_trigger_lamports
+    );
+}
+
+#[test]
 fn config_rejects_a_curve_with_no_purchasable_base_unit() {
     let mut f = Fixture::empty(0);
     let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
