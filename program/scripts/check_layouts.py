@@ -20,15 +20,20 @@ def main():
             name=ty['defined'];name=name['name'] if isinstance(name,dict) else name
             return sum(size(f['type']) for f in types[normal(name)]['fields'])
         raise ValueError(ty)
+    layouts = dict(A.LAYOUTS)
+    # The prototype extends packed accounts after the deployed layouts.
+    if "virtual_quote" in [field["name"] for field in types["door"]["fields"]]:
+        layouts["Room"] = [*layouts["Room"], ("protocol_accrued_room", 8)]
+        layouts["Door"] = [*layouts["Door"], ("virtual_quote", 16), ("sold", 8), ("accrued_room", 8)]
     out={}
     for name in ['Config','Room','Door','SlugLock','NameLock','PendingGate']:
-        actual=types[normal(name)]['fields'];expected=A.LAYOUTS[name][1:];assert len(actual)==len(expected),(name,len(actual),len(expected))
+        actual=types[normal(name)]['fields'];expected=layouts[name][1:];assert len(actual)==len(expected),(name,len(actual),len(expected))
         rows=[];offset=8
         for field,(label,n) in zip(actual,expected):
             expected_name=label.split(':')[0];assert normal(field['name'])==normal(expected_name),(name,field['name'],label)
             assert size(field['type'])==n,(name,field,n)
             rows.append({'field':field['name'],'offset':offset,'bytes':n});offset+=n
-        out[name]={'bytes':offset,'fields':rows};assert offset==sum(n for _,n in A.LAYOUTS[name])
+        out[name]={'bytes':offset,'fields':rows};assert offset==sum(n for _,n in layouts[name])
     path=ROOT/'program/verification/layouts.json';path.write_text(json.dumps(out,indent=2)+'\n',encoding='utf-8',newline='\n')
     def leaves(accounts):
         return [leaf for a in accounts for leaf in (leaves(a['accounts']) if 'accounts' in a else [a])]

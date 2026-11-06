@@ -7,10 +7,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-doors_v1 = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+doors_v1 = "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ"
 
 [programs.devnet]
-doors_v1 = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+doors_v1 = "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ"
 
 [provider]
 cluster = "Localnet"

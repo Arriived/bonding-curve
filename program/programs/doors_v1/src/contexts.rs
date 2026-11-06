@@ -63,6 +63,9 @@ pub struct CreateRoom<'info> {
     /// CHECK: canonical classic native-WSOL token PDA created by handler.
     #[account(mut)]
     pub fee_wsol: UncheckedAccount<'info>,
+    /// CHECK: canonical room-token fee vault, initialized by the handler.
+    #[account(mut)]
+    pub swap_fees: UncheckedAccount<'info>,
     #[account(init,payer=user,space=Door::LEN,seeds=[b"door",room.key().as_ref(),&0u64.to_le_bytes()],bump)]
     pub door: Box<Account<'info, Door>>,
     /// CHECK: canonical Token-2022 mint, initialized and revoked atomically.
@@ -173,7 +176,7 @@ pub struct OpenDoor<'info> {
     pub system_program: Program<'info, System>,
 }
 #[derive(Accounts)]
-pub struct Convert<'info> {
+pub struct SwapDoors<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     pub core: Core<'info>,
@@ -203,10 +206,12 @@ pub struct Convert<'info> {
     /// CHECK: canonical user ATA for mint B.
     #[account(mut)]
     pub user_b: UncheckedAccount<'info>,
+    /// CHECK: canonical room-token fee vault, validated by the handler.
+    #[account(mut)]
+    pub swap_fees: UncheckedAccount<'info>,
     /// CHECK: executable Token-2022 program.
     #[account(address=spl_token_2022_interface::ID,executable)]
     pub token_program: UncheckedAccount<'info>,
-    pub system_program: Program<'info, System>,
 }
 #[derive(Accounts)]
 pub struct Retire<'info> {

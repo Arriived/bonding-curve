@@ -348,9 +348,10 @@ pub struct Room {
     pub founder_accrued: u64,
     pub founder_accrued_wsol: u64,
     pub founder_share_bps: u16,
+    pub protocol_accrued_room: u64,
 }
 impl Room {
-    pub const LEN: usize = 1315;
+    pub const LEN: usize = 1323;
     pub fn curve(&self, q: u64) -> Result<u64> {
         reserve(self.v_sol_lamports, self.v_tok, q)
     }
@@ -440,9 +441,12 @@ pub struct Door {
     // Door PDA seed (Launch.door_nonce). `index` is creation order only.
     pub nonce: u64,
     pub reserved: [u8; 17],
+    pub virtual_quote: u128,
+    pub sold: u64,
+    pub accrued_room: u64,
 }
 impl Door {
-    pub const LEN: usize = 328;
+    pub const LEN: usize = 360;
 }
 #[account]
 pub struct SlugLock {

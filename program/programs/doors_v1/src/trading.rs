@@ -124,7 +124,7 @@ pub fn execute_trade<'a>(
     } else {
         0
     };
-    let (tokens, n, f) = if buy {
+    let (tokens, room_tokens, n, f) = if buy {
         let (n, f) = buy_amounts(
             input,
             r.fee_bps,
@@ -132,14 +132,21 @@ pub fn execute_trade<'a>(
         )?;
         require!(n > 0, Error::Amount);
         let q = r.advance(n)?;
-        let tokens = sub(q, r.sold)?;
+        let room_tokens = sub(q, r.sold)?;
         require!(
-            tokens > 0 && tokens >= min && tokens <= sub(r.supply, r.sold)?,
+            room_tokens > 0 && room_tokens <= sub(r.supply, r.sold)?,
             Error::Slippage
         );
-        if let Some(d) = route.as_ref() {
-            require!(tokens <= sub(r.supply, d.d.backing)?, Error::Balance);
-        }
+        let tokens = if let Some(d) = route.as_ref() {
+            require!(room_tokens <= sub(r.supply, d.d.backing)?, Error::Balance);
+            sub(
+                door_advance(d.d.virtual_quote, d.d.sold, room_tokens)?,
+                d.d.sold,
+            )?
+        } else {
+            room_tokens
+        };
+        require!(tokens > 0 && tokens >= min, Error::Slippage);
         deposit(user, reserve, system.ok_or(Error::Account)?, n)?;
         deposit(user, fees, system.unwrap(), f)?;
         if let Some(d) = route.as_mut() {
@@ -149,7 +156,7 @@ pub fn execute_trade<'a>(
                 &d.backing,
                 ri,
                 tp,
-                tokens,
+                room_tokens,
                 Some(rs),
                 6,
             )?;
@@ -165,7 +172,8 @@ pub fn execute_trade<'a>(
                 Some(&[b"door", rk.as_ref(), &ix, &b]),
                 6,
             )?;
-            d.d.backing = add(d.d.backing, tokens)?;
+            d.d.backing = add(d.d.backing, room_tokens)?;
+            d.d.sold = add(d.d.sold, tokens)?;
         } else {
             transfer(
                 room_vault,
@@ -187,14 +195,23 @@ pub fn execute_trade<'a>(
         if r.reserve == r.graduation_trigger_lamports {
             r.status = 1;
         }
-        (tokens, n, f)
+        (tokens, room_tokens, n, f)
     } else {
-        require!(input <= r.sold, Error::Balance);
-        let g = sub(r.curve(r.sold)?, r.curve(sub(r.sold, input)?)?)?;
+        let room_tokens = if let Some(d) = route.as_ref() {
+            let next = sub(d.d.sold, input)?;
+            sub(
+                door_integral(d.d.virtual_quote, d.d.sold)?,
+                door_integral(d.d.virtual_quote, next)?,
+            )?
+        } else {
+            input
+        };
+        require!(room_tokens > 0 && room_tokens <= r.sold, Error::Balance);
+        let g = sub(r.curve(r.sold)?, r.curve(sub(r.sold, room_tokens)?)?)?;
         let f = ratio(g, r.fee_bps, true)?;
         require!(sub(g, f)? >= min, Error::Slippage);
         if let Some(d) = route.as_mut() {
-            require!(input <= d.d.backing, Error::Balance);
+            require!(room_tokens <= d.d.backing, Error::Balance);
             transfer(user_token, &d.mint, &d.vault, user, tp, input, None, 6)?;
             let ix = d.d.nonce.to_le_bytes();
             let b = [d.d.bumps[0]];
@@ -204,11 +221,12 @@ pub fn execute_trade<'a>(
                 room_vault,
                 &d.authority,
                 tp,
-                input,
+                room_tokens,
                 Some(&[b"door", rk.as_ref(), &ix, &b]),
                 6,
             )?;
-            d.d.backing = sub(d.d.backing, input)?;
+            d.d.backing = sub(d.d.backing, room_tokens)?;
+            d.d.sold = sub(d.d.sold, input)?;
         } else {
             transfer(user_token, room_mint, room_vault, user, tp, input, None, 6)?;
         }
@@ -216,11 +234,11 @@ pub fn execute_trade<'a>(
         debit(reserve, fees, f)?;
         require!(bl - reserve.lamports() == g, Error::Invariant); // I3, no fee is extracted in addition to g
         r.reserve = sub(r.reserve, g)?;
-        r.sold = sub(r.sold, input)?;
+        r.sold = sub(r.sold, room_tokens)?;
         if r.reserve < r.graduation_trigger_lamports {
             r.status = 0;
         }
-        (input, g, f)
+        (input, room_tokens, g, f)
     };
     r.split(f, route.as_mut().map(|d| &mut *d.d))?;
     if let Some(d) = route.as_mut() {
@@ -262,6 +280,7 @@ pub fn execute_trade<'a>(
         user: user.key(),
         buy,
         tokens,
+        room_tokens,
         curve_lamports: n,
         fee: f,
         sold_after: r.sold,
