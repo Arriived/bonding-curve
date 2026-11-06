@@ -716,3 +716,35 @@ gap to "PDA bump searches or the runtime version, not separated". Now separated
 was offered as a reason the runs were not comparable. Metadata differences are small: localnet with the
 same names lands within 2,518 of the VM. The addresses matter only through the bump term above.
 
+
+## Paired doors prototype completion is unreachable for early doors
+
+The brief holds the room mint at 1,000,000,000.000000 room
+tokens and revokes mint authority. The current curve phase releases at most
+793,143,840.548785 of those tokens under its
+default configuration. The proposed door uses a fixed virtual quote equal
+to 30 SOL at the room spot price when the door is created, then requires a
+real reserve of 85/30 of that virtual quote to complete.
+
+Run `python program/scripts/check_paired_completion.py` from the repository
+root to reproduce the check against the existing curve parameters. The
+script uses the room's exact configured virtual SOL, which is
+30,000,852,995 lamports. It rounds the door virtual
+quote down to test the most favorable integer threshold.
+
+| Room reserve at door creation (SOL) | Virtual quote (room tokens) | Completion reserve (room tokens) | Exceeds entire room mint |
+|---:|---:|---:|---|
+| 0 | 1,072,995,097.351564 | 3,040,152,775.829432 | yes |
+| 10 | 603,568,322.634969 | 1,710,110,247.465746 | yes |
+| 50 | 150,895,298.400118 | 427,536,678.800335 | no |
+
+Door 0 takes the first row because the room starts empty. Even if it held
+every room token, the vault would fall short. The door born at the 50 SOL
+reference state passes the supply check. Its actual completion still
+requires a reachable allocation through permitted trades and swaps.
+
+**Stopped before implementation.** The owner needs to decide whether to
+keep the threshold and accept permanently incomplete early doors or
+revise the completion rule. The specified starting price and unchanged
+room supply have been preserved in this check. No paired-door performance
+or live devnet result is available.
