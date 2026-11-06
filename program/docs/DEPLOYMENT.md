@@ -705,7 +705,12 @@ public keys.
 | Smoke trader | `DicsCRibQaV5cd54iiAPZkD6cF1qpYugcW3o2cFx7x1R` |
 
 The new Config PDA is `54G2WXbMrW6LozcWXCAUh9YAFS7UsBXRwxdQQouUbL6N`.
-The deploy and freeze transactions are pending. Changing the declared
-program ID changes the ELF, so a fresh SBF build and a new verified hash
-are required before `devnet/deploy.sh` will deploy the replacement.
+The replacement ELF was built and pinned. The Linux SBF and localnet suites
+passed. The devnet upload stopped before deployment when finalized funding
+receipts showed the original deploy and upgrade keys had been used after
+the initial key-loss instruction. See [the matcher corrections](../../services/matcher/CORRECTIONS.md#20-original-devnet-keys-signed-the-replacement-funding).
+At finalized slot 519,364,708, the replacement program and Config were
+absent. The deploy payer held 13,641,115,401 lamports and its upload
+buffer held 2,902,899,960 lamports. The owner needs to choose whether
+to resume the replacement or recover the buffer rent. The freeze is pending.
 The keyfiles are held outside the repository in an owner-only local directory.

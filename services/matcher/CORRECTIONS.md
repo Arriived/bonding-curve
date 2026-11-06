@@ -517,8 +517,7 @@ needed for the devnet end-to-end runs.
 
 The initial instruction assumed the existing keyfiles were available. The owner
 confirmed they had been lost and directed a replacement deployment. The old
-deploy wallet held 16,396,200,441 lamports at finalized slot 519,109,075. That
-wallet's balance cannot fund the new deployment without its key.
+deploy wallet held 16,396,200,441 lamports at finalized slot 519,109,075. This session had no access to the original wallet key. See §20 for the later funding read.
 
 The new program ID changes the Config PDA in the table to
 `54G2WXbMrW6LozcWXCAUh9YAFS7UsBXRwxdQQouUbL6N`. The other five entries are
@@ -537,3 +536,54 @@ The pinned run 42134984840 passed both SBF profiles and then stopped because
 the localnet CLI expected a default Solana signer on the clean Linux runner.
 The runner now passes its temporary local fee payer explicitly and saves
 standard error with the localnet test output.
+
+## 19. Linux verification and deployed SPL compute units
+
+[CI run 42250545586](https://github.com/Arriived/bonding-curve/actions/runs/42250545586)
+passed the 128 matcher unit tests, both 52-test SBF profiles, and both
+localnet end-to-end suites. Each SBF profile ran the 10,000-iteration
+mixed-operation test. The comparison loaded ELF files whose hashes
+match the finalized slot 519,096,745 capture.
+
+| Prefunded launch shape | Bundled SPL CU | Deployed SPL CU | Difference |
+|---|---:|---:|---:|
+| New room, 200-byte URI | 323,139 | 343,368 | +20,229 |
+| Single dead holder, 169-byte URI | 287,437 | 307,618 | +20,181 |
+| Two different dead holders, 137-byte URI | 296,749 | 316,930 | +20,181 |
+| Open door with dead holder, 200-byte URI | 226,561 | 240,279 | +13,718 |
+
+The worst measured launch left **56,632 CU** (14.2%)
+under the matcher's 400,000 CU limit. The two-holder case used the frozen
+six-address table, a priority fee, and the entire 1,232-byte packet.
+The localnet matcher landed the max-name, max-symbol launch with a 66-byte
+IPFS URI at slot 43. The packet used 1,097 bytes and 295,874 CU. Its verifier
+agreed with all seven landed decisions.
+
+## 20. Original devnet keys signed the replacement funding
+
+The replacement instructions were based on all original keypairs being lost.
+Finalized `getTransaction` reads showed the following original accounts
+signed direct transfers into replacement payer
+`EZMYGwH34FhF9HTsWQSocWJdY3ooW3L9mmy48J9FMyxo`.
+
+| Original signer | Lamports | Finalized transaction slot | Signature |
+|---|---:|---:|---|
+| Deploy wallet | 16,396,195,441 | 519,112,603 | `4RV2X6htaFQ4m9vChp5QPcyHubW3PcaQtXR6WPb28TLQdWiWAW81NaCKN6ue9erJ71AmqemQdsU4mfiWgSEQy1P3` |
+| Upgrade authority | 48,079,920 | 519,112,609 | `22F5JJwSvqbH1gUF3qQW8f3nEtfd31Tbr1qAD7iRgtcysmKQ4FkroPJ1dvSCX1RTiWRHxReopeNu5tM9L9ZXGptm` |
+| Smoke launcher | 49,995,000 | 519,112,614 | `4M8EWfVfsvovGnfcP1K5XGn5y5ykvhE7JmfN3UuFZFQNrNT9H9YjUopZwGNKcfrTiNLaXu5niBKxKGTWSmeyftN3` |
+| Smoke trader | 49,995,000 | 519,112,620 | `2hzhDjUi5nzPmRWjt2dhauAnL3mrfXqiGSUVcpY7YTn1qmaKy6G67xNpjYhvYu2aeo4LQGc6zqtv9ULad1N5d1mN` |
+
+This evidence establishes signer access at funding time. It does not establish
+present access to those keys, the original program key, or the matcher key.
+The replacement deploy payer had 16,544,265,361 lamports at finalized slot
+519,361,315 before the upload. The upload opened buffer
+`GzPFZs8WESVCPSERwbM8fJrtLYXzQae69xNp79j5BtfG` at slot 519,361,464.
+The owner was asked to resolve the discrepancy before the lookup table is frozen.
+
+The deployment process was stopped. At finalized slot 519,364,708, the
+replacement program and Config were absent. The new deploy payer held
+13,641,115,401 lamports and the buffer held 2,902,899,960 lamports.
+The difference from the pre-deploy balance was 250,000
+lamports in transaction fees. Automatic review declined buffer closure
+after the discrepancy because it requires explicit owner approval.
+Devnet smoke funding, both devnet suites, and the table freeze are pending.
