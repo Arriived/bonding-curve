@@ -1582,18 +1582,36 @@ block (same file, L37). A door allocates up to 1,393 data bytes: Door 328 + Door
   show an exact exit quote from `R` (before graduation) or the pool (after),
   next to the mark.
 
-## Paired doors prototype proposal
+## Paired doors prototype
 
 Status is design validation. A door has its own constant-product curve
-quoted in room tokens. A door buy routes SOL through the room curve and
-uses its output to buy door tokens. A sale runs the same two curves in
-reverse. A same-room swap sells the source door and feeds its room-token
-output into the receiving door. The room curve, mint, routing authority
-and locks are the existing design.
+quoted in room tokens. At creation, fix the virtual quote to 30 SOL worth
+of room tokens at the room's spot price. A buy routes SOL through the room
+curve and uses its output to buy door tokens. A sale runs the same curves
+in reverse. A same-room swap sells the source door and routes its room-token
+output into the receiving door after fees. The room curve, mint, routing
+authority and locks follow the existing design.
 
-The proposed completion reserve can exceed the whole room mint for an
-early door, including door 0. Implementation is pending a decision on
-completion reachability. The room-token swap fee and its split, treatment
-of a buy that reaches the completion boundary, and phase-2 door
-graduation also remain open. See
-[the feasibility check](../../program/docs/CORRECTIONS.md#paired-doors-prototype-completion-is-unreachable-for-early-doors).
+Doors are permanent. The prototype has no completion threshold, latch,
+or exit-only state. A buy or swap-in that needs more door tokens than the
+unsold supply returns a supply-exhaustion error. Sells and swap-outs can
+restore available supply. The unchanged room-wide controls, account
+validation and slippage checks still apply. The property run exercises a
+door near supply exhaustion.
+
+The prototype swap fee proposal takes 100 bps of the source curve's
+gross room-token payout, credits 60% to the receiving door and 40% to the
+protocol, and holds it in a room-token fee vault. The fee and split remain
+an open decision. The existing room sell splits its gross curve payout
+between the seller and the fee vault. Its reserve debit equals the gross
+payout. The paired-door design preserves that accounting.
+
+### Phase 2 door graduation
+
+Carry forward the crossing-and-latch pattern as a future migration trigger.
+The crossing trade fills and records the trigger. A future migration
+continues trading in a door/room pool. The trigger never deprecates the
+door or makes it exit-only. The trigger metric, migration and pool are
+outside the prototype.
+
+See [the feasibility checks](../../program/docs/CORRECTIONS.md#paired-doors-prototype-completion-is-unreachable-for-early-doors).

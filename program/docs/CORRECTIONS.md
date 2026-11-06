@@ -748,3 +748,39 @@ keep the threshold and accept permanently incomplete early doors or
 revise the completion rule. The specified starting price and unchanged
 room supply have been preserved in this check. No paired-door performance
 or live devnet result is available.
+
+### Owner ruling and supply-exhaustion fixture
+
+The owner rejected a completion cap based on room capacity at door
+creation. The prototype has permanent doors and no completion rule.
+Crossing-and-latch is recorded as a possible phase-2 migration trigger.
+
+The supply-exhaustion guard is unreachable under the unchanged default
+room parameters. Give a door the highest room spot price the default
+curve could reach at creation and every room token the curve could
+release at once. That is still only
+793,143,840.548785 room tokens. The door would
+require at least 999,658,368.049078
+room tokens to sell its entire supply, and the generous upper bound is
+982,588,530.503056 door tokens sold.
+`python program/scripts/check_paired_completion.py` reproduces these
+bounds.
+
+A separate stress fixture can reach the guard through normal trades
+using the existing Config validation. At a room cap of
+120.000000000 SOL and a door born at
+100.000000000 SOL,
+an existing source door can deliver
+817,144,907.490190 room tokens
+after the swap fee, above the receiving door's
+782,523,466.183039 room-token exhaustion cost.
+The owner approved this isolated SBF fixture. The existing Config validator
+must accept it before the prototype is implemented. Defaults and devnet
+measurements retain the existing room cap.
+
+### Existing sell accounting
+
+The room sell pays the fee vault directly from the reserve as part of the
+gross curve payout. `execute_trade` asserts that the total reserve debit
+equals that gross payout. The existing sell and the paired-door design
+preserve this economic invariant.
