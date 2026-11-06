@@ -23,7 +23,13 @@ if [ "$ACTUAL" != "$EXPECTED" ]; then
   echo "refusing to deploy: $SO is $ACTUAL, pinned deploy ELF is $EXPECTED" >&2
   exit 1
 fi
-{ rustc --version; cargo --version; cargo-build-sbf --version; anchor --version; solana --version; } > "$OUT/toolchain.txt"
+if [ -n "${DOORS_BUILD_TOOLCHAIN_FILE:-}" ]; then
+  # A verified CI build can be deployed from a host with just the Solana CLI.
+  cp "$DOORS_BUILD_TOOLCHAIN_FILE" "$OUT/toolchain.txt"
+  solana --version >> "$OUT/toolchain.txt"
+else
+  { rustc --version; cargo --version; cargo-build-sbf --version; anchor --version; solana --version; } > "$OUT/toolchain.txt"
+fi
 echo "$ACTUAL  $SO" > "$OUT/elf.sha256"
 
 # Deploy. The deploy wallet pays; the upgrade authority is a separate key.

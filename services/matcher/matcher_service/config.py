@@ -55,7 +55,7 @@ def load() -> Config:
     return Config(
         env=env,
         rpc_url=os.environ["MATCHER_RPC_URL"],
-        program_id=os.environ.get("MATCHER_PROGRAM_ID") or load_idl()["address"],
+        program_id=os.environ.get("MATCHER_PROGRAM_ID", load_idl()["address"]),
         lookup_table=os.environ["MATCHER_LOOKUP_TABLE"],
         signer=signer,
         keyfile=os.environ.get("MATCHER_KEYFILE"),

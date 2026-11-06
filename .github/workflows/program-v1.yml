@@ -124,6 +124,7 @@ jobs:
           path: |
             program/Cargo.lock
             program/target/deploy/doors_v1.so
+            program/devnet/target/release/doors-devnet
             program/target/idl/doors_v1.json
             program/verification/
             program/programs/doors_v1/src/

@@ -526,3 +526,9 @@ unchanged. `scripts/max_uri.py --json` reproduced the packet limits for the
 new program ID. The previous devnet simulation applied to the old program.
 The Linux workflow checks the three SPL binaries against
 `program/devnet/SPL_PROGRAMS.sha256`, pinned to the capture at slot 519,096,745.
+
+The first replacement build in CI run 42132979503 produced ELF SHA-256
+`159247c974e24c5b19698bb827c580fcf8ee846213ab950f3bcc4c3683566a0d`. The localnet suite stopped when
+the old program's hash did not match. The generated IDL, ELF hash, and
+compiled source hash were verified against the downloaded build evidence
+before updating the pin. The complete suites run again with the new pin.

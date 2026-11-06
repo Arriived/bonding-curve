@@ -30,7 +30,7 @@ if [ "$TARGET" = localnet ] && [ "$GENESIS" = 1 ]; then
 else
   PROGRAM=$(pk program)
 fi
-OUT="verification/devnet/$TARGET"
+OUT=${DOORS_E2E_OUT:-verification/devnet/$TARGET}
 FEATURES=()
 if [ "$TARGET" = localnet ] && [ -n "${DOORS_LOCALNET_FEATURES_FROM:-}" ]; then
   FEATURES=(--clone-feature-set --url "$DOORS_LOCALNET_FEATURES_FROM")

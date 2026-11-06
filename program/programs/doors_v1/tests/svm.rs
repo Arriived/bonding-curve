@@ -844,13 +844,72 @@ fn prefunding_all_launch_pdas_cannot_block_an_atomic_first_buy() {
     assert!(f.d(1).backing > 0);
 }
 
+fn frozen_launch_table(f: &mut Fixture) -> solana_message::AddressLookupTableAccount {
+    use solana_address_lookup_table_interface::instruction::{
+        create_lookup_table, extend_lookup_table, freeze_lookup_table,
+    };
+
+    let slot = f.svm.get_sysvar::<Clock>().slot;
+    let payer = f.user.pubkey();
+    let (create, table) = create_lookup_table(payer, payer, slot);
+    let addresses = vec![
+        f.cfg,
+        spl_token_2022_interface::ID,
+        spl_token_interface::ID,
+        spl_token_interface::native_mint::ID,
+        ATA,
+        anchor_lang::system_program::ID,
+    ];
+    f.send(create, false, "create_lookup_table");
+    f.send(
+        extend_lookup_table(table, payer, Some(payer), addresses.clone()),
+        false,
+        "extend_lookup_table",
+    );
+    f.send(
+        freeze_lookup_table(table, payer),
+        false,
+        "freeze_lookup_table",
+    );
+    f.svm.warp_to_slot(slot + 1);
+    solana_message::AddressLookupTableAccount {
+        key: table,
+        addresses,
+    }
+}
+
+fn execute_v0_launch(f: &mut Fixture, main: Instruction) -> (usize, usize, TransactionMetadata) {
+    use solana_message::{v0, VersionedMessage};
+    use solana_transaction::versioned::VersionedTransaction;
+
+    let table = frozen_launch_table(f);
+    let instructions = [
+        ComputeBudgetInstruction::set_compute_unit_limit(400_000),
+        ComputeBudgetInstruction::set_compute_unit_price(1),
+        main,
+    ];
+    let hash = f.svm.latest_blockhash();
+    let payer = f.user.pubkey();
+    let legacy = Transaction::new(
+        &[&f.user, &f.matcher],
+        Message::new(&instructions, Some(&payer)),
+        hash,
+    );
+    let legacy_bytes = 1 + 64 * legacy.signatures.len() + legacy.message_data().len();
+    let message = v0::Message::try_compile(&payer, &instructions, &[table], hash).unwrap();
+    let tx = VersionedTransaction::try_new(VersionedMessage::V0(message), &[&f.user, &f.matcher])
+        .unwrap();
+    let v0_bytes = 1 + 64 * tx.signatures.len() + tx.message.serialize().len();
+    assert!(v0_bytes <= 1232);
+    let meta = f
+        .svm
+        .send_transaction(tx)
+        .unwrap_or_else(|e| panic!("packet-sized v0 launch: {e:#?}"));
+    (legacy_bytes, v0_bytes, meta)
+}
+
 #[test]
 fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
-    use solana_address_lookup_table_interface::instruction::{
-        create_lookup_table, extend_lookup_table,
-    };
-    use solana_message::{v0, AddressLookupTableAccount, VersionedMessage};
-    use solana_transaction::versioned::VersionedTransaction;
     let mut f = Fixture::empty(0);
     let mut l = launch(&"x".repeat(32));
     l.symbol = "Y".repeat(10);
@@ -858,54 +917,11 @@ fn maximum_metadata_creation_executes_in_a_packet_sized_v0_transaction() {
     l.first_buy_lamports = 1_010_000_000;
     l.min_tokens_out = 1;
     let main = f.create_ix(l, None);
-    let instructions = [
-        ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
-        main.clone(),
-    ];
-    let hash = f.svm.latest_blockhash();
-    let legacy = Transaction::new(
-        &[&f.user, &f.matcher],
-        Message::new(&instructions, Some(&f.user.pubkey())),
-        hash,
-    );
-    let legacy_bytes = 1 + 64 * legacy.signatures.len() + legacy.message_data().len();
+    let (legacy_bytes, v0_bytes, result) = execute_v0_launch(&mut f, main);
     assert!(
         legacy_bytes > 1232,
         "fixture must exercise the packet-size boundary"
     );
-    let slot = f.svm.get_sysvar::<Clock>().slot;
-    let (create, table) = create_lookup_table(f.user.pubkey(), f.user.pubkey(), slot);
-    f.send(create, false, "create_lookup_table");
-    let addresses: Vec<Pubkey> = main.accounts.iter().map(|a| a.pubkey).collect();
-    f.send(
-        extend_lookup_table(
-            table,
-            f.user.pubkey(),
-            Some(f.user.pubkey()),
-            addresses.clone(),
-        ),
-        false,
-        "extend_lookup_table",
-    );
-    f.svm.warp_to_slot(slot + 1);
-    let message = v0::Message::try_compile(
-        &f.user.pubkey(),
-        &instructions,
-        &[AddressLookupTableAccount {
-            key: table,
-            addresses,
-        }],
-        hash,
-    )
-    .unwrap();
-    let tx = VersionedTransaction::try_new(VersionedMessage::V0(message), &[&f.user, &f.matcher])
-        .unwrap();
-    let v0_bytes = 1 + 64 * tx.signatures.len() + tx.message.serialize().len();
-    assert!(v0_bytes <= 1232);
-    let result = f
-        .svm
-        .send_transaction(tx)
-        .unwrap_or_else(|e| panic!("maximum-metadata v0 create: {e:#?}"));
     f.doors.push(DoorKeys::new(f.room, 0, f.user.pubkey()));
     f.audit();
     // Measure maximum-length room/door metadata as well as larger curve
@@ -2510,12 +2526,12 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
 
 // The takeover paths read a second Room (`old_holder`, in place) on top of the worst case
 // above: every new account prefunded, non-zero fees, first buy. The create_room takeover
-// uses the largest metadata the matcher service can sign in a legacy transaction
-// (name 32, symbol 10, URI 70: services/matcher/scripts/max_uri.py); open_door uses the
-// program maximum (URI 200), which fits a legacy transaction.
+// uses the largest metadata the matcher service can sign with one old holder
+// (name 32, symbol 10, URI 169: services/matcher/scripts/max_uri.py); open_door uses
+// the program maximum (URI 200).
 #[test]
 fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
-    takeover_heap_case(70);
+    takeover_heap_case(169);
 }
 
 /// Formerly the reproduction of finding SECURITY_REVIEW.md M-7 ("memory allocation failed, out of
@@ -2524,6 +2540,70 @@ fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
 #[test]
 fn prefunded_v0_maximum_takeover_fits_the_heap() {
     takeover_heap_case(200);
+}
+
+// Both locks refer to different dead rooms, the largest account set the matcher signs.
+#[test]
+fn prefunded_dual_takeover_fits_the_frozen_v0_launch_budget() {
+    let mut f = Fixture::empty(0);
+    let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
+    settings.room_fee_lamports = 7;
+    settings.door_fee_lamports = 11;
+    f.send(
+        instr(
+            a::UpdateConfig {
+                admin: f.user.pubkey(),
+                config: f.cfg,
+            },
+            ix::UpdateConfig {
+                settings,
+                new_admin: f.user.pubkey(),
+            },
+        ),
+        false,
+        "update_config",
+    );
+    let mut l = launch(&"x".repeat(32));
+    l.symbol = "Y".repeat(10);
+    l.uri = "u".repeat(137);
+    l.max_fee_lamports = 18;
+    f.create(l.clone(), None);
+    let slug_holder = f.room;
+    let key = Fixture::name_key(&l);
+    f.time(3600);
+
+    f.rid = 0x51c3_0aa7_9e44_1d02;
+    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+    f.doors.clear();
+    let mut other = l.clone();
+    other.symbol = "Z".repeat(10);
+    f.create(other, None);
+    assert_eq!(f.name_holder(&key), Some(f.room));
+    assert_ne!(f.room, slug_holder);
+    f.time(3600);
+
+    f.rid = 0x7d21_93be_04f5_c6a8;
+    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+    f.doors.clear();
+    l.first_buy_lamports = 1_010_000_000;
+    l.min_tokens_out = 1;
+    let main = f.create_ix(l, Some(slug_holder));
+    let rent = f.svm.minimum_balance_for_rent_exemption(0);
+    for account in &main.accounts {
+        if account.is_writable && f.svm.get_account(&account.pubkey).is_none() {
+            f.svm.airdrop(&account.pubkey, rent).unwrap();
+        }
+    }
+    let (legacy_bytes, v0_bytes, meta) = execute_v0_launch(&mut f, main);
+    assert_eq!(v0_bytes, 1232);
+    assert!(legacy_bytes > 1232);
+    assert_eq!(f.name_holder(&key), Some(f.room));
+    f.doors.push(DoorKeys::new(f.room, 0, f.user.pubkey()));
+    f.audit();
+    println!(
+        "PREFUNDED_DUAL_TAKEOVER_CU create_room={} packet_bytes={v0_bytes}",
+        meta.compute_units_consumed
+    );
 }
 
 // The old holder is read in place (`RoomBytes`). It must be exactly what `Account<Room>` accepted:
