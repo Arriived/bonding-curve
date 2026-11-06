@@ -65,10 +65,27 @@ jobs:
         run: |
           mkdir -p target/idl
           anchor idl build -o target/idl/doors_v1.json
+          if [ "${{ github.ref_name }}" != "claude/paired-doors" ]; then
+            cmp idl/doors_v1.json target/idl/doors_v1.json
+            python3 scripts/check_layouts.py
+          fi
+      - name: Capture the pinned SPL binaries for paired doors
+        if: github.ref_name == 'claude/paired-doors'
+        run: |
+          python3 scripts/check_paired_completion.py
+          python3 scripts/fetch_cluster_programs.py --out "$RUNNER_TEMP/doors-spl"
+          (cd "$RUNNER_TEMP/doors-spl" && sha256sum -c "$GITHUB_WORKSPACE/program/devnet/SPL_PROGRAMS.sha256")
+          cp "$RUNNER_TEMP/doors-spl/manifest.json" verification/paired-spl.json
+          echo "DOORS_SVM_CLUSTER_PROGRAMS=$RUNNER_TEMP/doors-spl" >> "$GITHUB_ENV"
+      - name: Execute SBF tests and mixed-operation property test
+        run: |
+          set -o pipefail
+          cargo test --locked --test svm -- --nocapture 2>&1 | tee verification/svm.log
+      - name: Verify paired doors IDL and account layouts
+        if: github.ref_name == 'claude/paired-doors'
+        run: |
           cmp idl/doors_v1.json target/idl/doors_v1.json
           python3 scripts/check_layouts.py
-      - name: Execute SBF tests and mixed-operation property test
-        run: cargo test --locked --test svm -- --nocapture
       - name: Format check
         run: cargo fmt -- --check
       - name: Verify committed build inputs

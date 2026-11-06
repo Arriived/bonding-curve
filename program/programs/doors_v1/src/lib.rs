@@ -10,7 +10,7 @@ use state::*;
 use trading::*;
 use vaults::*;
 
-declare_id!("D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG");
+declare_id!("8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ");
 
 #[program]
 pub mod doors_v1 {
@@ -222,6 +222,15 @@ pub mod doors_v1 {
             &system,
             &a.classic_token_program,
             &[b"fee_wsol", rk.as_ref()],
+        )?;
+        create_token(
+            &user,
+            &a.swap_fees,
+            &a.room_mint,
+            &rk,
+            &system,
+            &tp,
+            &[b"swap_fees", rk.as_ref()],
         )?;
         let slug_b = if old.is_none() {
             create_pda(
@@ -497,12 +506,26 @@ pub mod doors_v1 {
     pub fn sell(ctx: Context<TradeAccounts>, tokens_in: u64, min_lamports_out: u64) -> Result<()> {
         trade(ctx, false, tokens_in, min_lamports_out)
     }
-    pub fn convert(ctx: Context<Convert>, amount: u64, max_fee_lamports: u64) -> Result<()> {
+    pub fn buy_door(
+        ctx: Context<TradeAccounts>,
+        lamports_in: u64,
+        min_door_tokens_out: u64,
+    ) -> Result<()> {
+        require!(ctx.accounts.door.is_some(), Error::Account);
+        trade(ctx, true, lamports_in, min_door_tokens_out)
+    }
+    pub fn sell_door(
+        ctx: Context<TradeAccounts>,
+        door_tokens_in: u64,
+        min_lamports_out: u64,
+    ) -> Result<()> {
+        require!(ctx.accounts.door.is_some(), Error::Account);
+        trade(ctx, false, door_tokens_in, min_lamports_out)
+    }
+    pub fn swap_doors(ctx: Context<SwapDoors>, door_tokens_in: u64, min_out: u64) -> Result<()> {
         let a = ctx.accounts;
-        // Not gated by pause: a holder can always move between doors and exit (spec §3, pause).
-        require!(amount > 0, Error::Amount);
-        let fee = a.core.config.convert_fee_lamports;
-        require!(fee <= max_fee_lamports, Error::FeeLimit);
+        // Like the prior same-room conversion, a swap has no room SOL leg.
+        require!(door_tokens_in > 0, Error::Amount);
         let ri = a.core.room.to_account_info();
         let rk = ri.key();
         let ai = a.door_a.to_account_info();
@@ -526,10 +549,25 @@ pub mod doors_v1 {
             &a.vault_b,
             &a.backing_b,
         )?;
+        let next_a = sub(a.door_a.sold, door_tokens_in)?;
+        let room_tokens = sub(
+            door_integral(a.door_a.virtual_quote, a.door_a.sold)?,
+            door_integral(a.door_a.virtual_quote, next_a)?,
+        )?;
+        let fee = ratio(room_tokens, 100, true)?;
+        let net = sub(room_tokens, fee)?;
+        require!(net > 0 && room_tokens <= a.door_a.backing, Error::Amount);
+        let next_b = door_advance(a.door_b.virtual_quote, a.door_b.sold, net)?;
+        let door_tokens_out = sub(next_b, a.door_b.sold)?;
         require!(
-            amount <= a.door_a.backing && amount <= sub(U, a.door_b.backing)?,
-            Error::Balance
+            door_tokens_out > 0 && door_tokens_out >= min_out,
+            Error::Slippage
         );
+        pda(&a.swap_fees, &[b"swap_fees", rk.as_ref()])?;
+        let quote_mint = a.core.room.room_mint;
+        let fee_before = token(&a.swap_fees, &quote_mint, &rk, a.token_program.key)?;
+        let known_before = add(a.core.room.protocol_accrued_room, a.door_b.accrued_room)?;
+        require!(fee_before >= known_before, Error::Invariant);
         user_ata(
             &a.user_a,
             &a.user.key(),
@@ -559,7 +597,7 @@ pub mod doors_v1 {
             &a.vault_a,
             &a.user,
             &a.token_program,
-            amount,
+            door_tokens_in,
             None,
             6,
         )?;
@@ -569,7 +607,17 @@ pub mod doors_v1 {
             &a.backing_b,
             &ai,
             &a.token_program,
-            amount,
+            net,
+            Some(sa),
+            6,
+        )?;
+        transfer(
+            &a.backing_a,
+            &a.core.room_mint,
+            &a.swap_fees,
+            &ai,
+            &a.token_program,
+            fee,
             Some(sa),
             6,
         )?;
@@ -579,14 +627,24 @@ pub mod doors_v1 {
             &a.user_b,
             &bi,
             &a.token_program,
-            amount,
+            door_tokens_out,
             Some(sb),
             6,
         )?;
-        a.door_a.backing = sub(a.door_a.backing, amount)?;
-        a.door_b.backing = add(a.door_b.backing, amount)?;
-        deposit(&a.user, &a.core.fees, &a.system_program, fee)?;
-        a.core.room.protocol_accrued_sol = add(a.core.room.protocol_accrued_sol, fee)?;
+        a.door_a.sold = next_a;
+        a.door_b.sold = next_b;
+        a.door_a.backing = sub(a.door_a.backing, room_tokens)?;
+        a.door_b.backing = add(a.door_b.backing, net)?;
+        let door_fee = ratio(fee, 6_000, false)?;
+        a.door_b.accrued_room = add(a.door_b.accrued_room, door_fee)?;
+        a.core.room.protocol_accrued_room =
+            add(a.core.room.protocol_accrued_room, sub(fee, door_fee)?)?;
+        let known_after = add(a.core.room.protocol_accrued_room, a.door_b.accrued_room)?;
+        let fee_after = token(&a.swap_fees, &quote_mint, &rk, a.token_program.key)?;
+        require!(
+            sub(fee_after, fee_before)? == fee && sub(known_after, known_before)? == fee,
+            Error::Invariant
+        );
         door_check(
             &a.door_a,
             &ai,
@@ -617,11 +675,14 @@ pub mod doors_v1 {
             fk,
             known(&a.core.room, &[&a.door_a, &a.door_b]),
         )?;
-        emit!(Converted {
+        emit!(DoorsSwapped {
             room: rk,
             from: ai.key(),
             to: bi.key(),
-            amount
+            door_tokens_in,
+            door_tokens_out,
+            room_tokens,
+            fee,
         });
         Ok(())
     }
@@ -764,6 +825,8 @@ fn initialize_door<'a>(
     d.mint = mint.key();
     d.door_vault = vault.key();
     d.room_token_vault = backing.key();
+    let room_price = r.price()?;
+    d.virtual_quote = door_virtual_quote(room_price.numerator, room_price.denominator)?;
     d.creator = user.key();
     d.fee_recipient = user.key();
     d.bumps = [db, mb, vb, bk];
@@ -1055,6 +1118,7 @@ pub struct Trade {
     pub user: Pubkey,
     pub buy: bool,
     pub tokens: u64,
+    pub room_tokens: u64,
     pub curve_lamports: u64,
     pub fee: u64,
     pub sold_after: u64,
@@ -1063,11 +1127,14 @@ pub struct Trade {
     pub price_after: Price,
 }
 #[event]
-pub struct Converted {
+pub struct DoorsSwapped {
     pub room: Pubkey,
     pub from: Pubkey,
     pub to: Pubkey,
-    pub amount: u64,
+    pub door_tokens_in: u64,
+    pub door_tokens_out: u64,
+    pub room_tokens: u64,
+    pub fee: u64,
 }
 #[event]
 pub struct PendingRetired {
@@ -1160,4 +1227,6 @@ pub enum Error {
     GateTimelock,
     #[msg("name_key and the name_lock account must be given together")]
     NameLock,
+    #[msg("Door buy exceeds the unsold door supply")]
+    DoorSupplyExhausted,
 }

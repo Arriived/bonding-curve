@@ -1,5 +1,5 @@
 {
-  "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG",
+  "address": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
   "metadata": {
     "name": "doors_v1",
     "version": "0.1.0",
@@ -223,6 +223,168 @@
         },
         {
           "name": "min_tokens_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "buy_door",
+      "discriminator": [
+        179,
+        55,
+        24,
+        131,
+        163,
+        214,
+        14,
+        79
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "core",
+          "accounts": [
+            {
+              "name": "config",
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      99,
+                      111,
+                      110,
+                      102,
+                      105,
+                      103
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      111,
+                      111,
+                      109
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room.room_id",
+                    "account": "Room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "reserve",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      101,
+                      115,
+                      101,
+                      114,
+                      118,
+                      101
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fees",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      102,
+                      101,
+                      101,
+                      115
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room_mint"
+            },
+            {
+              "name": "room_vault",
+              "writable": true
+            },
+            {
+              "name": "retired",
+              "writable": true
+            }
+          ]
+        },
+        {
+          "name": "door",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "door_mint",
+          "optional": true
+        },
+        {
+          "name": "door_vault",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "backing",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "user_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_door_tokens_out",
           "type": "u64"
         }
       ]
@@ -603,183 +765,6 @@
       "args": []
     },
     {
-      "name": "convert",
-      "discriminator": [
-        122,
-        80,
-        212,
-        208,
-        92,
-        200,
-        34,
-        161
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "core",
-          "accounts": [
-            {
-              "name": "config",
-              "pda": {
-                "seeds": [
-                  {
-                    "kind": "const",
-                    "value": [
-                      99,
-                      111,
-                      110,
-                      102,
-                      105,
-                      103
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "name": "room",
-              "writable": true,
-              "pda": {
-                "seeds": [
-                  {
-                    "kind": "const",
-                    "value": [
-                      114,
-                      111,
-                      111,
-                      109
-                    ]
-                  },
-                  {
-                    "kind": "account",
-                    "path": "room.room_id",
-                    "account": "Room"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "reserve",
-              "writable": true,
-              "pda": {
-                "seeds": [
-                  {
-                    "kind": "const",
-                    "value": [
-                      114,
-                      101,
-                      115,
-                      101,
-                      114,
-                      118,
-                      101
-                    ]
-                  },
-                  {
-                    "kind": "account",
-                    "path": "room"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "fees",
-              "writable": true,
-              "pda": {
-                "seeds": [
-                  {
-                    "kind": "const",
-                    "value": [
-                      102,
-                      101,
-                      101,
-                      115
-                    ]
-                  },
-                  {
-                    "kind": "account",
-                    "path": "room"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "room_mint"
-            },
-            {
-              "name": "room_vault",
-              "writable": true
-            },
-            {
-              "name": "retired",
-              "writable": true
-            }
-          ]
-        },
-        {
-          "name": "door_a",
-          "writable": true
-        },
-        {
-          "name": "door_b",
-          "writable": true
-        },
-        {
-          "name": "mint_a"
-        },
-        {
-          "name": "mint_b"
-        },
-        {
-          "name": "vault_a",
-          "writable": true
-        },
-        {
-          "name": "vault_b",
-          "writable": true
-        },
-        {
-          "name": "backing_a",
-          "writable": true
-        },
-        {
-          "name": "backing_b",
-          "writable": true
-        },
-        {
-          "name": "user_a",
-          "writable": true
-        },
-        {
-          "name": "user_b",
-          "writable": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "max_fee_lamports",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "create_room",
       "discriminator": [
         130,
@@ -889,6 +874,10 @@
         },
         {
           "name": "fee_wsol",
+          "writable": true
+        },
+        {
+          "name": "swap_fees",
           "writable": true
         },
         {
@@ -1027,7 +1016,7 @@
         },
         {
           "name": "program",
-          "address": "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+          "address": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ"
         },
         {
           "name": "program_data"
@@ -1758,6 +1747,168 @@
       ]
     },
     {
+      "name": "sell_door",
+      "discriminator": [
+        247,
+        30,
+        47,
+        253,
+        176,
+        101,
+        167,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "core",
+          "accounts": [
+            {
+              "name": "config",
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      99,
+                      111,
+                      110,
+                      102,
+                      105,
+                      103
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      111,
+                      111,
+                      109
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room.room_id",
+                    "account": "Room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "reserve",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      101,
+                      115,
+                      101,
+                      114,
+                      118,
+                      101
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fees",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      102,
+                      101,
+                      101,
+                      115
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room_mint"
+            },
+            {
+              "name": "room_vault",
+              "writable": true
+            },
+            {
+              "name": "retired",
+              "writable": true
+            }
+          ]
+        },
+        {
+          "name": "door",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "door_mint",
+          "optional": true
+        },
+        {
+          "name": "door_vault",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "backing",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "user_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "door_tokens_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_lamports_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "set_fee_recipient",
       "discriminator": [
         227,
@@ -1893,6 +2044,183 @@
         {
           "name": "new_recipient",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "swap_doors",
+      "discriminator": [
+        202,
+        160,
+        22,
+        237,
+        192,
+        22,
+        182,
+        177
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "core",
+          "accounts": [
+            {
+              "name": "config",
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      99,
+                      111,
+                      110,
+                      102,
+                      105,
+                      103
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      111,
+                      111,
+                      109
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room.room_id",
+                    "account": "Room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "reserve",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      101,
+                      115,
+                      101,
+                      114,
+                      118,
+                      101
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fees",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      102,
+                      101,
+                      101,
+                      115
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room_mint"
+            },
+            {
+              "name": "room_vault",
+              "writable": true
+            },
+            {
+              "name": "retired",
+              "writable": true
+            }
+          ]
+        },
+        {
+          "name": "door_a",
+          "writable": true
+        },
+        {
+          "name": "door_b",
+          "writable": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "backing_a",
+          "writable": true
+        },
+        {
+          "name": "backing_b",
+          "writable": true
+        },
+        {
+          "name": "user_a",
+          "writable": true
+        },
+        {
+          "name": "user_b",
+          "writable": true
+        },
+        {
+          "name": "swap_fees",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "door_tokens_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_out",
+          "type": "u64"
         }
       ]
     },
@@ -2205,19 +2533,6 @@
       ]
     },
     {
-      "name": "Converted",
-      "discriminator": [
-        48,
-        254,
-        146,
-        135,
-        50,
-        134,
-        136,
-        167
-      ]
-    },
-    {
       "name": "DoorOpened",
       "discriminator": [
         154,
@@ -2228,6 +2543,19 @@
         132,
         123,
         119
+      ]
+    },
+    {
+      "name": "DoorsSwapped",
+      "discriminator": [
+        113,
+        229,
+        23,
+        45,
+        111,
+        185,
+        67,
+        221
       ]
     },
     {
@@ -2499,6 +2827,11 @@
       "code": 6024,
       "name": "NameLock",
       "msg": "name_key and the name_lock account must be given together"
+    },
+    {
+      "code": 6025,
+      "name": "DoorSupplyExhausted",
+      "msg": "Door buy exceeds the unsold door supply"
     }
   ],
   "types": [
@@ -2643,30 +2976,6 @@
       }
     },
     {
-      "name": "Converted",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "room",
-            "type": "pubkey"
-          },
-          {
-            "name": "from",
-            "type": "pubkey"
-          },
-          {
-            "name": "to",
-            "type": "pubkey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "Door",
       "type": {
         "kind": "struct",
@@ -2768,6 +3077,18 @@
                 17
               ]
             }
+          },
+          {
+            "name": "virtual_quote",
+            "type": "u128"
+          },
+          {
+            "name": "sold",
+            "type": "u64"
+          },
+          {
+            "name": "accrued_room",
+            "type": "u64"
           }
         ]
       }
@@ -2807,6 +3128,42 @@
           },
           {
             "name": "nonce",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DoorsSwapped",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "from",
+            "type": "pubkey"
+          },
+          {
+            "name": "to",
+            "type": "pubkey"
+          },
+          {
+            "name": "door_tokens_in",
+            "type": "u64"
+          },
+          {
+            "name": "door_tokens_out",
+            "type": "u64"
+          },
+          {
+            "name": "room_tokens",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
             "type": "u64"
           }
         ]
@@ -3354,6 +3711,10 @@
           {
             "name": "founder_share_bps",
             "type": "u16"
+          },
+          {
+            "name": "protocol_accrued_room",
+            "type": "u64"
           }
         ]
       }
@@ -3564,6 +3925,10 @@
           },
           {
             "name": "tokens",
+            "type": "u64"
+          },
+          {
+            "name": "room_tokens",
             "type": "u64"
           },
           {

@@ -455,10 +455,13 @@ pub fn door_check(
     require_keys_eq!(vault.key(), d.door_vault, Error::Account);
     require_keys_eq!(backing.key(), d.room_token_vault, Error::Account);
     mint_check(mint, false)?;
-    require!(d.backing <= r.supply, Error::Invariant);
+    require!(
+        d.backing <= r.supply && d.backing >= door_integral(d.virtual_quote, d.sold)?,
+        Error::Invariant
+    );
     // B1 inequalities point towards covering liabilities; never quote from these amounts.
     require!(
-        token(vault, mint.key, di.key, &spl_token_2022_interface::ID)? >= sub(r.supply, d.backing)?,
+        token(vault, mint.key, di.key, &spl_token_2022_interface::ID)? >= sub(r.supply, d.sold)?,
         Error::Invariant
     );
     require!(
