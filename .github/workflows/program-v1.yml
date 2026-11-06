@@ -1,7 +1,7 @@
 name: program-v1
 on:
   push:
-    branches: [claude/program-v1]
+    branches: [claude/program-v1, claude/paired-doors]
     paths:
       - 'program/programs/**'
       - 'program/test-fixtures/**'

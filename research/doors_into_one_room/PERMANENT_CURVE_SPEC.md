@@ -1581,3 +1581,19 @@ block (same file, L37). A door allocates up to 1,393 data bytes: Door 328 + Door
 - **The first-party UI** should group holdings by room, offer `convert`, and
   show an exact exit quote from `R` (before graduation) or the pool (after),
   next to the mark.
+
+## Paired doors prototype proposal
+
+Status is design validation. A door has its own constant-product curve
+quoted in room tokens. A door buy routes SOL through the room curve and
+uses its output to buy door tokens. A sale runs the same two curves in
+reverse. A same-room swap sells the source door and feeds its room-token
+output into the receiving door. The room curve, mint, routing authority
+and locks are the existing design.
+
+The proposed completion reserve can exceed the whole room mint for an
+early door, including door 0. Implementation is pending a decision on
+completion reachability. The room-token swap fee and its split, treatment
+of a buy that reaches the completion boundary, and phase-2 door
+graduation also remain open. See
+[the feasibility check](../../program/docs/CORRECTIONS.md#paired-doors-prototype-completion-is-unreachable-for-early-doors).
