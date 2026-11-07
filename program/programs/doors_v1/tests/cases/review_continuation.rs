@@ -171,8 +171,16 @@ fn review_trades_and_claims_fit_resources_and_all_doors_exit() {
             rows.push(review_resource_send(&mut f, ix, "swap_doors_lazy_vault"));
             let ix = f.swap_ix(32, 1, f.balance(f.doors[32].user) / 2);
             rows.push(review_resource_send(&mut f, ix, "swap_doors_existing_vault"));
+            // Give every other late door both a redeemable position and a
+            // nonzero swap-fee credit before exercising its exit and claim.
+            for i in 2..32 {
+                f.swap(0, i, f.balance(f.doors[0].user) / 64);
+            }
+            // The source door earns its own receiving-door credit as well.
+            f.swap(1, 0, f.balance(f.doors[1].user) / 64);
             for i in 0..f.doors.len() {
                 let held = f.balance(f.doors[i].user);
+                assert!(held > 0 && f.d(i).accrued_room > 0);
                 if held > 0 {
                     let ix = f.trade_ix(Some(i), false, held, 0);
                     rows.push(review_resource_send(&mut f, ix, "sell_door"));

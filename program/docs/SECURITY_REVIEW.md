@@ -119,6 +119,17 @@ permission. There is no demonstrated direct withdrawal payoff. The risk is
 selection of economics outside the default profile, including reachable supply
 exhaustion. Existing holder exits remain tested under that stress profile.
 
+### RPC failure text: unambiguous service defect fixed
+
+The preserved draft reproduction failed for both HTTP and JSON-RPC failures:
+transport exceptions included a synthetic authenticated endpoint URL, and provider
+error bodies could echo it. The service returned these strings in public errors
+and refresh logs. RpcError now contains method/class/status or a numeric RPC code
+only; provider message/data and chained transport text are suppressed. Both
+reproductions pass; the final service suite passes 163 tests. Trigger cost is an
+unauthenticated request during an RPC failure; potential payoff is access to RPC
+quota or billing credentials, not program funds. No real credential was accessed.
+
 ### M-3 and evasion coverage
 
 Existing authentication already refuses replayed requests. Added tests alter

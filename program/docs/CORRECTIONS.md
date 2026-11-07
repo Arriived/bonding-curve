@@ -930,3 +930,16 @@ current-behaviour assertions and review notes, without deliberately failing test
   already passed; no new replay vulnerability was found. The benchmark adds
   mixed-script composition and actual valid-UTF-8 32-byte truncation; rules stay
   byte-for-byte unchanged.
+
+
+The offline-report step initially lacked the archived SPL manifest at the expected
+verification path. Running the report on that artifact reproduced FileNotFoundError.
+CI now copies the versioned manifest after verifying the executable hashes. Its
+wording identifies an offline byte check and the historical capture slot, rather
+than implying a new live-cluster read. The compiled binary pin was updated only
+after every emitted program source and the IDL matched the working tree.
+
+A preserved service draft also reproduced public RPC error leakage using synthetic
+markers. Both HTTP exception text and JSON-RPC bodies could disclose authenticated
+endpoint text. The service now retains safe diagnostic codes only; both tests and
+the 163-test full suite pass. No production key or credential was read.
