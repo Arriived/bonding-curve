@@ -1831,7 +1831,7 @@ fn name_lock_one_key_one_live_room() {
 fn fold_and_integer_math_match_reference_vectors() {
     use doors_v1::{math::*, state::fold};
     assert_eq!(fold(b"rn-vv 0134578"), b"MWOIEASTB");
-    assert_eq!(fold("ÃƒÂ©rn-vv 0".as_bytes()), "ÃƒÂ©RNVVO".as_bytes());
+    assert_eq!(fold("ÃƒÆ’Ã‚Â©rn-vv 0".as_bytes()), "ÃƒÆ’Ã‚Â©RNVVO".as_bytes());
     let vs = 30_000_852_995;
     let vt = 1_073_025_606_000_000;
     let mut seed = 0x381f_b84b_b9e7_2e01u64;
@@ -2921,7 +2921,7 @@ fn launch_instruction_trace_budget() {
                             room: slug_holder,
                             name_lock,
                         },
-                        ix::ReleaseName { name_key },
+                        ix::ReleaseName {},
                     );
                     f.send(release, false, "release_name");
                     f.rid = 0x7a07_3d1a_ec3c_7eb1;
