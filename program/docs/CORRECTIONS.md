@@ -867,6 +867,17 @@ headroom in the next full run. All 60 SBF tests, 10,000 property iterations,
 standalone client tests and the heap target passed. That run stopped at
 the enabled binary-pin check because the initializer changed the compiled
 ELF. The pin was updated from the artifact after every program source file
-and the emitted IDL were compared with the working tree. The final run
-rechecks the pin along with the entire suite. The generated CU table also
-records the program-inclusive CU captured by the launch trace fixture.
+and the emitted IDL were compared with the working tree. The
+[final Linux run](https://github.com/Arriived/bonding-curve/actions/runs/42384466860)
+on `38e50d54c79b31d5798b2c60fd001b411547ff14` passed the binary-pin check,
+all 60 SBF tests, 10,000 property iterations (12,488 executed transactions),
+the standalone client test, IDL comparison, layout check and heap probe.
+The deployed SPL binary hashes were verified again at finalized slot
+519,699,373. The generated CU table includes the program-inclusive CU from
+the launch trace fixture. Maximum measured transaction CU was 329,406;
+maximum-metadata fresh creation retained at least 3,184 bytes of heap.
+Room creation including door 0 used 26,959,560 lamports of rent. First swap
+fee-vault rent was 1,488,440 lamports, paid by the swapping user. The final
+artifact's source hashes, emitted IDL and pinned ELF match the reviewed
+working tree, and the economic scenario output matches the rebased
+baseline exactly. Devnet deployment remains held for the owner.
