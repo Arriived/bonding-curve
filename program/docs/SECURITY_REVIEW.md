@@ -59,7 +59,7 @@ known (already documented).
 | I-5 | Info | open | No decision reserves anything now; only deterministic routing keeps a door decision safe |
 | I-6 | Info | open | Claiming SOL fees requires the recipient to hold a classic WSOL account |
 | I-7 | Info | known | Fees accumulated near the cap can block buys until holders sell |
-| I-8 | Info | open (partly mitigated) | One-character evasion: capital I for l, look-alike letters from other scripts, doubled letters or an added word take a copy out of its room; rules A and B (live since 7 November) close 4 of 10 tested dodges |
+| I-8 | Info | open (partly mitigated) | Name evasion: look-alike letters, case and spacing, typos or an added word take a copy out of its room. With rules A, B, C and I (live since 7 November) the key survives 95.4% of disguised variants (84.0% before I and C); typos (5.6%) and added words (19.9%) still escape |
 | I-9 | Info | open | Name squatting: a room created early for a likely narrative stays live for about 0.05 SOL a day of wash-volume fees plus 0.5 SOL of reserve, and every later copy routes into it |
 | I-8 | Info | open (doc) | The narrative spec describes a `set_matcher_authority` instruction that does not exist |
 | I-9 | Info | known | Decision log: the operator can rewrite it until its head is published |
@@ -238,14 +238,32 @@ Under paired doors, the attacker's room would collect every copy's flow.
 carrying its own (door 0's) name key. Text-routed faces always do, so on the 2,956-launch calibration replay this
 reproduces v1 exactly (1,224 rooms, 1,732 routed). The independent verifier applies the same rule.
 
-### I-8 — One-character evasion (open)
+### I-8 — Name evasion (open, partly mitigated)
 
-A copier who wants their own room, not a door, needs to change one character. Capital I for l, a pipe, small capitals,
-an Armenian o, a Cyrillic п, a Cherokee P, a doubled letter, or an added word ("Elon Musk", "Baby Elon") all escape
-v1. The best measured candidate (Unicode confusables) catches 4 of 10 at no measured precision cost, and was not
-adopted on 7 November together with the exact-name fix (rule A), at no measured cost: 1,222 rooms and 1,734 routed against 1,224 and 1,732, precision 99.8% either way (`services/matcher/CORRECTIONS.md` §18). Recall measured on pump.fun, where nobody
-was evading a matcher, overstates recall under deliberate evasion. Only the economics can close the rest: being a door
-must be nearly as good as owning the room.
+A copier who wants their own room, not a door, changes the name slightly. Measured with
+`services/matcher/scripts/evasion_benchmark.py`: 1,220 real names, dnstwist-derived fuzzers, about 81,600 variants.
+`services/matcher/EVASION_BENCHMARK.md` and `services/matcher/CORRECTIONS.md` §§19–20 have the details.
+
+**Disguises a person reads as the same name** (case, spacing, invisible characters, look-alike letters):
+
+| rules | disguised variants that keep the key |
+|---|---|
+| v1 | 74.7% |
+| A + B | 84.0% |
+| A + B + C + I (live since 7 November) | 95.4% |
+
+Under the live rules, case and spacing keep the key 100% of the time. Earlier, per-token stopword removal let
+"tHe rUnNeR" or "T R U M P" escape. The real-data cost of C and I is 3 routes out of 1,734.
+
+**Still escaping:**
+- Cyrillic look-alikes missing from Unicode's confusables data (п, и, ш, ь, ԍ).
+- "cl" for "d".
+- Every typo: 5.6% of one-edit variants keep the key.
+- Most added words: 19.9% keep the key.
+
+Catching typos was measured (phonetic keys, rule F) and costs precision (97.7%). Recall measured on pump.fun, where
+nobody was evading a matcher, overstates recall under deliberate evasion. Only the economics can close the rest:
+being a door must be nearly as good as owning the room.
 
 ### I-9 — Name squatting (open)
 
