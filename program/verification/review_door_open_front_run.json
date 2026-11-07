@@ -1,0 +1,37 @@
+{
+  "baseline_door_tokens": 33699309828108,
+  "baseline_exit_lamports": 989995000,
+  "case": "room buy just before open_door, sold just after; victim's min_tokens_out = quote - 2%",
+  "first_buy_lamports": 1010000000,
+  "min_tokens_out": 33025323631546,
+  "room_seed_lamports": 10100000000,
+  "runs": [
+    {
+      "accepted_by_min_tokens_out": true,
+      "attacker_net_lamports": 113391991,
+      "front_run_buy_lamports": 5000000000,
+      "victim_door_tokens": 33842400385405,
+      "victim_door_tokens_vs_quote_bps": 42,
+      "victim_exit_lamports": 782178576,
+      "victim_loss_vs_baseline_lamports": 207816424
+    },
+    {
+      "accepted_by_min_tokens_out": true,
+      "attacker_net_lamports": 217061544,
+      "front_run_buy_lamports": 20000000000,
+      "victim_door_tokens": 33933587802310,
+      "victim_door_tokens_vs_quote_bps": 69,
+      "victim_exit_lamports": 440346348,
+      "victim_loss_vs_baseline_lamports": 549648652
+    },
+    {
+      "accepted_by_min_tokens_out": true,
+      "attacker_net_lamports": -62846969,
+      "front_run_buy_lamports": 60000000000,
+      "victim_door_tokens": 34044762119909,
+      "victim_door_tokens_vs_quote_bps": 102,
+      "victim_exit_lamports": 158947734,
+      "victim_loss_vs_baseline_lamports": 831047266
+    }
+  ]
+}
