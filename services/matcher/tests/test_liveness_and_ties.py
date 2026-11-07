@@ -119,9 +119,32 @@ def test_graduated_text_match_is_not_a_target():
 
 
 def test_match_on_a_later_door_face():
-    snap = FakeSnapshot([live_room(5, [("MarvinCoin", "MARV"), ("Marvin The Martian", "MARVIN")])], NOW)
-    d = decide(snap, "Marvin The Martian", "MARVIN", "")
+    """A later face with door 0's key can give the stronger tier: door 0 MarvinCoin/MARV (key MARVIN) matches
+    Marvin/MARVIN by name only (T2n); face 1 Marvin/MARVIN matches both (T3)."""
+    snap = FakeSnapshot([live_room(5, [("MarvinCoin", "MARV"), ("Marvin", "MARVIN")])], NOW)
+    d = decide(snap, "Marvin", "MARVIN", "")
     assert (d.room_id, d.rule, d.face) == (5, "T3", 1)
+
+
+def test_face_laundering_through_the_floor_is_not_matchable():
+    """CORRECTIONS §17: room 7 is "solpepe"/PEPE (key SOLPEPE). A floor door "Sol Pepe"/PEPE (same program identity,
+    key PEPE) gave it a Pepe face, and every Pepe launch used to route into it, beating a genuine Pepe room on
+    reserve depth. Only faces carrying the room's own key match now."""
+    assert rules.program_identity("solpepe", "PEPE") == rules.program_identity("Sol Pepe", "PEPE")
+    laundered = live_room(7, [("solpepe", "PEPE"), ("Sol Pepe", "PEPE")], reserve=20_000_000_000)
+    for cand in (("Pepe", "PEPE"), ("Pepe", "FROG"), ("PEPE", "PEPE2")):
+        d = decide(FakeSnapshot([laundered], NOW), *cand, "")
+        assert d.kind == "new_room", cand
+    genuine = live_room(3, [("Pepe", "PEPE")], reserve=2_000_000_000)
+    d = decide(FakeSnapshot([genuine, laundered], NOW), "Pepe", "FROG", "")
+    assert (d.kind, d.rule, d.room_id) == ("door", "T2n", 3)
+    # The floor itself still routes the exact identity into room 7, as the program requires.
+    ident = rules.program_identity("Sol Pepe", "PEPE").hex()
+    d = decide(FakeSnapshot([laundered], NOW, locks={ident: 7}), "Sol Pepe", "PEPE", "")
+    assert (d.kind, d.rule, d.room_id) == ("door", "floor", 7)
+    # And its own key's launches still find it.
+    d = decide(FakeSnapshot([laundered], NOW), "solpepe", "OTHER", "")
+    assert (d.kind, d.rule, d.room_id) == ("door", "T2n", 7)
 
 
 def test_paused_program_is_refused():

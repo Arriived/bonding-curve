@@ -420,3 +420,12 @@ def test_rpc_retries_rate_limits_then_gives_up():
     assert len(calls) == RpcClient.RATE_LIMIT_RETRIES + 1
 
 
+
+
+def test_service_refuses_other_unicode_tables(tmp_path, kp, monkeypatch):
+    """Name keys are NameLock seeds on-chain; other Unicode tables would key names differently (CORRECTIONS §17)."""
+    from matcher_service import rules
+    assert rules.UNICODE_VERSION == rules.PINNED_UNICODE_VERSION
+    monkeypatch.setattr(rules, "UNICODE_VERSION", "16.0.0")
+    with pytest.raises(rules.UnicodeMismatch):
+        make(tmp_path, kp, Snap(1000))

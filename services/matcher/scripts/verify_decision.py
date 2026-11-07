@@ -309,8 +309,17 @@ def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None)
     """Program floor semantics + research decide() for text rule, liveness and ties."""
     params = {k: cfg[k] for k in ("live_min_reserve_lamports", "live_max_idle_seconds", "live_new_seconds",
                                   "live_min_volume_lamports")}
+    def keyed_faces(faces):
+        # Only faces carrying the room's own name key (door 0's) are matchable (face-laundering fix, CORRECTIONS
+        # §17); the key comes from the research matcher's ident(), independently of the service. Door 0 stays first.
+        if not faces:
+            return faces
+        k = name_key_research(rm, faces[0]["name"], faces[0]["symbol"])
+        return [f for f in faces if name_key_research(rm, f["name"], f["symbol"]) == k] if k else faces[:1]
+
     def research_room(r):
-        return {"room_id": r["room_id"], "status": r["status"], "faces": r["faces"], "created_at": r["created_at"],
+        return {"room_id": r["room_id"], "status": r["status"], "faces": keyed_faces(r["faces"]),
+                "created_at": r["created_at"],
                 "reserve": r["reserve"], "last_trade_at": r["last_trade_at"],
                 "liveness_buckets": [{"start": s, "amount": a} for s, a in r["buckets"] if s or a]}
     p = dict(rm.DEFAULTS, **params)
@@ -507,6 +516,7 @@ def verify(record, rpc_url, chain_ok=True):
 
 
 def main():
+    rules.check_unicode()   # the verifier must fold with the same pinned Unicode tables as the service
     ap = argparse.ArgumentParser()
     ap.add_argument("decision_id")
     ap.add_argument("--rpc", required=True)

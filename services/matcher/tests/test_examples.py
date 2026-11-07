@@ -15,6 +15,10 @@ from matcher_service.decide import decide
 
 EXAMPLES = load_examples()
 GRADUATED = {"08_graduated_live_by_pool_fees", "09_graduated_stale_checkpoint"}
+# A room whose later face carries a different name key than door 0. The research matcher reaches this state through
+# its fuzzy tiers; v1 cannot (text needs equal keys, the floor needs the same program identity), and since the
+# face-laundering fix (CORRECTIONS §17) v1 never matches such a face. A deliberate divergence from the research.
+UNREACHABLE_IN_V1 = {"10_exact_match_on_a_later_door"}
 
 
 def test_there_are_fourteen_examples():
@@ -35,6 +39,9 @@ def test_service_decision(name, inp):
     exp = inp.pop("expect")
     c = inp["candidate"]
     d = decide(snapshot_from_example(inp), c["name"], c["symbol"], c.get("uri", ""))
+    if name in UNREACHABLE_IN_V1:
+        assert d.kind == "new_room", "a face whose key differs from door 0's is not matchable in v1"
+        return
     if name in GRADUATED:
         assert d.kind == "new_room", "v1 never routes into a graduated room"
         assert all(not r["live"] for r in d.evaluated)

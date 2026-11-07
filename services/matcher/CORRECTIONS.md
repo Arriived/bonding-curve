@@ -403,3 +403,56 @@ The full findings are in `program/docs/SECURITY_REVIEW.md`. Service-side correct
   sweeps a test wallet's SOL to the deploy wallet, keeping the devnet balance usable as upgrade budget.
   On 5 November it returned 3,918,053,521 lamports (program `DEPLOYMENT.md` §5). Never point it at a
   wallet with real holdings.
+
+## 17. Matcher review: face laundering fixed, Unicode pinned, candidate rules measured (7 November 2026)
+
+**Face laundering through the floor (fixed).**
+- **The hole:** the on-chain floor routes by the program's ASCII fold, which keeps stopwords. The text rule's fold drops
+  them. So "solpepe"/PEPE (key SOLPEPE) and "Sol Pepe"/PEPE (key PEPE) share a program identity but not a name key.
+- **The attack:**
+  1. Create room "solpepe"/PEPE.
+  2. Open a floor door "Sol Pepe"/PEPE in it.
+  3. The room now has a Pepe face, and every later Pepe launch, any symbol, text-routed into it.
+  4. With a genuine Pepe room live, the deeper reserve won the tie.
+
+  It defeated the NameLock's one-key-one-room guarantee (two live rooms matched one key). Under paired doors it would
+  hand an attacker every copy's flow.
+- **The fix (`decide.py`, `rules.score_room_keyed`):** a room is text-matched only through faces carrying its own name
+  key, door 0's. A text-routed face always shares door 0's key, because T3/T2n hold exactly when keys are equal. So this
+  removes only the floor bridge.
+- **Equivalence on real data:** the routing replay on the 2,956-launch calibration sample with door-0-key routing
+  reproduces the published v1 row exactly: 1,224 rooms, 1,732 routed, 99.8% precision, 87.4% recall
+  (`scripts/rule_candidates.py`, row v1).
+- **The verifier** (`scripts/verify_decision.py`) applies the same restriction, with keys derived from the research
+  matcher's own fold.
+- **Tests:**
+  - `test_face_laundering_through_the_floor_is_not_matchable`.
+  - `test_match_on_a_later_door_face` now uses a reachable later face.
+  - Research example 10 (a later face with another key) is unreachable in v1 and is marked as a deliberate divergence.
+
+**Unicode tables pinned (fixed).** Name keys are NameLock seeds, permanent on-chain, and the fold uses the interpreter's
+Unicode tables. A Python upgrade could have changed keys silently.
+- `rules.PINNED_UNICODE_VERSION = "15.1.0"`. `Service` and `verify_decision.py` refuse to run on other tables.
+- Test: `test_service_refuses_other_unicode_tables`.
+
+**Candidate rules measured, none adopted** (`scripts/rule_candidates.py` → `RULE_CANDIDATES.md`; assistant labels, not
+human-reviewed):
+
+| rule | precision (est.) | recall of vamps (est.) | recall of certain vamps |
+|---|---|---|---|
+| v1 (current) | 99.8% | 87.4% | 99.4% |
+| A: exact-name fix ("Bitcoin"/BTC vs "Bitcoin"/BITCOIN) | 99.8% | 87.4% | 99.4% |
+| D: affix stopwords (BABY, FAUCET, INU, AI, …) | 98.3% | 87.3% | 98.3% |
+| B: Unicode confusables + I/l/1/\| | 99.8% | 87.3% | 99.4% |
+| E: same symbol + shared 4-character word | 97.2% | 88.5% | 98.1% |
+
+- **Correction:** the earlier estimate from labelled pairs (55 → 90 of 153 same-narrative pairs for A+D+E) overstated
+  the gain. In the sequential replay, D makes routing worse: "Baby X" rooms capture plain "X" copies. E gains 1.1
+  points of recall for 2.6 of precision.
+- **Adversarial value:** B catches 4 of 10 deliberate one-character evasions (capital I for l, a pipe, an Armenian o, a
+  Cherokee P). It misses small capitals, Cyrillic п, l with middle dot, doubled letters and added words. The
+  calibration sample comes from pump.fun, where nobody was evading a matcher, so recall under deliberate evasion is
+  lower than measured, and text rules cannot close that gap.
+- **Data:** B uses `data/confusables_ascii.json`, derived from the PyPI package `confusable_homoglyphs` 3.3.1 (Unicode
+  `confusables.txt`). Provenance and hashes are in the file. unicode.org itself was not reachable from the build
+  environment.

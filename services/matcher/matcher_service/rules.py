@@ -20,6 +20,21 @@ import unicodedata
 from functools import lru_cache
 
 UNICODE_VERSION = unicodedata.unidata_version
+# The fold depends on the interpreter's Unicode tables, and name keys are now permanent on-chain (the NameLock PDA
+# seed). A service or verifier on other tables would key the same name differently: refuse to run instead
+# (CORRECTIONS §17). Change this only together with a migration plan for existing NameLocks.
+PINNED_UNICODE_VERSION = "15.1.0"
+
+
+class UnicodeMismatch(RuntimeError):
+    pass
+
+
+def check_unicode(version=None):
+    v = UNICODE_VERSION if version is None else version
+    if v != PINNED_UNICODE_VERSION:
+        raise UnicodeMismatch(f"Unicode tables are {v}; name keys are pinned to {PINNED_UNICODE_VERSION}. Run on a "
+                              "Python whose unicodedata.unidata_version matches (3.13 ships 15.1.0).")
 NAME_EQUAL_MIN_LEN = 4  # research DEFAULTS["name_equal_min_len"]; calibrated, not configurable
 
 # ---- verbatim from the research matcher -------------------------------------------------------
@@ -106,6 +121,23 @@ def text_tier(c, f):
     return "T0", ""
 
 
+def score_room_keyed(c, faces, key):
+    """score_room over only the faces that carry `key`, the room's own name key (its door 0's). Face indices are the
+    room's. A face with another key reached the room through the on-chain floor (identity equal under the program's
+    ASCII fold, name key different under this module's); matching on it would let one room absorb another
+    narrative (face laundering, CORRECTIONS §17), so it is not matchable. Returns score_room's tuple, or None."""
+    best, best_key = None, None
+    for i, face in enumerate(faces):
+        if name_lock_key(face["name"], face["symbol"]) != key:
+            continue
+        tier, why = text_tier(c, ident(face["name"], face["symbol"]))
+        s = 3 if tier in ROUTING_TIERS else 0
+        k = (s, TIER_RANK[tier], -i)
+        if best_key is None or k > best_key:
+            best, best_key = (s, tier, i, why), k
+    return best
+
+
 def score_room(c, faces):
     """Research score_room: best tier over every door face; only T3/T2n score.
     Returns (score, tier, face_index, reason)."""
@@ -124,6 +156,7 @@ NAME_KEY_LEN = 16  # state.rs NAME_KEY_LEN
 NAME_KEY_DOMAIN = b"doors-v1:name-key:v1"
 
 
+@lru_cache(maxsize=65536)
 def name_lock_key(name, symbol):
     """The key the program locks for a new room: one key per launch, equal for two launches exactly when
     `text_tier` routes them together (T3 or T2n), so one key -> one live room enforces the routing rule.

@@ -45,7 +45,7 @@ Concurrent door launches into one room do not contend, and a dropped one blocks 
 |---|---|
 | metadata | `Launch::validate` limits, in bytes: name 1–32, symbol 1–10, uri ≤ 200 |
 | floor | The candidate's SlugLock, keyed by the program's own fold. A live holder means a door into it (rule `floor`); the program enforces this. A dead holder is passed as `old_holder`. A graduated holder is refused (409). |
-| text | Research normalisation (NFKC, homoglyphs, digit and rn/vv folds, stopwords, suffixes). A match is **T3**, folded symbol and name both equal, or **T2n**, folded name equal with at least 4 characters, against any door face of a room. Symbol-only, fuzzy, image and social-link matching are not implemented. |
+| text | Research normalisation (NFKC, homoglyphs, digit and rn/vv folds, stopwords, suffixes). A match is **T3**, folded symbol and name both equal, or **T2n**, folded name equal with at least 4 characters. Since CORRECTIONS §17 a room is matched only through faces carrying its own name key (door 0's): equivalent to the calibrated rule, without the floor bridge that let one room absorb another narrative. Name keys are pinned to Unicode 15.1.0; the service and verifier refuse other tables. Symbol-only, fuzzy, image and social-link matching are not implemented; measured candidates are in `RULE_CANDIDATES.md`. |
 | liveness | The program's `Room::live` with thresholds read from Config: `age < live_new_seconds OR (reserve ≥ live_min_reserve AND idle ≤ live_max_idle AND 24 h hourly-bucket volume ≥ live_min_volume)`. Defaults: 1 h, 0.5 SOL, 6 h, 5 SOL. |
 | ties | floor; then T3 over T2n; then greater reserve; then lowest room id |
 | graduated rooms | Never a target in v1. The program fails closed with `PhaseTwo` (CORRECTIONS §8). |

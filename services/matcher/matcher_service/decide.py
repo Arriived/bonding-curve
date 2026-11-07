@@ -6,7 +6,10 @@ Order (research matcher plus the two rules the program itself enforces):
        - holder graduated (status 2)   -> refuse: the program cannot route this identity in v1;
        - holder live                   -> door into the holder (the program rejects anything else);
        - holder not live               -> the lock can be taken over; continue, passing the holder.
-  3. Text rule over every room with status 0/1: T3 or T2n against any door face, room live.
+  3. Text rule over every room with status 0/1: the candidate's name key (rules.name_lock_key) equals the room's
+     own key, its door 0's, and the room is live. The face is the best T3/T2n face carrying that key. Faces that
+     entered through the floor with another key are never matched (face laundering, CORRECTIONS §17); since T3/T2n
+     hold exactly when keys are equal, this is the calibrated rule without the floor bridge.
      Ties: stronger text tier, greater SOL depth (reserve), lowest room id. Graduated rooms are not
      routing targets in v1 (open_door into one fails with PhaseTwo).
   4. Otherwise a new room. Its NameLock key (`rules.name_lock_key`) is signed with it; if a dead room holds
@@ -80,12 +83,19 @@ def decide(snapshot, name, symbol, uri) -> Decision:
             return d
         d.old_holder_room_id = holder_id
 
-    # 3. text rule
+    # 3. text rule: rooms whose own name key (door 0's) is the candidate's
+    key = rules.name_lock_key(name, symbol)
     matches = []
     for room in snapshot.rooms.values():
-        s, tier, face, why = rules.score_room(c, room["faces"])
-        if tier not in rules.ROUTING_TIERS:
+        if key is None or not room["faces"]:
             continue
+        d0 = room["faces"][0]
+        if rules.name_lock_key(d0["name"], d0["symbol"]) != key:
+            continue
+        scored = rules.score_room_keyed(c, room["faces"], key)
+        if scored is None or scored[1] not in rules.ROUTING_TIERS:
+            continue
+        s, tier, face, why = scored
         row = {"room_id": room["room_id"], "role": "text_match", "text": tier, "text_reason": why, "face": face}
         if room["status"] > 1:
             row.update(live=False, live_reason="graduated: not a routing target in v1")
@@ -106,7 +116,6 @@ def decide(snapshot, name, symbol, uri) -> Decision:
         return d
 
     # 4. new room: the NameLock
-    key = rules.name_lock_key(name, symbol)
     if key is not None:
         d.name_key = key.hex()
         holder_id = snapshot.name_holder(d.name_key)

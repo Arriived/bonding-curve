@@ -41,6 +41,7 @@ def room_view(room):
 
 class Service:
     def __init__(self, cfg, rpc, chain, signer, store, builder, log, metrics):
+        rules.check_unicode()   # name keys are permanent on-chain: never compute them on other Unicode tables
         self.cfg, self.rpc, self.chain, self.signer = cfg, rpc, chain, signer
         self.store, self.builder, self.log, self.metrics = store, builder, log, metrics
 
