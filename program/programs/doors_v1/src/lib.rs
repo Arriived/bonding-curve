@@ -296,6 +296,7 @@ pub mod doors_v1 {
             r.door_share_bps as u32 + r.founder_share_bps as u32 <= 10000,
             Error::BadConfig
         );
+        launch.check_room_price(&r.price()?)?;
         let door_info = a.door.to_account_info();
         initialize_door(
             r,
@@ -400,6 +401,7 @@ pub mod doors_v1 {
         let fee = a.core.config.door_fee_lamports;
         require!(fee <= launch.max_fee_lamports, Error::FeeLimit);
         require!(a.core.room.live(&a.core.config, now)?, Error::Dead);
+        launch.check_room_price(&a.core.room.price()?)?;
         let identity = launch.identity();
         if let Some(lock) = read_slug(&a.slug, &identity)? {
             if lock.room_id != a.core.room.room_id {

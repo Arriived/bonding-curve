@@ -68,14 +68,26 @@ jobs:
           anchor idl build -o target/idl/doors_v1.json
           cmp idl/doors_v1.json target/idl/doors_v1.json
           python3 scripts/check_layouts.py
-      - name: Capture the pinned SPL binaries for paired doors
+      - name: Load the pinned SPL binaries offline for paired doors
         if: github.ref_name == 'claude/paired-doors'
         run: |
           python3 scripts/check_paired_completion.py
-          python3 scripts/fetch_cluster_programs.py --out "$RUNNER_TEMP/doors-spl"
-          (cd "$RUNNER_TEMP/doors-spl" && sha256sum -c "$GITHUB_WORKSPACE/program/devnet/SPL_PROGRAMS.sha256")
-          cp "$RUNNER_TEMP/doors-spl/manifest.json" verification/paired-spl.json
-          echo "DOORS_SVM_CLUSTER_PROGRAMS=$RUNNER_TEMP/doors-spl" >> "$GITHUB_ENV"
+          (cd test-fixtures/spl && sha256sum -c "$GITHUB_WORKSPACE/program/devnet/SPL_PROGRAMS.sha256")
+          echo "DOORS_SVM_CLUSTER_PROGRAMS=$GITHUB_WORKSPACE/program/test-fixtures/spl" >> "$GITHUB_ENV"
+      - name: Prove the launch regression fails with the bound disabled
+        if: github.ref_name == 'claude/paired-doors'
+        run: |
+          cp programs/doors_v1/src/lib.rs "$RUNNER_TEMP/review-lib.rs"
+          cp target/deploy/doors_v1.so "$RUNNER_TEMP/review-program.so"
+          trap 'cp "$RUNNER_TEMP/review-lib.rs" programs/doors_v1/src/lib.rs; cp "$RUNNER_TEMP/review-program.so" target/deploy/doors_v1.so' EXIT
+          python3 -c 'from pathlib import Path; p=Path("programs/doors_v1/src/lib.rs"); s=p.read_text(); lines=s.splitlines(True); assert sum("launch.check_room_price(" in l for l in lines)==2; p.write_text("".join(l for l in lines if "launch.check_room_price(" not in l))'
+          "$HOME/.cargo/bin/cargo-build-sbf" --tools-version v1.58 > verification/price-limit-negative-build.log 2>&1
+          set +e
+          cargo test --locked --test svm review_room_price_limit_refuses_front_run_and_zero_accepts -- --nocapture > verification/price-limit-negative.log 2>&1
+          status=$?
+          set -e
+          test "$status" -ne 0
+          grep -F 'assertion failed: !door_open_sandwich_limit' verification/price-limit-negative.log
       - name: Execute SBF tests and mixed-operation property test
         run: |
           set -o pipefail
@@ -97,6 +109,7 @@ jobs:
           cargo test --locked --manifest-path devnet/Cargo.toml 2>&1 | tee verification/devnet-client-tests.log
           cargo build --locked --release --manifest-path devnet/Cargo.toml
           python3 scripts/heap_probe.py
+          python3 scripts/door_curve_fuzz.py --json verification/door_curve_fuzz.json
           python3 scripts/report_paired_doors.py --report docs/PAIRED_DOORS_REPORT.md > verification/paired_report.md
           sha256sum -c devnet/DEPLOY_ELF.sha256
       - name: Upload build evidence

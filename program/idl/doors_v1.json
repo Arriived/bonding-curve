@@ -3710,6 +3710,10 @@
           {
             "name": "expires_at_slot",
             "type": "u64"
+          },
+          {
+            "name": "max_room_price",
+            "type": "u128"
           }
         ]
       }

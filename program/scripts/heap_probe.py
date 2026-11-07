@@ -209,7 +209,8 @@ PAIRED_TEST = r"""
 #[test]
 fn heap_probe_paired_door_trades() {
     let mut results = BTreeMap::new();
-    for shape in ["buy_door", "sell_door", "swap_doors", "swap_doors_existing"] {
+    for shape in ["buy_door", "sell_door", "swap_doors", "swap_doors_prefunded", "swap_doors_existing",
+                  "claim_door_swap_fees", "claim_protocol_swap_fees"] {
         let units = heap_probe_search(|units| {
             let mut f = heap_probe_fixture();
             let mut room = launch("Paired heap room");
@@ -220,16 +221,28 @@ fn heap_probe_paired_door_trades() {
             f.open(open);
             f.trade(Some(0), true, 1_010_000_000);
             f.trade(None, true, 1_010_000_000); // settled by the next door buy
-            if shape == "swap_doors_existing" {
+            if shape == "swap_doors_prefunded" {
+                let vault = p(&[b"swap_fees", f.room.as_ref()]);
+                f.svm.airdrop(&vault, f.svm.minimum_balance_for_rent_exemption(0)).unwrap();
+            }
+            if shape == "swap_doors_existing" || shape.starts_with("claim_") {
                 f.swap(0, 1, f.balance(f.doors[0].user) / 4);
             }
             let mut ix = match shape {
                 "buy_door" => f.trade_ix(Some(1), true, 1_010_000_000, 0),
                 "sell_door" => f.trade_ix(Some(0), false, f.balance(f.doors[0].user) / 2, 0),
+                "claim_door_swap_fees" => f.claim_swap_ix(Some(1)),
+                "claim_protocol_swap_fees" => f.claim_swap_ix(None),
                 _ => f.swap_ix(0, 1, f.balance(f.doors[0].user) / 2),
             };
-            let end = ix.data.len();
-            ix.data[end - 8..].copy_from_slice(&((units as u64) << 48).to_le_bytes());
+            if shape.starts_with("claim_") {
+                let mut clock = f.svm.get_sysvar::<Clock>();
+                clock.slot = (units as u64) << 48;
+                f.svm.set_sysvar(&clock);
+            } else {
+                let end = ix.data.len();
+                ix.data[end - 8..].copy_from_slice(&((units as u64) << 48).to_le_bytes());
+            }
             heap_probe_try(&mut f, ix).is_ok()
         });
         results.insert(shape, units);
@@ -263,7 +276,14 @@ def instrument_paired(source):
         let min_out = min_out & ((1 << 48) - 1);
         let a = ctx.accounts;""", 1)
     index = code.rindex("        Ok(())")
-    return source[:begin] + code[:index] + allocation + code[index:] + source[end:]
+    source = source[:begin] + code[:index] + allocation + code[index:] + source[end:]
+    for claim in ("true", "false"):
+        original = f"claim_swap_fees(ctx, {claim})"
+        assert source.count(original) == 1
+        source = source.replace(original, original + "?;\n"
+            + "        let units = (Clock::get()?.slot >> 48) as usize;\n"
+            + allocation + "        Ok(())")
+    return source
 
 
 def run(cmd, cwd, **kw):
@@ -342,6 +362,7 @@ def main():
         (HERE / "verification" / name).write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result, indent=2))
         if paired and commit == head and not patch:
+            assert all(v > 0 for v in units.values()), 'every trade and claim must fit the default heap'
             assert units["create_room"] * STEP >= 1500, (
                 f"maximum-metadata create_room heap headroom is {units['create_room'] * STEP} bytes; "
                 "paired doors require at least 1500"

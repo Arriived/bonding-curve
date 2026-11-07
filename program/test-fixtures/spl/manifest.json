@@ -1,0 +1,31 @@
+{
+  "context_slot": 519096745,
+  "discovery_slot": 519096745,
+  "commitment": "finalized",
+  "programs": {
+    "token-2022": {
+      "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "loader": "BPFLoaderUpgradeab1e11111111111111111111111",
+      "executable_account": "DoU57AYuPFu2QU514RktNPG22QhApEjnKxnBcu4BHDTY",
+      "deployed_slot": 503153936,
+      "bytes": 711008,
+      "sha256": "b781b71d230a9910de4d3c103e72608f597fc73c83ee207242ac82b708382a6a"
+    },
+    "spl-token": {
+      "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "loader": "BPFLoaderUpgradeab1e11111111111111111111111",
+      "executable_account": "3gvYRKWyXRR9xKWe1ZjPhLY5ZJRN7KDB4rFZFGoJfFk2",
+      "deployed_slot": 451008000,
+      "bytes": 108600,
+      "sha256": "8190d3f7ceb6cb7a7a8d8924bff89f9f611e15ce1f806f2b6237f3311a98f697"
+    },
+    "ata": {
+      "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "loader": "BPFLoader2111111111111111111111111111111111",
+      "executable_account": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "deployed_slot": null,
+      "bytes": 105032,
+      "sha256": "6804554e69fd3a58caa191dc4a58f4c67223d30ca28ab8987f39fc18d2f7374d"
+    }
+  }
+}

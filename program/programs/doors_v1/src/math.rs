@@ -1,6 +1,27 @@
 use crate::Error;
 use anchor_lang::prelude::*;
 pub const U: u64 = 1_000_000_000_000_000;
+// Compare nonnegative fractions exactly without cross-product overflow. Reciprocal
+// steps reverse ordering; Euclid's algorithm bounds the work for u128 inputs.
+pub fn fraction_le(mut a: u128, mut b: u128, mut c: u128, mut d: u128) -> bool {
+    assert!(b > 0 && d > 0);
+    let mut reversed = false;
+    loop {
+        if a / b != c / d {
+            return if reversed {
+                a / b > c / d
+            } else {
+                a / b < c / d
+            };
+        }
+        let (ar, cr) = (a % b, c % d);
+        if ar == 0 || cr == 0 {
+            return if reversed { cr == 0 } else { ar == 0 };
+        }
+        (a, b, c, d) = (b, ar, d, cr);
+        reversed = !reversed;
+    }
+}
 pub fn add(a: u64, b: u64) -> Result<u64> {
     a.checked_add(b).ok_or(error!(Error::Overflow))
 }
