@@ -11,6 +11,7 @@ on:
       - 'program/dependency-policy.json'
       - 'program/Anchor.toml'
       - 'program/idl/**'
+      - 'program/devnet/**'
       - '.github/workflows/program-v1.yml'
   workflow_dispatch:
 permissions:
@@ -65,10 +66,8 @@ jobs:
         run: |
           mkdir -p target/idl
           anchor idl build -o target/idl/doors_v1.json
-          if [ "${{ github.ref_name }}" != "claude/paired-doors" ]; then
-            cmp idl/doors_v1.json target/idl/doors_v1.json
-            python3 scripts/check_layouts.py
-          fi
+          cmp idl/doors_v1.json target/idl/doors_v1.json
+          python3 scripts/check_layouts.py
       - name: Capture the pinned SPL binaries for paired doors
         if: github.ref_name == 'claude/paired-doors'
         run: |
@@ -81,11 +80,6 @@ jobs:
         run: |
           set -o pipefail
           cargo test --locked --test svm -- --nocapture 2>&1 | tee verification/svm.log
-      - name: Verify paired doors IDL and account layouts
-        if: github.ref_name == 'claude/paired-doors'
-        run: |
-          cmp idl/doors_v1.json target/idl/doors_v1.json
-          python3 scripts/check_layouts.py
       - name: Format check
         run: cargo fmt -- --check
       - name: Verify committed build inputs
@@ -100,6 +94,7 @@ jobs:
         if: github.ref_name == 'claude/paired-doors'
         run: |
           sha256sum -c devnet/DEPLOY_ELF.sha256
+          cargo test --locked --manifest-path devnet/Cargo.toml
           cargo build --locked --release --manifest-path devnet/Cargo.toml
           python3 scripts/heap_probe.py
           python3 scripts/report_paired_doors.py > verification/paired_report.md
