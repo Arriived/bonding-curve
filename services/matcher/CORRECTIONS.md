@@ -497,3 +497,71 @@ room for such a name orphans the old lock harmlessly. Nothing exists on mainnet.
 
 **Results:** unit tests 119/119. Service e2e PASS on localnet; program e2e 34/34 on localnet. Devnet was not run: the
 test wallets are empty since the devnet SOL moved to the owner's address.
+
+## 19. Evasion benchmark; candidates C, F, G, I measured; the stopword split is an evasion (7 November 2026)
+
+**New tooling:**
+- `scripts/name_fuzz.py`: name fuzzers, partly derived from dnstwist (Apache-2.0; `THIRD_PARTY_NOTICES.md`).
+  There are three classes. Disguise reads as the same name; typo is one edit; affix adds a memecoin word.
+- `scripts/evasion_benchmark.py` → `EVASION_BENCHMARK.md`.
+  - 1,220 targets, one per distinct key in the calibration sample.
+  - Up to 4 variants per fuzzer per target, with a fixed seed.
+  - Variants the program would reject (over 32 or 10 bytes) are dropped.
+  - It measures dodge recall only. The cost of catching more is measured in the replay (`RULE_CANDIDATES.md`).
+  - On every variant it checks that the service key equals `rule_candidates.py`'s A + B implementation.
+- `tests/test_rules.py::test_evasion_floor`: per-fuzzer catch counts on 16 fixed names may rise, never fall.
+
+**Finding, not fixed (it changes keys; owner's call):** stopwords are removed per token, and rn→m and vv→w fold per
+token. So the key depends on where the name is split, and case and spacing control the split.
+- "tHe rUnNeR" gives the camelCase split `t He r Un Ne R`. THE is no longer a token, so it is not removed.
+- "T R U M P T H A D O N" loses the stopword A.
+- "Bunkernet" folds rn→m; "BunkerNet" does not.
+
+The service rule keeps only **89%** of case variants and **89%** of spacing variants.
+
+**Measured** (disguise recall from the benchmark, vamp keeps the symbol; the rest from the real-data replay):
+
+| rule | disguises caught | typos caught | rooms | routed | precision (est.) | recall (est.) | recall, certain |
+|---|---|---|---|---|---|---|---|
+| v1 | 74.7% | 3.4% | 1,224 | 1,732 | 99.8% | 87.4% | 99.4% |
+| A + B (live) | 84.1% | 5.6% | 1,222 | 1,734 | 99.8% | 87.4% | 99.4% |
+| + C transliteration | 92.7% | 5.6% | 1,222 | 1,734 | 99.8% | 87.4% | 99.4% |
+| + F5 phonetic | 84.3% | 30.6% | 1,200 | 1,756 | 97.7% | 86.7% | 98.1% |
+| + G no stopwords | 86.6% | 5.6% | 1,243 | 1,713 | 99.9% | 86.5% | 98.9% |
+| + I split-invariant affixes | 86.6% | 5.6% | 1,225 | 1,731 | 99.8% | 87.3% | 99.4% |
+| + I + C | **95.4%** | 5.6% | 1,225 | 1,731 | 99.8% | 87.3% | 99.4% |
+
+**C (anyascii after B)**
+- On the sample it changes nothing: same rooms, same routes.
+- On the benchmark, small capitals go from 31% to 98.5%, and the Unicode homoglyphs from 83% to 95.5%.
+- It is phonetic, not visual: Cyrillic п becomes p, so "Ruпner" still escapes.
+
+**I**
+- The key is every folded letter, joined and folded once. It then strips a leading THE or OFFICIAL (4+ characters must
+  remain) and a trailing COIN, TOKEN, OFFICIAL, SOLANA or CTO.
+- Case and spacing variants go to 100%.
+- On real data it splits three A + B keys: "Baby the Black Bear" / "Baby Black Bear", "Swimming in the Money" /
+  "Swimming in Money", "Solana Bat" / "Bat". That costs 3 routes.
+
+**F (Metaphone)**
+- It catches typos (vowel swaps 53%, doubled letters 54%).
+- On real data it merges labelled-different names, with precision falling to 97.7%. F4 merges "MoonGoat" with
+  "Moneycat" and "CUMBAL" with "GUMBALL".
+- Its "recall of certain vamps" drop is mostly an artefact: it routes "David Dobrick" into the older, unlabelled
+  "David Dobrik Coin" room, which the estimator counts as a miss. Even counting every unmeasured route as right,
+  precision is 98.5%.
+- Not recommended.
+
+**Still escaping A + B + I + C:**
+- Cyrillic look-alikes absent from the Unicode confusables data used: п, и, ш, ь, ԍ (about 1,300 of 43,146 disguised
+  variants).
+- "cl" for "d".
+- A few Latin letters with hooks (ə, ŋ, ƿ).
+
+Fixing the Cyrillic ones without breaking all-Cyrillic names needs a mixed-script rule: visual skeleton for a token
+that mixes scripts, transliteration for a token in one script. That has not been built.
+
+**H (drop invisibles before the camelCase split):** identical to A + B on the sample. It closes the 0.1% invisible
+case ("Lost<ZWJ>ThePlot"), which I already closes.
+
+The live rule is unchanged. Unit tests 120/120.

@@ -187,3 +187,28 @@ def test_verifier_recompute_returns_the_same_fields_on_every_path():
     for rooms, holder, name_holder in cases:
         out = vd.recompute(rm, rooms, holder, cfg, now, "Elon", "ELON", name_holder)
         assert set(out) == want, (rooms, holder, name_holder, out)
+
+
+# Evasion floor (scripts/evasion_benchmark.py, CORRECTIONS §19): how many disguised variants of these names keep the
+# service key. A rule change may raise these counts, never lower them; update the floors only with a measured reason.
+EVASION_NAMES = [("Pepe Wif Hat", "PWH"), ("The Runner", "RUN"), ("Golden Dragon Coin", "GDC"), ("BetOnBlack", "BOB"),
+                 ("Moo Deng", "MOODENG"), ("Fartcoin", "FART"), ("Bitcoin", "BTC"), ("Lost The Plot", "LTP"),
+                 ("Official Trump", "TRUMP"), ("Dogwifhat", "WIF"), ("Baby Shark", "SHARK"), ("Elon Musk", "ELON"),
+                 ("Western Union", "WU"), ("Swimming In Money", "SIM"), ("Pnut", "PNUT"), ("GOAT", "GOAT")]
+EVASION_FLOOR = {"case": (49, 38), "spacing": (64, 57), "invisible": (64, 64), "fullwidth": (16, 16),
+                 "homoglyph": (64, 49), "cyrillic": (63, 57), "cyrillic_lookalike": (39, 18), "small_caps": (64, 15),
+                 "ascii_lookalike": (46, 42), "leet": (61, 58), "decoration": (64, 64)}
+
+
+def test_evasion_floor():
+    import importlib.util
+    import sys
+    sys.path.insert(0, str(SERVICE / "scripts"))   # evasion_benchmark imports its sibling scripts
+    spec = importlib.util.spec_from_file_location("evasion_benchmark", SERVICE / "scripts/evasion_benchmark.py")
+    eb = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(eb)
+    stats, _, _ = eb.run(4, EVASION_NAMES, {"A + B (service)": lambda n, s: rules.ident(n, s)["key"]})
+    got = {f: (d["n"], d["A + B (service)"]) for f, d in stats["symbol kept"]["disguise"].items()}
+    for f, (n, caught) in EVASION_FLOOR.items():
+        assert got[f][0] == n, f"{f}: the fuzzer now makes {got[f][0]} variants, the floor was set on {n}"
+        assert got[f][1] >= caught, f"{f}: {got[f][1]} of {n} disguised variants keep the key, floor {caught}"

@@ -18,6 +18,22 @@ service does since the face-laundering fix). Candidates change how the key is co
          (data/confusables_ascii.json), and I, l, 1 and | fold together.
   E      not a key: also route into a room whose door 0 has the same folded symbol and shares a 4+ character
          name word (oldest such room). Cannot be enforced by the on-chain NameLock.
+  C      transliteration: after B, every remaining non-ASCII letter or digit is replaced by its anyascii
+         transliteration (anyascii 0.3.3), so "Пепе" reads as Pepe and "ᴇʟᴏɴ" as elon. Phonetic, not visual:
+         Cyrillic п becomes p, not n.
+  F4/F5  phonetic: when the Metaphone code (jellyfish 1.3.0) of the folded name has at least 4 (F4) or 5 (F5)
+         letters, the key is that code instead of the name; otherwise the key is unchanged. The code is taken over
+         the name folded without B's L -> I step (Metaphone drops vowels, so L must stay a consonant). A single key,
+         so the NameLock could enforce it.
+  G      no stopwords: the key is every folded name letter, stopwords and COIN/TOKEN kept ("The Runner" and
+         "Runner" differ; "tHe rUnNeR", "T h e Runner" and "TheRunner" agree). Stopwords are removed per token,
+         so with them the key depends on where the name is split, which case and spacing control.
+  I      split-invariant affixes: like G, but the joined folded name then loses a leading THE or OFFICIAL and any
+         trailing COIN, TOKEN, OFFICIAL, SOLANA or CTO (repeatedly; a leading word only when 4+ characters remain).
+         Interior stopwords (A, OF, ON, AND, ...) are kept. The fold (including rn -> m, vv -> w) runs once on the
+         joined letters, so case and spacing cannot change the key.
+  H      invisibles dropped before the camelCase split (today "Lost<ZWJ>ThePlot" is not split at the T).
+C and F need the research-only packages in requirements-research.txt.
 
 Usage: python3 scripts/rule_candidates.py [--md OUT.md]
 """
@@ -51,12 +67,24 @@ def _fold_v1(word_lower):  # the pre-rule-B fold, kept here so candidates are me
     return word_lower.upper().translate(R.DIGIT_FOLD)
 
 
-def make_ident(confusables=False, affix=False):
+def _translit(s):
+    from anyascii import anyascii   # research-only dependency (requirements-research.txt)
+    return "".join(anyascii(ch) if ord(ch) > 127 and unicodedata.category(ch)[0] in "LN" else ch for ch in s)
 
-    def base(s):
+
+def make_ident(confusables=False, affix=False, translit=False, li_fold=True, stopwords=True, invisible_first=False,
+               split_invariant=False):
+
+    def pre(s):
         s = unicodedata.normalize("NFKC", s)
         if confusables:
             s = "".join(CONF.get(ch, ch) for ch in s).replace("|", "l")
+        if translit:
+            s = _translit(s)
+        return s
+
+    def base(s):
+        s = pre(s)
         s = "".join(ch for ch in s if ch not in R.INVISIBLE and unicodedata.category(ch) != "Cf")
         s = "".join(R.HOMOGLYPHS.get(ch, ch) for ch in s)
         s = "".join(ch for ch in unicodedata.normalize("NFD", s) if not unicodedata.combining(ch))
@@ -64,21 +92,25 @@ def make_ident(confusables=False, affix=False):
 
     def fold(w):
         w = _fold_v1(w)
-        return w.replace("L", "I") if confusables else w
+        return w.replace("L", "I") if confusables and li_fold else w
 
-    stop = {fold(w.lower()) for w in R.STOPWORDS | (AFFIX if affix else set())}   # compared in folded form
+    stop = {fold(w.lower()) for w in R.STOPWORDS | (AFFIX if affix else set())} if stopwords else set()
     suffixes = tuple(fold(w.lower()) for w in R.SUFFIXES)
 
-    def tokens(name, keep_stop=False):
-        s = unicodedata.normalize("NFKC", name)
-        if confusables:   # as the service: confusables before the camelCase split
-            s = "".join(CONF.get(ch, ch) for ch in s).replace("|", "l")
+    def tokens(name, keep_stop=False, raw=False):
+        s = pre(name)   # as the service: confusables (and C) before the camelCase split
+        if invisible_first:
+            s = "".join(ch for ch in s if ch not in R.INVISIBLE and unicodedata.category(ch) != "Cf")
         s = R.CAMEL.sub(" ", s)
         out = []
         for t in re.split(r"[^0-9a-zÀ-￿]+", base(s)):
             if not t or not any(ch.isalnum() for ch in t):
                 continue
-            t = fold("".join(ch for ch in t if ch.isalnum()))
+            t = "".join(ch for ch in t if ch.isalnum())
+            if raw:
+                out.append(t)
+                continue
+            t = fold(t)
             if keep_stop:
                 out.append(t)
                 continue
@@ -90,16 +122,41 @@ def make_ident(confusables=False, affix=False):
                 out.append(t)
         return out
 
+    lead = tuple(fold(w) for w in ("the", "official"))
+    trail = tuple(sorted((fold(w) for w in ("coin", "token", "official", "solana", "cto")), key=len, reverse=True))
+
+    def strip_affixes(s):
+        changed = True
+        while changed:
+            changed = False
+            for w in lead:
+                if s.startswith(w) and len(s) - len(w) >= 4:
+                    s, changed = s[len(w):], True
+            for w in trail:
+                if s.endswith(w) and len(s) > len(w):
+                    s, changed = s[: -len(w)], True
+        return s
+
     def ident(name, symbol):
+        if split_invariant:
+            full = fold("".join(tokens(name, raw=True)))   # fold once, after joining: rn/vv cannot straddle a split
+            nk = strip_affixes(full)
+            return {"sk": fold("".join(ch for ch in base(symbol) if ch.isalnum())), "nk": nk, "nt": {nk} - {""},
+                    "full": full}
         nt = tokens(name)
         return {"sk": fold("".join(ch for ch in base(symbol) if ch.isalnum())), "nk": "".join(nt), "nt": set(nt),
                 "full": "".join(tokens(name, keep_stop=True))}
     return ident
 
 
-def key_fn(ident, exact_name_fix=False):
+def key_fn(ident, exact_name_fix=False, phonetic_min=None, ident_ph=None):
     def key(name, symbol):
         c = ident(name, symbol)
+        if phonetic_min:
+            from jellyfish import metaphone   # research-only dependency (requirements-research.txt)
+            code = metaphone(ident_ph(name, symbol)["nk"]) if ident_ph(name, symbol)["nk"] else ""
+            if len(code) >= phonetic_min:
+                return "F\0" + code
         long_enough = len(c["full"] if exact_name_fix else c["nk"]) >= R.NAME_EQUAL_MIN_LEN
         if c["nk"] and long_enough:
             return "N\0" + c["nk"]
@@ -118,7 +175,22 @@ CANDIDATES = [
     ("A + B + D (all key rules)", dict(affix=True, confusables=True), True, False),
     ("E: same symbol + shared 4-char word", dict(), False, True),
     ("A + B + D + E", dict(affix=True, confusables=True), True, True),
+    ("A + B + G (no stopwords)", dict(confusables=True, stopwords=False), True, False),
+    ("A + B + I (split-invariant affixes)", dict(confusables=True, split_invariant=True), True, False),
+    ("A + B + I + C", dict(confusables=True, split_invariant=True, translit=True), True, False),
+    ("A + B + H (invisibles before camelCase split)", dict(confusables=True, invisible_first=True), True, False),
+    ("A + B + C (transliteration)", dict(confusables=True, translit=True), True, False),
+    ("A + B + F4 (phonetic, code >= 4)", dict(confusables=True), True, False, 4),
+    ("A + B + F5 (phonetic, code >= 5)", dict(confusables=True), True, False, 5),
+    ("A + B + C + F5", dict(confusables=True, translit=True), True, False, 5),
 ]
+
+
+def candidate_key(opts, exact_fix, phonetic_min=None):
+    """(ident, key) for a CANDIDATES row; shared with evasion_benchmark.py."""
+    ident = make_ident(**opts)
+    ph = make_ident(**{**opts, "li_fold": False}) if phonetic_min else None
+    return ident, key_fn(ident, exact_fix, phonetic_min, ph)
 
 
 def main():
@@ -171,9 +243,10 @@ def main():
 
     rows = []
     service_key = lambda n, s: R.ident(n, s)["key"]  # noqa: E731  the live service rule, for the check row
-    for name, opts, exact_fix, use_e in CANDIDATES + [("service code (matcher_service.rules)", None, None, False)]:
-        ident = make_ident(**(opts or {}))
-        key = service_key if opts is None else key_fn(ident, exact_fix)
+    for name, opts, exact_fix, use_e, *ph in CANDIDATES + [("service code (matcher_service.rules)", None, None, False)]:
+        ident, key = candidate_key(opts or {}, exact_fix, ph[0] if ph else None)
+        if opts is None:
+            key = service_key
         rooms, by_key, by_sym = [], {}, collections.defaultdict(list)
         routed = no_signal = 0
         c_mid = c_lo = c_cert = 0.0
@@ -207,22 +280,27 @@ def main():
             no_signal += 0 if known else 1
             if j in certain_v:
                 c_cert += pm
-            if not known and len(examples) < 6:
-                examples.append(f"`{d0['name']}`/`{d0['symbol']}` <- `{r['name']}`/`{r['symbol']}` ({how})")
+            ex = f"`{d0['name']}`/`{d0['symbol']}` <- `{r['name']}`/`{r['symbol']}` ({how})"
+            if not known and ex not in examples:
+                examples.append(ex)
         rows.append(dict(name=name, rooms=len(rooms), routed=routed, prec=c_mid / routed, lo=c_lo / routed,
-                         rec=c_mid / exp_v, rec_c=c_cert / len(certain_v), ns=no_signal, ex=examples))
+                         hi=(c_mid + no_signal) / routed, rec=c_mid / exp_v, rec_c=c_cert / len(certain_v),
+                         ns=no_signal, ex=examples))
 
     out = ["<!-- generated by services/matcher/scripts/rule_candidates.py -->", "",
            f"Replay of {len(L):,} pump.fun launches (the calibration sample), rooms treated as live; expected vamps "
            f"{exp_v:,.0f}, certain vamps {len(certain_v):,}. Precision and recall are estimates from assistant labels "
-           "(not human-reviewed); see the script's docstring.", "",
-           "| rule | rooms formed | launches routed | precision (est.) | precision, pessimistic | recall of vamps (est.) "
-           "| recall of certain vamps | routes with no measurable signal |",
-           "|---|---|---|---|---|---|---|---|"]
+           "(not human-reviewed); see the script's docstring. Routes with no measurable signal count as wrong in "
+           "every column except \"precision if unmeasured are right\"; recall columns count them as misses, so a "
+           "rule that routes a vamp into an older, unlabelled room of the same narrative scores lower than it is. "
+           "Label those routes before reading a candidate's recall.", "",
+           "| rule | rooms formed | launches routed | precision (est.) | precision, pessimistic | precision if "
+           "unmeasured are right | recall of vamps (est.) | recall of certain vamps | routes with no measurable signal |",
+           "|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         out.append(f"| {r['name']} | {r['rooms']:,} | {r['routed']:,} | {r['prec']:.1%} | {r['lo']:.1%} | "
-                   f"{r['rec']:.1%} | {r['rec_c']:.1%} | {r['ns']} |")
-    out += ["", "Routes with no measurable signal (not certain, not labelled, no research stratum), first examples:", ""]
+                   f"{r['hi']:.1%} | {r['rec']:.1%} | {r['rec_c']:.1%} | {r['ns']} |")
+    out += ["", "Routes with no measurable signal (not certain, not labelled, no research stratum), distinct pairs:", ""]
     for r in rows:
         if r["ex"]:
             out.append(f"- {r['name']}: " + "; ".join(r["ex"]))
