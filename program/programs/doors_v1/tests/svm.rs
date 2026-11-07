@@ -1831,7 +1831,7 @@ fn name_lock_one_key_one_live_room() {
 fn fold_and_integer_math_match_reference_vectors() {
     use doors_v1::{math::*, state::fold};
     assert_eq!(fold(b"rn-vv 0134578"), b"MWOIEASTB");
-    assert_eq!(fold("ÃƒÆ’Ã‚Â©rn-vv 0".as_bytes()), "ÃƒÆ’Ã‚Â©RNVVO".as_bytes());
+    assert_eq!(fold("Ã©rn-vv 0".as_bytes()), "Ã©RNVVO".as_bytes());
     let vs = 30_000_852_995;
     let vt = 1_073_025_606_000_000;
     let mut seed = 0x381f_b84b_b9e7_2e01u64;

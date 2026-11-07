@@ -76,7 +76,7 @@ def main():
     for d in v["doors"]:
         m = d["mint"]
         L.append(f"| door {d['index']} mint `{m['mint']}`: supply, authorities | {m['supply']}, {m['mint_authority']}, {m['freeze_authority']}, {m['metadata_update_authority']} → {'ok' if m['ok'] else '**FAIL**'} |")
-        L.append(f"| door {d['index']} backing vault vs curve integral | {d['room_token_backing_vault_balance']} vs {d['curve_integral']} → {'equal' if d['backing_covers_curve_integral'] else ('covers' if d['backing_covers_curve_integral'] else '**SHORT**')} |")
+        L.append(f"| door {d['index']} backing vault vs curve integral | {d['room_token_backing_vault_balance']} vs {d['curve_integral']} → {'covers' if d['backing_covers_curve_integral'] else '**SHORT**'} |")
     L += [f"| reserve vs curve integral of `sold` | {v['reserve']} vs {v['curve_integral_of_sold']} → {'covers' if v['reserve_covers_curve_integral'] else '**SHORT**'} |",
           f"| ReserveVault lamports − rent vs `reserve` | {int(v['reserve_vault_lamports']) - v['zero_data_rent']} vs {v['reserve']} → {'covers' if v['reserve_vault_covers_reserve'] else '**SHORT**'} |",
           f"| RoomVault vs unsold supply | {v['room_vault_balance']} vs U − {v['sold']} → {'covers' if v['room_vault_covers_unsold'] else '**SHORT**'} |",
