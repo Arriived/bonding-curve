@@ -9,7 +9,8 @@ The labels were written by the assistant from name and symbol and have not been 
 
 Each candidate routes a launch into the room whose door 0 carries the same name key (the v1 equivalence, as the
 service does since the face-laundering fix). Candidates change how the key is computed:
-  v1     the service's current rule: class N over the folded name (4+ chars), else class P over (symbol, name).
+  v1     the rule before 7 November 2026: class N over the folded name (4+ chars), else class P over (symbol, name).
+  A + B  adopted 7 November 2026. The last row recomputes the replay with the live service code; it must equal A + B.
   A      exact-name fix: the 4-character minimum is applied to the folded name *before* stopwords and the
          COIN/TOKEN suffix are removed, so "Bitcoin"/BTC and "Bitcoin"/BITCOIN share a key.
   D      affix stopwords: BABY, FAUCET, INU, AI, REAL, OG, CLASSIC, V2, 2 are dropped like COIN or THE.
@@ -44,8 +45,13 @@ CONF = {k: v for k, v in json.loads((SERVICE / "data/confusables_ascii.json").re
 AFFIX = {"BABY", "FAUCET", "INU", "AI", "REAL", "OG", "CLASSIC", "V2", "2"}
 
 
+def _fold_v1(word_lower):  # the pre-rule-B fold, kept here so candidates are measured independently of the service
+    for a, b in R.MULTI_FOLD:
+        word_lower = word_lower.replace(a, b)
+    return word_lower.upper().translate(R.DIGIT_FOLD)
+
+
 def make_ident(confusables=False, affix=False):
-    stop = R.STOPWORDS | (AFFIX if affix else set())
 
     def base(s):
         s = unicodedata.normalize("NFKC", s)
@@ -57,11 +63,17 @@ def make_ident(confusables=False, affix=False):
         return s.lower()
 
     def fold(w):
-        w = R._fold(w)
+        w = _fold_v1(w)
         return w.replace("L", "I") if confusables else w
 
+    stop = {fold(w.lower()) for w in R.STOPWORDS | (AFFIX if affix else set())}   # compared in folded form
+    suffixes = tuple(fold(w.lower()) for w in R.SUFFIXES)
+
     def tokens(name, keep_stop=False):
-        s = R.CAMEL.sub(" ", unicodedata.normalize("NFKC", name))
+        s = unicodedata.normalize("NFKC", name)
+        if confusables:   # as the service: confusables before the camelCase split
+            s = "".join(CONF.get(ch, ch) for ch in s).replace("|", "l")
+        s = R.CAMEL.sub(" ", s)
         out = []
         for t in re.split(r"[^0-9a-zÀ-￿]+", base(s)):
             if not t or not any(ch.isalnum() for ch in t):
@@ -70,7 +82,7 @@ def make_ident(confusables=False, affix=False):
             if keep_stop:
                 out.append(t)
                 continue
-            for suf in R.SUFFIXES:
+            for suf in suffixes:
                 if t.endswith(suf) and len(t) > len(suf):
                     out.append(t[: -len(suf)])
                     t = suf
@@ -98,7 +110,8 @@ def key_fn(ident, exact_name_fix=False):
 
 
 CANDIDATES = [
-    ("v1 (current)", dict(), False, False),
+    ("v1 (before 7 Nov 2026)", dict(), False, False),
+    ("A + B (adopted 7 Nov 2026)", dict(confusables=True), True, False),
     ("A: exact-name fix", dict(), True, False),
     ("D: affix stopwords", dict(affix=True), False, False),
     ("B: confusables", dict(confusables=True), False, False),
@@ -157,9 +170,10 @@ def main():
     certain_v = {j for j, ms in enumerate(earlier) if any(certain(L[i], L[j]) for i in ms)}
 
     rows = []
-    for name, opts, exact_fix, use_e in CANDIDATES:
-        ident = make_ident(**opts)
-        key = key_fn(ident, exact_fix)
+    service_key = lambda n, s: R.ident(n, s)["key"]  # noqa: E731  the live service rule, for the check row
+    for name, opts, exact_fix, use_e in CANDIDATES + [("service code (matcher_service.rules)", None, None, False)]:
+        ident = make_ident(**(opts or {}))
+        key = service_key if opts is None else key_fn(ident, exact_fix)
         rooms, by_key, by_sym = [], {}, collections.defaultdict(list)
         routed = no_signal = 0
         c_mid = c_lo = c_cert = 0.0

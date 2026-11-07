@@ -64,13 +64,30 @@ def test_no_fuzzy_or_image_paths_exist():
 
 
 def test_parity_with_research_normalisation():
+    """The service is the research fold plus exactly rule B (CORRECTIONS §18): confusables before folding, and L
+    read as I after it (stopwords compared in that folded form). Rule A changes only the key class, not tokens."""
     rm = research_matcher()
+    li = lambda x: x.replace("L", "I")  # noqa: E731
     samples = ["$EL0N", "Elon Musk Coin", "РЕРЕ", "🐸 Moon Frog", "SPEED-VERSE", "ㅤㅤ", "犬神", "MarvinCoin",
-               "rn vv 0134578", "Ⅻ", "ﬁre", "Ⓐbc", "áb", "CATE", "Inu"]
+               "rn vv 0134578", "Ⅻ", "ﬁre", "Ⓐbc", "áb", "CATE", "Inu",
+               "EIon", "E|on", "Elօn", "Ꮲepe", "The Official Sol Coin", "Solana Pepe"]
+    stop = {li(w) for w in rm.STOPWORDS}
     for s in samples:
-        assert rules.symbol_key(s) == rm.symbol_key(s), s
-        assert rules.name_tokens(s) == rm.name_tokens(s), s
+        assert rules.symbol_key(s) == li(rm.symbol_key(rules._pre(s))), s
+        want = [li(t) for t in rm.name_tokens(rules._pre(s)) if li(t) not in stop]
+        assert rules.name_tokens(s) == want, s
 
+
+def test_rules_a_and_b_route_the_measured_cases():
+    """Rule A: equal names route even when stripping leaves under 4 characters. Rule B: one-character look-alikes."""
+    route = lambda a, b: rules.text_tier(rules.ident(*b), rules.ident(*a))[0] in rules.ROUTING_TIERS  # noqa: E731
+    assert route(("Bitcoin", "BTC"), ("Bitcoin", "BITCOIN"))
+    assert route(("Cumcoin", "Cumcoin"), ("CumCoin", "CUMC"))
+    for dodge in ("EIon", "E|on", "Elօn"):
+        assert route(("Elon", "ELON"), (dodge, "OTHER")), dodge
+    assert route(("Pepe", "PEPE"), ("Ꮲepe", "FROG"))
+    assert rules.ident("The Official Elon Coin", "X")["nk"] == rules.ident("Elon", "Y")["nk"]  # stopwords still drop
+    assert not route(("Inu", "AAA"), ("INU", "BBB"))           # a genuinely short name still needs its symbol
 
 def test_program_fold_reference_vectors():
     # programs/doors_v1/tests/svm.rs fold_and_integer_math_match_reference_vectors

@@ -456,3 +456,44 @@ human-reviewed):
 - **Data:** B uses `data/confusables_ascii.json`, derived from the PyPI package `confusable_homoglyphs` 3.3.1 (Unicode
   `confusables.txt`). Provenance and hashes are in the file. unicode.org itself was not reachable from the build
   environment.
+
+## 18. Rules A and B adopted (owner ruling, 7 November 2026)
+
+**What changed** (`rules.py`):
+- **Rule A.** A name keys by name alone (class N) when its folded name, *before* stopwords and the COIN/TOKEN suffix are
+  removed, has at least 4 characters. "Bitcoin"/BTC and "Bitcoin"/BITCOIN now share a key; before, stripping left
+  "BIT", under the minimum.
+- **Rule B.** Names and symbols are mapped through Unicode's confusables (non-ASCII to ASCII,
+  `data/confusables_ascii.json`) and `|` to `l`, after NFKC and before any split. After folding, L reads as I. This
+  catches "EIon", "E|on", "Elօn" (Armenian o) and "Ꮲepe" (Cherokee P). It does not catch small capitals, Cyrillic п,
+  doubled letters or added words.
+- **The routing relation is now key equality by definition.** `text_tier` gives T3 when keys and folded symbols are
+  equal, T2n when keys alone are equal. The NameLock key and the routing rule cannot drift apart.
+
+**Measured** (`scripts/rule_candidates.py` → `RULE_CANDIDATES.md`, same replay as the calibration):
+
+| | rooms | routed | precision (est.) | recall (est.) | recall of certain vamps |
+|---|---|---|---|---|---|
+| before | 1,224 | 1,732 | 99.8% | 87.4% | 99.4% |
+| A + B, and the live service code | 1,222 | 1,734 | 99.8% | 87.4% | 99.4% |
+
+The script recomputes the replay with `matcher_service.rules` itself; that row equals the A + B row.
+
+**Correction, my own bug, caught by the existing tests:** folding L to I made "OFFICIAL", "SOL" and "SOLANA" miss the
+stopword list ("OFFICIAI", "SOI"). Stopwords and suffixes are now compared in folded form. The same bug was in the
+first B measurement (§17), which is corrected: B alone is identical to v1 on the sample, 1,224 rooms and 1,732 routed.
+
+**Other changes:**
+- **The verifier** (`verify_decision.py`) computes keys from the research matcher's own fold plus its own
+  implementation of A and B, and routes by key. It no longer calls the research `decide()`, which matches any face
+  under the old rule.
+- **Research parity** is now "the research fold plus exactly rule B": `test_parity_with_research_normalisation`.
+- **The confusables table is pinned by SHA-256**, like the Unicode version.
+- **The devnet smoke's Rust key port** folds L to I and has two new vectors (program branch).
+
+**Devnet consequence:** names containing an L, or with a short stripped name, now key differently from NameLocks created
+earlier on devnet. Routing still finds those rooms, because it recomputes door 0's key under the current rules; a new
+room for such a name orphans the old lock harmlessly. Nothing exists on mainnet.
+
+**Results:** unit tests 119/119. Service e2e PASS on localnet; program e2e 34/34 on localnet. Devnet was not run: the
+test wallets are empty since the devnet SOL moved to the owner's address.

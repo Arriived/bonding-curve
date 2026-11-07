@@ -4,13 +4,15 @@ Replay of 2,956 pump.fun launches (the calibration sample), rooms treated as liv
 
 | rule | rooms formed | launches routed | precision (est.) | precision, pessimistic | recall of vamps (est.) | recall of certain vamps | routes with no measurable signal |
 |---|---|---|---|---|---|---|---|
-| v1 (current) | 1,224 | 1,732 | 99.8% | 99.6% | 87.4% | 99.4% | 0 |
+| v1 (before 7 Nov 2026) | 1,224 | 1,732 | 99.8% | 99.6% | 87.4% | 99.4% | 0 |
+| A + B (adopted 7 Nov 2026) | 1,222 | 1,734 | 99.8% | 99.5% | 87.4% | 99.4% | 0 |
 | A: exact-name fix | 1,222 | 1,734 | 99.8% | 99.5% | 87.4% | 99.4% | 0 |
 | D: affix stopwords | 1,198 | 1,758 | 98.3% | 97.7% | 87.3% | 98.3% | 1 |
-| B: confusables | 1,225 | 1,731 | 99.8% | 99.6% | 87.3% | 99.4% | 0 |
-| A + B + D (all key rules) | 1,196 | 1,760 | 98.2% | 97.6% | 87.3% | 98.3% | 3 |
+| B: confusables | 1,224 | 1,732 | 99.8% | 99.6% | 87.4% | 99.4% | 0 |
+| A + B + D (all key rules) | 1,194 | 1,762 | 98.1% | 97.5% | 87.4% | 98.3% | 3 |
 | E: same symbol + shared 4-char word | 1,154 | 1,802 | 97.2% | 95.9% | 88.5% | 98.1% | 0 |
-| A + B + D + E | 1,128 | 1,828 | 95.7% | 94.0% | 88.4% | 97.0% | 4 |
+| A + B + D + E | 1,127 | 1,829 | 95.7% | 94.0% | 88.4% | 97.0% | 4 |
+| service code (matcher_service.rules) | 1,222 | 1,734 | 99.8% | 99.5% | 87.4% | 99.4% | 0 |
 
 Routes with no measurable signal (not certain, not labelled, no research stratum), first examples:
 

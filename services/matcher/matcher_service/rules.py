@@ -15,9 +15,11 @@ which key the SlugLock exact-identity floor. They are a different fold from the 
 only, no NFKC) and must match the program byte for byte.
 """
 import hashlib
+import json
 import re
 import unicodedata
 from functools import lru_cache
+from pathlib import Path
 
 UNICODE_VERSION = unicodedata.unidata_version
 # The fold depends on the interpreter's Unicode tables, and name keys are now permanent on-chain (the NameLock PDA
@@ -31,6 +33,8 @@ class UnicodeMismatch(RuntimeError):
 
 
 def check_unicode(version=None):
+    if hashlib.sha256(_CONF_RAW).hexdigest() != CONFUSABLES_SHA256:
+        raise UnicodeMismatch(f"{_CONF_PATH} is not the pinned confusables table {CONFUSABLES_SHA256}")
     v = UNICODE_VERSION if version is None else version
     if v != PINNED_UNICODE_VERSION:
         raise UnicodeMismatch(f"Unicode tables are {v}; name keys are pinned to {PINNED_UNICODE_VERSION}. Run on a "
@@ -55,6 +59,22 @@ CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
 INVISIBLE = {"ᅟ", "ᅠ", "ㅤ", "ﾠ", "⠀"}
 
 
+# ---- rule B (owner ruling, 7 November 2026; CORRECTIONS §18) --------------------------------------
+# Unicode confusables: a non-ASCII character that Unicode lists as confusable with one ASCII letter or digit folds to
+# it, after NFKC and before any splitting; '|' reads as 'l'; and after folding, L and I are one letter (with the
+# existing 1 -> I). The table is pinned by hash like the Unicode tables: other data would key names differently.
+_CONF_PATH = Path(__file__).resolve().parent.parent / "data" / "confusables_ascii.json"
+_CONF_RAW = _CONF_PATH.read_bytes()
+CONFUSABLES_SHA256 = "2e181ed8e97c8b9ec30b52ecf99dbdfc3f1917f1c8ae34fd88a74d1836412566"
+_CONF = json.loads(_CONF_RAW)["map"]
+
+
+def _pre(s):
+    """NFKC, Unicode confusables to ASCII, '|' to 'l' (rule B). Applied to raw names and symbols first."""
+    s = unicodedata.normalize("NFKC", s)
+    return "".join(_CONF.get(ch, ch) for ch in s).replace("|", "l")
+
+
 def _base(s):
     """NFKC, drop invisibles, homoglyph fold, strip accents, lower case. Separators are kept."""
     s = unicodedata.normalize("NFKC", s)
@@ -67,28 +87,35 @@ def _base(s):
 def _fold(word_lower):
     for a, b in MULTI_FOLD:
         word_lower = word_lower.replace(a, b)
-    return word_lower.upper().translate(DIGIT_FOLD)
+    return word_lower.upper().translate(DIGIT_FOLD).replace("L", "I")   # rule B: I, l, 1 and | read alike
 
 
 def symbol_key(symbol):
     """Folded symbol: alphanumerics only (any script), '$' and punctuation dropped, confusables folded."""
-    return _fold("".join(ch for ch in _base(symbol) if ch.isalnum()))
+    return _fold("".join(ch for ch in _base(_pre(symbol)) if ch.isalnum()))
+
+
+def name_words(name):
+    """Every folded name word, stopwords and COIN/TOKEN suffixes kept (rule A measures length on these)."""
+    s = CAMEL.sub(" ", _pre(name))
+    raw = re.split(r"[^0-9a-zÀ-￿]+", _base(s))
+    return [_fold("".join(ch for ch in t if ch.isalnum())) for t in raw if t and any(ch.isalnum() for ch in t)]
+
+
+# Stopwords and suffixes compared in folded form (rule B folds L to I: OFFICIAL -> OFFICIAI, SOL -> SOI).
+_STOP_FOLDED = frozenset(_fold(w.lower()) for w in STOPWORDS)
+_SUFFIXES_FOLDED = tuple(_fold(w.lower()) for w in SUFFIXES)
 
 
 def name_tokens(name):
     """Folded name tokens, stopwords removed, COIN/TOKEN suffixes split off."""
-    s = CAMEL.sub(" ", unicodedata.normalize("NFKC", name))
-    raw = re.split(r"[^0-9a-zÀ-￿]+", _base(s))
     out = []
-    for t in raw:
-        if not t or not any(ch.isalnum() for ch in t):
-            continue
-        t = _fold("".join(ch for ch in t if ch.isalnum()))
-        for suf in SUFFIXES:
+    for t in name_words(name):
+        for suf in _SUFFIXES_FOLDED:
             if t.endswith(suf) and len(t) > len(suf):
                 out.append(t[: -len(suf)])
                 t = suf
-        if t not in STOPWORDS:
+        if t not in _STOP_FOLDED:
             out.append(t)
     return out
 
@@ -97,24 +124,36 @@ def name_key(name):
     return "".join(name_tokens(name))
 
 
+def _key_string(sk, nk, full):
+    """The routing key. Class N over the folded name when the folded name *including* stopwords and suffixes has at
+    least NAME_EQUAL_MIN_LEN characters (rule A: so "Bitcoin"/BTC and "Bitcoin"/BITCOIN share a key); else class P
+    over (symbol, name) when both are non-empty; else none."""
+    if nk and len(full) >= NAME_EQUAL_MIN_LEN:
+        return "N\0" + nk
+    if nk and sk:
+        return "P\0" + sk + "\0" + nk
+    return None
+
+
 @lru_cache(maxsize=65536)
 def ident(name, symbol):
     nt = name_tokens(name)
-    return {"sk": symbol_key(symbol), "nk": "".join(nt), "nt": frozenset(nt)}
+    sk, nk, full = symbol_key(symbol), "".join(nt), "".join(name_words(name))
+    return {"sk": sk, "nk": nk, "nt": frozenset(nt), "full": full, "key": _key_string(sk, nk, full)}
 
 
-# ---- the v1 equality tiers (research text_tier with fuzzy=False) -------------------------------
+# ---- the v1 equality tiers ------------------------------------------------------------------------
 TIER_RANK = {"T3": 4, "T2n": 3, "T2s": 2, "T0": 0}
 ROUTING_TIERS = ("T3", "T2n")
 
 
 def text_tier(c, f):
-    """Research text_tier(c, f, p, fuzzy=False). Returns (tier, reason)."""
+    """Two launches route together exactly when their keys are equal (so the NameLock enforces the routing rule):
+    T3 with equal folded symbols, T2n without. Symbol equality alone (T2s) is recorded and never routes."""
     sym_eq = bool(c["sk"]) and c["sk"] == f["sk"]
-    name_eq = bool(c["nk"]) and c["nk"] == f["nk"]
-    if sym_eq and name_eq:
-        return "T3", "symbol and name equal after folding"
-    if name_eq and len(c["nk"]) >= NAME_EQUAL_MIN_LEN:
+    if c["key"] is not None and c["key"] == f["key"]:
+        if sym_eq:
+            return "T3", "symbol and name equal after folding"
         return "T2n", "name equal after folding"
     if sym_eq:
         return "T2s", "symbol equal after folding"
@@ -158,24 +197,15 @@ NAME_KEY_DOMAIN = b"doors-v1:name-key:v1"
 
 @lru_cache(maxsize=65536)
 def name_lock_key(name, symbol):
-    """The key the program locks for a new room: one key per launch, equal for two launches exactly when
-    `text_tier` routes them together (T3 or T2n), so one key -> one live room enforces the routing rule.
-
-      - folded name of at least NAME_EQUAL_MIN_LEN characters: class N over the folded name (covers T2n,
-        and T3 for such names, since T3 implies equal names);
-      - shorter non-empty folded name with a non-empty folded symbol: class P over (symbol, name) (T3 only);
-      - otherwise None: the launch can never route by text, and only the SlugLock applies.
-
-    sha256(domain || 0 || class || 0 || payload)[:16]; payload is UTF-8. The program never computes it.
-    """
-    c = ident(name, symbol)
-    if len(c["nk"]) >= NAME_EQUAL_MIN_LEN:
-        cls, payload = b"N", c["nk"].encode()
-    elif c["nk"] and c["sk"]:
-        cls, payload = b"P", c["sk"].encode() + b"\x00" + c["nk"].encode()
-    else:
+    """The key the program locks for a new room: one key per launch, equal for two launches exactly when text_tier
+    routes them together (it is defined by the same key). Class N: the folded name (rule A decides the class on the
+    unstripped folded name). Class P: folded symbol and short folded name. sha256(domain || 0 || class || 0 ||
+    payload)[:16], payload UTF-8. The program never computes it."""
+    k = ident(name, symbol)["key"]
+    if k is None:
         return None
-    return hashlib.sha256(NAME_KEY_DOMAIN + b"\x00" + cls + b"\x00" + payload).digest()[:NAME_KEY_LEN]
+    cls, _, payload = k.partition("\0")
+    return hashlib.sha256(NAME_KEY_DOMAIN + b"\x00" + cls.encode() + b"\x00" + payload.encode()).digest()[:NAME_KEY_LEN]
 
 
 # ---- program fold and identity (programs/doors_v1/src/state.rs) --------------------------------

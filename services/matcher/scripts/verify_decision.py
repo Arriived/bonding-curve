@@ -68,19 +68,49 @@ EVENTS = {disc("event", n): n for n in ("RoomCreated", "DoorOpened", "Trade", "P
 NAME_KEY_DOMAIN = b"doors-v1:name-key:v1"
 
 
+_CONF = json.loads((HERE.parent / "data" / "confusables_ascii.json").read_text(encoding="utf-8"))["map"]
+
+
+def _pre(s):
+    """Rule B, step 1: NFKC, Unicode confusables to ASCII, '|' to 'l' (CORRECTIONS §18)."""
+    import unicodedata
+    s = unicodedata.normalize("NFKC", s)
+    return "".join(_CONF.get(ch, ch) for ch in s).replace("|", "l")
+
+
+def research_keys(rm, name, symbol):
+    """(symbol key, name key, key class string) from the research matcher's own fold plus rules A and B, written
+    here independently of services/matcher rules.py: B folds confusables first and L into I after folding; A decides
+    the key class on the folded name before stopwords and COIN/TOKEN suffixes are removed."""
+    import re
+    import unicodedata
+    li = lambda x: x.replace("L", "I")  # noqa: E731
+    n = _pre(name)
+    raw = re.split(r"[^0-9a-zÀ-￿]+", rm._base(rm.CAMEL.sub(" ", unicodedata.normalize("NFKC", n))))
+    words = [li(rm._fold("".join(ch for ch in t if ch.isalnum()))) for t in raw if t and any(ch.isalnum() for ch in t)]
+    stop, sufs = {li(w) for w in rm.STOPWORDS}, [li(w) for w in rm.SUFFIXES]
+    nt = []
+    for t in words:
+        for suf in sufs:
+            if t.endswith(suf) and len(t) > len(suf):
+                nt.append(t[: -len(suf)])
+                t = suf
+        if t not in stop:
+            nt.append(t)
+    nk, full, sk = "".join(nt), "".join(words), li(rm.symbol_key(_pre(symbol)))
+    if nk and len(full) >= rm.DEFAULTS["name_equal_min_len"]:
+        return sk, nk, ("N", nk)
+    if nk and sk:
+        return sk, nk, ("P", sk + "\x00" + nk)
+    return sk, nk, None
+
+
 def name_key_research(rm, name, symbol):
-    """The NameLock key from the research matcher's ident() (the reference the service ports): class N over
-    the folded name if it has at least name_equal_min_len characters, else class P over (symbol, name) when
-    both are non-empty, else none. Must equal services/matcher rules.name_lock_key."""
-    c = rm.ident(name, symbol)
-    nk, sk = c["nk"], c["sk"]
-    if len(nk) >= rm.DEFAULTS["name_equal_min_len"]:
-        cls, payload = b"N", nk.encode()
-    elif nk and sk:
-        cls, payload = b"P", sk.encode() + b"\x00" + nk.encode()
-    else:
+    """The NameLock key, from research_keys. Must equal services/matcher rules.name_lock_key."""
+    k = research_keys(rm, name, symbol)[2]
+    if k is None:
         return None
-    return hashlib.sha256(NAME_KEY_DOMAIN + b"\x00" + cls + b"\x00" + payload).digest()[:16]
+    return hashlib.sha256(NAME_KEY_DOMAIN + b"\x00" + k[0].encode() + b"\x00" + k[1].encode()).digest()[:16]
 
 
 class R:
@@ -306,7 +336,7 @@ def decode_launch_ix(msg, program, idl_path):
 
 
 def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None):
-    """Program floor semantics + research decide() for text rule, liveness and ties."""
+    """Program floor semantics, the key-based text rule (rules A and B, research fold), research liveness and ties."""
     params = {k: cfg[k] for k in ("live_min_reserve_lamports", "live_max_idle_seconds", "live_new_seconds",
                                   "live_min_volume_lamports")}
     def keyed_faces(faces):
@@ -331,12 +361,24 @@ def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None)
         if rm.is_live(research_room(h), now, p)[0]:
             return {"kind": "door", "rule": "floor", "room_id": holder_id, "old_holder": None, "old_name_holder": None}
         old_holder = holder_id
-    candidates = [research_room(r) for r in rooms.values() if r["status"] <= 1]
-    out = rm.decide({"now": now, "candidate": {"name": name, "symbol": symbol}, "rooms": candidates,
-                     "params": params})
-    if out["decision"] == "door":
-        return {"kind": "door", "rule": out["rule"].split()[0], "room_id": out["room_id"], "old_holder": old_holder,
-                "old_name_holder": None}
+    # Text rule: rooms whose door 0 carries the candidate's key, live, research liveness; T3 if a same-key face also
+    # has the candidate's folded symbol; ties as the research decide(): tier, SOL depth (room_weight), lowest id.
+    csk, _, ckey = research_keys(rm, name, symbol)
+    matches = []
+    for r in rooms.values():
+        if r["status"] > 1 or ckey is None or not r["faces"]:
+            continue
+        if research_keys(rm, r["faces"][0]["name"], r["faces"][0]["symbol"])[2] != ckey:
+            continue
+        rr = research_room(r)
+        if not rm.is_live(rr, now, p)[0]:
+            continue
+        t3 = bool(csk) and any(research_keys(rm, f["name"], f["symbol"])[0] == csk for f in rr["faces"])
+        tier = "T3" if t3 else "T2n"
+        matches.append(((rm.TIER_RANK[tier], rm.room_weight(rr), -r["room_id"]), tier, r["room_id"]))
+    if matches:
+        _, tier, rid = max(matches)
+        return {"kind": "door", "rule": tier, "room_id": rid, "old_holder": old_holder, "old_name_holder": None}
     old_name_holder = None
     if name_holder_id is not None:
         h = rooms[name_holder_id]
