@@ -44,7 +44,6 @@ fn paired_open(
     first_buy: u64,
 ) -> Result<()> {
     let mut input = launch(name, "PAIR");
-    input.uri = "https://example.invalid/p.json".into();
     input.first_buy_lamports = first_buy;
     let input = prepare(chain, input, nonce)?;
     let ix = ctx.open_ix(
@@ -306,7 +305,6 @@ fn run_paired(dir: &str, out: &str) -> Result<()> {
                     }
 
                     let mut start = launch(&format!("Room {tag}"), "PAIR");
-                    start.uri = "https://example.invalid/p.json".into();
                     start.first_buy_lamports = seed * 1_010_000_000;
                     let start = prepare(&chain, start, 0)?;
                     chain.send(

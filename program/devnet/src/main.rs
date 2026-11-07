@@ -610,7 +610,7 @@ fn launch(name: &str, symbol: &str) -> Launch {
     Launch {
         name: name.into(),
         symbol: symbol.into(),
-        uri: "https://example.invalid/doors-devnet-smoke.json".into(),
+        uri: "https://example.invalid/p.json".into(),
         first_buy_lamports: 0,
         min_tokens_out: 0,
         matcher_version: 1,

@@ -743,11 +743,8 @@ every room token, the vault would fall short. The door born at the 50 SOL
 reference state passes the supply check. Its actual completion still
 requires a reachable allocation through permitted trades and swaps.
 
-**Stopped before implementation.** The owner needs to decide whether to
-keep the threshold and accept permanently incomplete early doors or
-revise the completion rule. The specified starting price and unchanged
-room supply have been preserved in this check. No paired-door performance
-or live devnet result is available.
+Implementation paused at this finding pending an owner ruling. The next
+section records the ruling that cleared the pause.
 
 ### Owner ruling and supply-exhaustion fixture
 
@@ -774,9 +771,9 @@ an existing source door can deliver
 817,144,907.490190 room tokens
 after the swap fee, above the receiving door's
 782,523,466.183039 room-token exhaustion cost.
-The owner approved this isolated SBF fixture. The existing Config validator
-must accept it before the prototype is implemented. Defaults and devnet
-measurements retain the existing room cap.
+The owner approved this isolated SBF fixture. The unchanged Config validator accepted it before implementation in the
+[Config-only Linux run](https://github.com/Arriived/bonding-curve/actions/runs/42280400705).
+The default room cap remains in use for regular measurements and devnet.
 
 ### Existing sell accounting
 
