@@ -15,7 +15,7 @@ transaction message:
     from a recent blockhash and never with a durable-nonce advance instruction, which would remove
     that expiry.
 
-Instruction layouts come from idl/doors_v1.deployed.json, the IDL of the deployed program.
+Instruction layouts come from idl/doors_v1.paired.json, the IDL of the deployed program.
 """
 import json
 import os
@@ -31,7 +31,7 @@ from solders.transaction import Transaction
 
 from .chain import pda
 
-IDL_PATH = os.path.join(os.path.dirname(__file__), "..", "idl", "doors_v1.deployed.json")
+IDL_PATH = os.path.join(os.path.dirname(__file__), "..", "idl", "doors_v1.paired.json")
 T22 = Pubkey.from_string("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb")
 CLASSIC = Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 WSOL = Pubkey.from_string("So11111111111111111111111111111111111111112")
@@ -66,12 +66,13 @@ MAX_LAUNCH_WINDOW_SLOTS = 150  # programs/doors_v1/src/state.rs; the runtime's b
 
 
 def encode_launch(name, symbol, uri, first_buy, min_tokens_out, matcher_version, rule, face, max_fee,
-                  terms_hash: bytes, door_nonce, expires_at_slot):
+                  terms_hash: bytes, door_nonce, expires_at_slot, max_room_price=0):
     if len(terms_hash) != 32:
         raise ValueError("expected_terms_hash must be 32 bytes")
     return (_borsh_str(name) + _borsh_str(symbol) + _borsh_str(uri)
             + struct.pack("<QQHBIQ", first_buy, min_tokens_out, matcher_version, rule, face, max_fee)
-            + terms_hash + struct.pack("<QQ", door_nonce, expires_at_slot))
+            + terms_hash + struct.pack("<QQ", door_nonce, expires_at_slot)
+            + max_room_price.to_bytes(16, 'little'))
 
 
 def ata(owner, mint, program):

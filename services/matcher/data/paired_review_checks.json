@@ -1,0 +1,11 @@
+{
+  "service_tests": {
+    "passed": 161,
+    "failed": 0,
+    "command": "python -m pytest services/matcher/tests -q --tb=short --basetemp=.tmp/review-service-all-pass"
+  },
+  "sbf_reference_door_tokens": 33699309828108,
+  "baseline_wrong_unit_room_tokens": 19628248343287,
+  "benchmark_targets": 1223,
+  "rules_changed": false
+}

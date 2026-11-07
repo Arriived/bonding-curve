@@ -27,7 +27,7 @@ from matcher_service import layouts  # noqa: E402
 from matcher_service.chain import RpcClient  # noqa: E402
 from matcher_service.txbuild import T22, Builder, ata  # noqa: E402
 
-PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+from matcher_service.program_id import PROGRAM_ID as PROGRAM
 
 
 def send(rpc, signer, ixs):
@@ -72,7 +72,7 @@ def main():
         values = {"user": me.pubkey(), "core.config": b.p(b"config"), "core.room": room,
                   **{"core." + k: v for k, v in core.items()}, **extra,
                   "user_token": ata(me.pubkey(), Pubkey.from_string(mint), T22)}
-        ix = b._instruction("sell", values, struct.pack("<QQ", n, 0))
+        ix = b._instruction("sell_door" if mint in doors else "sell", values, struct.pack("<QQ", n, 0))
         before = rpc.balance(me.pubkey())
         sig, st = send(rpc, me, [ix])
         if st.get("err"):

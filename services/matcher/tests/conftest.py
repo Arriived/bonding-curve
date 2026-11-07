@@ -32,7 +32,7 @@ def load_examples():
     return out
 
 
-PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+from matcher_service.program_id import PROGRAM_ID as PROGRAM
 MATCHER = "AMUaQ4J1EJ4SWCwxc3fHYW4PNdyE432qNzitVdX9T3Bv"
 
 

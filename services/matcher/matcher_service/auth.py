@@ -26,7 +26,7 @@ from solders.signature import Signature
 
 PREFIX = b"doors-matcher:route:v1\n"
 FIELDS = ("launcher", "name", "symbol", "uri", "first_buy_lamports", "min_tokens_out", "max_slippage_bps",
-          "max_fee_lamports", "cu_price_micro_lamports", "issued_at")
+          "max_fee_lamports", "cu_price_micro_lamports", "issued_at", "max_room_price")
 ALLOWED = frozenset(FIELDS) | {"signature"}
 MAX_SKEW_SECONDS = 120
 

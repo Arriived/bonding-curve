@@ -126,11 +126,12 @@ def render(stats, escapes, n_targets, per):
                        + " |")
         dropped = sum(st["dropped"] for fs in by_cls.values() for st in fs.values())
         out += ["", f"Variants dropped as unlaunchable (over 32-byte name or 10-byte symbol): {dropped:,}.", ""]
-    out += ["### Disguises the service rule (A + B + I + C) misses, first examples (symbol kept)", ""]
-    for fname in NF.FUZZERS["disguise"]:
-        if escapes.get(fname):
-            out.append(f"- {fname}: " + "; ".join(escapes[fname]))
-    return "\n".join(out) + "\n"
+    if "--summary" not in sys.argv:
+        out += ["### Disguises the service rule (A + B + I + C) misses, first examples (symbol kept)", ""]
+        for fname in NF.FUZZERS["disguise"]:
+            if escapes.get(fname):
+                out.append(f"- {fname}: " + "; ".join(escapes[fname]))
+    return "\n".join(out).rstrip() + "\n"
 
 
 def main():
@@ -138,10 +139,10 @@ def main():
     stats, escapes, n = run(per)
     text = render(stats, escapes, n, per)
     if "--md" in sys.argv:
-        Path(sys.argv[sys.argv.index("--md") + 1]).write_text(text, encoding="utf-8")
+        Path(sys.argv[sys.argv.index("--md") + 1]).write_text(text, encoding="utf-8", newline="\n")
     if "--json" in sys.argv:
         Path(sys.argv[sys.argv.index("--json") + 1]).write_text(
-            json.dumps({"targets": n, "per": per, "seed": SEED, "stats": stats}, indent=1), encoding="utf-8")
+            json.dumps({"targets": n, "per": per, "seed": SEED, "stats": stats}, indent=1), encoding="utf-8", newline="\n")
     print(text)
 
 

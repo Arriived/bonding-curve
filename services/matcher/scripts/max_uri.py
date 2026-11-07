@@ -36,7 +36,7 @@ from solders.transaction import Transaction  # noqa: E402
 
 from matcher_service import txbuild  # noqa: E402
 
-PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+from matcher_service.program_id import PROGRAM_ID as PROGRAM
 BLOCKHASH = "11111111111111111111111111111111"
 NAME, SYMBOL = "N" * 32, "S" * 10
 

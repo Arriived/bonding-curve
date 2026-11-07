@@ -14,6 +14,32 @@ U = 1_000_000_000_000_000  # math.rs U: one billion tokens in base units
 
 DEFAULT_MAX_SLIPPAGE_BPS = 200     # DESIGN.md §3: "the frontend default should be <= 2-3% slippage"
 MAX_SLIPPAGE_BPS = 5_000
+DOOR_VIRTUAL_BASE = 1_073_025_606_000_000
+PRICE_SCALE = 10**18
+
+
+def door_virtual_quote(price_num, price_den):
+    return max(1, 30_000_000_000 * price_den // price_num)
+
+
+def door_integral(virtual_quote, sold):
+    if virtual_quote <= 0 or not 0 <= sold <= U:
+        raise ValueError('door outside the curve')
+    return virtual_quote * sold // (DOOR_VIRTUAL_BASE - sold)
+
+
+def door_advance(virtual_quote, sold, room_tokens):
+    target = door_integral(virtual_quote, sold) + room_tokens + 1
+    nxt = (target * DOOR_VIRTUAL_BASE - 1) // (virtual_quote + target)
+    if not sold <= nxt <= U:
+        raise ValueError('door supply exhausted')
+    return nxt
+
+
+def room_price_limit(curve, slippage_bps):
+    num = curve['v_sol_lamports'] * curve['v_tok']
+    den = (curve['v_tok'] - curve['sold']) ** 2
+    return num * PRICE_SCALE * (10000 + slippage_bps) // (den * 10000)
 
 
 def reserve(vs, vt, q):
@@ -50,6 +76,8 @@ def first_buy_tokens(curve, gross):
     if curve["status"] != 0 or gross <= 0:
         return None
     sold, res = curve["sold"], curve["reserve"]
+    # Anchor is captured by initialize_door BEFORE pending settlement and the buy.
+    virtual_quote = door_virtual_quote(vs * vt, (vt - sold) ** 2)
     settle = min(curve["pending_reserve_sol"], trigger - res)
     if settle > 0:                                   # settle_pending
         sold = inverse(vs, vt, reserve(vs, vt, sold) + settle)
@@ -63,7 +91,7 @@ def first_buy_tokens(curve, gross):
     tokens = q - sold
     if tokens <= 0 or tokens > curve["supply"] - sold:
         return None
-    return tokens
+    return door_advance(virtual_quote, 0, tokens)
 
 
 def new_room_curve(config):

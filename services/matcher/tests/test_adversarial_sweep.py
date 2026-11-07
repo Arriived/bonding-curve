@@ -59,12 +59,12 @@ def revived_snapshot():
     return FakeSnapshot([old, current], NOW, names={key: 2})
 
 
-@pytest.mark.xfail(strict=True, reason="Owner decision: revived former holder wins text depth tie-break")
-def test_revived_former_name_holder_does_not_recapture_text_routing():
+def test_revived_former_name_holder_currently_recaptures_text_routing():
     snapshot = revived_snapshot()
     # A third symbol has no SlugLock, so it reaches text matching.
     out = decide(snapshot, "Revival Frog", "THIRD", "")
-    assert out.room_id == 2
+    # Owner decision, documented in SECURITY_REVIEW.md. Do not encode a failing wish.
+    assert out.room_id == 1
 
 
 def test_revived_routing_attack_is_reproducible_without_signer_compromise():

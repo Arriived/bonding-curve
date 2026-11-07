@@ -1,6 +1,6 @@
 """Decoders for the deployed program's accounts.
 
-Offsets come from idl/layouts.deployed.json (program/verification/layouts.json of the deployed source,
+Offsets come from idl/layouts.paired.json (program/verification/layouts.json of the deployed source,
 generated from the IDL and checked by program/scripts/check_layouts.py). A test asserts the constants
 below equal that file, so layout drift fails the build instead of producing wrong decisions.
 """
@@ -14,7 +14,7 @@ def account_discriminator(name: str) -> bytes:
     return hashlib.sha256(f"account:{name}".encode()).digest()[:8]
 
 
-ROOM_LEN, DOOR_LEN, SLUG_LEN, NAME_LEN, CONFIG_LEN = 1315, 328, 17, 33, 248
+ROOM_LEN, DOOR_LEN, SLUG_LEN, NAME_LEN, CONFIG_LEN = 1331, 360, 17, 33, 248
 DISC = {k: account_discriminator(k) for k in ("Room", "Door", "SlugLock", "NameLock", "Config")}
 
 # field -> (offset, bytes), the subset the service reads
@@ -24,7 +24,7 @@ ROOM_FIELDS = {"room_id": (8, 8), "status": (23, 1), "room_mint": (24, 32), "res
                # curve state for the first-buy quote (quote.py)
                "v_sol_lamports": (152, 8), "v_tok": (160, 8), "supply": (168, 8),
                "graduation_trigger_lamports": (184, 8), "fee_bps": (192, 2), "sold": (204, 8),
-               "pending_reserve_sol": (240, 8)}
+               "pending_reserve_sol": (240, 8), "door_share_bps": (194, 2)}
 DOOR_FIELDS = {"room": (8, 32), "index": (40, 4), "mint": (44, 32), "nonce": (303, 8)}
 SLUG_FIELDS = {"room_id": (8, 8)}
 NAME_FIELDS = {"room_id": (8, 8), "key": (16, 16)}
@@ -72,6 +72,7 @@ def decode_room(data: bytes) -> dict:
            for k in ("v_sol_lamports", "v_tok", "supply", "graduation_trigger_lamports", "sold",
                      "pending_reserve_sol")},
         "fee_bps": struct.unpack_from("<H", data, f["fee_bps"][0])[0],
+        "door_share_bps": struct.unpack_from("<H", data, f["door_share_bps"][0])[0],
         "buckets": buckets,
     }
 

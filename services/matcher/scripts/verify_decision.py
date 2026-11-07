@@ -42,6 +42,7 @@ sys.path.insert(0, str(HERE.parent))
 from matcher_service import rules  # noqa: E402  (program fold/identity port only)
 from matcher_service.chain import RpcClient, RpcError, pda  # noqa: E402
 from matcher_service.layouts import decode_door, decode_mint_face, decode_room  # noqa: E402
+from matcher_service.layouts import ROOM_LEN, DOOR_LEN  # noqa: E402
 from matcher_service.store import Store  # noqa: E402
 from solders.message import Message  # noqa: E402
 from solders.pubkey import Pubkey  # noqa: E402
@@ -64,7 +65,7 @@ def disc(kind, name):
 
 
 EVENTS = {disc("event", n): n for n in ("RoomCreated", "DoorOpened", "Trade", "PendingRetired", "SlugReleased",
-                                        "NameReleased", "ConfigChanged")}
+                                        "NameReleased", "ConfigChanged", "DoorsSwapped", "SwapFeesClaimed")}
 NAME_KEY_DOMAIN = b"doors-v1:name-key:v1"
 
 
@@ -88,7 +89,7 @@ def research_keys(rm, name, symbol):
     remain and any trailing COIN/TOKEN/OFFICIAL/SOLANA/CTO; A decides the key class on the name before stripping."""
     import re
     li = lambda x: x.replace("L", "I")  # noqa: E731
-    raw = re.split(r"[^0-9a-zÀ-￿]+", rm._base(_pre(name)))
+    raw = re.split(r"[^0-9a-z\u00c0-\uffff]+", rm._base(_pre(name)))
     full = li(rm._fold("".join(ch for t in raw for ch in t if ch.isalnum())))
     lead = [li(w) for w in ("THE", "OFFICIAL")]
     trail = sorted((li(w) for w in ("COIN", "TOKEN", "OFFICIAL", "SOLANA", "CTO")), key=len, reverse=True)
@@ -162,9 +163,17 @@ def decode_event(data):
         room = r.pk()
         door = r.pk() if r.u("B") else None
         user, buy = r.pk(), bool(r.u("B"))
-        tokens, curve_lamports, fee, sold_after, reserve = (r.u("Q") for _ in range(5))
+        tokens, room_tokens, curve_lamports, fee, sold_after, reserve = (r.u("Q") for _ in range(6))
         return name, {"room": room, "door": door, "buy": buy, "curve_lamports": curve_lamports,
+                      "room_tokens": room_tokens, "fee": fee, "sold_after": sold_after,
                       "reserve": reserve, "status": r.u("B")}
+    if name == "DoorsSwapped":
+        return name, {"room": r.pk(), "from": r.pk(), "to": r.pk(),
+                      "door_tokens_in":r.u('Q'), "door_tokens_out":r.u('Q'),
+                      "room_tokens":r.u('Q'), "fee":r.u('Q')}
+    if name == "SwapFeesClaimed":
+        return name, {"room":r.pk(), "door":r.pk() if r.u('B') else None,
+                      "recipient":r.pk(), "room_tokens":r.u('Q')}
     if name == "PendingRetired":
         return name, {"room": r.pk(), "lamports": r.u("Q"), "retired": r.u("Q")}
     if name == "SlugReleased":
@@ -241,6 +250,29 @@ class History:
 BLOCK_TIME_TOLERANCE = 5   # seconds between a block time and the Clock the program read
 
 
+def first_buy_quote(curve, gross):
+    """Independent integer derivation, including pre-buy anchoring and fee settlement."""
+    if not gross or curve['status'] != 0:
+        return None
+    vs, vt = curve['v_sol_lamports'], curve['v_tok']
+    old = curve['sold']
+    anchor = max(1, 30_000_000_000 * (vt - old)**2 // (vs * vt))
+    settled = min(curve['pending_reserve_sol'], curve['graduation_trigger_lamports'] - curve['reserve'])
+    available = curve['graduation_trigger_lamports'] - curve['reserve'] - settled
+    if available <= 0:
+        return None
+    if settled:
+        old = vt - vs * vt // (vs * old // (vt - old) + settled + vs + 1) - 1
+    net = min(gross * 10000 // (10000 + curve['fee_bps']), available)
+    end = vt - vs * vt // (vs * old // (vt - old) + net + vs + 1) - 1
+    room_out = end - old
+    if room_out <= 0 or end > curve['supply']:
+        return None
+    target = room_out + 1
+    door_out = (target * 1_073_025_606_000_000 - 1) // (anchor + target)
+    return door_out if 0 < door_out <= 10**15 else None
+
+
 def record_amount(buckets, now, amount):
     """Room::record: hourly ring of 25 tagged buckets."""
     start = now // 3600 * 3600
@@ -250,7 +282,7 @@ def record_amount(buckets, now, amount):
     buckets[i][1] += amount
 
 
-def replay_room(hist, room_pk, trigger, upto_slot, faces_by_mint):
+def replay_room(hist, room_pk, trigger, upto_slot, faces_by_mint, immutable=None):
     st = None
     for slot, sig in hist.signatures(room_pk, upto_slot):
         when, evs = hist.events(sig)
@@ -262,18 +294,26 @@ def replay_room(hist, room_pk, trigger, upto_slot, faces_by_mint):
             if name == "RoomCreated":
                 st = {"room_id": e["room_id"], "status": 0, "created_at": when, "reserve": 0, "last_trade_at": when,
                       "buckets": [[0, 0] for _ in range(25)], "faces": [], "door_count": 0, "identity": e["identity"],
-                      "trade_times": []}
+                      "trade_times": [], "sold":0, "pending_reserve_sol":0,
+                      **(immutable or {})}
             elif st is None:
                 continue
             elif name == "DoorOpened":
                 st["door_count"] += 1
                 st["faces"].append(faces_by_mint[e["mint"]])
             elif name == "Trade":
+                st['sold'] = e['sold_after']
+                if e['door'] is None:
+                    st['pending_reserve_sol'] += e['fee'] * st['door_share_bps'] // 10000
                 st["reserve"], st["status"] = e["reserve"], e["status"]
                 st["last_trade_at"] = when
                 st["trade_times"].append(when)
                 record_amount(st["buckets"], when, e["curve_lamports"])
             elif name == "PendingRetired":
+                st['pending_reserve_sol'] -= e['lamports']
+                vs, vt = st['v_sol_lamports'], st['v_tok']
+                base = vs * st['sold'] // (vt - st['sold'])
+                st['sold'] = vt - vs * vt // (base + e['lamports'] + vs + 1) - 1
                 st["reserve"] += e["lamports"]
                 st["status"] = 1 if st["reserve"] == trigger else st["status"]
     return st
@@ -333,7 +373,7 @@ def decode_launch_ix(msg, program, idl_path):
     launch = {"name": r.s(), "symbol": r.s(), "uri": r.s(), "first_buy_lamports": r.u("Q"),
               "min_tokens_out": r.u("Q"), "matcher_version": r.u("H"), "rule": r.u("B"), "face": r.u("I"),
               "max_fee_lamports": r.u("Q"), "expected_terms_hash": r.take(32).hex(),
-              "door_nonce": r.u("Q"), "expires_at_slot": r.u("Q")}
+              "door_nonce": r.u("Q"), "expires_at_slot": r.u("Q"), "max_room_price":r.u128()}
     if spec["name"] == "create_room":
         launch["name_key"] = r.take(16).hex() if r.u("B") else None
     return spec["name"], room_id, accounts, launch
@@ -425,13 +465,13 @@ def verify(record, rpc_url, chain_ok=True):
     check("message blockhash is the recorded one", str(msg.recent_blockhash) == txr["blockhash"])
 
     # 3. instruction content
-    name, room_id, acc, launch = decode_launch_ix(msg, program, HERE.parent / "idl/doors_v1.deployed.json")
+    name, room_id, acc, launch = decode_launch_ix(msg, program, HERE.parent / "idl/doors_v1.paired.json")
     want = "create_room" if dec["kind"] == "new_room" else "open_door"
     check("instruction matches the decision kind", name == want, name)
     for k in ("name", "symbol", "uri", "first_buy_lamports", "max_fee_lamports"):
         check(f"Launch.{k} equals the request", launch[k] == req[k], repr(launch[k]))
     # min_tokens_out: the request's own value, or (omitted) the recorded quote less its slippage. The quote
-    # is recorded, not recomputed here: replaying `sold` and the pending backlog needs every fee split.
+    # is independently recomputed below from replayed sold amounts and pending fee splits.
     fbq = record.get("first_buy_quote")
     want_min = req["min_tokens_out"] if req.get("min_tokens_out") is not None else (
         fbq["min_tokens_out"] if fbq else 0)
@@ -472,8 +512,8 @@ def verify(record, rpc_url, chain_ok=True):
 
     # 4. state at the slot, rebuilt from events
     current_rooms = [decode_room(d) | {"pubkey": k} for k, d in
-                     rpc.program_accounts(program, "Room", 1315)[1]]
-    current_doors = [decode_door(d) for _, d in rpc.program_accounts(program, "Door", 328)[1]]
+                     rpc.program_accounts(program, "Room", ROOM_LEN)[1]]
+    current_doors = [decode_door(d) for _, d in rpc.program_accounts(program, "Door", DOOR_LEN)[1]]
     mints = sorted({d["mint"] for d in current_doors})
     faces_by_mint = {}
     for i in range(0, len(mints), 100):
@@ -501,7 +541,8 @@ def verify(record, rpc_url, chain_ok=True):
     for pk, r in relevant.items():
         acct = rpc.account(pk)[1]
         trig = struct.unpack_from("<Q", acct, 184)[0]
-        st = replay_room(hist, pk, trig, slot, faces_by_mint)
+        immutable = {k:r[k] for k in ('v_sol_lamports','v_tok','supply','graduation_trigger_lamports','fee_bps','door_share_bps')}
+        st = replay_room(hist, pk, trig, slot, faces_by_mint, immutable)
         if st is not None:
             st["created_at"] = struct.unpack_from("<q", acct, 288)[0]   # immutable: exact from the account
             rebuilt[st["room_id"]] = st
@@ -535,6 +576,23 @@ def verify(record, rpc_url, chain_ok=True):
               ", ".join(f"{k}: chain {got[k]} vs record {want[k]}" for k in diffs), inconclusive=timing_only)
 
     # 5. decision
+    if fbq:
+        if dec['kind'] == 'new_room':
+            curve = {k:cfg[k] for k in ('v_sol_lamports','v_tok','supply','graduation_trigger_lamports','fee_bps')}
+            curve.update(sold=0, reserve=0, pending_reserve_sol=0, status=0)
+        else:
+            curve = rebuilt[int(dec['room_id'])]
+        independently_quoted = first_buy_quote(curve, req['first_buy_lamports'])
+        check('first-buy quote independently replays both curves in door tokens',
+              independently_quoted == fbq['tokens'], str(independently_quoted))
+        slip = fbq['price_slippage_bps']
+        expected_price = (int(req['max_room_price']) if req.get('max_room_price') is not None
+                          else curve['v_sol_lamports'] * curve['v_tok'] * 10**18 * (10000 + slip)
+                          // ((curve['v_tok'] - curve['sold'])**2 * 10000))
+    else:
+        expected_price = int(req.get('max_room_price') or 0)
+    check('Launch.max_room_price equals the requested or slippage-derived bound',
+          launch['max_room_price'] == expected_price == int(record['launch_max_room_price']))
     expect = recompute(rm, rebuilt, holder, cfg, now, req["name"], req["symbol"], name_holder)
     def shifted(d):
         return {k: dict(v, last_trade_at=v["last_trade_at"] + d) for k, v in rebuilt.items()}
