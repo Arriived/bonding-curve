@@ -630,7 +630,7 @@ matcher on each in shadow mode (README, "Launch watcher").
 - Details and the raw log: `watcher/results/2026-11-07/`.
 
 **Corrections to what I said earlier:**
-- I quoted "27 launches in 30 s". That was one sample. The 83-minute run averaged 0.38 launches a second.
+- I quoted "27 launches in 30 s". That was one sample. The 83-minute run averaged 0.37 launches a second.
 - "StonkFun" is not a program. It is a self-declared name in about 150 LaunchLab `PlatformConfig` accounts with
   distinct fee wallets, so a launch's StonkFun label cannot be verified on-chain.
 - Mainnet now carries version-1 transactions, so `getTransaction` needs `maxSupportedTransactionVersion: 1`.
