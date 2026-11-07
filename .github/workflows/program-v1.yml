@@ -93,12 +93,12 @@ jobs:
       - name: Measure paired doors heap and compile devnet client
         if: github.ref_name == 'claude/paired-doors'
         run: |
-          sha256sum -c devnet/DEPLOY_ELF.sha256
           set -o pipefail
           cargo test --locked --manifest-path devnet/Cargo.toml 2>&1 | tee verification/devnet-client-tests.log
           cargo build --locked --release --manifest-path devnet/Cargo.toml
           python3 scripts/heap_probe.py
           python3 scripts/report_paired_doors.py --report docs/PAIRED_DOORS_REPORT.md > verification/paired_report.md
+          sha256sum -c devnet/DEPLOY_ELF.sha256
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4

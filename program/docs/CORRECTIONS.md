@@ -841,3 +841,22 @@ fixture whose direct rent-only launches had not populated the test
 client's door list. First-swap vault rent now uses a normal trading
 fixture. The rent-only room and door measurements retain their original
 metadata and account-balance method.
+
+
+The lazy vault alone raised maximum-metadata creation headroom from 64
+to 640 bytes in [the first complete review run](https://github.com/Arriived/bonding-curve/actions/runs/42380227882).
+All 59 SBF tests, property iterations and the standalone client test passed,
+but the heap target failed. The 1,500-byte requirement remains enforced.
+Creation's remaining allocations are being measured before completing
+this review.
+
+
+The pinned token-metadata initializer cloned the three launch strings,
+serialized them into an intermediate Borsh buffer, then copied that data
+into the instruction buffer. Creation now builds that same instruction
+in one correctly sized buffer using the borrowed launch strings. A
+regression compares its complete instruction bytes and account metas
+with the pinned library for empty URIs, maximum lengths and multibyte
+UTF-8. The mint metadata, instruction order and CPI count are preserved.
+The heap probe writes its measured output before enforcing its target so
+failed targets also retain their evidence.

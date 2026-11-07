@@ -532,3 +532,39 @@ fn paired_swap_claims_follow_fee_recipient_changes() {
     std::mem::swap(&mut f.user, &mut f.matcher);
     f.audit();
 }
+
+#[test]
+fn paired_metadata_builder_matches_the_pinned_interface() {
+    let mint = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+    for (name, symbol, uri) in [
+        ("Metadata".to_string(), "META".to_string(), String::new()),
+        ("n".repeat(32), "S".repeat(10), "u".repeat(200)),
+        (
+            "\u{e9}".repeat(16),
+            "\u{20ac}".repeat(3),
+            format!("ipfs://{}", "\u{1f600}".repeat(48)),
+        ),
+    ] {
+        let mut input = launch(&name);
+        input.symbol = symbol;
+        input.uri = uri;
+        let actual = doors_v1::vaults::metadata_initialize_ix(
+            &spl_token_2022_interface::ID,
+            &mint,
+            &authority,
+            &input,
+        );
+        let expected = spl_token_metadata_interface::instruction::initialize(
+            &spl_token_2022_interface::ID,
+            &mint,
+            &authority,
+            &mint,
+            &authority,
+            input.name,
+            input.symbol,
+            input.uri,
+        );
+        assert_eq!(actual, expected);
+    }
+}

@@ -314,6 +314,36 @@ pub fn create_token<'a>(
     token(ai, mint.key, authority, program.key)?;
     Ok(bump)
 }
+/// Token-metadata Initialize with one exact-size data buffer. The library builder
+/// clones the strings and serializes through intermediate buffers on the SBF heap.
+/// The instruction is byte-identical to `meta::initialize`, asserted by the suite.
+pub fn metadata_initialize_ix(
+    program: &Pubkey,
+    mint: &Pubkey,
+    authority: &Pubkey,
+    launch: &Launch,
+) -> anchor_lang::solana_program::instruction::Instruction {
+    use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
+    const INITIALIZE: [u8; 8] = [210, 225, 30, 162, 88, 184, 77, 141];
+    let mut data =
+        Vec::with_capacity(8 + 12 + launch.name.len() + launch.symbol.len() + launch.uri.len());
+    data.extend_from_slice(&INITIALIZE);
+    for text in [&launch.name, &launch.symbol, &launch.uri] {
+        data.extend_from_slice(&(text.len() as u32).to_le_bytes());
+        data.extend_from_slice(text.as_bytes());
+    }
+    Instruction {
+        program_id: *program,
+        accounts: vec![
+            AccountMeta::new(*mint, false),
+            AccountMeta::new_readonly(*authority, false),
+            AccountMeta::new_readonly(*mint, false),
+            AccountMeta::new_readonly(*authority, true),
+        ],
+        data,
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn create_mint<'a>(
     user: &AccountInfo<'a>,
@@ -377,16 +407,7 @@ pub fn create_mint<'a>(
         &[ai.clone(), program.clone()],
     )?;
     invoke_signed(
-        &meta::initialize(
-            program.key,
-            ai.key,
-            authority.key,
-            ai.key,
-            authority.key,
-            launch.name.clone(),
-            launch.symbol.clone(),
-            launch.uri.clone(),
-        ),
+        &metadata_initialize_ix(program.key, ai.key, authority.key, launch),
         &[ai.clone(), authority.clone(), program.clone()],
         &[authority_seeds],
     )?;

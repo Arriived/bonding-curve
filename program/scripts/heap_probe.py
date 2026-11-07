@@ -315,11 +315,6 @@ def main():
             units.update(json.loads(re.search(r"HEAP_PAIRED (\{.*\})", paired_out)[1]))
         cu = json.loads(re.search(r"HEAP_CU (\{.*\})", out)[1])
         full_takeover = bool(units.pop("create_room_takeover_uri200_passes"))
-        if paired and commit == head and not patch:
-            assert units["create_room"] * STEP >= 1500, (
-                f"maximum-metadata create_room heap headroom is {units['create_room'] * STEP} bytes; "
-                "paired doors require at least 1500"
-            )
         result = {
             "measured_commit": commit,
             "measured_tree": "clean checkout of measured_commit in a temporary worktree"
@@ -347,6 +342,11 @@ def main():
             (f".frame{args.heap_frame}" if args.heap_frame else "") + ".json"
         (HERE / "verification" / name).write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result, indent=2))
+        if paired and commit == head and not patch:
+            assert units["create_room"] * STEP >= 1500, (
+                f"maximum-metadata create_room heap headroom is {units['create_room'] * STEP} bytes; "
+                "paired doors require at least 1500"
+            )
     finally:
         run(["rustup", "override", "unset"], wt / "program")
         run(["git", "worktree", "remove", "--force", str(wt)], REPO)
