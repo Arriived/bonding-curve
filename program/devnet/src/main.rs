@@ -871,11 +871,12 @@ fn mint_check(c: &Chain, mint: &Pubkey) -> Result<Value> {
 /// helper launches: ASCII words of letters and digits separated by single spaces, no stopword, no
 /// COIN/TOKEN suffix, no camelCase, folding to at least 4 characters. For those the service's
 /// normalisation reduces to: per word, lower-case, `rn`->`m` then `vv`->`w`, upper-case, digits
-/// 0 1 3 4 5 7 8 -> O I E A S T B; words joined; class N. Any other name is refused rather than keyed
-/// wrongly. `smoke_key_matches_the_service` pins it to vectors computed with the service's rules.py.
+/// 0 1 3 4 5 7 8 -> O I E A S T B, then L -> I (rule B, 7 November 2026; stopwords compared in that folded
+/// form); words joined; class N. Any other name is refused rather than keyed wrongly. `smoke_key_matches_the_service` pins it to vectors computed with the service's rules.py.
 fn smoke_name_key(name: &str) -> [u8; NAME_KEY_LEN] {
+    // In folded form: L reads as I (OFFICIAL -> OFFICIAI, SOL -> SOI, SOLANA -> SOIANA).
     const STOP: [&str; 13] = [
-        "THE", "A", "AN", "OF", "ON", "AND", "COIN", "TOKEN", "OFFICIAL", "SOL", "SOLANA", "MEME",
+        "THE", "A", "AN", "OF", "ON", "AND", "COIN", "TOKEN", "OFFICIAI", "SOI", "SOIANA", "MEME",
         "CTO",
     ];
     let mut nk = String::new();
@@ -905,6 +906,7 @@ fn smoke_name_key(name: &str) -> [u8; NAME_KEY_LEN] {
                 '5' => 'S',
                 '7' => 'T',
                 '8' => 'B',
+                'L' => 'I',
                 c => c,
             })
             .collect();
@@ -926,6 +928,8 @@ fn smoke_key_matches_the_service() {
         ("Doors Unsigned Probe", "8e6865372d9077ac15a17f18121f5953"),
         ("Doors Devnet Smoke", "ba48f6c3bcb2159df982b88647109e3d"),
         ("Turn Vvave 0137", "008fd9082274f6972df9a3b87cca37be"),
+        ("Lilly Bell 71", "a25aa2268e687c6b418cc03c9e363ce2"),
+        ("Bull Run Al", "0e74f7d87fe255588ea2f0f4960bb64c"),
     ] {
         let got: String = smoke_name_key(name)
             .iter()
