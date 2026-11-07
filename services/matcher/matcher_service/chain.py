@@ -59,10 +59,16 @@ class RpcClient:
             body = r.json()
         except (httpx.HTTPError, ValueError) as e:
             self.errors += 1
-            raise RpcError(f"{method}: {type(e).__name__}: {e}") from e
+            # httpx embeds the request URL in exception text; provider responses
+            # may echo it too. These errors reach public refusals and logs.
+            status = f" (HTTP {e.response.status_code})" if isinstance(e, httpx.HTTPStatusError) else ""
+            raise RpcError(f"{method}: {type(e).__name__}{status}") from None
         if "error" in body:
             self.errors += 1
-            raise RpcError(f"{method}: {body['error']}")
+            error = body['error']
+            code = error.get('code') if isinstance(error, dict) else None
+            suffix = f" (code {code})" if type(code) is int else ""
+            raise RpcError(f"{method}: JSON-RPC error{suffix}")
         if "result" not in body:
             self.errors += 1
             raise RpcError(f"{method}: no result")

@@ -8,11 +8,12 @@ evidence. No deployment or production signing material is used.
 |---|---|---|---|---|
 | 1 | High, release blocker | First-buy minimum used room tokens instead of door tokens | Fixed | Ordinary launch; can refuse legitimate fills or leave a weaker minimum. Exact SBF parity now tested |
 | 2 | Medium | New-door anchoring bypasses a token-only launch slippage limit | Fixed with owner approval | Recorded 20 SOL front-run earned 0.217061544 SOL and reduced victim exit by 0.549648652 SOL |
-| 3 | Medium | Revived former holder can regain text flow despite a successor's live NameLock | Owner decision | Requires a funded room and revival volume; greater depth can regain later launches |
-| 4 | Low | Paid liveness permits long-term name carrying | Owner decision | 0.02002 SOL/day with the measured four-transaction pattern, plus setup and recoverable capital |
-| 5 | Low | Mixed-script and 32-byte truncation variants evade existing name keys | Owner decision; rules unchanged | New-room rent and ongoing carrying cost; possible routing diversion |
-| 6 | Low | Authorized admin can choose the 120 SOL stress cap | Owner decision | One authorized config transaction; no demonstrated direct extraction |
-| 7 | Info | Request replay and alteration | Existing M-3 protection confirmed | Concurrent replay accepts exactly one of 32 requests; every changed signed field is refused |
+| 3 | Medium | RPC failure text disclosed endpoint credentials or provider text | Fixed | Unauthenticated failure-triggering request; possible RPC quota or billing abuse |
+| 4 | Medium | Revived former holder can regain text flow despite a successor's live NameLock | Owner decision | Requires a funded room and revival volume; greater depth can regain later launches |
+| 5 | Low | Paid liveness permits long-term name carrying | Owner decision | 0.02002 SOL/day with the measured four-transaction pattern, plus setup and recoverable capital |
+| 6 | Low | Mixed-script and 32-byte truncation variants evade existing name keys | Owner decision; rules unchanged | New-room rent and ongoing carrying cost; possible routing diversion |
+| 7 | Low | Authorized admin can choose the 120 SOL stress cap | Owner decision | One authorized config transaction; no demonstrated direct extraction |
+| 8 | Info | Request replay and alteration | Existing M-3 protection confirmed | Concurrent replay accepts exactly one of 32 requests; every changed signed field is refused |
 
 The first-buy regression failed before the port: 19,628,248,343,287 room base
 units versus the recorded SBF output of 33,699,309,828,108 door base units.
@@ -71,4 +72,15 @@ caps unchanged; no cap restriction is implemented here.
 
 The complete program measurements and owner tradeoffs are in the paired branch's
 [security review](https://github.com/Arriived/bonding-curve/blob/claude/paired-doors/program/docs/SECURITY_REVIEW.md).
-Service validation: 161 pytest tests passed, zero failures or expected failures.
+Service validation: 163 pytest tests passed, zero failures or expected failures.
+
+
+## RPC error redaction
+
+A preserved draft test failed for HTTP failures and provider JSON-RPC errors:
+exception text included a synthetic authenticated URL marker. Those RpcError
+strings flow into public refusal/health messages and refresh logs. The fix keeps
+the method, exception class, HTTP status or numeric RPC code, suppressing endpoint
+text, provider messages/data and chained transport text. No real credential was
+read or used. Both reproductions now pass. The complete service suite passes
+163 tests after this fix.

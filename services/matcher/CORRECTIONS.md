@@ -669,7 +669,15 @@ The benchmark adds mixed scripts within and across words and a distinct class of
 actual 32-byte UTF-8 truncations. Short untruncated names are excluded from that
 boundary denominator. With the target symbol kept, mixed-script recall is
 2,909/3,904 (74.5%); boundary recall is 14/255 (5.5%). Rules remain unchanged.
-The full service suite passes 161 tests. This review performs no deployment or
+The full service suite passes 163 tests. This review performs no deployment or
 production-key access. The Windows HTTP tests require ordinary local socket access;
 inside the restricted sandbox their in-process test client hung, so they were run
 outside it against mocks. No live service or RPC was used by pytest.
+
+
+The preserved RPC redaction draft was restored and failed in both HTTP and
+JSON-RPC cases before the fix. Raw transport exceptions included an authenticated
+URL; provider error objects could echo it too. RpcError now retains only safe
+method/class/status or numeric-code context, with transport exception chaining
+suppressed. Both synthetic-marker regressions pass; no actual credentials were
+accessed. The final full service run passes 163 tests.
