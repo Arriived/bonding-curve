@@ -5,7 +5,7 @@ Replay of 2,956 pump.fun launches (the calibration sample), rooms treated as liv
 | rule | rooms formed | launches routed | precision (est.) | precision, pessimistic | precision if unmeasured are right | recall of vamps (est.) | recall of certain vamps | routes with no measurable signal |
 |---|---|---|---|---|---|---|---|---|
 | v1 (before 7 Nov 2026) | 1,224 | 1,732 | 99.8% | 99.6% | 99.8% | 87.4% | 99.4% | 0 |
-| A + B (adopted 7 Nov 2026) | 1,222 | 1,734 | 99.8% | 99.5% | 99.8% | 87.4% | 99.4% | 0 |
+| A + B (live 7 Nov 2026, before §20) | 1,222 | 1,734 | 99.8% | 99.5% | 99.8% | 87.4% | 99.4% | 0 |
 | A: exact-name fix | 1,222 | 1,734 | 99.8% | 99.5% | 99.8% | 87.4% | 99.4% | 0 |
 | D: affix stopwords | 1,198 | 1,758 | 98.3% | 97.7% | 98.3% | 87.3% | 98.3% | 1 |
 | B: confusables | 1,224 | 1,732 | 99.8% | 99.6% | 99.8% | 87.4% | 99.4% | 0 |
@@ -14,13 +14,13 @@ Replay of 2,956 pump.fun launches (the calibration sample), rooms treated as liv
 | A + B + D + E | 1,127 | 1,829 | 95.7% | 94.0% | 95.9% | 88.4% | 97.0% | 4 |
 | A + B + G (no stopwords) | 1,243 | 1,713 | 99.9% | 99.7% | 99.9% | 86.5% | 98.9% | 0 |
 | A + B + I (split-invariant affixes) | 1,225 | 1,731 | 99.8% | 99.6% | 99.8% | 87.3% | 99.4% | 0 |
-| A + B + I + C | 1,225 | 1,731 | 99.8% | 99.6% | 99.8% | 87.3% | 99.4% | 0 |
+| A + B + I + C (adopted 7 Nov 2026, CORRECTIONS §20) | 1,225 | 1,731 | 99.8% | 99.6% | 99.8% | 87.3% | 99.4% | 0 |
 | A + B + H (invisibles before camelCase split) | 1,222 | 1,734 | 99.8% | 99.5% | 99.8% | 87.4% | 99.4% | 0 |
 | A + B + C (transliteration) | 1,222 | 1,734 | 99.8% | 99.5% | 99.8% | 87.4% | 99.4% | 0 |
 | A + B + F4 (phonetic, code >= 4) | 1,191 | 1,765 | 96.9% | 96.3% | 98.5% | 86.4% | 97.9% | 28 |
 | A + B + F5 (phonetic, code >= 5) | 1,200 | 1,756 | 97.7% | 97.2% | 98.5% | 86.7% | 98.1% | 13 |
 | A + B + C + F5 | 1,200 | 1,756 | 97.7% | 97.2% | 98.5% | 86.7% | 98.1% | 13 |
-| service code (matcher_service.rules) | 1,222 | 1,734 | 99.8% | 99.5% | 99.8% | 87.4% | 99.4% | 0 |
+| service code (matcher_service.rules) | 1,225 | 1,731 | 99.8% | 99.6% | 99.8% | 87.3% | 99.4% | 0 |
 
 Routes with no measurable signal (not certain, not labelled, no research stratum), distinct pairs:
 

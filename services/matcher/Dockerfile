@@ -24,6 +24,7 @@ FROM base AS runtime
 COPY --from=test /tests-passed /tests-passed
 COPY services/matcher/matcher_service ./matcher_service
 COPY services/matcher/idl ./idl
+COPY services/matcher/data ./data
 RUN useradd --uid 10001 --create-home matcher && mkdir -p /data && chown matcher /data
 USER matcher
 ENV MATCHER_ENV=production MATCHER_SIGNER=gcp-kms MATCHER_DB=/data/decisions.sqlite3

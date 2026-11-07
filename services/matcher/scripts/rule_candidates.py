@@ -10,7 +10,8 @@ The labels were written by the assistant from name and symbol and have not been 
 Each candidate routes a launch into the room whose door 0 carries the same name key (the v1 equivalence, as the
 service does since the face-laundering fix). Candidates change how the key is computed:
   v1     the rule before 7 November 2026: class N over the folded name (4+ chars), else class P over (symbol, name).
-  A + B  adopted 7 November 2026. The last row recomputes the replay with the live service code; it must equal A + B.
+  A + B  adopted 7 November 2026, then extended by I + C the same day (CORRECTIONS §20). The last row recomputes the
+         replay with the live service code; it must equal the A + B + I + C row.
   A      exact-name fix: the 4-character minimum is applied to the folded name *before* stopwords and the
          COIN/TOKEN suffix are removed, so "Bitcoin"/BTC and "Bitcoin"/BITCOIN share a key.
   D      affix stopwords: BABY, FAUCET, INU, AI, REAL, OG, CLASSIC, V2, 2 are dropped like COIN or THE.
@@ -129,12 +130,12 @@ def make_ident(confusables=False, affix=False, translit=False, li_fold=True, sto
         changed = True
         while changed:
             changed = False
+            for w in trail:   # trailing first, so "Theory Coin" keys like "Theory"
+                if s.endswith(w) and len(s) > len(w):
+                    s, changed = s[: -len(w)], True
             for w in lead:
                 if s.startswith(w) and len(s) - len(w) >= 4:
                     s, changed = s[len(w):], True
-            for w in trail:
-                if s.endswith(w) and len(s) > len(w):
-                    s, changed = s[: -len(w)], True
         return s
 
     def ident(name, symbol):
@@ -168,7 +169,7 @@ def key_fn(ident, exact_name_fix=False, phonetic_min=None, ident_ph=None):
 
 CANDIDATES = [
     ("v1 (before 7 Nov 2026)", dict(), False, False),
-    ("A + B (adopted 7 Nov 2026)", dict(confusables=True), True, False),
+    ("A + B (live 7 Nov 2026, before §20)", dict(confusables=True), True, False),
     ("A: exact-name fix", dict(), True, False),
     ("D: affix stopwords", dict(affix=True), False, False),
     ("B: confusables", dict(confusables=True), False, False),
@@ -177,7 +178,8 @@ CANDIDATES = [
     ("A + B + D + E", dict(affix=True, confusables=True), True, True),
     ("A + B + G (no stopwords)", dict(confusables=True, stopwords=False), True, False),
     ("A + B + I (split-invariant affixes)", dict(confusables=True, split_invariant=True), True, False),
-    ("A + B + I + C", dict(confusables=True, split_invariant=True, translit=True), True, False),
+    ("A + B + I + C (adopted 7 Nov 2026, CORRECTIONS §20)", dict(confusables=True, split_invariant=True, translit=True),
+     True, False),
     ("A + B + H (invisibles before camelCase split)", dict(confusables=True, invisible_first=True), True, False),
     ("A + B + C (transliteration)", dict(confusables=True, translit=True), True, False),
     ("A + B + F4 (phonetic, code >= 4)", dict(confusables=True), True, False, 4),

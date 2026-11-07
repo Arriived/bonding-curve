@@ -13,9 +13,10 @@ same seed). Only class P keys (names under 4 folded characters) read the symbol,
 This measures dodge recall only. A rule that catches more typos will also merge more different names; that
 cost is measured on real launches by scripts/rule_candidates.py, not here.
 
-Rules: v1, the service rule (A + B; checked equal to rule_candidates' A + B on every variant), and the research
-candidates C (transliteration), F5 (phonetic), G (no stopwords) and I (split-invariant affixes), defined in
-rule_candidates.py. C and F need requirements-research.txt.
+Rules (defined in rule_candidates.py): v1; A + B (live until CORRECTIONS §20); C (transliteration); F5 (phonetic,
+rejected); G (no stopwords); I (split-invariant affixes); and the service rule, A + B + I + C, computed with
+matcher_service.rules and checked equal to rule_candidates' A + B + I + C on every variant. F needs
+requirements-research.txt.
 
 Usage: python3 scripts/evasion_benchmark.py [--md OUT.md] [--json OUT.json] [--per N]
 """
@@ -38,16 +39,19 @@ SEED = "evasion-benchmark-v1"
 def rule_keys():
     """name -> key function for each rule compared, cached."""
     out = {"v1": RC.candidate_key({}, False)[1]}
-    out["A + B (service)"] = lambda n, s: R.ident(n, s)["key"]
+    out["A + B"] = RC.candidate_key(dict(confusables=True), True)[1]
     out["A + B + C"] = RC.candidate_key(dict(confusables=True, translit=True), True)[1]
     out["A + B + F5"] = RC.candidate_key(dict(confusables=True), True, 5)[1]
     out["A + B + G"] = RC.candidate_key(dict(confusables=True, stopwords=False), True)[1]
     out["A + B + I"] = RC.candidate_key(dict(confusables=True, split_invariant=True), True)[1]
-    out["A + B + I + C"] = RC.candidate_key(dict(confusables=True, split_invariant=True, translit=True), True)[1]
+    out["A + B + I + C (service)"] = lambda n, s: R.ident(n, s)["key"]
     return {k: lru_cache(maxsize=None)(f) for k, f in out.items()}
 
 
-AB_CHECK = lru_cache(maxsize=None)(RC.candidate_key(dict(confusables=True), True)[1])
+SERVICE_RULE = "A + B + I + C (service)"
+# The live rule as rule_candidates.py implements it; checked equal to the service on every variant.
+SERVICE_CHECK = lru_cache(maxsize=None)(RC.candidate_key(dict(confusables=True, split_invariant=True, translit=True),
+                                                         True)[1])
 
 
 def targets():
@@ -88,12 +92,12 @@ def run(per=4, target_list=None, rules=None):
                             st["dropped"] += 1
                             continue
                         st["n"] += 1
-                        if "A + B (service)" in rules:
-                            assert rules["A + B (service)"](v, sym) == AB_CHECK(v, sym), (v, sym)
+                        if SERVICE_RULE in rules:
+                            assert rules[SERVICE_RULE](v, sym) == SERVICE_CHECK(v, sym), (v, sym)
                         for r, f in rules.items():
                             hit = tkeys[r] is not None and f(v, sym) == tkeys[r]
                             st[r] += hit
-                            if (not hit and r == "A + B (service)" and mode == modes[0]
+                            if (not hit and r == SERVICE_RULE and mode == modes[0]
                                     and len(escapes.setdefault(fname, [])) < 5):
                                 escapes[fname].append(f"`{name}` -> `{v}`")
     return stats, escapes, len(tl)
@@ -106,7 +110,7 @@ def render(stats, escapes, n_targets, per):
            f"{n_targets:,} target names (one per distinct name key in the 2,956-launch calibration sample), up to {per} "
            "variants per fuzzer per target, fixed seed. A cell is the share of variants whose name key equals the "
            "target's under that rule. Dodge recall only: the cost of catching more (different names merged) is in "
-           "RULE_CANDIDATES.md. C, F, G and I are research candidates, not adopted.", ""]
+           "RULE_CANDIDATES.md. I and C were adopted on 7 November 2026 (CORRECTIONS §20).", ""]
     for mode, by_cls in stats.items():
         out += [f"### Vamp {'keeps the target symbol' if mode == 'symbol kept' else 'applies the same fuzzer to the symbol'}",
                 "", "| class | fuzzer | variants | " + " | ".join(rules) + " |", "|---|---|---|" + "---|" * len(rules)]
@@ -122,7 +126,7 @@ def render(stats, escapes, n_targets, per):
                        + " |")
         dropped = sum(st["dropped"] for fs in by_cls.values() for st in fs.values())
         out += ["", f"Variants dropped as unlaunchable (over 32-byte name or 10-byte symbol): {dropped:,}.", ""]
-    out += ["### Disguises the service rule (A + B) misses, first examples (symbol kept)", ""]
+    out += ["### Disguises the service rule (A + B + I + C) misses, first examples (symbol kept)", ""]
     for fname in NF.FUZZERS["disguise"]:
         if escapes.get(fname):
             out.append(f"- {fname}: " + "; ".join(escapes[fname]))

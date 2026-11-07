@@ -1,4 +1,3 @@
-# Research-only: the candidate-rule replay (scripts/rule_candidates.py rows C and F) and the evasion benchmark.
-# Not needed by the service, which does not import them.
+# Research-only: the candidate-rule replay (scripts/rule_candidates.py rows F) and the evasion benchmark.
+# Not needed by the service. (anyascii, rule C, is a runtime dependency since CORRECTIONS §20: requirements.txt.)
 jellyfish==1.3.0
-anyascii==0.3.3

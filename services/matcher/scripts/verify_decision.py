@@ -72,32 +72,36 @@ _CONF = json.loads((HERE.parent / "data" / "confusables_ascii.json").read_text(e
 
 
 def _pre(s):
-    """Rule B, step 1: NFKC, Unicode confusables to ASCII, '|' to 'l' (CORRECTIONS §18)."""
+    """Rules B and C, step 1: NFKC, Unicode confusables to ASCII, '|' to 'l', then anyascii for every remaining
+    non-ASCII letter or digit (CORRECTIONS §18, §20)."""
     import unicodedata
+    from anyascii import anyascii
     s = unicodedata.normalize("NFKC", s)
-    return "".join(_CONF.get(ch, ch) for ch in s).replace("|", "l")
+    s = "".join(_CONF.get(ch, ch) for ch in s).replace("|", "l")
+    return "".join(anyascii(ch) if ord(ch) > 127 and unicodedata.category(ch)[0] in "LN" else ch for ch in s)
 
 
 def research_keys(rm, name, symbol):
-    """(symbol key, name key, key class string) from the research matcher's own fold plus rules A and B, written
-    here independently of services/matcher rules.py: B folds confusables first and L into I after folding; A decides
-    the key class on the folded name before stopwords and COIN/TOKEN suffixes are removed."""
+    """(symbol key, name key, key class string) from the research matcher's own fold plus rules A, B, C and I,
+    written here independently of services/matcher rules.py. B and C rewrite characters first; I joins every letter
+    of the name and folds once (L into I after folding, per B), then strips a leading THE/OFFICIAL while 4+ letters
+    remain and any trailing COIN/TOKEN/OFFICIAL/SOLANA/CTO; A decides the key class on the name before stripping."""
     import re
-    import unicodedata
     li = lambda x: x.replace("L", "I")  # noqa: E731
-    n = _pre(name)
-    raw = re.split(r"[^0-9a-zÀ-￿]+", rm._base(rm.CAMEL.sub(" ", unicodedata.normalize("NFKC", n))))
-    words = [li(rm._fold("".join(ch for ch in t if ch.isalnum()))) for t in raw if t and any(ch.isalnum() for ch in t)]
-    stop, sufs = {li(w) for w in rm.STOPWORDS}, [li(w) for w in rm.SUFFIXES]
-    nt = []
-    for t in words:
-        for suf in sufs:
-            if t.endswith(suf) and len(t) > len(suf):
-                nt.append(t[: -len(suf)])
-                t = suf
-        if t not in stop:
-            nt.append(t)
-    nk, full, sk = "".join(nt), "".join(words), li(rm.symbol_key(_pre(symbol)))
+    raw = re.split(r"[^0-9a-zÀ-￿]+", rm._base(_pre(name)))
+    full = li(rm._fold("".join(ch for t in raw for ch in t if ch.isalnum())))
+    lead = [li(w) for w in ("THE", "OFFICIAL")]
+    trail = sorted((li(w) for w in ("COIN", "TOKEN", "OFFICIAL", "SOLANA", "CTO")), key=len, reverse=True)
+    nk, again = full, True
+    while again:
+        again = False
+        for w in trail:   # trailing first, so "Theory Coin" keys like "Theory"
+            if nk.endswith(w) and len(nk) > len(w):
+                nk, again = nk[: -len(w)], True
+        for w in lead:
+            if nk.startswith(w) and len(nk) - len(w) >= 4:
+                nk, again = nk[len(w):], True
+    sk = li(rm.symbol_key(_pre(symbol)))
     if nk and len(full) >= rm.DEFAULTS["name_equal_min_len"]:
         return sk, nk, ("N", nk)
     if nk and sk:

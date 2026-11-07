@@ -15,7 +15,12 @@ Research and test tooling only; the service does not import it.
 `data/confusables_ascii.json` is derived from confusable_homoglyphs 3.3.1 (Unicode confusables data). Provenance
 and hashes: CORRECTIONS §18.
 
+## anyascii (ISC)
+
+Runtime dependency since CORRECTIONS §20 (rule C, transliteration): anyascii 0.3.3, pinned in `requirements.txt`
+and checked at start-up. Not vendored.
+
 ## Research-only packages (not vendored)
 
-`requirements-research.txt`: jellyfish 1.3.0 (MIT, Metaphone, candidate F) and anyascii 0.3.3 (ISC,
-transliteration, candidate C). Used by `scripts/rule_candidates.py` and `scripts/evasion_benchmark.py` only.
+`requirements-research.txt`: jellyfish 1.3.0 (MIT, Metaphone, rejected candidate F). Used by
+`scripts/rule_candidates.py` and `scripts/evasion_benchmark.py` only.

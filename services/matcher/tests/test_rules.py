@@ -64,18 +64,18 @@ def test_no_fuzzy_or_image_paths_exist():
 
 
 def test_parity_with_research_normalisation():
-    """The service is the research fold plus exactly rule B (CORRECTIONS §18): confusables before folding, and L
-    read as I after it (stopwords compared in that folded form). Rule A changes only the key class, not tokens."""
+    """The service is the research fold plus exactly rules B, C and I (CORRECTIONS §18, §20): confusables and then
+    transliteration before folding; the name's letters joined and folded once; L read as I after folding."""
     rm = research_matcher()
+    import re
     li = lambda x: x.replace("L", "I")  # noqa: E731
     samples = ["$EL0N", "Elon Musk Coin", "РЕРЕ", "🐸 Moon Frog", "SPEED-VERSE", "ㅤㅤ", "犬神", "MarvinCoin",
-               "rn vv 0134578", "Ⅻ", "ﬁre", "Ⓐbc", "áb", "CATE", "Inu",
-               "EIon", "E|on", "Elօn", "Ꮲepe", "The Official Sol Coin", "Solana Pepe"]
-    stop = {li(w) for w in rm.STOPWORDS}
+               "rn vv 0134578", "Ⅻ", "ﬁre", "Ⓐbc", "áb", "CATE", "Inu", "ᴇʟᴏɴ", "Пепе", "Bunker Net",
+               "EIon", "E|on", "Elօn", "Ꮲepe", "The Official Sol Coin", "Solana Pepe", "tHe rUnNeR"]
     for s in samples:
         assert rules.symbol_key(s) == li(rm.symbol_key(rules._pre(s))), s
-        want = [li(t) for t in rm.name_tokens(rules._pre(s)) if li(t) not in stop]
-        assert rules.name_tokens(s) == want, s
+        raw = re.split(r"[^0-9a-zÀ-￿]+", rm._base(rules._pre(s)))
+        assert rules.name_letters(s) == li(rm._fold("".join(ch for t in raw for ch in t if ch.isalnum()))), s
 
 
 def test_rules_a_and_b_route_the_measured_cases():
@@ -88,6 +88,27 @@ def test_rules_a_and_b_route_the_measured_cases():
     assert route(("Pepe", "PEPE"), ("Ꮲepe", "FROG"))
     assert rules.ident("The Official Elon Coin", "X")["nk"] == rules.ident("Elon", "Y")["nk"]  # stopwords still drop
     assert not route(("Inu", "AAA"), ("INU", "BBB"))           # a genuinely short name still needs its symbol
+
+
+def test_rules_i_and_c_route_the_measured_cases():
+    """Rule I: case and spacing cannot change the key. Rule C: transliteration. And the measured costs of I."""
+    key = lambda n: rules.ident(n, "X")["key"]  # noqa: E731
+    for a, b in [("The Runner", "tHe rUnNeR"), ("TRUMP THA DON", "T R U M P T H A D O N"), ("TRUMP THA DON", "TRUMP THA D-ON"),
+                 ("BunkerNet", "Bunkernet"), ("DICK O LANTERN", "dIcK O LaNtErN"), ("LostThePlot", "Lost\u200dThePlot"),
+                 ("Elon", "ᴇʟᴏɴ"), ("Pepe", "Пепе"), ("TRUMP THA DON", "TRUMP Tʜᴀ DON"),
+                 ("Elon", "The Official Elon Coin"), ("Marvin", "MarvinCoin"), ("Elon Musk", "Elon Musk Official")]:
+        assert key(a) == key(b), (a, b)
+    for a, b in [("Swimming in Money", "Swimming in the Money"), ("Bat", "Solana Bat"), ("Pepe", "Pepe On Sol"),
+                 ("The Runner", "The Ruпner")]:          # measured costs and known escapes (CORRECTIONS §19, §20)
+        assert key(a) != key(b), (a, b)
+    assert key("Theory") != key("Ory")                 # a leading THE is kept unless 4 letters remain
+    assert key("Theory Coin") == key("Theory")         # trailing words go first
+
+
+def test_service_refuses_other_anyascii_versions(monkeypatch):
+    monkeypatch.setattr(rules._metadata, "version", lambda pkg: "0.3.2")
+    with pytest.raises(rules.UnicodeMismatch):
+        rules.check_unicode()
 
 def test_program_fold_reference_vectors():
     # programs/doors_v1/tests/svm.rs fold_and_integer_math_match_reference_vectors
@@ -148,7 +169,8 @@ def test_name_lock_key_classes():
     assert rules.name_lock_key("Pepe Coin", "PEPE") == rules.name_lock_key("PEPE", "FROG")     # N: name only
     assert rules.name_lock_key("Pep", "PEP") != rules.name_lock_key("Pep", "FROG")             # P: short name
     assert rules.name_lock_key("Pep", "PEP") == rules.name_lock_key("pep", "$PEP")
-    assert rules.name_lock_key("The Official Coin", "X") is None                              # folds to ""
+    assert rules.name_lock_key("🐸 🚀 !!", "X") is None                                       # no letters
+    assert rules.name_lock_key("The Official Coin", "X") == rules.name_lock_key("Official", "Y")  # rule I: one word left
 
 
 def test_verifier_derives_the_same_name_key_from_the_research_matcher():
@@ -195,9 +217,9 @@ EVASION_NAMES = [("Pepe Wif Hat", "PWH"), ("The Runner", "RUN"), ("Golden Dragon
                  ("Moo Deng", "MOODENG"), ("Fartcoin", "FART"), ("Bitcoin", "BTC"), ("Lost The Plot", "LTP"),
                  ("Official Trump", "TRUMP"), ("Dogwifhat", "WIF"), ("Baby Shark", "SHARK"), ("Elon Musk", "ELON"),
                  ("Western Union", "WU"), ("Swimming In Money", "SIM"), ("Pnut", "PNUT"), ("GOAT", "GOAT")]
-EVASION_FLOOR = {"case": (49, 38), "spacing": (64, 57), "invisible": (64, 64), "fullwidth": (16, 16),
-                 "homoglyph": (64, 49), "cyrillic": (63, 57), "cyrillic_lookalike": (39, 18), "small_caps": (64, 15),
-                 "ascii_lookalike": (46, 42), "leet": (61, 58), "decoration": (64, 64)}
+EVASION_FLOOR = {"case": (49, 49), "spacing": (64, 64), "invisible": (64, 64), "fullwidth": (16, 16),
+                 "homoglyph": (64, 61), "cyrillic": (63, 57), "cyrillic_lookalike": (39, 18), "small_caps": (64, 64),
+                 "ascii_lookalike": (46, 43), "leet": (61, 61), "decoration": (64, 64)}   # rules A + B + I + C
 
 
 def test_evasion_floor():
@@ -207,8 +229,8 @@ def test_evasion_floor():
     spec = importlib.util.spec_from_file_location("evasion_benchmark", SERVICE / "scripts/evasion_benchmark.py")
     eb = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(eb)
-    stats, _, _ = eb.run(4, EVASION_NAMES, {"A + B (service)": lambda n, s: rules.ident(n, s)["key"]})
-    got = {f: (d["n"], d["A + B (service)"]) for f, d in stats["symbol kept"]["disguise"].items()}
+    stats, _, _ = eb.run(4, EVASION_NAMES, {eb.SERVICE_RULE: lambda n, s: rules.ident(n, s)["key"]})
+    got = {f: (d["n"], d[eb.SERVICE_RULE]) for f, d in stats["symbol kept"]["disguise"].items()}
     for f, (n, caught) in EVASION_FLOOR.items():
         assert got[f][0] == n, f"{f}: the fuzzer now makes {got[f][0]} variants, the floor was set on {n}"
         assert got[f][1] >= caught, f"{f}: {got[f][1]} of {n} disguised variants keep the key, floor {caught}"

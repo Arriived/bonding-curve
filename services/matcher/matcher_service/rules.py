@@ -1,6 +1,8 @@
 """Text rules, ported from research/doors_into_one_room/scripts/narrative/matcher.py.
 
-The normalisation and equality tiers are copied, not redesigned. The v1 rule routes only on:
+The character folds are the research matcher's, plus owner-approved rules A, B (CORRECTIONS §18), C and I (§20):
+the name key is the name's folded letters joined, with a few affixes stripped, not the research per-token stopword
+removal. The v1 rule routes only on:
   T3  - folded symbol AND folded name equal;
   T2n - folded name equal, folded name at least `name_equal_min_len` characters.
 Symbol-only (T2s) is computed for the record but never routes. The research matcher's fuzzy tiers
@@ -19,6 +21,9 @@ import json
 import re
 import unicodedata
 from functools import lru_cache
+from importlib import metadata as _metadata
+
+from anyascii import anyascii as _anyascii
 from pathlib import Path
 
 UNICODE_VERSION = unicodedata.unidata_version
@@ -26,6 +31,7 @@ UNICODE_VERSION = unicodedata.unidata_version
 # seed). A service or verifier on other tables would key the same name differently: refuse to run instead
 # (CORRECTIONS §17). Change this only together with a migration plan for existing NameLocks.
 PINNED_UNICODE_VERSION = "15.1.0"
+PINNED_ANYASCII_VERSION = "0.3.3"   # rule C's tables; same reasoning
 
 
 class UnicodeMismatch(RuntimeError):
@@ -35,6 +41,10 @@ class UnicodeMismatch(RuntimeError):
 def check_unicode(version=None):
     if hashlib.sha256(_CONF_RAW).hexdigest() != CONFUSABLES_SHA256:
         raise UnicodeMismatch(f"{_CONF_PATH} is not the pinned confusables table {CONFUSABLES_SHA256}")
+    have = _metadata.version("anyascii")
+    if have != PINNED_ANYASCII_VERSION:
+        raise UnicodeMismatch(f"anyascii {have} is installed; name keys are pinned to {PINNED_ANYASCII_VERSION} "
+                              "(rule C transliteration tables)")
     v = UNICODE_VERSION if version is None else version
     if v != PINNED_UNICODE_VERSION:
         raise UnicodeMismatch(f"Unicode tables are {v}; name keys are pinned to {PINNED_UNICODE_VERSION}. Run on a "
@@ -52,6 +62,8 @@ HOMOGLYPHS = {
 }
 DIGIT_FOLD = str.maketrans({"0": "O", "1": "I", "3": "E", "4": "A", "5": "S", "7": "T", "8": "B"})
 MULTI_FOLD = (("rn", "m"), ("vv", "w"))  # applied to lower case, where they read as one letter
+# STOPWORDS, SUFFIXES and CAMEL are the research matcher's. The live key no longer removes stopwords per token (rule I,
+# CORRECTIONS §20); they stay for scripts/rule_candidates.py, which replays the earlier rules.
 STOPWORDS = {"THE", "A", "AN", "OF", "ON", "AND", "COIN", "TOKEN", "OFFICIAL", "SOL", "SOLANA", "MEME", "CTO"}
 SUFFIXES = ("COIN", "TOKEN")
 CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
@@ -70,9 +82,11 @@ _CONF = json.loads(_CONF_RAW)["map"]
 
 
 def _pre(s):
-    """NFKC, Unicode confusables to ASCII, '|' to 'l' (rule B). Applied to raw names and symbols first."""
+    """NFKC, Unicode confusables to ASCII, '|' to 'l' (rule B), then every remaining non-ASCII letter or digit to its
+    anyascii transliteration (rule C: "ᴇʟᴏɴ" -> elon, "Пепе" -> Pepe). Applied to raw names and symbols first."""
     s = unicodedata.normalize("NFKC", s)
-    return "".join(_CONF.get(ch, ch) for ch in s).replace("|", "l")
+    s = "".join(_CONF.get(ch, ch) for ch in s).replace("|", "l")
+    return "".join(_anyascii(ch) if ord(ch) > 127 and unicodedata.category(ch)[0] in "LN" else ch for ch in s)
 
 
 def _base(s):
@@ -95,39 +109,41 @@ def symbol_key(symbol):
     return _fold("".join(ch for ch in _base(_pre(symbol)) if ch.isalnum()))
 
 
-def name_words(name):
-    """Every folded name word, stopwords and COIN/TOKEN suffixes kept (rule A measures length on these)."""
-    s = CAMEL.sub(" ", _pre(name))
-    raw = re.split(r"[^0-9a-zÀ-￿]+", _base(s))
-    return [_fold("".join(ch for ch in t if ch.isalnum())) for t in raw if t and any(ch.isalnum() for ch in t)]
+def name_letters(name):
+    """Every letter and digit of the name, joined, then folded once (rule I): separators, case and the camelCase
+    split cannot change it, and rn/vv cannot straddle a split. Stopwords are kept."""
+    raw = re.split(r"[^0-9a-zÀ-￿]+", _base(_pre(name)))
+    return _fold("".join(ch for t in raw for ch in t if ch.isalnum()))
 
 
-# Stopwords and suffixes compared in folded form (rule B folds L to I: OFFICIAL -> OFFICIAI, SOL -> SOI).
-_STOP_FOLDED = frozenset(_fold(w.lower()) for w in STOPWORDS)
-_SUFFIXES_FOLDED = tuple(_fold(w.lower()) for w in SUFFIXES)
+# Rule I's affixes, in folded form (L reads as I: OFFICIAL -> OFFICIAI, SOLANA -> SOIANA).
+_LEAD = tuple(_fold(w) for w in ("the", "official"))
+_TRAIL = tuple(sorted((_fold(w) for w in ("coin", "token", "official", "solana", "cto")), key=len, reverse=True))
 
 
-def name_tokens(name):
-    """Folded name tokens, stopwords removed, COIN/TOKEN suffixes split off."""
-    out = []
-    for t in name_words(name):
-        for suf in _SUFFIXES_FOLDED:
-            if t.endswith(suf) and len(t) > len(suf):
-                out.append(t[: -len(suf)])
-                t = suf
-        if t not in _STOP_FOLDED:
-            out.append(t)
-    return out
+def _strip_affixes(s):
+    """A leading THE or OFFICIAL (only while 4+ letters remain) and any trailing COIN, TOKEN, OFFICIAL, SOLANA or
+    CTO, repeatedly. Interior words are kept: "Swimming in the Money" and "Swimming in Money" differ."""
+    changed = True
+    while changed:
+        changed = False
+        for w in _TRAIL:   # trailing first, so "Theory Coin" keys like "Theory"
+            if s.endswith(w) and len(s) > len(w):
+                s, changed = s[: -len(w)], True
+        for w in _LEAD:
+            if s.startswith(w) and len(s) - len(w) >= 4:
+                s, changed = s[len(w):], True
+    return s
 
 
 def name_key(name):
-    return "".join(name_tokens(name))
+    return _strip_affixes(name_letters(name))
 
 
 def _key_string(sk, nk, full):
-    """The routing key. Class N over the folded name when the folded name *including* stopwords and suffixes has at
-    least NAME_EQUAL_MIN_LEN characters (rule A: so "Bitcoin"/BTC and "Bitcoin"/BITCOIN share a key); else class P
-    over (symbol, name) when both are non-empty; else none."""
+    """The routing key. Class N over the name key when the folded name *before* affixes are stripped has at least
+    NAME_EQUAL_MIN_LEN characters (rule A: so "Bitcoin"/BTC and "Bitcoin"/BITCOIN share a key); else class P over
+    (symbol, name) when both are non-empty; else none."""
     if nk and len(full) >= NAME_EQUAL_MIN_LEN:
         return "N\0" + nk
     if nk and sk:
@@ -137,9 +153,9 @@ def _key_string(sk, nk, full):
 
 @lru_cache(maxsize=65536)
 def ident(name, symbol):
-    nt = name_tokens(name)
-    sk, nk, full = symbol_key(symbol), "".join(nt), "".join(name_words(name))
-    return {"sk": sk, "nk": nk, "nt": frozenset(nt), "full": full, "key": _key_string(sk, nk, full)}
+    full = name_letters(name)
+    sk, nk = symbol_key(symbol), _strip_affixes(full)
+    return {"sk": sk, "nk": nk, "full": full, "key": _key_string(sk, nk, full)}
 
 
 # ---- the v1 equality tiers ------------------------------------------------------------------------

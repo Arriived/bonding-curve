@@ -565,3 +565,54 @@ that mixes scripts, transliteration for a token in one script. That has not been
 case ("Lost<ZWJ>ThePlot"), which I already closes.
 
 The live rule is unchanged. Unit tests 120/120.
+
+## 20. Rules I and C adopted (owner ruling, 7 November 2026); runtime image fix
+
+**Ruling:** adopt I and C as measured in §19.
+
+**Rule I (split-invariant affixes):**
+- The name key is every letter and digit of the name, joined, then folded once (`rules.name_letters`).
+- Then, repeatedly:
+  - a trailing COIN, TOKEN, OFFICIAL, SOLANA or CTO is removed;
+  - then a leading THE or OFFICIAL is removed, but only while 4 or more letters remain.
+- Interior words stay: "Swimming in the Money" ≠ "Swimming in Money".
+- Rule A is unchanged: the key class is decided on the joined name before stripping.
+- Stopwords are no longer removed per token. `STOPWORDS`, `SUFFIXES` and `CAMEL` remain only for the replay of
+  earlier rules.
+
+**Rule C (transliteration):**
+- After rule B, every remaining non-ASCII letter or digit becomes its anyascii 0.3.3 transliteration.
+- anyascii is now a runtime dependency, pinned in `requirements.txt` (wheel SHA-256 `f5ab5e53…dee7a`).
+- `check_unicode` refuses any other anyascii version, as it refuses other Unicode tables.
+
+**Correction, my own bug, caught before push:** my first implementation of I stripped the leading THE before the
+trailing COIN. So "Theory Coin" keyed ORY while "Theory" keyed THEORY. Trailing words now go first, in the service,
+the verifier and the candidate replay. The §19 numbers were re-measured with the fix and did not change.
+
+**Measured with the live code** (`RULE_CANDIDATES.md`, `EVASION_BENCHMARK.md`):
+- The service row equals the A + B + I + C row: 1,225 rooms, 1,731 routed, precision 99.8%, recall 87.3%, recall of
+  certain vamps 99.4%.
+- Disguises keeping the key: 95.4%, against 84.0% under A + B. Case and spacing variants: 100%.
+- The benchmark asserts that the service key equals `rule_candidates.py`'s A + B + I + C on all 81,579 variants, in both modes.
+- `slug_coverage.py`: 0 of 16 routed pair classes lack an on-chain floor.
+
+**Other changes:**
+- **Verifier** (`verify_decision.py`): implements I and C independently on the research fold.
+- **Tests:**
+  - `test_parity_with_research_normalisation` is now "research fold plus B, C and I".
+  - New: `test_rules_i_and_c_route_the_measured_cases`, including the measured costs and known escapes.
+  - New: `test_service_refuses_other_anyascii_versions`.
+  - The evasion floors were raised to the new counts.
+- **Devnet smoke key port** (program branch): implements I for plain ASCII names. Four new vectors: "Bunker Net",
+  "The Official Doors Coin", "Theory CTO Coin" and "tHe rUnNeR".
+
+**Runtime image bug (found while checking packaging):**
+- Since rule B (§18), `rules.py` reads `data/confusables_ascii.json` at import.
+- The Dockerfile's runtime stage copied only `matcher_service/` and `idl/`, so the production image would have failed
+  at import. The test stage copies the whole directory, so the image build passed and hid it.
+- Fixed: the runtime stage copies `data/`.
+- Verified by reproducing the runtime layout. Without `data/` the import raises FileNotFoundError; with it,
+  `check_unicode()` passes. Docker itself could not run in this environment (no daemon), so the image was not built.
+
+**Devnet consequence:** as in §18, NameLocks created earlier on devnet for names whose key changed are orphaned
+harmlessly. The smoke names' keys did not change. Nothing exists on mainnet.

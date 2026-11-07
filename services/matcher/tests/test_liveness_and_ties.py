@@ -176,7 +176,7 @@ def test_doors_carry_no_name_key():
 
 
 def test_launch_without_a_name_key():
-    d = decide(FakeSnapshot([], NOW), "The Official Coin", "X", "")
+    d = decide(FakeSnapshot([], NOW), "🐸 🚀 !!", "X", "")
     assert (d.kind, d.name_key) == ("new_room", "")
 
 
