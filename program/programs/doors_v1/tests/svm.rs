@@ -1831,7 +1831,7 @@ fn name_lock_one_key_one_live_room() {
 fn fold_and_integer_math_match_reference_vectors() {
     use doors_v1::{math::*, state::fold};
     assert_eq!(fold(b"rn-vv 0134578"), b"MWOIEASTB");
-    assert_eq!(fold("Ã©rn-vv 0".as_bytes()), "Ã©RNVVO".as_bytes());
+    assert_eq!(fold("ÃƒÂ©rn-vv 0".as_bytes()), "ÃƒÂ©RNVVO".as_bytes());
     let vs = 30_000_852_995;
     let vt = 1_073_025_606_000_000;
     let mut seed = 0x381f_b84b_b9e7_2e01u64;
@@ -2876,27 +2876,104 @@ fn launch_instruction_trace_budget() {
         }
     };
     let mut rows = Vec::new();
-    for (prefunded, price) in [(false, false), (false, true), (true, false), (true, true)] {
-        let mut f = Fixture::empty(0);
-        let mut l = launch("Trace room");
-        l.first_buy_lamports = 1_010_000_000;
-        let ix = f.create_ix(l, None);
+    let mut measure = |f: &mut Fixture, ix, shape, first_buy, prefunded, price| {
         if prefunded {
-            prefund(&mut f, &ix);
+            prefund(f, &ix);
         }
-        let (ok, invokes, cu, err) = shaped(&mut f, ix, price);
-        rows.push(json!({"instruction":"create_room","first_buy":true,"prefunded":prefunded,
-            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"transaction_cu":cu,"error":err}));
-        let mut g = Fixture::new(0);
-        let mut l = launch("Trace door");
-        l.first_buy_lamports = 101_000_000;
-        let ix = g.open_ix(l, None);
-        if prefunded {
-            prefund(&mut g, &ix);
+        let (ok, invokes, cu, err) = shaped(f, ix, price);
+        rows.push(
+            json!({"instruction": shape, "first_buy": first_buy, "prefunded": prefunded,
+            "priority_fee_instruction": price, "succeeded": ok, "logged_invocations": invokes,
+            "transaction_cu": cu, "error": err}),
+        );
+    };
+    for prefunded in [false, true] {
+        for price in [false, true] {
+            for first_buy in [false, true] {
+                let buy = if first_buy { 1_010_000_000 } else { 0 };
+                let mut f = Fixture::empty(0);
+                let mut room_launch = launch("Trace room");
+                room_launch.first_buy_lamports = buy;
+                let ix = f.create_ix(room_launch, None);
+                measure(&mut f, ix, "create_room", first_buy, prefunded, price);
+
+                let mut f = Fixture::new(0);
+                let mut door_launch = launch("Trace door");
+                door_launch.first_buy_lamports = buy;
+                let ix = f.open_ix(door_launch, None);
+                measure(&mut f, ix, "open_door", first_buy, prefunded, price);
+            }
+
+            for distinct_holders in [false, true] {
+                let mut f = Fixture::new(0);
+                let slug_holder = f.room;
+                let mut input = launch("First room");
+                let name_key = Fixture::name_key(&input);
+                let name_lock = p(&[b"name", &name_key]);
+                if distinct_holders {
+                    // Create a second room with a distinct slug and the shared matcher name
+                    // key after releasing the first name lock.
+                    f.time(3600);
+                    let release = instr(
+                        a::ReleaseName {
+                            caller: f.user.pubkey(),
+                            config: f.cfg,
+                            room: slug_holder,
+                            name_lock,
+                        },
+                        ix::ReleaseName { name_key },
+                    );
+                    f.send(release, false, "release_name");
+                    f.rid = 0x7a07_3d1a_ec3c_7eb1;
+                    f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+                    f.doors.clear();
+                    let mut second = input.clone();
+                    second.symbol = "PAIR".into();
+                    let ix = f.create_ix_named(second, None, Some(name_key), Some(name_lock), None);
+                    f.send(ix, true, "trace_setup_name_holder");
+                }
+                let name_holder = f.room;
+                f.time(3600);
+                f.rid = 0x15a3_d3e6_6c2c_ff4d;
+                f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+                f.doors.clear();
+                input.first_buy_lamports = 1_010_000_000;
+                let ix = f.create_ix_named(
+                    input,
+                    Some(slug_holder),
+                    Some(name_key),
+                    Some(name_lock),
+                    Some(name_holder),
+                );
+                let shape = if distinct_holders {
+                    "create_room_split_takeover"
+                } else {
+                    "create_room_takeover"
+                };
+                measure(&mut f, ix, shape, true, prefunded, price);
+            }
+
+            let mut f = Fixture::new(0);
+            let old = f.room;
+            f.time(3600);
+            f.rid = 0x26d3_9607_f3ac_91a2;
+            f.room = p(&[b"room", &f.rid.to_le_bytes()]);
+            f.doors.clear();
+            f.create(launch("Trace live room"), None);
+            f.trade(None, true, 1_010_000);
+            assert!(f.r().pending_reserve_sol > 0);
+            let mut input = launch("First room");
+            input.first_buy_lamports = 1_010_000_000;
+            let ix = f.open_ix(input, Some(old));
+            measure(
+                &mut f,
+                ix,
+                "open_door_takeover_with_retirement",
+                true,
+                prefunded,
+                price,
+            );
         }
-        let (ok, invokes, cu, err) = shaped(&mut g, ix, price);
-        rows.push(json!({"instruction":"open_door","first_buy":true,"prefunded":prefunded,
-            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"transaction_cu":cu,"error":err}));
     }
     for r in &rows {
         println!("TRACE {r}");
@@ -2910,6 +2987,7 @@ fn launch_instruction_trace_budget() {
         rows.iter()
             .find(|r| {
                 r["instruction"] == ins
+                    && r["first_buy"] == true
                     && r["prefunded"] == pre
                     && r["priority_fee_instruction"] == price
             })
@@ -2920,6 +2998,7 @@ fn launch_instruction_trace_budget() {
     for r in &rows {
         assert!(r["succeeded"].as_bool().unwrap(), "{r}");
         assert!(r["logged_invocations"].as_u64().unwrap() <= 64 - 12, "{r}");
+        assert!(r["transaction_cu"].as_u64().unwrap() <= 400_000, "{r}");
     }
     for ins in ["create_room", "open_door"] {
         for price in [false, true] {

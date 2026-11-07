@@ -34,7 +34,8 @@ const DEFAULT_RPC: &str = "https://api.devnet.solana.com";
 fn rpc_url() -> String {
     std::env::var("DOORS_RPC").unwrap_or_else(|_| DEFAULT_RPC.to_string())
 }
-const CU_LIMIT: u32 = 1_400_000; // the same limit the SVM tests request
+const CU_LIMIT: u32 = 400_000;
+const CU_PRICE: u64 = 1; // micro-lamports per CU
 const T22: Pubkey = spl_token_2022_interface::ID;
 const CLASSIC: Pubkey = spl_token_interface::ID;
 const WSOL: Pubkey = spl_token_interface::native_mint::ID;
@@ -134,7 +135,10 @@ impl Chain {
         payer: &Keypair,
         signers: &[&Keypair],
     ) -> Result<Transaction> {
-        let mut all = vec![ComputeBudgetInstruction::set_compute_unit_limit(CU_LIMIT)];
+        let mut all = vec![
+            ComputeBudgetInstruction::set_compute_unit_limit(CU_LIMIT),
+            ComputeBudgetInstruction::set_compute_unit_price(CU_PRICE),
+        ];
         all.extend_from_slice(ixs);
         let bh = self.blockhash()?;
         let mut v: Vec<&Keypair> = vec![payer];
@@ -156,6 +160,11 @@ impl Chain {
         skip_preflight: bool,
     ) -> Result<std::result::Result<Signature, String>> {
         let wire = bincode::serialize(t)?;
+        anyhow::ensure!(
+            wire.len() <= 1232,
+            "transaction exceeds packet size: {} bytes",
+            wire.len()
+        );
         let b64 = b64_encode(&wire);
         let params = json!([b64, {"encoding": "base64", "skipPreflight": skip_preflight, "preflightCommitment": "confirmed", "maxRetries": 5}]);
         match self.rpc("sendTransaction", params) {
@@ -265,9 +274,17 @@ impl Chain {
             .iter()
             .find(|l| l.contains("Error Code:") || l.contains("failed:"))
             .cloned();
-        if expect_ok && err.is_some() {
-            bail!("{name} failed: {err:?} {error_log:?}");
-        }
+        let top_level = found["transaction"]["message"]["instructions"]
+            .as_array()
+            .ok_or_else(|| anyhow!("{name}: missing transaction instructions for {sig}"))?
+            .len();
+        let inner = meta["innerInstructions"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|group| group["instructions"].as_array().map_or(0, Vec::len))
+            .sum::<usize>();
+        let trace_entries = top_level + inner;
         let events: Vec<String> = logs
             .iter()
             .filter_map(|l| l.strip_prefix("Program data: ").map(String::from))
@@ -275,7 +292,8 @@ impl Chain {
         let rec = json!({
             "name": name, "signature": sig.to_string(), "slot": found["slot"], "block_time": found["blockTime"],
             "landed": true, "ok": err.is_none(), "program_cu": program_cu, "transaction_cu": meta["computeUnitsConsumed"],
-            "fee_lamports": meta["fee"], "error": err, "error_log": error_log, "events": events,
+            "fee_lamports": meta["fee"], "trace_entries": trace_entries,
+            "error": err, "error_log": error_log, "events": events,
         });
         println!(
             "{name}: slot {} sig {} program_cu {:?} ok {}",
@@ -285,6 +303,19 @@ impl Chain {
             err.is_none()
         );
         self.log.push(rec.clone());
+        if expect_ok && err.is_some() {
+            bail!("{name} failed: {sig} {err:?} {error_log:?}");
+        }
+        if program_cu.is_some() && expect_ok {
+            anyhow::ensure!(
+                meta["innerInstructions"].is_array()
+                    && meta["computeUnitsConsumed"]
+                        .as_u64()
+                        .is_some_and(|cu| cu <= u64::from(CU_LIMIT))
+                    && trace_entries <= 52,
+                "{name}: live limits exceeded or unavailable for {sig}: {rec}"
+            );
+        }
         Ok(rec)
     }
     fn account_at(&self, k: &Pubkey) -> Result<(u64, Option<Account>)> {
@@ -729,22 +760,35 @@ impl Ctx {
             token_program: T22,
             system_program: SYS,
         };
-        if buy {
-            instr(
+        match (door.is_some(), buy) {
+            (true, true) => instr(
+                ac,
+                ix::BuyDoor {
+                    lamports_in: n,
+                    min_door_tokens_out: 0,
+                },
+            ),
+            (true, false) => instr(
+                ac,
+                ix::SellDoor {
+                    door_tokens_in: n,
+                    min_lamports_out: 0,
+                },
+            ),
+            (false, true) => instr(
                 ac,
                 ix::Buy {
                     lamports_in: n,
                     min_tokens_out: 0,
                 },
-            )
-        } else {
-            instr(
+            ),
+            (false, false) => instr(
                 ac,
                 ix::Sell {
                     tokens_in: n,
                     min_lamports_out: 0,
                 },
-            )
+            ),
         }
     }
     fn swap_ix(&self, r: &Room, user: Pubkey, x: &DoorKeys, y: &DoorKeys, n: u64) -> Instruction {
@@ -1299,6 +1343,8 @@ fn selftest(dir: &str) -> Result<()> {
     Ok(())
 }
 
+include!("paired_doors.rs");
+
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let arg = |i: usize| {
@@ -1312,7 +1358,9 @@ fn main() -> Result<()> {
         Some("smoke") => smoke(arg(2)?, arg(3)?),
         Some("fail") => fail(arg(2)?, arg(3)?, arg(4)?),
         Some("selftest") => selftest(arg(2)?),
-        _ => bail!("usage: doors-devnet init|config|smoke|fail ..."),
+        Some("paired") => run_paired(arg(2)?, arg(3)?),
+        Some("paired-cleanup") => resume_paired_cleanup(arg(2)?, arg(3)?, arg(4)?),
+        _ => bail!("usage: doors-devnet init|config|smoke|fail|selftest|paired|paired-cleanup ..."),
     }
 }
 
