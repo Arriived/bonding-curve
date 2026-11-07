@@ -833,3 +833,11 @@ creation comparison. The first review build's IDL comparison caught an
 extra trailing newline in the edited IDL. The committed IDL is copied from
 the exact Anchor output, and comparison plus layout checks run before SBF
 execution on this branch.
+
+
+The first complete runtime pass accepted the new claim regressions and
+all property iterations. Its rent helper then tried to trade through a
+fixture whose direct rent-only launches had not populated the test
+client's door list. First-swap vault rent now uses a normal trading
+fixture. The rent-only room and door measurements retain their original
+metadata and account-balance method.

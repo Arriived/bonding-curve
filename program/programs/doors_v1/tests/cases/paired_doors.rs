@@ -332,11 +332,13 @@ fn paired_door_trade_limits_and_launch_rent() {
         .filter_map(|key| f.svm.get_account(key))
         .map(|account| account.lamports)
         .sum();
-    f.trade(Some(0), true, 1_010_000_000);
-    f.swap(0, 1, f.balance(f.doors[0].user) / 2);
-    let first_swap_vault_rent = f
+    let mut swap_fixture = Fixture::new(0);
+    swap_fixture.open(launch("First swap rent destination"));
+    swap_fixture.trade(Some(0), true, 1_010_000_000);
+    swap_fixture.swap(0, 1, swap_fixture.balance(swap_fixture.doors[0].user) / 2);
+    let first_swap_vault_rent = swap_fixture
         .svm
-        .get_account(&p(&[b"swap_fees", f.room.as_ref()]))
+        .get_account(&p(&[b"swap_fees", swap_fixture.room.as_ref()]))
         .unwrap()
         .lamports;
     let rent = json!({"room_with_door_0_lamports": room_rent,
