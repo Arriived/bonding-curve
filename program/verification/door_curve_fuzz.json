@@ -1,0 +1,15 @@
+{
+  "iterations": 400000,
+  "buys_checked": 272933,
+  "supply_refusals": 127067,
+  "round_trip_gains": 0,
+  "non_monotone": 0,
+  "backing_deficits": 0,
+  "max_rounding_kept_base": 19995,
+  "swap_round_trips": 19704,
+  "swap_gains": 0,
+  "swap_insolvent": 0,
+  "split_buys": 9998,
+  "split_buy_gains": 0,
+  "split_sell_differences": 0
+}

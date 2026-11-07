@@ -29,7 +29,7 @@ def main():
     launch_trace = load("trace_budget.json")["rows"]
     spl = load("paired-spl.json")
     print("# Paired doors prototype measurements")
-    print(f"\nDeployed SPL binary read verified at finalized slot {spl['context_slot']:,}.")
+    print(f"\nPinned SPL bytes verified offline; original snapshot slot {spl['context_slot']:,}.")
     print("The supplied single-curve vamp reference is 4.95 SOL.")
     print("\n| Room SOL | Dump | A out (SOL) | Reference | Difference | After buys | After A | Cash-out | Rotation |")
     print("|---:|---|---:|---:|---:|---:|---:|---:|---:|")

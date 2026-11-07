@@ -1,5 +1,138 @@
 # Doors v1: pre-audit security self-review
 
+## Paired-program review continuation, 7 November 2026
+
+Scope starts at program `2bf6f40` and service `9750e03`. This remains the
+authors' own review. The current continuation uses offline SBF execution and
+public CI evidence. It performs no deployment and reads no production keys.
+The older sections below describe earlier program revisions and measurements.
+
+### Launch spot manipulation: fixed with owner approval
+
+The paired door anchors its room-token curve at the room spot at creation.
+Consequently a room buy just before a launch can increase the number of door
+tokens delivered while reducing their room-token value. The old token minimum
+does not protect that value. `review_door_open_front_run.json` records a
+20 SOL front-run yielding 0.217061544 SOL attacker net and reducing the victim's
+immediate exit by 0.549648652 SOL, despite its 2% token minimum.
+
+The approved `Launch.max_room_price: u128` appends 16 signed bytes. Units are
+lamports per room base unit times 10^18; zero disables the bound. Both launch
+paths compare the exact pre-buy spot with it, before pending settlement and
+door initialization. Fraction comparison uses Euclid's algorithm, avoiding
+overflowing cross products. The service fills an omitted bound from the user's
+slippage choice and quotes the two legs in door tokens. An explicit token
+minimum leaves the room-price bound enabled. The independent verifier ports
+both legs separately and reconstructs pending fees and sold amounts from events.
+
+The runtime regression checks all three original front-run sizes: 5, 20 and
+60 SOL. Each is refused at 2%; each is accepted at zero. Unmoved prices still
+fill, and creation checks the same bound. A temporary CI negative control
+disables only the two price checks and requires this regression to fail, then
+restores the protected program before running the full suite. No deliberately
+failing test is committed.
+
+The blocking service quote previously returned room units: the reference
+1.01 SOL first buy in the 10.1 SOL seeded room now matches SBF exactly at
+33,699,309,828,108 door base units. Active IDL and layout pins are explicitly
+named `paired`, preserving the historical deployed pins. Room/Door lengths are
+1,331/360 bytes. The program ID comes from the active IDL. Door sweeps select
+`sell_door`; Trade and swap events use the paired layouts. Name keys and
+matching rules are unchanged. Legacy maximum-metadata creation now fits only
+a 35-byte URI, or 3 bytes for a one-holder takeover, with a priority fee.
+Oversized transactions are refused; v0 transactions remain an owner choice.
+
+### Name-lock race and resource availability
+
+The same-slot test uses equal name keys with different symbols and thus distinct
+SlugLocks. Both decisions describe the earlier snapshot without a former name
+holder. One create succeeds; the second fails atomically, leaves no room and
+does not move the lock. No program change is needed for this existing guarantee.
+
+The resource fixture exercises 33 permanent doors per room, maximum metadata,
+1 and 80 SOL starting depth, pending retirement, a fresh or prefunded fee vault,
+and an existing vault. Every held door is sold in full and every door/protocol
+swap credit is claimed. It includes compute-limit, priority-fee and heap-frame
+instructions when counting the 64-entry trace. `heap_probe.py` now also measures
+both fee claims and the prefunded first swap, and requires nonzero headroom for
+every measured instruction. Measurements and final run references follow below.
+
+### Liveness: measured behaviour, thresholds remain an owner decision
+
+An ordinary operator who owns its door and fee recipient can recover the 60%
+door share of wash fees. Default ongoing volume is 5 SOL per rolling day; the
+1% fee therefore leaves approximately 0.02 SOL/day to the protocol. Four trades
+spaced six hours apart meet the idle gate. A day-end claim can share a sell
+transaction. The SBF fixture bootstraps the initial volume window, retains the
+0.5 SOL reserve floor, and measures two further days without changing a gate.
+Setup rent, bootstrap fees and recoverable trading capital are separate from
+ongoing cost. This replaces the old 0.05 SOL/day estimate, which omitted the
+operator's own door-fee rebate. Final exact measured amounts follow below.
+
+This is paid name squatting and routing influence, not a direct protocol fund
+withdrawal. Raising volume/reserve thresholds, changing the idle window, adding
+a minimum unrecoverable upkeep charge, or accepting current economics are owner
+options. Recommendation: document the measured price first and decide acceptable
+name-lock carrying cost explicitly. No threshold or fee rule is changed here.
+
+### Revived former NameLock holder: owner decision, no routing change
+
+Current behaviour is reproduced by passing program and service tests. A room
+can go dead, lose its NameLock to a successor, resume trading and become live
+again. Text matching can choose the revived room's greater depth while the
+NameLock still points to the live successor. The program accepts that signed
+door route. Exact-identity SlugLock routing can also favour a different holder.
+
+Options:
+
+| Option | Benefit | Cost or tradeoff |
+|---|---|---|
+| Retain depth-based routing | Keeps current liquidity preference | NameLock ownership does not imply exclusive future text flow |
+| Prefer the live current NameLock holder for text matches | Gives succession stable meaning and prevents a former holder recapturing text flow by revival | May route to a shallower room; exact-identity SlugLock precedence needs an explicit rule |
+| Make takeover irreversible for the former room's narrative | Strongest exclusivity | Requires a new on-chain lifecycle rule and an explicit treatment of permanent doors and existing holders |
+
+Recommendation: prefer the live current NameLock holder for text routing, while
+preserving existing holders' exits. The owner must decide how this interacts
+with an exact-identity floor before implementation. Current depth preference
+is recorded as a passing test, with no xfail, ignored wish or routing fix.
+The existing SBF revival probe records the wash cost, setup rent, recoverable
+reserve and third-party-flow payoff; no authority compromise is required.
+
+### Admin-selectable 120 SOL stress cap: owner decision, no cap change
+
+The unchanged Config validator permits a normal authorized admin to select
+120 SOL for newly created rooms. Existing rooms retain their immutable cap.
+The supply-exhaustion stress fixture is isolated as a test, but its settings
+are not prohibited in an ordinary build. A passing SBF test records this fact.
+
+| Option | Benefit | Cost or tradeoff |
+|---|---|---|
+| Retain the validator | Full admin flexibility | The production profile depends on operational discipline |
+| Bound production Config to the approved economic envelope | Enforces the intended profile on-chain | Requires an owner-selected upper bound and a future upgrade for wider curves |
+| Use a separate stress build/program identity | Keeps stress reachability while separating production | Additional build/pin discipline; still needs a production validator rule |
+
+Recommendation: choose a production economic envelope and enforce it in the
+validator, with stress settings behind a separate test build. This changes admin
+policy, so this review implements neither restriction. Attack cost is one admin
+transaction (5,000 lamports without priority fee); an outsider has no such
+permission. There is no demonstrated direct withdrawal payoff. The risk is
+selection of economics outside the default profile, including reachable supply
+exhaustion. Existing holder exits remain tested under that stress profile.
+
+### M-3 and evasion coverage
+
+Existing authentication already refuses replayed requests. Added tests alter
+every signed field, including the new price field, and check concurrent replay:
+exactly one of 32 attempts is accepted. Alteration does not consume the genuine
+signature. The HTTP replay and victim-rate-limit regressions remain passing.
+
+The evasion benchmark now composes mixed alphabets inside single words and
+across words, and reports a separate class for actual UTF-8 truncation at the
+32-byte boundary. It never splits a code point into invalid UTF-8. The unchanged
+rules are checked against the independent candidate implementation. These are
+recall measurements, not intent labels or matching-precision guarantees.
+
+
 5 November 2026. Branches `claude/program-v1` (program) and `claude/matcher-service`
 (off-chain matcher). Deployed to devnet only (5 November 2026, slot 518,934,300; `DEPLOYMENT.md` §5); nothing on mainnet.
 

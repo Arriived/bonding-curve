@@ -73,6 +73,7 @@ jobs:
         run: |
           python3 scripts/check_paired_completion.py
           (cd test-fixtures/spl && sha256sum -c "$GITHUB_WORKSPACE/program/devnet/SPL_PROGRAMS.sha256")
+          cp test-fixtures/spl/manifest.json verification/paired-spl.json
           echo "DOORS_SVM_CLUSTER_PROGRAMS=$GITHUB_WORKSPACE/program/test-fixtures/spl" >> "$GITHUB_ENV"
       - name: Prove the launch regression fails with the bound disabled
         if: github.ref_name == 'claude/paired-doors'

@@ -140,7 +140,7 @@ fn review_resource_send(f: &mut Fixture, ix: Instruction, name: &str) -> Value {
         ComputeBudgetInstruction::request_heap_frame(32_768), ix,
     ], Some(&f.user.pubkey())), f.svm.latest_blockhash());
     let meta = f.svm.send_transaction(tx).expect("bounded exit/claim must execute");
-    let trace = 3 + meta.logs.iter().filter(|l| l.contains(" invoke [")).count();
+    let trace = meta.logs.iter().filter(|l| l.contains(" invoke [")).count();
     assert!(trace <= 64 && meta.compute_units_consumed < 400_000);
     f.audit();
     json!({"instruction":name,"transaction_cu":meta.compute_units_consumed,"trace_entries":trace})
@@ -199,6 +199,11 @@ fn review_default_liveness_cost_self_owned_door() {
     f.send(instr(a::UpdateConfig {admin:f.user.pubkey(),config:f.cfg},
         ix::UpdateConfig {settings,new_admin:f.user.pubkey()}), false,"separate_protocol");
     f.trade(Some(0), true, 505_000_000); // 0.5 SOL recoverable floor
+    let floor_tokens = f.balance(f.doors[0].user);
+    // Bootstrap the first rolling window before the one-hour grace ends.
+    // This one-off volume is excluded from ongoing cost below.
+    f.trade(Some(0), true, 2_272_500_000);
+    f.trade(Some(0), false, f.balance(f.doors[0].user) - floor_tokens);
     f.claim(0, 0);
     let cfg = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
     let protocol_before = f.r().protocol_accrued_sol;
@@ -209,6 +214,7 @@ fn review_default_liveness_cost_self_owned_door() {
     let mut incremental = 0;
     for step in 0..8 {
         f.time(21_600);
+        assert!(f.r().live(&cfg, f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
         let before_volume = f.r().volume_gross;
         if step % 2 == 0 {
             let before = f.balance(f.doors[0].user);
@@ -273,4 +279,23 @@ fn review_door_open_room_front_run_versus_min_tokens_out() {
             "runs": rows
         }),
     );
+}
+
+#[test]
+fn review_price_fraction_comparison_covers_overflow_and_equality() {
+    use doors_v1::math::fraction_le;
+    for a in 0u128..20 {
+        for b in 1u128..20 {
+            for c in 0u128..20 {
+                for d in 1u128..20 {
+                    assert_eq!(fraction_le(a,b,c,d), a*d <= c*b);
+                }
+            }
+        }
+    }
+    let m = u128::MAX;
+    assert!(fraction_le(m-1,m,m,m));
+    assert!(!fraction_le(m,m-1,m,m));
+    assert!(fraction_le(m,m,m,m));
+    assert!(fraction_le(0,m,0,1));
 }

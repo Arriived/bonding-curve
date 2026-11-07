@@ -881,3 +881,52 @@ fee-vault rent was 1,488,440 lamports, paid by the swapping user. The final
 artifact's source hashes, emitted IDL and pinned ELF match the reviewed
 working tree, and the economic scenario output matches the rebased
 baseline exactly. Devnet deployment remains held for the owner.
+
+
+## Paired review continuation (7 November 2026)
+
+The review starts from program `2bf6f40` and service `9750e03`. Preserved local
+review drafts remain saved separately; owner decisions are represented by passing
+current-behaviour assertions and review notes, without deliberately failing tests.
+
+- The owner approved a separate launch room-price bound. A paired token minimum
+  does not bound the room value of a newly anchored door: the original 20 SOL
+  front-run case earns 0.217061544 SOL after transaction fees and cuts the victim's
+  immediate exit by 0.549648652 SOL. Launch now appends `max_room_price: u128`,
+  scale 10^18 lamports per room base unit, zero disabled. Both launch paths check
+  the exact pre-buy spot. A temporary disabled-check negative control fails the
+  regression before the protected SBF suite runs.
+- The service's first-buy minimum was in room tokens. It now quotes both curves
+  and returns door base units, with an independent verifier and exact SBF vector
+  of 33,699,309,828,108 for the recorded 1.01 SOL buy. Layouts, IDL, event decoder,
+  sweep instruction and program ID are ported. Active pins are named `paired`,
+  avoiding a claim that this interface has been deployed. The unchanged NameLock
+  key still depends only on metadata; its byte offset follows the appended field.
+- The extra 16 bytes reduce the maximum legacy URI at maximum name/symbol length
+  with priority fee from 51 to 35 for fresh creation and 19 to 3 for a one-holder
+  takeover. Oversized requests still receive a refusal. v0 support is not added.
+- The first continuation CI run stopped at the IDL pin because the manually
+  serialized JSON retained one trailing newline that Anchor did not emit. The
+  committed interface is now copied byte-for-byte from emitted output.
+- The next run passed the price regression and 10,000 mixed operations, but the
+  same-slot test expected Holder while its helper refreshed the former holder,
+  producing Live. The fixture now supplies the shared earlier snapshot explicitly.
+  This is a test correction; the program already allowed only one create.
+- Pinned SPL executables were recovered from the local archived test fixture and
+  checked against the existing hashes. CI uses those versioned bytes offline.
+  It no longer fetches a live test-cluster snapshot for paired verification.
+- The heap probe now includes both swap-fee claims and prefunded first-swap vault
+  initialization. The resource fixture exercises late permanent doors, pending
+  settlement and full exit/claim paths with priority and heap-frame instructions.
+- The old 0.05 SOL/day liveness estimate omitted the self-owned door's 60% fee
+  rebate. Ongoing unrecoverable protocol fees are approximately 0.02 SOL/day;
+  final exact SBF measurements, network fees and startup capital are recorded in
+  SECURITY_REVIEW.md. Thresholds remain an owner decision.
+- Revival after NameLock succession and the ordinary admin's ability to set the
+  120 SOL cap remain current behaviour. Options and recommendations are written
+  in SECURITY_REVIEW.md; neither routing policy nor Config validation is changed.
+- The first service parity regression failed at 19,628,248,343,287 room units
+  versus the SBF door-unit vector. Signature alteration/concurrent replay tests
+  already passed; no new replay vulnerability was found. The benchmark adds
+  mixed-script composition and actual valid-UTF-8 32-byte truncation; rules stay
+  byte-for-byte unchanged.

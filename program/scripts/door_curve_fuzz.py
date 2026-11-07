@@ -165,7 +165,7 @@ def main():
                       max_rounding_kept_base=worst, swap_round_trips=swaps,
                       swap_gains=swap_gain, swap_insolvent=swap_insolvent,
                       split_buys=splits, split_buy_gains=split_gain, split_sell_differences=split_sell_diff)
-        Path(sys.argv[sys.argv.index("--json")+1]).write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8")
+        Path(sys.argv[sys.argv.index("--json")+1]).write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8",newline="\n")
     sys.exit(1 if rt or mono or back or swap_gain or swap_insolvent or split_gain or split_sell_diff else 0)
 
 
