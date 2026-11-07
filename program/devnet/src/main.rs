@@ -867,56 +867,59 @@ fn mint_check(c: &Chain, mint: &Pubkey) -> Result<Value> {
     }))
 }
 
-/// The matcher service's NameLock key (services/matcher rules.name_lock_key) for the plain names this
-/// helper launches: ASCII words of letters and digits separated by single spaces, no stopword, no
-/// COIN/TOKEN suffix, no camelCase, folding to at least 4 characters. For those the service's
-/// normalisation reduces to: per word, lower-case, `rn`->`m` then `vv`->`w`, upper-case, digits
-/// 0 1 3 4 5 7 8 -> O I E A S T B, then L -> I (rule B, 7 November 2026; stopwords compared in that folded
-/// form); words joined; class N. Any other name is refused rather than keyed wrongly. `smoke_key_matches_the_service` pins it to vectors computed with the service's rules.py.
+/// The matcher's NameLock key (services/matcher rules.py `name_lock_key`) for the plain ASCII names the smoke uses
+/// (words of ASCII letters and digits separated by single spaces). Rules B and C rewrite no ASCII letter except '|',
+/// which plain names lack, so for them the service key is rule I alone: every letter joined, lower-case, `rn`->`m`
+/// then `vv`->`w`, upper-case, digits 0 1 3 4 5 7 8 -> O I E A S T B, L -> I; then repeatedly a trailing COIN,
+/// TOKEN, OFFICIAI, SOIANA or CTO and a leading THE or OFFICIAI (while 4+ letters remain) are removed; class N
+/// when the joined name has 4+ letters. Any other name is refused rather than keyed wrongly.
+/// `smoke_key_matches_the_service` pins it to vectors computed with the service's rules.py.
 fn smoke_name_key(name: &str) -> [u8; NAME_KEY_LEN] {
-    // In folded form: L reads as I (OFFICIAL -> OFFICIAI, SOL -> SOI, SOLANA -> SOIANA).
-    const STOP: [&str; 13] = [
-        "THE", "A", "AN", "OF", "ON", "AND", "COIN", "TOKEN", "OFFICIAI", "SOI", "SOIANA", "MEME",
-        "CTO",
-    ];
-    let mut nk = String::new();
+    const TRAIL: [&str; 5] = ["OFFICIAI", "SOIANA", "TOKEN", "COIN", "CTO"]; // longest first, as rules.py
+    const LEAD: [&str; 2] = ["THE", "OFFICIAI"];
     for w in name.split(' ') {
         assert!(
             !w.is_empty() && w.bytes().all(|c| c.is_ascii_alphanumeric()),
             "plain name: {name}"
         );
-        assert!(
-            !w.as_bytes()
-                .windows(2)
-                .any(|p| p[0].is_ascii_lowercase() && p[1].is_ascii_uppercase()),
-            "no camelCase: {name}"
-        );
-        let t = w
-            .to_ascii_lowercase()
-            .replace("rn", "m")
-            .replace("vv", "w")
-            .to_ascii_uppercase();
-        let t: String = t
-            .chars()
-            .map(|c| match c {
-                '0' => 'O',
-                '1' => 'I',
-                '3' => 'E',
-                '4' => 'A',
-                '5' => 'S',
-                '7' => 'T',
-                '8' => 'B',
-                'L' => 'I',
-                c => c,
-            })
-            .collect();
-        assert!(
-            !STOP.contains(&t.as_str()) && !t.ends_with("COIN") && !t.ends_with("TOKEN"),
-            "plain name: {name}"
-        );
-        nk.push_str(&t);
     }
-    assert!(nk.len() >= 4, "class N name: {name}");
+    let full: String = name
+        .replace(' ', "")
+        .to_ascii_lowercase()
+        .replace("rn", "m")
+        .replace("vv", "w")
+        .to_ascii_uppercase()
+        .chars()
+        .map(|c| match c {
+            '0' => 'O',
+            '1' => 'I',
+            '3' => 'E',
+            '4' => 'A',
+            '5' => 'S',
+            '7' => 'T',
+            '8' => 'B',
+            'L' => 'I',
+            c => c,
+        })
+        .collect();
+    let mut nk = full.as_str();
+    let mut changed = true;
+    while changed {
+        changed = false;
+        for w in TRAIL {
+            if nk.len() > w.len() && nk.ends_with(w) {
+                nk = &nk[..nk.len() - w.len()];
+                changed = true;
+            }
+        }
+        for w in LEAD {
+            if nk.len() >= w.len() + 4 && nk.starts_with(w) {
+                nk = &nk[w.len()..];
+                changed = true;
+            }
+        }
+    }
+    assert!(full.len() >= 4 && !nk.is_empty(), "class N name: {name}");
     let h = solana_sha256_hasher::hashv(&[b"doors-v1:name-key:v1\0N\0", nk.as_bytes()]);
     h.to_bytes()[..NAME_KEY_LEN].try_into().unwrap()
 }
@@ -930,6 +933,13 @@ fn smoke_key_matches_the_service() {
         ("Turn Vvave 0137", "008fd9082274f6972df9a3b87cca37be"),
         ("Lilly Bell 71", "a25aa2268e687c6b418cc03c9e363ce2"),
         ("Bull Run Al", "0e74f7d87fe255588ea2f0f4960bb64c"),
+        ("Bunker Net", "97566165cd9c36c571beecff6f3e99e4"), // rule I: rn folds across the space
+        (
+            "The Official Doors Coin",
+            "2b0f846ca2a71d7deb83978481ee88ee",
+        ),
+        ("Theory CTO Coin", "1ea2e36edd691a28558e86ecf2262508"), // trailing words first: THEORY
+        ("tHe rUnNeR", "973ac7359cf00f9645eec92a96407212"),      // case cannot change the key
     ] {
         let got: String = smoke_name_key(name)
             .iter()

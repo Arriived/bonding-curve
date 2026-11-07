@@ -1,5 +1,5 @@
 {
-  "measured_commit": "71d32f3094b0b3149bae95dc1a7bbc7c7b3d6bca",
+  "measured_commit": "295e51e666ccfc807ebe96a0144d3f69183ac0b0",
   "measured_tree": "clean checkout of measured_commit in a temporary worktree",
   "heap_frame_requested_bytes": null,
   "allocator_heap_bytes": 32768,
