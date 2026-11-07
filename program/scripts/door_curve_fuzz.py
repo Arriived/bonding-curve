@@ -14,6 +14,7 @@ The constants are read from math.rs, so the port fails loudly if the program's c
 
 Usage: python3 program/scripts/door_curve_fuzz.py [--iterations N]   (no dependencies; about 30 s at the default)
 """
+import json
 import random
 import re
 import sys
@@ -158,6 +159,13 @@ def main():
           f"max rounding kept {worst:,} base units; sequences with backing below redeemable {back}")
     print(f"swap round trips {swaps:,} (fee {SWAP_FEE_BPS} bps): gains {swap_gain}; insolvent states {swap_insolvent}; "
           f"split buys {splits:,}: pieces beat one buy {split_gain}; split sells differing from one sell {split_sell_diff}")
+    if "--json" in sys.argv:
+        result = dict(iterations=n, buys_checked=n-exh, supply_refusals=exh,
+                      round_trip_gains=rt, non_monotone=mono, backing_deficits=back,
+                      max_rounding_kept_base=worst, swap_round_trips=swaps,
+                      swap_gains=swap_gain, swap_insolvent=swap_insolvent,
+                      split_buys=splits, split_buy_gains=split_gain, split_sell_differences=split_sell_diff)
+        Path(sys.argv[sys.argv.index("--json")+1]).write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8")
     sys.exit(1 if rt or mono or back or swap_gain or swap_insolvent or split_gain or split_sell_diff else 0)
 
 

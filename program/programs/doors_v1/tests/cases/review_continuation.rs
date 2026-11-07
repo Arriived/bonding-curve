@@ -122,7 +122,10 @@ fn review_same_slot_name_lock_allows_exactly_one_create() {
     f.doors.clear();
     let mut second = launch("Same slot narrative");
     second.symbol = "OTHER".into(); // different SlugLock: only NameLock prevents this race
-    let ix = f.create_ix(second, None);
+    // The second request was signed from the same pre-create snapshot, which
+    // supplied no former name holder. Do not let the fixture refresh that account.
+    let ix = f.create_ix_named(second, None, Some(name_key),
+        Some(p(&[b"name", &name_key])), None);
     f.fail_error(ix, true, Some("Holder"));
     assert_eq!(f.svm.get_sysvar::<Clock>().slot, clock.slot);
     assert_eq!(f.name_holder(&name_key), Some(winner));
@@ -201,7 +204,6 @@ fn review_default_liveness_cost_self_owned_door() {
     let protocol_before = f.r().protocol_accrued_sol;
     let wallet_before = lamports_of(&f, &f.user.pubkey());
     let mut volume = 0u128;
-    let mut fee_rebate = 0u64;
     // Four trades/day, spaced at the maximum allowed six-hour interval.
     // Hold the floor position; alternate 1.25 SOL net buys and matching sells.
     let mut incremental = 0;
@@ -210,18 +212,23 @@ fn review_default_liveness_cost_self_owned_door() {
         let before_volume = f.r().volume_gross;
         if step % 2 == 0 {
             let before = f.balance(f.doors[0].user);
-            f.trade(Some(0), true, 1_262_500_001);
+            f.trade(Some(0), true, 1_262_500_000);
             incremental = f.balance(f.doors[0].user) - before;
         } else {
-            f.trade(Some(0), false, incremental);
+            if step % 4 == 3 {
+                let tx = Transaction::new(&[&f.user], Message::new(&[
+                    ComputeBudgetInstruction::set_compute_unit_limit(400_000),
+                    f.trade_ix(Some(0), false, incremental, 0),
+                    f.claim_ix(0, 0, f.user.pubkey()),
+                ], Some(&f.user.pubkey())), f.svm.latest_blockhash());
+                f.svm.send_transaction(tx).unwrap();
+                f.audit();
+                assert_eq!(f.d(0).accrued_sol, 0);
+            } else {
+                f.trade(Some(0), false, incremental);
+            }
         }
         volume += f.r().volume_gross - before_volume;
-        // Claim in the same transaction as the last trade of each day below;
-        // the standalone fixture claim has the same state effect, +5,000 fee.
-        if step % 4 == 3 {
-            fee_rebate += f.d(0).accrued_sol;
-            f.claim(0, 0);
-        }
         if step >= 3 {
             assert!(f.r().live(&cfg, f.svm.get_sysvar::<Clock>().unix_timestamp).unwrap());
         }
@@ -229,10 +236,11 @@ fn review_default_liveness_cost_self_owned_door() {
     }
     let spent = wallet_before - lamports_of(&f, &f.user.pubkey());
     let protocol = f.r().protocol_accrued_sol - protocol_before;
+    assert_eq!(spent, protocol + 40_000);
     review_evidence("liveness_cost", json!({"days":2,"volume_lamports":volume.to_string(),
-        "protocol_fees_lamports":protocol,"door_fees_reclaimed_lamports":fee_rebate,
-        "wallet_cost_with_separate_claims_lamports":spent,"trade_transactions":8,
-        "claim_transactions":2,"minimum_network_fee_per_day_bundled_lamports":20000,
+        "protocol_fees_lamports":protocol,
+        "wallet_cost_with_bundled_claims_lamports":spent,"trade_transactions":8,
+        "claim_instructions_bundled":2,"minimum_network_fee_per_day_bundled_lamports":20000,
         "minimum_daily_cost_lamports":protocol/2+20000,
         "minimum_100_rooms_daily_cost_lamports":(protocol/2+20000)*100,
         "recoverable_floor_per_room_lamports":500_000_000u64}));
