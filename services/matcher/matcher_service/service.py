@@ -4,7 +4,8 @@
   2. key check: signer pubkey == Config.matcher_authority in that snapshot
   3. decide (pure, from the snapshot)
   4. build the transaction from a fresh blockhash, check its size with placeholder signatures
-  5. sign (KMS or dev keyfile); signature verified against the key before use
+  5. sign (KMS or dev keyfile); signature verified against the key before use; the same snapshot is re-checked
+     against the freshness budget after signing, and a stale decision is refused unreleased
   6. persist the decision record; only then return the partially signed transaction
 """
 import base64
@@ -209,6 +210,15 @@ class Service:
             sig = self.signer.sign(msg_bytes)
         except SignerUnavailable as e:
             raise Refusal("signer_unavailable", str(e), 503)
+        # Re-check the snapshot the decision was taken on: building and signing (a KMS round trip) take time, and a
+        # transaction decided on state that has since left the freshness budget must not be released. The signature
+        # is discarded unrecorded; nothing has been returned, so nothing can land.
+        try:
+            freshness_after = snap.check_fresh(self.rpc.slot(), self.cfg.budget)
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot re-read the cluster slot after signing: {e}", 503)
+        except StaleState as e:
+            raise Refusal("stale_state", f"room state left the freshness budget while signing: {e}", 503)
         tx, wire = txbuild.assemble(message, matcher, sig)
         decision_id = str(Signature.from_bytes(sig))
 
@@ -230,7 +240,8 @@ class Service:
             "first_buy_quote": first_buy_quote,
             "launch_min_tokens_out": min_out,
             "state": {"slots": snap.slots, "slot": snap.slot, "clock_unix": snap.clock_unix,
-                      "cluster_slot_at_decision": cluster_slot, "freshness": freshness, "budget": vars(self.cfg.budget),
+                      "cluster_slot_at_decision": cluster_slot, "freshness": freshness,
+                      "freshness_after_signing": freshness_after, "budget": vars(self.cfg.budget),
                       "rooms_total": len(all_rooms),
                       "rooms_digest": hashlib.sha256("\n".join(all_rooms).encode()).hexdigest(),
                       "rooms": [room_view(snap.rooms[i]) for i in sorted(considered)]},

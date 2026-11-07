@@ -163,6 +163,30 @@ def test_old_wall_clock_snapshot_refuses(tmp_path, kp):
     assert e.value.code == "stale_state" and rows(svc) == 0
 
 
+def test_snapshot_expiring_during_signing_is_not_released(tmp_path, kp):
+    """The decision is taken on a fresh snapshot, but signing (a KMS round trip) or building takes long enough that
+    the snapshot leaves the freshness budget before the transaction is returned. The service must re-check the same
+    snapshot after signing and refuse, not release a transaction decided on state that is now stale."""
+    for mode in ("wall_clock", "cluster_slot"):
+        s = Snap(1000, [room(1, [("Elon", "ELON")], created_at=NOW - 60)])
+        (tmp_path / mode).mkdir()
+        svc = make(tmp_path / mode, kp, s)
+        signer = svc.signer
+        real = signer.sign
+
+        def slow_sign(msg, s=s, svc=svc, mode=mode, real=real):
+            if mode == "wall_clock":
+                s.read_wall -= 60                      # the KMS call took a minute
+            else:
+                svc.rpc._slot = 1100                   # the cluster moved 100 slots on meanwhile
+            return real(msg)
+        signer.sign = slow_sign
+        with pytest.raises(Refusal) as e:
+            svc.route(dict(REQ))
+        assert e.value.code == "stale_state" and e.value.status == 503, mode
+        assert rows(svc) == 0, mode
+
+
 def test_rpc_down_refuses(tmp_path, kp):
     svc = make(tmp_path, kp, Snap(1000), rpc=FakeRpc(down=True))
     with pytest.raises(Refusal) as e:
