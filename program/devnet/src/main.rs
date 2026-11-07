@@ -668,6 +668,7 @@ impl Ctx {
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
                 fee_wsol: p(&[b"fee_wsol", self.room.as_ref()]),
+                swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
                 door: d.door,
                 door_mint: d.mint,
                 door_vault: d.vault,
@@ -746,16 +747,9 @@ impl Ctx {
             )
         }
     }
-    fn convert_ix(
-        &self,
-        r: &Room,
-        user: Pubkey,
-        x: &DoorKeys,
-        y: &DoorKeys,
-        n: u64,
-    ) -> Instruction {
+    fn swap_ix(&self, r: &Room, user: Pubkey, x: &DoorKeys, y: &DoorKeys, n: u64) -> Instruction {
         instr(
-            a::Convert {
+            a::SwapDoors {
                 user,
                 core: self.core(r),
                 door_a: x.door,
@@ -768,12 +762,12 @@ impl Ctx {
                 backing_b: y.backing,
                 user_a: ata(user, x.mint, T22),
                 user_b: ata(user, y.mint, T22),
+                swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
                 token_program: T22,
-                system_program: SYS,
             },
-            ix::Convert {
-                amount: n,
-                max_fee_lamports: 0,
+            ix::SwapDoors {
+                door_tokens_in: n,
+                min_out: 0,
             },
         )
     }
@@ -1041,8 +1035,8 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     ));
     let held = c.balance(&ata(lk, d0.mint, T22))?;
     c.send(
-        "convert_door0_to_door1",
-        &[ctx.convert_ix(&r, lk, &d0, &d1, held / 2)],
+        "swap_door0_to_door1",
+        &[ctx.swap_ix(&r, lk, &d0, &d1, held / 2)],
         &launcher,
         &[],
     )?;
@@ -1114,12 +1108,14 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
         let door = c.door(&d.door)?;
         let vault = c.balance(&d.vault)?;
         let backing = c.balance(&d.backing)?;
+        let integral = doors_v1::math::door_integral(door.virtual_quote, door.sold)
+            .map_err(|error| anyhow!("door curve integral: {error}"))?;
         let circulating = U - vault;
         doors.push(json!({
             "door": d.door.to_string(), "index": door.index, "mint": mint_check(&c, &d.mint)?,
             "door_vault_balance": vault.to_string(), "circulating_door_supply": circulating.to_string(),
             "room_token_backing_vault_balance": backing.to_string(), "door.backing": door.backing.to_string(),
-            "backing_covers_circulating": backing >= circulating, "backing_exactly_equals_circulating": backing == circulating,
+            "backing_covers_curve_integral": backing >= integral, "curve_integral": integral.to_string(),
             "creator": door.creator.to_string(), "fee_recipient": door.fee_recipient.to_string(),
             "accrued_sol": door.accrued_sol, "claimed_sol": door.claimed_sol,
         }));
