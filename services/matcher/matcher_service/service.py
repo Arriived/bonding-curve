@@ -95,6 +95,18 @@ class Service:
         except StaleState as e:
             raise Refusal("stale_state", f"room state outside the freshness budget: {e}", 503)
 
+    def _signing_freshness(self, snap):
+        # RPC retries, a queued worker or KMS latency can use up the budget
+        # after routing. Check this same decision snapshot again; refreshing
+        # here would leave a decision computed from different state.
+        try:
+            slot = self.rpc.slot()
+            return snap.check_fresh(slot, self.cfg.budget), slot
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot check signing-time freshness: {e}", 503)
+        except StaleState as e:
+            raise Refusal("stale_state", f"room state expired during signing: {e}", 503)
+
     def route(self, req):
         t0 = time.monotonic()
         try:
@@ -206,6 +218,7 @@ class Service:
             raise Refusal("tx_too_large", f"transaction would be {placeholder} bytes > {txbuild.PACKET_LIMIT}; "
                                           "shorten the metadata (v0 lookup tables are not supported in v1)", 413)
         msg_bytes = bytes(message)
+        freshness, cluster_slot = self._signing_freshness(snap)
         try:
             sig = self.signer.sign(msg_bytes)
         except SignerUnavailable as e:
