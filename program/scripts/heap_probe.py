@@ -220,6 +220,9 @@ fn heap_probe_paired_door_trades() {
             f.open(open);
             f.trade(Some(0), true, 1_010_000_000);
             f.trade(None, true, 1_010_000_000); // settled by the next door buy
+            if shape == "swap_doors_existing" {
+                f.swap(0, 1, f.balance(f.doors[0].user) / 4);
+            }
             let mut ix = match shape {
                 "buy_door" => f.trade_ix(Some(1), true, 1_010_000_000, 0),
                 "sell_door" => f.trade_ix(Some(0), false, f.balance(f.doors[0].user) / 2, 0),
@@ -312,6 +315,11 @@ def main():
             units.update(json.loads(re.search(r"HEAP_PAIRED (\{.*\})", paired_out)[1]))
         cu = json.loads(re.search(r"HEAP_CU (\{.*\})", out)[1])
         full_takeover = bool(units.pop("create_room_takeover_uri200_passes"))
+        if paired and commit == head and not patch:
+            assert units["create_room"] * STEP >= 1500, (
+                f"maximum-metadata create_room heap headroom is {units['create_room'] * STEP} bytes; "
+                "paired doors require at least 1500"
+            )
         result = {
             "measured_commit": commit,
             "measured_tree": "clean checkout of measured_commit in a temporary worktree"

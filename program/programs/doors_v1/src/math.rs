@@ -43,6 +43,9 @@ pub fn buy_amounts(gross: u64, bps: u16, available: u64) -> Result<(u64, u64)> {
     }
 }
 
+// Provisional paired-door swap economics. Rates use basis points.
+pub const SWAP_FEE_BPS: u16 = 100;
+pub const SWAP_DOOR_SHARE_BPS: u16 = 6_000;
 pub const DOOR_VIRTUAL_BASE: u64 = 1_073_025_606_000_000;
 const DOOR_QUOTE_LAMPORTS: u64 = 30_000_000_000;
 

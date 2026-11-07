@@ -24,7 +24,7 @@ def main():
     # The prototype extends packed accounts after the deployed layouts.
     paired = any(field["name"] == "virtual_quote" for field in types["door"]["fields"])
     if paired:
-        layouts["Room"] = [*layouts["Room"], ("protocol_accrued_room", 8)]
+        layouts["Room"] = [*layouts["Room"], ("protocol_accrued_room", 8), ("swap_fees_unclaimed", 8)]
         layouts["Door"] = [*layouts["Door"], ("virtual_quote", 16), ("sold", 8), ("accrued_room", 8)]
     out={}
     for name in ['Config','Room','Door','SlugLock','NameLock','PendingGate']:

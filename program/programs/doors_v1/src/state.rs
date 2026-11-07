@@ -349,9 +349,10 @@ pub struct Room {
     pub founder_accrued_wsol: u64,
     pub founder_share_bps: u16,
     pub protocol_accrued_room: u64,
+    pub swap_fees_unclaimed: u64,
 }
 impl Room {
-    pub const LEN: usize = 1323;
+    pub const LEN: usize = 1331;
     pub fn curve(&self, q: u64) -> Result<u64> {
         reserve(self.v_sol_lamports, self.v_tok, q)
     }

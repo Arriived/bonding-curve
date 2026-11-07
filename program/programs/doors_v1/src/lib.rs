@@ -223,15 +223,6 @@ pub mod doors_v1 {
             &a.classic_token_program,
             &[b"fee_wsol", rk.as_ref()],
         )?;
-        create_token(
-            &user,
-            &a.swap_fees,
-            &a.room_mint,
-            &rk,
-            &system,
-            &tp,
-            &[b"swap_fees", rk.as_ref()],
-        )?;
         let slug_b = if old.is_none() {
             create_pda(
                 &user,
@@ -554,7 +545,7 @@ pub mod doors_v1 {
             door_integral(a.door_a.virtual_quote, a.door_a.sold)?,
             door_integral(a.door_a.virtual_quote, next_a)?,
         )?;
-        let fee = ratio(room_tokens, 100, true)?;
+        let fee = ratio(room_tokens, SWAP_FEE_BPS, true)?;
         let net = sub(room_tokens, fee)?;
         require!(net > 0 && room_tokens <= a.door_a.backing, Error::Amount);
         let next_b = door_advance(a.door_b.virtual_quote, a.door_b.sold, net)?;
@@ -565,8 +556,19 @@ pub mod doors_v1 {
         );
         pda(&a.swap_fees, &[b"swap_fees", rk.as_ref()])?;
         let quote_mint = a.core.room.room_mint;
+        if a.swap_fees.data_is_empty() {
+            create_token(
+                &a.user,
+                &a.swap_fees,
+                &a.core.room_mint,
+                &rk,
+                &a.system_program,
+                &a.token_program,
+                &[b"swap_fees", rk.as_ref()],
+            )?;
+        }
         let fee_before = token(&a.swap_fees, &quote_mint, &rk, a.token_program.key)?;
-        let known_before = add(a.core.room.protocol_accrued_room, a.door_b.accrued_room)?;
+        let known_before = a.core.room.swap_fees_unclaimed;
         require!(fee_before >= known_before, Error::Invariant);
         user_ata(
             &a.user_a,
@@ -635,14 +637,17 @@ pub mod doors_v1 {
         a.door_b.sold = next_b;
         a.door_a.backing = sub(a.door_a.backing, room_tokens)?;
         a.door_b.backing = add(a.door_b.backing, net)?;
-        let door_fee = ratio(fee, 6_000, false)?;
+        let door_fee = ratio(fee, SWAP_DOOR_SHARE_BPS, false)?;
         a.door_b.accrued_room = add(a.door_b.accrued_room, door_fee)?;
         a.core.room.protocol_accrued_room =
             add(a.core.room.protocol_accrued_room, sub(fee, door_fee)?)?;
-        let known_after = add(a.core.room.protocol_accrued_room, a.door_b.accrued_room)?;
+        a.core.room.swap_fees_unclaimed = add(known_before, fee)?;
+        let known_after = a.core.room.swap_fees_unclaimed;
         let fee_after = token(&a.swap_fees, &quote_mint, &rk, a.token_program.key)?;
         require!(
-            sub(fee_after, fee_before)? == fee && sub(known_after, known_before)? == fee,
+            sub(fee_after, fee_before)? == fee
+                && sub(known_after, known_before)? == fee
+                && fee_after >= known_after,
             Error::Invariant
         );
         door_check(
@@ -710,6 +715,12 @@ pub mod doors_v1 {
         reserve_delta(bl, br, &a.core)?;
         fee_delta(fl, a.core.fees.lamports(), fk, known(&a.core.room, &[]))?;
         Ok(())
+    }
+    pub fn claim_door_swap_fees(ctx: Context<ClaimSwapFees>) -> Result<()> {
+        claim_swap_fees(ctx, true)
+    }
+    pub fn claim_protocol_swap_fees(ctx: Context<ClaimSwapFees>) -> Result<()> {
+        claim_swap_fees(ctx, false)
     }
     pub fn claim_door_fees(ctx: Context<Claim>) -> Result<()> {
         claim(ctx, 0)
@@ -913,6 +924,102 @@ fn trade(ctx: Context<TradeAccounts>, buy: bool, amount: u64, min: u64) -> Resul
     core_check(&a.core, a.door.as_ref().map_or(0, |d| d.accrued_sol))?;
     Ok(())
 }
+fn claim_swap_fees(ctx: Context<ClaimSwapFees>, door_claim: bool) -> Result<()> {
+    let a = ctx.accounts;
+    let rk = a.core.room.key();
+    let ri = a.core.room.to_account_info();
+    let recipient = if door_claim {
+        let door = a.door.as_ref().ok_or(Error::Account)?;
+        door_check(
+            door,
+            &door.to_account_info(),
+            &a.core.room,
+            rk,
+            a.door_mint.as_ref().ok_or(Error::Account)?,
+            a.door_vault.as_ref().ok_or(Error::Account)?,
+            a.backing.as_ref().ok_or(Error::Account)?,
+        )?;
+        door.fee_recipient
+    } else {
+        require!(
+            a.door.is_none()
+                && a.door_mint.is_none()
+                && a.door_vault.is_none()
+                && a.backing.is_none(),
+            Error::Account
+        );
+        a.core.config.protocol_fee_recipient
+    };
+    require_keys_eq!(a.authority.key(), recipient, Error::Authority);
+    user_ata(
+        &a.recipient_token,
+        &recipient,
+        &a.core.room.room_mint,
+        a.token_program.key,
+    )?;
+    pda(&a.swap_fees, &[b"swap_fees", rk.as_ref()])?;
+    let before = token(
+        &a.swap_fees,
+        &a.core.room.room_mint,
+        &rk,
+        a.token_program.key,
+    )?;
+    let unclaimed = a.core.room.swap_fees_unclaimed;
+    require!(before >= unclaimed, Error::Invariant);
+    let amount = if door_claim {
+        a.door.as_ref().unwrap().accrued_room
+    } else {
+        a.core.room.protocol_accrued_room
+    };
+    let remaining = sub(unclaimed, amount)?;
+    let reserve_lamports = a.core.reserve.lamports();
+    let reserve = a.core.room.reserve;
+    let sold = a.core.room.sold;
+    if amount > 0 {
+        let rid = a.core.room.room_id.to_le_bytes();
+        let bump = [a.core.room.bumps[0]];
+        transfer(
+            &a.swap_fees,
+            &a.core.room_mint,
+            &a.recipient_token,
+            &ri,
+            &a.token_program,
+            amount,
+            Some(&[b"room", &rid, &bump]),
+            6,
+        )?;
+    }
+    if door_claim {
+        a.door.as_mut().unwrap().accrued_room = 0;
+    } else {
+        a.core.room.protocol_accrued_room = 0;
+    }
+    a.core.room.swap_fees_unclaimed = remaining;
+    let after = token(
+        &a.swap_fees,
+        &a.core.room.room_mint,
+        &rk,
+        a.token_program.key,
+    )?;
+    require!(
+        after == sub(before, amount)? && after >= remaining,
+        Error::Invariant
+    );
+    require!(
+        a.core.room.sold == sold && a.core.room.reserve == reserve,
+        Error::Invariant
+    );
+    core_check(&a.core, a.door.as_ref().map_or(0, |door| door.accrued_sol))?;
+    reserve_delta(reserve_lamports, reserve, &a.core)?;
+    emit!(SwapFeesClaimed {
+        room: rk,
+        door: a.door.as_ref().map(|door| door.key()),
+        recipient,
+        room_tokens: amount,
+    });
+    Ok(())
+}
+
 fn claim(ctx: Context<Claim>, kind: u8) -> Result<()> {
     let a = ctx.accounts;
     let rk = a.core.room.key();
@@ -1062,6 +1169,14 @@ fn claim(ctx: Context<Claim>, kind: u8) -> Result<()> {
         });
     }
     Ok(())
+}
+
+#[event]
+pub struct SwapFeesClaimed {
+    pub room: Pubkey,
+    pub door: Option<Pubkey>,
+    pub recipient: Pubkey,
+    pub room_tokens: u64,
 }
 
 #[event]

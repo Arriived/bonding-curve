@@ -370,7 +370,6 @@ impl Fixture {
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
                 fee_wsol: p(&[b"fee_wsol", self.room.as_ref()]),
-                swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
                 door: d.door,
                 door_mint: d.mint,
                 door_vault: d.vault,
@@ -389,8 +388,8 @@ impl Fixture {
             },
         )
     }
-    fn create(&mut self, l: Launch, holder: Option<Pubkey>) {
-        self.send(self.create_ix(l, holder), true, "create_room");
+    fn create(&mut self, l: Launch, holder: Option<Pubkey>) -> TransactionMetadata {
+        let meta = self.send(self.create_ix(l, holder), true, "create_room");
         self.doors
             .push(DoorKeys::new(self.room, 0, self.user.pubkey()));
         self.make_ata(self.doors[0].mint, spl_token_2022_interface::ID);
@@ -400,6 +399,7 @@ impl Fixture {
             spl_token_interface::ID,
         );
         self.audit();
+        meta
     }
     fn core(&self) -> a::Core {
         let r = self.r();
@@ -575,6 +575,7 @@ impl Fixture {
                 user_b: y.user,
                 swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
                 token_program: spl_token_2022_interface::ID,
+                system_program: anchor_lang::system_program::ID,
             },
             ix::SwapDoors {
                 door_tokens_in: n,
@@ -644,6 +645,50 @@ impl Fixture {
         self.checked(self.claim_ix(kind, door, self.user.pubkey()), false, name);
         self.audit();
     }
+    fn swap_fee_balance(&self) -> u64 {
+        let vault = p(&[b"swap_fees", self.room.as_ref()]);
+        match self.svm.get_account(&vault) {
+            None => 0,
+            Some(account) if account.data.is_empty() => {
+                assert_eq!(account.owner, anchor_lang::system_program::ID);
+                0
+            }
+            Some(_) => self.balance(vault),
+        }
+    }
+    fn claim_swap_ix(&self, door: Option<usize>) -> Instruction {
+        let keys = door.map(|index| &self.doors[index]);
+        let accounts = a::ClaimSwapFees {
+            authority: self.user.pubkey(),
+            core: self.core(),
+            door: keys.map(|keys| keys.door),
+            door_mint: keys.map(|keys| keys.mint),
+            door_vault: keys.map(|keys| keys.vault),
+            backing: keys.map(|keys| keys.backing),
+            swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
+            recipient_token: ata(
+                self.user.pubkey(),
+                self.r().room_mint,
+                spl_token_2022_interface::ID,
+            ),
+            token_program: spl_token_2022_interface::ID,
+        };
+        if door.is_some() {
+            instr(accounts, ix::ClaimDoorSwapFees {})
+        } else {
+            instr(accounts, ix::ClaimProtocolSwapFees {})
+        }
+    }
+    fn claim_swap(&mut self, door: Option<usize>) {
+        self.make_ata(self.r().room_mint, spl_token_2022_interface::ID);
+        let name = if door.is_some() {
+            "claim_door_swap_fees"
+        } else {
+            "claim_protocol_swap_fees"
+        };
+        self.checked(self.claim_swap_ix(door), false, name);
+        self.audit();
+    }
     fn audit(&self) {
         let r = self.r();
         assert_eq!(
@@ -708,14 +753,15 @@ impl Fixture {
                 >= fees
         );
         assert!(self.balance(r.fee_wsol) as u128 >= wfees);
-        let quote_fee_balance = self.balance(p(&[b"swap_fees", self.room.as_ref()]));
-        assert!(quote_fee_balance >= room_fees);
+        let quote_fee_balance = self.swap_fee_balance();
+        assert_eq!(r.swap_fees_unclaimed, room_fees);
+        assert!(quote_fee_balance >= r.swap_fees_unclaimed);
         assert!(r.sold >= r.retired + door_room_reserves + room_fees);
         self.audit_mint(r.room_mint);
     }
     fn unredeemed_room_tokens(&self) -> u64 {
         self.r().retired
-            + self.balance(p(&[b"swap_fees", self.room.as_ref()]))
+            + self.swap_fee_balance()
             + (0..self.doors.len())
                 .map(|i| self.d(i).backing)
                 .sum::<u64>()
@@ -1939,11 +1985,17 @@ fn mixed_10000_sbf_operations_and_cu_report() {
             }
             10 => {
                 f.claim(0, i);
+                if f.d(i).accrued_room > 0 {
+                    f.claim_swap(Some(i));
+                }
                 "claim_door_fees"
             }
             _ => {
                 f.claim(1, 0);
                 f.claim(2, 0);
+                if f.r().protocol_accrued_room > 0 {
+                    f.claim_swap(None);
+                }
                 "claim_founder_and_protocol"
             }
         };
@@ -2816,7 +2868,7 @@ fn takeover_heap_case(create_uri: usize) {
     l.uri = "u".repeat(create_uri);
     let ix = f.create_ix(l.clone(), Some(a_room));
     prefund(&mut f, &ix);
-    f.create(l, Some(a_room));
+    let create_meta = f.create(l, Some(a_room));
     let create_cu = *f.cus["create_room"].last().unwrap();
     // A room-route buy leaves a backlog for the next first buy to settle.
     f.trade(None, true, 1_010_000);
@@ -2825,10 +2877,21 @@ fn takeover_heap_case(create_uri: usize) {
     let l = max("Door identity", 11, 101_000_000);
     let ix = f.open_ix(l, Some(b_room));
     prefund(&mut f, &ix);
-    f.checked(ix, true, "open_door");
+    let open_meta = f.checked(ix, true, "open_door");
     f.audit();
     let open_cu = *f.cus["open_door"].last().unwrap();
     println!("PREFUNDED_TAKEOVER_CU create_room={create_cu} open_door={open_cu}");
+    for (shape, uri, program_cu, meta) in [
+        ("create_room", create_uri, create_cu, create_meta),
+        ("open_door", 200, open_cu, open_meta),
+    ] {
+        let row = json!({"fixture": "takeover_heap_case", "shape": shape,
+            "name_bytes": 32, "symbol_bytes": 10, "uri_bytes": uri,
+            "prefunded": true, "priority_fee": false, "compute_unit_limit": 1_400_000,
+            "transaction_cu": meta.compute_units_consumed, "program_cu": program_cu,
+            "trace_entries": meta.logs.iter().filter(|line| line.contains(" invoke [")).count()});
+        println!("PAIRED_DOORS_TAKEOVER_LIMIT {row}");
+    }
     assert!(create_cu < 400_000 && open_cu < 400_000);
 }
 
@@ -2839,7 +2902,11 @@ fn takeover_heap_case(create_uri: usize) {
 // [cu_limit, cu_price, launch]. Ordinary metadata; the trace does not depend on metadata length.
 #[test]
 fn launch_instruction_trace_budget() {
-    fn shaped(f: &mut Fixture, ix: Instruction, price: bool) -> (bool, usize, u64, String) {
+    fn shaped(
+        f: &mut Fixture,
+        ix: Instruction,
+        price: bool,
+    ) -> (bool, usize, u64, Option<u64>, String) {
         f.svm.expire_blockhash();
         let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(400_000)];
         if price {
@@ -2852,17 +2919,29 @@ fn launch_instruction_trace_budget() {
             f.svm.latest_blockhash(),
         );
         let count = |logs: &[String]| logs.iter().filter(|l| l.contains(" invoke [")).count();
+        let program_cu = |logs: &[String]| {
+            let prefix = format!("Program {ID} consumed ");
+            logs.iter().find_map(|line| {
+                line.strip_prefix(&prefix)?
+                    .split_whitespace()
+                    .next()?
+                    .parse::<u64>()
+                    .ok()
+            })
+        };
         match f.svm.send_transaction(tx) {
             Ok(m) => (
                 true,
                 count(&m.logs),
                 m.compute_units_consumed,
+                program_cu(&m.logs),
                 String::new(),
             ),
             Err(e) => (
                 false,
                 count(&e.meta.logs),
                 e.meta.compute_units_consumed,
+                program_cu(&e.meta.logs),
                 format!("{:?}", e.err),
             ),
         }
@@ -2880,7 +2959,7 @@ fn launch_instruction_trace_budget() {
         if prefunded {
             prefund(f, &ix);
         }
-        let (ok, invokes, cu, err) = shaped(f, ix, price);
+        let (ok, invokes, cu, program_cu, err) = shaped(f, ix, price);
         rows.push(
             json!({"instruction": shape, "first_buy": first_buy, "prefunded": prefunded,
             "priority_fee_instruction": price, "succeeded": ok, "logged_invocations": invokes,

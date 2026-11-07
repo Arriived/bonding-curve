@@ -699,7 +699,6 @@ impl Ctx {
                 room_vault: p(&[b"room_vault", self.room.as_ref()]),
                 retired: p(&[b"retired", self.room.as_ref()]),
                 fee_wsol: p(&[b"fee_wsol", self.room.as_ref()]),
-                swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
                 door: d.door,
                 door_mint: d.mint,
                 door_vault: d.vault,
@@ -808,6 +807,7 @@ impl Ctx {
                 user_b: ata(user, y.mint, T22),
                 swap_fees: p(&[b"swap_fees", self.room.as_ref()]),
                 token_program: T22,
+                system_program: SYS,
             },
             ix::SwapDoors {
                 door_tokens_in: n,

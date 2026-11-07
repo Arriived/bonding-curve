@@ -607,6 +607,156 @@
       "args": []
     },
     {
+      "name": "claim_door_swap_fees",
+      "discriminator": [
+        20,
+        250,
+        169,
+        34,
+        85,
+        152,
+        253,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "core",
+          "accounts": [
+            {
+              "name": "config",
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      99,
+                      111,
+                      110,
+                      102,
+                      105,
+                      103
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      111,
+                      111,
+                      109
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room.room_id",
+                    "account": "Room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "reserve",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      101,
+                      115,
+                      101,
+                      114,
+                      118,
+                      101
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fees",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      102,
+                      101,
+                      101,
+                      115
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room_mint"
+            },
+            {
+              "name": "room_vault",
+              "writable": true
+            },
+            {
+              "name": "retired",
+              "writable": true
+            }
+          ]
+        },
+        {
+          "name": "door",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "door_mint",
+          "optional": true
+        },
+        {
+          "name": "door_vault",
+          "optional": true
+        },
+        {
+          "name": "backing",
+          "optional": true
+        },
+        {
+          "name": "swap_fees",
+          "writable": true
+        },
+        {
+          "name": "recipient_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "claim_founder_fees",
       "discriminator": [
         12,
@@ -765,6 +915,156 @@
       "args": []
     },
     {
+      "name": "claim_protocol_swap_fees",
+      "discriminator": [
+        106,
+        107,
+        229,
+        32,
+        25,
+        218,
+        95,
+        174
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "core",
+          "accounts": [
+            {
+              "name": "config",
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      99,
+                      111,
+                      110,
+                      102,
+                      105,
+                      103
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      111,
+                      111,
+                      109
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room.room_id",
+                    "account": "Room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "reserve",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      114,
+                      101,
+                      115,
+                      101,
+                      114,
+                      118,
+                      101
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fees",
+              "writable": true,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      102,
+                      101,
+                      101,
+                      115
+                    ]
+                  },
+                  {
+                    "kind": "account",
+                    "path": "room"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "room_mint"
+            },
+            {
+              "name": "room_vault",
+              "writable": true
+            },
+            {
+              "name": "retired",
+              "writable": true
+            }
+          ]
+        },
+        {
+          "name": "door",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "door_mint",
+          "optional": true
+        },
+        {
+          "name": "door_vault",
+          "optional": true
+        },
+        {
+          "name": "backing",
+          "optional": true
+        },
+        {
+          "name": "swap_fees",
+          "writable": true
+        },
+        {
+          "name": "recipient_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "create_room",
       "discriminator": [
         130,
@@ -874,10 +1174,6 @@
         },
         {
           "name": "fee_wsol",
-          "writable": true
-        },
-        {
-          "name": "swap_fees",
           "writable": true
         },
         {
@@ -2211,6 +2507,10 @@
         {
           "name": "token_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -2686,6 +2986,19 @@
         74,
         254,
         24
+      ]
+    },
+    {
+      "name": "SwapFeesClaimed",
+      "discriminator": [
+        251,
+        120,
+        56,
+        69,
+        188,
+        2,
+        151,
+        96
       ]
     },
     {
@@ -3715,6 +4028,10 @@
           {
             "name": "protocol_accrued_room",
             "type": "u64"
+          },
+          {
+            "name": "swap_fees_unclaimed",
+            "type": "u64"
           }
         ]
       }
@@ -3896,6 +4213,32 @@
           {
             "name": "room",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SwapFeesClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "door",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "room_tokens",
+            "type": "u64"
           }
         ]
       }
