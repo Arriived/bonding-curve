@@ -322,6 +322,57 @@ The test runs these steps:
 10. `verify_decision.py` agrees with every accepted decision.
 11. The verifier reports DISAGREE on three doctored records.
 
+## Launch watcher (shadow mode over pump.fun and LaunchLab)
+
+`watcher/` streams launches from other launchpads and runs our matcher on each one. Nothing is signed or sent. It
+answers one question: how many of these launches would have become a door in an existing room on our launchpad?
+
+**What it watches:**
+- pump.fun (program `6EF8…F6P`).
+- Raydium LaunchLab (`LanMV9…J3uj`), which hosts bonk.fun, StonkFun and about 5,000 other platform configs.
+- A LaunchLab launch is labelled with the declared name and website in its `PlatformConfig` account. Those fields
+  are self-declared: anyone can create a config called "StonkFun". The label therefore groups by declared site:
+  `stonkfun.xyz` as StonkFun, `letsbonk.fun`/`bonk.fun` as bonk.fun, otherwise the declared name.
+
+**How it reads the chain:**
+- One websocket `logsSubscribe` per program.
+- pump.fun launches decode from the `CreateEvent` in the logs.
+- LaunchLab launches, and pump.fun launches whose logs lack the event, are fetched with `getTransaction` and decoded
+  from the create instruction's own arguments.
+- Layouts come from each program's on-chain Anchor IDL, saved in `watcher/idl/` and checked by
+  `tests/test_watcher.py`.
+
+**Free endpoints**, as tested from the build environment on 7 November 2026:
+
+| endpoint | HTTP | websocket | notes |
+|---|---|---|---|
+| `api.mainnet-beta.solana.com` (Solana Foundation) | yes | **yes** | the websocket carries all pump.fun traffic (about 1,250 notifications per 5 s); `getSignaturesForAddress` on busy programs returned 429 |
+| `solana-rpc.publicnode.com` (PublicNode) | **yes**, including `getTransaction` | timed out | `getProgramAccounts` refused (403); needs a User-Agent header |
+| OnFinality, dRPC, Ankr, NodeFlare, Omniatech, LeoRPC public URLs | not reachable from the build environment's network policy | | untested, not known to fail |
+
+The defaults are the Foundation websocket and the PublicNode HTTP endpoint, with Foundation HTTP as fallback. Free
+endpoints are shared and rate-limited and can drop subscriptions. The watcher reconnects with backoff, but a dropped
+minute is a missed minute. For complete coverage, use a provider's websocket (Helius, Triton, QuickNode and others
+have free or cheap plans). Pass it as `WATCHER_WS` / `WATCHER_HTTP` (comma-separated) rather than on the command
+line; logs and the summary show only each endpoint's host.
+
+**Run** (from `services/matcher`, with `requirements.txt` and `requirements-watcher.txt` installed):
+
+    python3 -m watcher.watch --out /var/lib/doors-watch            # until stopped; resumes from launches.jsonl
+
+**Outputs:**
+- `launches.jsonl`: one line per launch with the shadow decision.
+- `summary.md`: rewritten every minute.
+- `events.log`: connection events.
+
+It must run on a machine that stays up. A cloud session's container is temporary.
+
+**Read the numbers with these limits:**
+- Rooms are only those formed during the watch, all treated as live. Early in a run, launches cannot match older
+  narratives.
+- "Would be a door" counts the same wallet relaunching separately from copies by other wallets.
+- The matcher's precision on these launches has not been measured: the routes are unlabelled.
+
 ## Verifying a decision
 
 ```bash

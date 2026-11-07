@@ -1,0 +1,2 @@
+# The launch watcher only (watcher/). Not needed by the signing service.
+websockets==13.1

@@ -24,3 +24,13 @@ and checked at start-up. Not vendored.
 
 `requirements-research.txt`: jellyfish 1.3.0 (MIT, Metaphone, rejected candidate F). Used by
 `scripts/rule_candidates.py` and `scripts/evasion_benchmark.py` only.
+
+## websockets (BSD-3-Clause)
+
+`requirements-watcher.txt`: websockets 13.1, used by the launch watcher (`watcher/`) only. Not vendored.
+
+## Program IDLs
+
+`watcher/idl/pump.json` and `watcher/idl/raydium_launchpad.json` are the Anchor IDLs that the pump.fun and Raydium
+LaunchLab programs publish on-chain (their `anchor:idl` accounts). They were read on 7 November 2026 and are used to
+decode those programs' public instructions and events.
