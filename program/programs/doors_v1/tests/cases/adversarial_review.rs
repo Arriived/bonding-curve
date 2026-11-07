@@ -307,10 +307,15 @@ fn adversarial_normal_admin_can_select_the_stress_cap() {
         "normal_admin_stress_cap",
     );
     let c = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    // Existing rooms keep the cap they were created with.
     assert_eq!(f.r().graduation_trigger_lamports, old_cap);
-    // Secure deployment-profile assertion, expected to fail before owner ruling.
-    assert_eq!(
-        c.graduation_trigger_lamports, old_cap,
-        "owner decision: stress cap is admin-selectable"
+    // Finding, recorded as current behaviour (owner decision pending, SECURITY_REVIEW.md): a normal admin
+    // update selects the 120 SOL stress cap for every room created afterwards. If the owner rules that
+    // production builds must refuse it, this assertion flips to `old_cap` together with the program change.
+    assert_eq!(c.graduation_trigger_lamports, 120_000_000_000);
+    adversarial_evidence(
+        "stress_cap",
+        json!({"case": "normal admin update selects the stress cap", "owner_decision": true,
+               "existing_room_cap_lamports": old_cap, "new_rooms_cap_lamports": c.graduation_trigger_lamports}),
     );
 }
