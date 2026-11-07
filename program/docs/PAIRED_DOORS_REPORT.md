@@ -10,7 +10,13 @@ the room's launch metadata relationship.
 ## Default-room measurements
 
 <!-- BEGIN GENERATED STATUS -->
-Awaiting the full review-fix verification run.
+Source commit `201edf86b3846fb9c123647f6ea1564b7b28b67a`. [Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42383059736).
+
+The SBF suite passed 60 tests, including 10,000 property iterations and 12,488 executed transactions. The standalone devnet client tests also passed.
+
+The deployed Token-2022, SPL Token and ATA binary hashes matched the pinned capture. Their verification read was at finalized slot 519,694,837.
+
+Compiled ELF SHA-256 is `928c481557b8ec50df1489829527342a2a00f4330c7a09b4aa671d788160547d`.
 <!-- END GENERATED STATUS -->
 
 | Initial room reserve | A receives after 20 buys | Supplied reference | After a 50% room dump | Dump reference |
@@ -47,13 +53,54 @@ The heap probe compiles temporary instrumentation and its CU appears only in
 the creation comparison.
 
 <!-- BEGIN GENERATED CU -->
-Awaiting the full review-fix verification run.
+Each row is the maximum CU sample for that fixture and instruction. Program CU includes CPIs.
+Transaction CU also includes the compute-budget instructions. Property-run samples record program CU.
+
+| SBF fixture | Instruction | Prefunded | Priority fee | Program CU | Transaction CU | Trace entries |
+|---|---|---|---|---:|---:|---:|
+| launch_instruction_trace_budget | create_room | True | True | — | 317,622 | 49 |
+| launch_instruction_trace_budget | create_room_split_takeover | True | True | — | 324,137 | 47 |
+| launch_instruction_trace_budget | create_room_takeover | True | True | — | 323,945 | 47 |
+| launch_instruction_trace_budget | open_door | True | True | — | 229,980 | 30 |
+| launch_instruction_trace_budget | open_door_takeover_with_retirement | True | True | — | 220,809 | 31 |
+| mixed_10000_sbf_operations_and_cu_report | buy_door | False | False | 75,429 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | claim_door_swap_fees | False | False | 42,182 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | claim_protocol_swap_fees | False | False | 34,182 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | create_room | False | False | 256,937 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | open_door | False | False | 161,119 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | sell_door | False | False | 62,963 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | swap_doors | False | False | 94,673 | — | — |
+| paired_door_trade_limits_and_launch_rent | buy_door | False | True | 65,537 | 65,837 | 7 |
+| paired_door_trade_limits_and_launch_rent | buy_room | False | True | 43,762 | 44,062 | 6 |
+| paired_door_trade_limits_and_launch_rent | claim_door_swap_fees | False | True | 42,182 | 42,482 | 4 |
+| paired_door_trade_limits_and_launch_rent | claim_protocol_swap_fees | False | True | 34,182 | 34,482 | 4 |
+| paired_door_trade_limits_and_launch_rent | sell_door | False | True | 59,960 | 60,260 | 5 |
+| paired_door_trade_limits_and_launch_rent | sell_room | False | True | 40,849 | 41,149 | 4 |
+| paired_door_trade_limits_and_launch_rent | swap_doors | False | True | 94,113 | 94,413 | 9 |
+| paired_door_trade_limits_and_launch_rent | swap_doors_existing | False | True | 86,138 | 86,438 | 7 |
+| takeover_heap_case / 200-byte URI | create_room | True | False | 329,256 | 329,406 | 47 |
+| takeover_heap_case / 200-byte URI | open_door | True | False | 230,799 | 230,949 | 31 |
+| takeover_heap_case / 70-byte URI | create_room | True | False | 328,243 | 328,393 | 47 |
+
+Maximum measured transaction CU was 329,406.
+Maximum measured program CU was 329,256.
 <!-- END GENERATED CU -->
 
 ## Creation before and after the review
 
 <!-- BEGIN GENERATED CREATION -->
-Awaiting the full review-fix verification run.
+Before is [915b075](https://github.com/Arriived/bonding-curve/actions/runs/42378291009). After is 201edf8.
+The heap fixture uses maximum metadata and prefunded accounts. Rent uses the same rent-only metadata in both runs.
+
+| Measurement | Fixture | Before | After | Change |
+|---|---|---:|---:|---:|
+| Additional heap bytes | heap_probe_worst_case_launches / create_room | 64 | 3,184 | +3,120 |
+| Program CU | heap_probe_worst_case_launches / create_room, instrumented build | 337,430 | 327,472 | -9,958 |
+| Transaction CU | heap_probe_worst_case_launches / create_room, instrumented build | 337,580 | 327,622 | -9,958 |
+| Room with door 0 rent, lamports | paired_door_trade_limits_and_launch_rent | 28,407,360 | 26,959,560 | -1,447,800 |
+
+An additional door uses 8,839,200 lamports of rent.
+The first swapping user pays 1,488,440 lamports for the room-token fee vault.
 <!-- END GENERATED CREATION -->
 
 ## Supply guard and isolated stress configuration

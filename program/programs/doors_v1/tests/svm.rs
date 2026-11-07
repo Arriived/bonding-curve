@@ -2963,7 +2963,7 @@ fn launch_instruction_trace_budget() {
         rows.push(
             json!({"instruction": shape, "first_buy": first_buy, "prefunded": prefunded,
             "priority_fee_instruction": price, "succeeded": ok, "logged_invocations": invokes,
-            "transaction_cu": cu, "error": err}),
+            "transaction_cu": cu, "program_cu": program_cu, "error": err}),
         );
     };
     for prefunded in [false, true] {

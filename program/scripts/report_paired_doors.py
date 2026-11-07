@@ -187,7 +187,7 @@ def render_comparison(directory, before_path, rent):
          heap["free_heap_at_end_bytes_at_least"]["create_room"]),
         ("Program CU", "heap_probe_worst_case_launches / create_room, instrumented build", prior["probe_program_cu"], actual["program_cu"]),
         ("Transaction CU", "heap_probe_worst_case_launches / create_room, instrumented build", prior["probe_transaction_cu"], actual["tx_cu"]),
-        ("Room with door 0 rent, lamports", "paired_door_trade_limits_and_launch_rent", prior["room_with_door_0_rent_lamports"], rent["room_with_door_0_lamports"]),
+        ("Room creation including door 0 rent, lamports", "paired_door_trade_limits_and_launch_rent", prior["room_with_door_0_rent_lamports"], rent["room_with_door_0_lamports"]),
     ]
     output = io.StringIO()
     with redirect_stdout(output):

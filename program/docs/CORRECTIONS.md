@@ -847,8 +847,8 @@ The lazy vault alone raised maximum-metadata creation headroom from 64
 to 640 bytes in [the first complete review run](https://github.com/Arriived/bonding-curve/actions/runs/42380227882).
 All 59 SBF tests, property iterations and the standalone client test passed,
 but the heap target failed. The 1,500-byte requirement remains enforced.
-Creation's remaining allocations are being measured before completing
-this review.
+The metadata initializer's remaining allocations were then removed as
+recorded below.
 
 
 The pinned token-metadata initializer cloned the three launch strings,
@@ -860,3 +860,13 @@ with the pinned library for empty URIs, maximum lengths and multibyte
 UTF-8. The mint metadata, instruction order and CPI count are preserved.
 The heap probe writes its measured output before enforcing its target so
 failed targets also retain their evidence.
+
+
+The exact-size metadata initializer measured 3,184 bytes of creation
+headroom in the next full run. All 60 SBF tests, 10,000 property iterations,
+standalone client tests and the heap target passed. That run stopped at
+the enabled binary-pin check because the initializer changed the compiled
+ELF. The pin was updated from the artifact after every program source file
+and the emitted IDL were compared with the working tree. The final run
+rechecks the pin along with the entire suite. The generated CU table also
+records the program-inclusive CU captured by the launch trace fixture.

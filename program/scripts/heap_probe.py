@@ -209,7 +209,7 @@ PAIRED_TEST = r"""
 #[test]
 fn heap_probe_paired_door_trades() {
     let mut results = BTreeMap::new();
-    for shape in ["buy_door", "sell_door", "swap_doors"] {
+    for shape in ["buy_door", "sell_door", "swap_doors", "swap_doors_existing"] {
         let units = heap_probe_search(|units| {
             let mut f = heap_probe_fixture();
             let mut room = launch("Paired heap room");
@@ -326,10 +326,9 @@ def main():
             "method": "largest extra allocation appended at the end of the instruction that still succeeds, "
                       f"binary-searched in {STEP}-byte steps; worst case = maximum metadata, all writable "
                       "launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; "
-                      "create_room_takeover_uri70 adds an old_holder takeover at the largest metadata the "
-                      "matcher signs in a legacy transaction (name 32, symbol 10, URI 70); "
-                      "create_room_takeover_uri200 is the same at the program's maximum URI (a v0 "
-                      "transaction, finding M-7); open_door_takeover opens a maximum-metadata door "
+                      "create_room_takeover_uri70 uses an old_holder takeover with name 32, symbol 10 "
+                      "and URI 70; create_room_takeover_uri200 uses the program's maximum URI; "
+                      "transaction packet size is measured separately; open_door_takeover opens a maximum-metadata door "
                       "whose identity a dead room holds",
             "free_heap_at_end_bytes_at_least": {k: v * STEP for k, v in units.items()},
             "resolution_bytes": STEP,
