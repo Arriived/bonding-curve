@@ -1602,7 +1602,14 @@ door near supply exhaustion.
 The prototype swap fee proposal takes 100 bps of the source curve's
 gross room-token payout, credits 60% to the receiving door and 40% to the
 protocol, and holds it in a room-token fee vault. The fee and split remain
-an open decision. The existing room sell splits its gross curve payout
+an open decision. The first swap initializes the canonical room-token
+fee vault with the swapping user as payer. A room-wide unclaimed total
+covers every door's credit and the protocol credit. Door and protocol
+claims require the current entitled recipient's signature and pay its
+existing room-token ATA. Swaps and claims assert vault coverage of the
+entire remaining total.
+
+The existing room sell splits its gross curve payout
 between the seller and the fee vault. Its reserve debit equals the gross
 payout. The paired-door design preserves that accounting.
 

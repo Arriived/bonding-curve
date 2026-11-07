@@ -332,8 +332,16 @@ fn paired_door_trade_limits_and_launch_rent() {
         .filter_map(|key| f.svm.get_account(key))
         .map(|account| account.lamports)
         .sum();
+    f.trade(Some(0), true, 1_010_000_000);
+    f.swap(0, 1, f.balance(f.doors[0].user) / 2);
+    let first_swap_vault_rent = f
+        .svm
+        .get_account(&p(&[b"swap_fees", f.room.as_ref()]))
+        .unwrap()
+        .lamports;
     let rent = json!({"room_with_door_0_lamports": room_rent,
                       "additional_door_lamports": door_rent,
+                      "first_swap_vault_lamports": first_swap_vault_rent,
                       "first_buy": false, "uri": "https://example.invalid/m.json"});
     println!("PAIRED_DOORS_RENT {rent}");
     let evidence = json!({"trades": trade_rows, "rent": rent});

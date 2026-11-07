@@ -9,10 +9,9 @@ the room's launch metadata relationship.
 
 ## Default-room measurements
 
-These results come from the [Linux SBF artifact](https://github.com/Arriived/bonding-curve/actions/runs/42320847006#artifacts).
-The test loaded the deployed Token-2022, SPL Token and ATA executables.
-Their hashes matched the capture at finalized slot 519,096,745 and the
-verification read at finalized slot 519,486,059.
+<!-- BEGIN GENERATED STATUS -->
+Awaiting the full review-fix verification run.
+<!-- END GENERATED STATUS -->
 
 | Initial room reserve | A receives after 20 buys | Supplied reference | After a 50% room dump | Dump reference |
 |---:|---:|---:|---:|---:|
@@ -39,31 +38,23 @@ heap files directly.
 python3 program/scripts/report_paired_doors.py <verification_dir>
 ```
 
-## Compute, trace and heap
+## Compute and trace by SBF fixture
 
-| Instruction | Prefunded priority-fee CU | Trace entries | Additional heap that fit |
-|---|---:|---:|---:|
-| create_room | 327,579 | 51 | 64 bytes |
-| open_door | 230,542 | 30 | 9,040 bytes |
-| buy_door | 65,787 | 7 | 17,456 bytes |
-| sell_door | 60,210 | 5 | 19,872 bytes |
-| swap_doors | 85,808 | 7 | 19,184 bytes |
+The generated table records program CU and transaction CU separately and
+identifies the fixture, prefunding and priority-fee shape. Maximum-metadata
+takeover measurements and the mixed-operation samples retain their own rows.
+The heap probe compiles temporary instrumentation and its CU appears only in
+the creation comparison.
 
-The priority-fee transaction column is the SBF trace fixture with an
-initial buy on launches. The separate maximum-metadata prefunded
-takeover measured 342,214 program CU. The 400,000 CU service limit
-has about 14% margin over that program reading. The 51-entry
-prefunded launch leaves 13 of the 64 trace entries free. The heap probe
-uses separate instrumented builds and exercises maximum metadata on
-launches. Its 200-byte takeover URI fixture had 704 bytes of heap
-headroom. The 64-byte result on fresh room creation is a tight heap
-margin even with compute headroom.
+<!-- BEGIN GENERATED CU -->
+Awaiting the full review-fix verification run.
+<!-- END GENERATED CU -->
 
-For the SBF rent fixture's metadata, a room including door 0 took
-28,407,360 lamports. An additional door took 8,839,200 lamports.
-The fixture sums the balances of new writable accounts in rent-only
-launches. The SBF run passed 55 tests, including 10,000 property
-iterations that executed 10,862 transactions.
+## Creation before and after the review
+
+<!-- BEGIN GENERATED CREATION -->
+Awaiting the full review-fix verification run.
+<!-- END GENERATED CREATION -->
 
 ## Supply guard and isolated stress configuration
 
@@ -88,16 +79,10 @@ The prototype's public program ID is
 `8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ`.
 The deploy wallet is
 `J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD`.
-Its finalized balance was 0 lamports at slot 519,488,445. Deployment,
-Config read-back, live measurements and the post-run sweep are pending
-funding. The Linux build pinned ELF SHA-256
-`9d8758bfc566c2262e672c463cbc953012c2e2a185b78fcb8c07fb87b4797ab1`.
-
-The funding request is 90 devnet SOL. The program-derived budget
-combines the 72.5 SOL peak float with simulated residuals and fees,
-rent read through finalized slot 519,485,996 and a transaction
-allowance. Reproduce it with
-`python3 program/scripts/paired_devnet_budget.py <verification_dir>/paired_doors.json`.
+The last recorded balance was 26,544,000,361 lamports at finalized slot
+519,671,497 after the owner funding and wallet recovery. Devnet rollout
+is held pending owner funding. This review pass runs Linux SBF and client
+verification.
 
 After a fresh deploy and default Config read-back, the Linux runner's
 `paired <keys_dir> <report.json>` command measures the default-room
@@ -114,7 +99,15 @@ and resolving the interruption. Pass the live report to
 
 - The swap fee is provisionally 100 bps of the source curve payout,
   with 60% credited to the receiving door and 40% to the protocol in
-  room tokens. The fee policy remains open.
+  room tokens. The fee policy remains open. The two basis-point constants
+  are grouped in `src/math.rs`.
+- The first swap creates the canonical room-token fee vault at the swapping
+  user's expense. Room creation omits that account.
+- `claim_door_swap_fees` pays a door's current `fee_recipient`.
+  `claim_protocol_swap_fees` pays the current Config protocol fee recipient.
+  Both require that recipient's signature and an existing room-token ATA.
+  Claims reduce the room-wide unclaimed total and preserve the vault's
+  coverage of every remaining door and protocol liability.
 - The owner ruled out a completion threshold in this prototype. The
   [feasibility check](CORRECTIONS.md#paired-doors-prototype-completion-is-unreachable-for-early-doors)
   records why the original threshold exceeded the available room supply.

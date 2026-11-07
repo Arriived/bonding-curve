@@ -1,0 +1,17 @@
+{
+  "commit": "915b075d9b631aedb12892b900cffb9ac6bb42de",
+  "run_url": "https://github.com/Arriived/bonding-curve/actions/runs/42378291009",
+  "spl_read_finalized_slot": 519679435,
+  "create_room": {
+    "heap_bytes": 64,
+    "probe_transaction_cu": 337580,
+    "probe_program_cu": 337430,
+    "room_with_door_0_rent_lamports": 28407360
+  },
+  "source_sha256": {
+    "heap_headroom.json": "e8c466e917f8ec44b0141dfe3cc67ad845fe3f1320fa104d6222e57070671f46",
+    "paired_limits.json": "4071bd4d91ef27bbc80007c232c27f594439e4a5b748b6f02b3d61d40ce5a152",
+    "paired-spl.json": "90679721ada3e6296cc24be4ce00499115a458405b0418ff716e8c518949c154",
+    "svm.log": "348e8d2279be6ec961fa1ef3f20e7969cc1938f9cd8d0186b5efcf16a5025f52"
+  }
+}

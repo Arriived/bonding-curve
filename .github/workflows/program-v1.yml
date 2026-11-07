@@ -94,10 +94,11 @@ jobs:
         if: github.ref_name == 'claude/paired-doors'
         run: |
           sha256sum -c devnet/DEPLOY_ELF.sha256
-          cargo test --locked --manifest-path devnet/Cargo.toml
+          set -o pipefail
+          cargo test --locked --manifest-path devnet/Cargo.toml 2>&1 | tee verification/devnet-client-tests.log
           cargo build --locked --release --manifest-path devnet/Cargo.toml
           python3 scripts/heap_probe.py
-          python3 scripts/report_paired_doors.py > verification/paired_report.md
+          python3 scripts/report_paired_doors.py --report docs/PAIRED_DOORS_REPORT.md > verification/paired_report.md
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -109,6 +110,7 @@ jobs:
             program/target/idl/doors_v1.json
             program/devnet/target/release/doors-devnet
             program/verification/
+            program/docs/PAIRED_DOORS_REPORT.md
             program/programs/doors_v1/src/
             program/programs/doors_v1/tests/
             program/test-fixtures/launch_proxy/Cargo.lock

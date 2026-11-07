@@ -795,3 +795,41 @@ tokens as a door minimum or a door sale input. The prototype now quotes
 the room and door units separately in those fixtures, retaining their
 slippage, retirement and conservation assertions. The first runtime run
 also supplied the generated prototype IDL and compiled ELF hash.
+
+
+### Paired doors review fixes before devnet
+
+The prototype is rebased onto program-v1 `4b2d043`. Its smoke name-key
+function and all twelve matcher vectors are retained byte-for-byte from
+that base. The standalone devnet client tests run in CI.
+
+The rebased baseline at `915b075` reproduced the creation heap finding.
+The swap fee vault was being initialized during room creation. It is now
+initialized at its canonical PDA by the first swapping user, including
+when that PDA has been prefunded. Existing vaults retain the mint, owner,
+initialization and canonical-address checks. Room creation omits the vault
+account. The default heap probe enforces at least 1,500 bytes of creation
+headroom. The report's comparison is generated from that probe and the
+SBF rent fixture, with baseline source hashes retained in
+`verification/paired_doors_before_review.json`.
+
+Swap fees previously had accounting credits without a withdrawal path.
+The new door and protocol claims require their respective current fee
+recipient's signature and pay that recipient's existing room-token ATA.
+The protocol claim is authorized by Config's protocol fee recipient.
+Every swap and claim checks the vault against the room-wide total of
+unclaimed swap fees. The property audit also checks that the total equals
+the sum of every door's credit and the protocol credit. Tests cover
+recipient changes, unauthorized signers, incorrect destination accounts,
+partial and repeated claims, complete fee payout, and a deficit hidden by
+the former protocol-plus-receiving-door check. The provisional fee and
+receiving-door share are grouped as basis-point constants in `math.rs`.
+
+The report had mixed transaction CU from priority-fee trace fixtures with
+program CU from maximum-metadata takeover fixtures. The generated CU
+table now names each fixture, records the transaction shape, and separates
+program and transaction CU. Instrumented heap-probe CU is labelled in the
+creation comparison. The first review build's IDL comparison caught an
+extra trailing newline in the edited IDL. The committed IDL is copied from
+the exact Anchor output, and comparison plus layout checks run before SBF
+execution on this branch.
