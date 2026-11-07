@@ -784,3 +784,10 @@ The room sell pays the fee vault directly from the reserve as part of the
 gross curve payout. `execute_trade` asserts that the total reserve debit
 equals that gross payout. The existing sell and the paired-door design
 preserve this economic invariant.
+
+### First prototype verification
+
+The Config-only SBF run accepted and read back the stress cap through
+unchanged validation. The first implementation build stopped in host
+compile because the adversarial sweeps still referenced the prior
+conversion helper. The sweeps now exercise the equivalent swap checks.

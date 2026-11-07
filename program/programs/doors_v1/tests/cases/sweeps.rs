@@ -2,7 +2,7 @@
 // regressions against the compiled program, including the two confirmed findings.
 
 #[test]
-fn sweep_cross_room_conversion_and_claim_substitution_rolls_back() {
+fn sweep_cross_room_swap_and_claim_substitution_rolls_back() {
     let mut f = Fixture::new(1000);
     f.open(launch("Local second face"));
     f.trade(Some(0), true, 1_010_000_000);
@@ -30,8 +30,12 @@ fn sweep_cross_room_conversion_and_claim_substitution_rolls_back() {
         (ld.vault, fd.vault),
         (ld.backing, fd.backing),
         (ld.user, fd.user),
+        (
+            p(&[b"swap_fees", local.room.as_ref()]),
+            p(&[b"swap_fees", foreign.room.as_ref()]),
+        ),
     ] {
-        let mut instruction = f.convert_ix(0, 1, 1);
+        let mut instruction = f.swap_ix(0, 1, f.balance(ld.user) / 2);
         for meta in &mut instruction.accounts {
             if meta.pubkey == valid {
                 meta.pubkey = replacement;
@@ -70,7 +74,7 @@ fn sweep_cross_room_conversion_and_claim_substitution_rolls_back() {
             }
         }
     }
-    assert_eq!(attempts, 36);
+    assert_eq!(attempts, 37);
 }
 
 #[test]
@@ -141,15 +145,16 @@ fn sweep_signers_cannot_reassign_admin_or_fee_rights_and_open_cpi_rejects() {
 }
 
 #[test]
-fn sweep_a_failed_last_instruction_rolls_back_prior_buys_and_conversions() {
+fn sweep_a_failed_last_instruction_rolls_back_prior_buys_and_swaps() {
     let mut f = Fixture::new(0);
     f.open(launch("Atomic second face"));
-    let tokens = f.r().advance(1_000_000_000).unwrap() - f.r().sold;
+    let room_tokens = f.r().advance(1_000_000_000).unwrap() - f.r().sold;
+    let tokens = doors_v1::math::door_advance(f.d(0).virtual_quote, 0, room_tokens).unwrap();
     let instructions = [
         ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
         f.trade_ix(Some(0), true, 1_010_000_000, tokens),
-        f.convert_ix(0, 1, tokens / 2),
-        f.trade_ix(Some(1), false, tokens / 2, u64::MAX),
+        f.swap_ix(0, 1, tokens / 2),
+        f.trade_ix(Some(1), false, 1_000, u64::MAX),
     ];
     let tx = Transaction::new(
         &[&f.user],
@@ -186,7 +191,7 @@ fn sweep_a_failed_last_instruction_rolls_back_prior_buys_and_conversions() {
 }
 
 #[test]
-fn sweep_repeated_completion_retirement_conversion_and_exits_preserve_coverage() {
+fn sweep_repeated_completion_retirement_swap_and_exits_preserve_coverage() {
     let mut f = Fixture::new(1000);
     f.open(launch("Repeated cap face"));
     let room_ata = ata(
@@ -204,10 +209,10 @@ fn sweep_repeated_completion_retirement_conversion_and_exits_preserve_coverage()
         f.trade(Some(0), true, u64::MAX / 100);
         assert_eq!(f.r().status, 1);
         let tokens = f.balance(f.doors[0].user);
-        f.convert(0, 1, tokens);
-        f.trade(Some(1), false, tokens);
+        f.swap(0, 1, tokens);
+        f.trade(Some(1), false, f.balance(f.doors[1].user));
         f.trade(None, false, f.balance(room_ata));
-        assert_eq!(f.r().sold, f.r().retired);
+        assert_eq!(f.r().sold, f.unredeemed_room_tokens());
         assert_eq!(f.r().status, 0);
         for vault in [reserve, fees] {
             f.send(
@@ -427,7 +432,7 @@ fn sweep_atomic_temporary_holder_cannot_capture_legacy_pending_on_either_route()
         let profit = f.svm.get_account(&f.user.pubkey()).unwrap().lamports as i128 - before as i128;
         assert!(profit < 0, "temporary holder profit {profit}");
         assert_eq!(f.balance(attacker_ata), 0);
-        assert_eq!(f.r().sold, f.r().retired);
+        assert_eq!(f.r().sold, f.unredeemed_room_tokens());
         assert!(f.r().retired > 0);
         // Legacy protocol fees remain fully accrued to their beneficiary.
         assert!(f.r().protocol_accrued_sol >= 8_000_000_000);

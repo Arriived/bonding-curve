@@ -12,7 +12,7 @@ from pathlib import Path
 
 VM_NAME = {"initialize_config": "initialize_config", "create_room": "create_room", "open_door": "open_door",
            "buy_door0": "buy_door", "buy_door1": "buy_door", "sell_door0": "sell_door",
-           "convert_door0_to_door1": "convert", "buy_room_token": "buy_room", "retire_pending": "retire_pending",
+           "swap_door0_to_door1": "swap_doors", "buy_room_token": "buy_room", "retire_pending": "retire_pending",
            "claim_door_fees": "claim_door_fees"}
 
 
@@ -76,7 +76,7 @@ def main():
     for d in v["doors"]:
         m = d["mint"]
         L.append(f"| door {d['index']} mint `{m['mint']}`: supply, authorities | {m['supply']}, {m['mint_authority']}, {m['freeze_authority']}, {m['metadata_update_authority']} → {'ok' if m['ok'] else '**FAIL**'} |")
-        L.append(f"| door {d['index']} backing vault vs circulating door supply | {d['room_token_backing_vault_balance']} vs {d['circulating_door_supply']} → {'equal' if d['backing_exactly_equals_circulating'] else ('covers' if d['backing_covers_circulating'] else '**SHORT**')} |")
+        L.append(f"| door {d['index']} backing vault vs curve integral | {d['room_token_backing_vault_balance']} vs {d['curve_integral']} → {'equal' if d['backing_covers_curve_integral'] else ('covers' if d['backing_covers_curve_integral'] else '**SHORT**')} |")
     L += [f"| reserve vs curve integral of `sold` | {v['reserve']} vs {v['curve_integral_of_sold']} → {'covers' if v['reserve_covers_curve_integral'] else '**SHORT**'} |",
           f"| ReserveVault lamports − rent vs `reserve` | {int(v['reserve_vault_lamports']) - v['zero_data_rent']} vs {v['reserve']} → {'covers' if v['reserve_vault_covers_reserve'] else '**SHORT**'} |",
           f"| RoomVault vs unsold supply | {v['room_vault_balance']} vs U − {v['sold']} → {'covers' if v['room_vault_covers_unsold'] else '**SHORT**'} |",
@@ -97,7 +97,7 @@ EXPECTED_FAILURES = {
     "sell_exceeding_balance": (True, '{"Custom":1}'),                        # Token-2022 InsufficientFunds
     "claim_door_fees_by_non_recipient": (True, '{"Custom":6006}'),          # doors Authority
 }
-SMOKE_STEPS = ["create_room", "open_door", "buy_door0", "buy_door1", "sell_door0", "convert_door0_to_door1",
+SMOKE_STEPS = ["create_room", "open_door", "buy_door0", "buy_door1", "sell_door0", "swap_door0_to_door1",
                "buy_room_token", "retire_pending", "claim_door_fees"]
 
 
@@ -124,7 +124,7 @@ def check(out, deploy, show, init, smoke, fails, config, elf, onchain):
     results += [("room mint: 1B supply, no mint/freeze/metadata authority", v["room_mint"]["ok"])]
     for d in v["doors"]:
         results += [(f"door {d['index']} mint: 1B supply, no mint/freeze/metadata authority", d["mint"]["ok"]),
-                    (f"door {d['index']} backing vault covers circulating door supply", d["backing_covers_circulating"])]
+                    (f"door {d['index']} backing vault covers curve integral", d["backing_covers_curve_integral"])]
     results += [
         ("reserve covers the curve integral of sold", v["reserve_covers_curve_integral"]),
         ("ReserveVault lamports minus rent cover reserve", v["reserve_vault_covers_reserve"]),

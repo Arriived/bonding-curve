@@ -23,6 +23,7 @@ use spl_token_2022_interface::{
 use std::{collections::BTreeMap, path::PathBuf};
 
 include!("cases/sweeps.rs");
+include!("cases/paired_doors.rs");
 
 fn p(seeds: &[&[u8]]) -> Pubkey {
     Pubkey::find_program_address(seeds, &ID).0
