@@ -616,3 +616,21 @@ the verifier and the candidate replay. The §19 numbers were re-measured with th
 
 **Devnet consequence:** as in §18, NameLocks created earlier on devnet for names whose key changed are orphaned
 harmlessly. The smoke names' keys did not change. Nothing exists on mainnet.
+
+## 21. Launch watcher and first live measurement (7 November 2026)
+
+**New:** `watcher/`, which streams pump.fun and Raydium LaunchLab launches over free RPC endpoints and runs the
+matcher on each in shadow mode (README, "Launch watcher").
+
+**First run:** 1,870 launches in 83 minutes.
+- 55.3% would have been doors.
+- 615 of those were copies by other wallets; the other 419 were the same wallet relaunching.
+- 250 of the copies reused door 0's exact metadata URI.
+- Copy platforms are visible: pump2, Float, and LaunchLab configs that declare StonkFun.
+- Details and the raw log: `watcher/results/2026-11-07/`.
+
+**Corrections to what I said earlier:**
+- I quoted "27 launches in 30 s". That was one sample. The 83-minute run averaged 0.38 launches a second.
+- "StonkFun" is not a program. It is a self-declared name in about 150 LaunchLab `PlatformConfig` accounts with
+  distinct fee wallets, so a launch's StonkFun label cannot be verified on-chain.
+- Mainnet now carries version-1 transactions, so `getTransaction` needs `maxSupportedTransactionVersion: 1`.
