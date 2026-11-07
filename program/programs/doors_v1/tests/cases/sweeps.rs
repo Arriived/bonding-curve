@@ -403,7 +403,11 @@ fn sweep_atomic_temporary_holder_cannot_capture_legacy_pending_on_either_route()
             f.doors[0].mint,
             spl_token_2022_interface::ID,
         );
-        let tokens = sweep_post_retirement_tokens(&f.r(), 60_000_000_000);
+        let room_tokens = sweep_post_retirement_tokens(&f.r(), 60_000_000_000);
+        let tokens = route.map_or(room_tokens, |i| {
+            let d = f.d(i);
+            doors_v1::math::door_advance(d.virtual_quote, d.sold, room_tokens).unwrap() - d.sold
+        });
         let core = f.core();
         let retired_output = core.retired;
         let retire = instr(
@@ -454,7 +458,11 @@ fn sweep_atomic_temporary_holder_cannot_capture_legacy_pending_on_either_route()
 #[test]
 fn sweep_open_first_buy_settles_legacy_pending_and_slippage_rolls_it_back() {
     let mut f = sweep_legacy_backlog();
-    let tokens = sweep_post_retirement_tokens(&f.r(), 1_000_000_000);
+    let room_tokens = sweep_post_retirement_tokens(&f.r(), 1_000_000_000);
+    let price = f.r().price().unwrap();
+    let virtual_quote =
+        doors_v1::math::door_virtual_quote(price.numerator, price.denominator).unwrap();
+    let tokens = doors_v1::math::door_advance(virtual_quote, 0, room_tokens).unwrap();
     let mut l = launch("Retirement first buy");
     l.first_buy_lamports = 1_010_000_000;
     l.min_tokens_out = tokens + 1;
@@ -473,7 +481,11 @@ fn sweep_open_first_buy_settles_legacy_pending_and_slippage_rolls_it_back() {
 fn sweep_room_and_door_buy_slippage_roll_back_automatic_retirement() {
     for route in [None, Some(0)] {
         let mut f = sweep_legacy_backlog();
-        let tokens = sweep_post_retirement_tokens(&f.r(), 1_000_000_000);
+        let room_tokens = sweep_post_retirement_tokens(&f.r(), 1_000_000_000);
+        let tokens = route.map_or(room_tokens, |i| {
+            let d = f.d(i);
+            doors_v1::math::door_advance(d.virtual_quote, d.sold, room_tokens).unwrap() - d.sold
+        });
         f.fail_error(
             f.trade_ix(route, true, 1_010_000_000, tokens + 1),
             false,
@@ -487,7 +499,7 @@ fn sweep_room_and_door_buy_slippage_roll_back_automatic_retirement() {
             "buy_with_retirement",
         );
         f.audit();
-        assert_eq!(f.r().retired + tokens, f.r().sold);
+        assert_eq!(f.r().retired + room_tokens, f.r().sold);
     }
 }
 

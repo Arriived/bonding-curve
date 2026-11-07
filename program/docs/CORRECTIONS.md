@@ -791,3 +791,10 @@ The Config-only SBF run accepted and read back the stress cap through
 unchanged validation. The first implementation build stopped in host
 compile because the adversarial sweeps still referenced the prior
 conversion helper. The sweeps now exercise the equivalent swap checks.
+
+The first real prototype SBF run executed against the pinned deployed SPL
+programs. Four older rollback or redemption fixtures still used room
+tokens as a door minimum or a door sale input. The prototype now quotes
+the room and door units separately in those fixtures, retaining their
+slippage, retirement and conservation assertions. The first runtime run
+also supplied the generated prototype IDL and compiled ELF hash.

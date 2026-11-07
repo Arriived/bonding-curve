@@ -35,6 +35,8 @@ def main():
               'bundled_program_sha256':bundled,'source':'https://github.com/LiteSVM/litesvm/blob/v0.18.1/crates/litesvm/src/programs/mod.rs'},
         'dependency_tree':command('cargo','tree','--locked'),
         'measurement':'LiteSVM SBF execution; not a devnet/mainnet throughput benchmark'}
+    if cluster := os.environ.get('DOORS_SVM_CLUSTER_PROGRAMS'):
+        result['vm']['loaded_cluster_programs'] = json.loads((Path(cluster)/'manifest.json').read_text())
     (HERE/'verification/build.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8',newline='\n')
     print('Recorded exact toolchain, source/ELF hashes and current Agave writable-account cap.')
 if __name__=='__main__':main()
