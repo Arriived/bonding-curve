@@ -59,7 +59,7 @@ known (already documented).
 | I-5 | Info | open | No decision reserves anything now; only deterministic routing keeps a door decision safe |
 | I-6 | Info | open | Claiming SOL fees requires the recipient to hold a classic WSOL account |
 | I-7 | Info | known | Fees accumulated near the cap can block buys until holders sell |
-| I-8 | Info | open | One-character evasion: capital I for l, look-alike letters from other scripts, doubled letters or an added word take a copy out of its room; measured candidate rules close 4 of 10 tested dodges |
+| I-8 | Info | open (partly mitigated) | One-character evasion: capital I for l, look-alike letters from other scripts, doubled letters or an added word take a copy out of its room; rules A and B (live since 7 November) close 4 of 10 tested dodges |
 | I-9 | Info | open | Name squatting: a room created early for a likely narrative stays live for about 0.05 SOL a day of wash-volume fees plus 0.5 SOL of reserve, and every later copy routes into it |
 | I-8 | Info | open (doc) | The narrative spec describes a `set_matcher_authority` instruction that does not exist |
 | I-9 | Info | known | Decision log: the operator can rewrite it until its head is published |
@@ -243,7 +243,7 @@ reproduces v1 exactly (1,224 rooms, 1,732 routed). The independent verifier appl
 A copier who wants their own room, not a door, needs to change one character. Capital I for l, a pipe, small capitals,
 an Armenian o, a Cyrillic п, a Cherokee P, a doubled letter, or an added word ("Elon Musk", "Baby Elon") all escape
 v1. The best measured candidate (Unicode confusables) catches 4 of 10 at no measured precision cost, and was not
-adopted pending the owner's ruling (`services/matcher/RULE_CANDIDATES.md`). Recall measured on pump.fun, where nobody
+adopted on 7 November together with the exact-name fix (rule A), at no measured cost: 1,222 rooms and 1,734 routed against 1,224 and 1,732, precision 99.8% either way (`services/matcher/CORRECTIONS.md` §18). Recall measured on pump.fun, where nobody
 was evading a matcher, overstates recall under deliberate evasion. Only the economics can close the rest: being a door
 must be nearly as good as owning the room.
 
