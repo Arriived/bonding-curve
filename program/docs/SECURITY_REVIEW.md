@@ -37,6 +37,7 @@ known (already documented).
 | # | severity | status | title |
 |---|---|---|---|
 | H-1 | High | **fixed on-chain** (NameLock, `f87f341`); the service reservation is removed | Free name reservations let anyone block any name. SlugLock does not cover 9 of 16 routed-together pairs, so the reservation was load-bearing; the NameLock covers all 16 |
+| H-2 | High | **fixed in the matcher** (`claude/matcher-service`, CORRECTIONS §17) | Face laundering: a floor door with the same program identity but another name key gave a room a second narrative's face; it captured that narrative's launches and beat the genuine room on reserve depth, defeating the NameLock |
 | M-1 | Medium | fixed | Launch heap nearly exhausted: the metadata change overflowed it; after the fix, worst-case `create_room` kept 688 bytes, a service-signable takeover 496. At `71d32f3` (stack signer seeds), ≥ 1,520 and ≥ 2,816 |
 | M-2 | Medium | fixed | Matcher in-flight check and reservation were not atomic: concurrent requests could both get "new room" |
 | M-3 | Medium | fixed | Per-launcher rate limit keyed on an unauthenticated field. Requests are now launcher-signed |
@@ -58,6 +59,8 @@ known (already documented).
 | I-5 | Info | open | No decision reserves anything now; only deterministic routing keeps a door decision safe |
 | I-6 | Info | open | Claiming SOL fees requires the recipient to hold a classic WSOL account |
 | I-7 | Info | known | Fees accumulated near the cap can block buys until holders sell |
+| I-8 | Info | open | One-character evasion: capital I for l, look-alike letters from other scripts, doubled letters or an added word take a copy out of its room; measured candidate rules close 4 of 10 tested dodges |
+| I-9 | Info | open | Name squatting: a room created early for a likely narrative stays live for about 0.05 SOL a day of wash-volume fees plus 0.5 SOL of reserve, and every later copy routes into it |
 | I-8 | Info | open (doc) | The narrative spec describes a `set_matcher_authority` instruction that does not exist |
 | I-9 | Info | known | Decision log: the operator can rewrite it until its head is published |
 | I-10 | Info | known | One room, one write lock: every door's trades serialise on the room |
@@ -218,6 +221,39 @@ its folded-name key in the signed payload, and the program uses it as a PDA seed
     recommended (service README, "What remains" item 7).
 
 M-2's regression test stays.
+
+### H-2 — Face laundering through the floor (fixed in the matcher)
+
+**Attack.** The floor routes by the program's ASCII fold, which keeps stopwords; the matcher's name key drops them.
+1. Create room "solpepe"/PEPE. Its name key is SOLPEPE, so it matches nobody.
+2. Open a door "Sol Pepe"/PEPE. Same program identity, so the floor routes it in. Its name key is PEPE.
+3. The matcher matched any door face, so every later "Pepe" launch, any symbol, routed into this room.
+4. Against a genuine live Pepe room, the deeper reserve won the tie. Reproduced in
+   `test_face_laundering_through_the_floor_is_not_matchable`.
+
+**Why it mattered.** Two live rooms matched one name key, which is the duplicate the NameLock (H-1) exists to prevent.
+Under paired doors, the attacker's room would collect every copy's flow.
+
+**Fix.** Routing is the matcher's decision, so the fix is there, not on-chain: a room is text-matched only through faces
+carrying its own (door 0's) name key. Text-routed faces always do, so on the 2,956-launch calibration replay this
+reproduces v1 exactly (1,224 rooms, 1,732 routed). The independent verifier applies the same rule.
+
+### I-8 — One-character evasion (open)
+
+A copier who wants their own room, not a door, needs to change one character. Capital I for l, a pipe, small capitals,
+an Armenian o, a Cyrillic п, a Cherokee P, a doubled letter, or an added word ("Elon Musk", "Baby Elon") all escape
+v1. The best measured candidate (Unicode confusables) catches 4 of 10 at no measured precision cost, and was not
+adopted pending the owner's ruling (`services/matcher/RULE_CANDIDATES.md`). Recall measured on pump.fun, where nobody
+was evading a matcher, overstates recall under deliberate evasion. Only the economics can close the rest: being a door
+must be nearly as good as owning the room.
+
+### I-9 — Name squatting (open)
+
+The first launch of a name on this launchpad creates its room. A squatter can create rooms for likely narratives early
+(or copy pump.fun's trending names first) and keep them live cheaply: 0.5 SOL of reserve, 5 SOL a day of wash volume at
+1% (about 0.05 SOL a day). Every later copy, including the genuine creator's launch, becomes a door in the squatter's
+room. Inherent to first-come rooms. A higher room floor makes cornering the room's supply costlier; the liveness
+thresholds are the other lever (timelocked, M-6).
 
 ### M-1 — Launch heap nearly exhausted (fixed)
 
