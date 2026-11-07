@@ -497,7 +497,25 @@ impl Fixture {
             token_program: spl_token_2022_interface::ID,
             system_program: anchor_lang::system_program::ID,
         };
-        if buy {
+        if door.is_some() {
+            if buy {
+                instr(
+                    ac,
+                    ix::BuyDoor {
+                        lamports_in: n,
+                        min_door_tokens_out: min,
+                    },
+                )
+            } else {
+                instr(
+                    ac,
+                    ix::SellDoor {
+                        door_tokens_in: n,
+                        min_lamports_out: min,
+                    },
+                )
+            }
+        } else if buy {
             instr(
                 ac,
                 ix::Buy {
@@ -2108,9 +2126,13 @@ fn large_virtual_reserve_quotes_and_redemptions_do_not_overflow() {
     f.trade(Some(0), true, 101_000);
     let held = f.balance(f.doors[0].user);
     assert!(held > 0);
-    let slack = f.r().reserve - f.r().curve(held).unwrap();
+    let room = f.r();
+    let quote = doors_v1::math::door_integral(f.d(0).virtual_quote, held).unwrap();
+    let room_remaining = room.sold - quote;
+    let slack =
+        room.reserve - (room.curve(room.sold).unwrap() - room.curve(room_remaining).unwrap());
     f.trade(Some(0), false, held);
-    assert_eq!(f.r().sold, 0);
+    assert_eq!(f.r().sold, room_remaining);
     assert_eq!(f.r().reserve, slack);
 }
 
@@ -2817,7 +2839,7 @@ fn takeover_heap_case(create_uri: usize) {
 // [cu_limit, cu_price, launch]. Ordinary metadata; the trace does not depend on metadata length.
 #[test]
 fn launch_instruction_trace_budget() {
-    fn shaped(f: &mut Fixture, ix: Instruction, price: bool) -> (bool, usize, String) {
+    fn shaped(f: &mut Fixture, ix: Instruction, price: bool) -> (bool, usize, u64, String) {
         f.svm.expire_blockhash();
         let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(400_000)];
         if price {
@@ -2831,8 +2853,18 @@ fn launch_instruction_trace_budget() {
         );
         let count = |logs: &[String]| logs.iter().filter(|l| l.contains(" invoke [")).count();
         match f.svm.send_transaction(tx) {
-            Ok(m) => (true, count(&m.logs), String::new()),
-            Err(e) => (false, count(&e.meta.logs), format!("{:?}", e.err)),
+            Ok(m) => (
+                true,
+                count(&m.logs),
+                m.compute_units_consumed,
+                String::new(),
+            ),
+            Err(e) => (
+                false,
+                count(&e.meta.logs),
+                e.meta.compute_units_consumed,
+                format!("{:?}", e.err),
+            ),
         }
     }
     let prefund = |f: &mut Fixture, ix: &Instruction| {
@@ -2852,9 +2884,9 @@ fn launch_instruction_trace_budget() {
         if prefunded {
             prefund(&mut f, &ix);
         }
-        let (ok, invokes, err) = shaped(&mut f, ix, price);
+        let (ok, invokes, cu, err) = shaped(&mut f, ix, price);
         rows.push(json!({"instruction":"create_room","first_buy":true,"prefunded":prefunded,
-            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"error":err}));
+            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"transaction_cu":cu,"error":err}));
         let mut g = Fixture::new(0);
         let mut l = launch("Trace door");
         l.first_buy_lamports = 101_000_000;
@@ -2862,9 +2894,9 @@ fn launch_instruction_trace_budget() {
         if prefunded {
             prefund(&mut g, &ix);
         }
-        let (ok, invokes, err) = shaped(&mut g, ix, price);
+        let (ok, invokes, cu, err) = shaped(&mut g, ix, price);
         rows.push(json!({"instruction":"open_door","first_buy":true,"prefunded":prefunded,
-            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"error":err}));
+            "priority_fee_instruction":price,"succeeded":ok,"logged_invocations":invokes,"transaction_cu":cu,"error":err}));
     }
     for r in &rows {
         println!("TRACE {r}");

@@ -93,7 +93,17 @@ jobs:
       - name: Generate measured evidence
         run: |
           python3 scripts/build_evidence.py
-          python3 scripts/report_cu.py
+          if [ "${{ github.ref_name }}" = "claude/paired-doors" ]; then
+            python3 scripts/report_paired_doors.py > verification/paired_report.md
+          else
+            python3 scripts/report_cu.py
+          fi
+      - name: Measure paired doors heap and compile devnet client
+        if: github.ref_name == 'claude/paired-doors'
+        run: |
+          sha256sum -c devnet/DEPLOY_ELF.sha256
+          cargo build --locked --release --manifest-path devnet/Cargo.toml
+          python3 scripts/heap_probe.py
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,6 +113,7 @@ jobs:
             program/Cargo.lock
             program/target/deploy/doors_v1.so
             program/target/idl/doors_v1.json
+            program/devnet/target/release/doors-devnet
             program/verification/
             program/programs/doors_v1/src/
             program/programs/doors_v1/tests/

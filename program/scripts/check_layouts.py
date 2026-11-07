@@ -22,7 +22,8 @@ def main():
         raise ValueError(ty)
     layouts = dict(A.LAYOUTS)
     # The prototype extends packed accounts after the deployed layouts.
-    if "virtual_quote" in [field["name"] for field in types["door"]["fields"]]:
+    paired = any(field["name"] == "virtual_quote" for field in types["door"]["fields"])
+    if paired:
         layouts["Room"] = [*layouts["Room"], ("protocol_accrued_room", 8)]
         layouts["Door"] = [*layouts["Door"], ("virtual_quote", 16), ("sold", 8), ("accrued_room", 8)]
     out={}
@@ -52,6 +53,9 @@ def main():
         if normal(name)=='createroom':
             config=next(f for f in fields if normal(f['name'])=='config');assert not config.get('writable',False),'permissionless creation must not write Config'
     (ROOT/'program/verification/instruction_contexts.json').write_text(json.dumps(contexts,indent=2)+'\n',encoding='utf-8',newline='\n')
+    if paired:
+        print('Prototype IDL widths verified:', {k:v['bytes'] for k,v in out.items()})
+        return
     spec=ROOT/'research/doors_into_one_room/PERMANENT_CURVE_SPEC.md';text=spec.read_text(encoding='utf-8')
     start='<!-- BEGIN GENERATED PROGRAM CONTEXTS -->';end='<!-- END GENERATED PROGRAM CONTEXTS -->';block='\n'.join(rows)+'\n'
     if start in text:

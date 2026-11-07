@@ -43,9 +43,13 @@ fn heap_probe_try(f: &mut Fixture, ix: Instruction) -> Result<(u64, u64), String
     if HEAP_FRAME > 0 {
         ixs.push(ComputeBudgetInstruction::request_heap_frame(HEAP_FRAME));
     }
+    let mut signers = vec![&f.user];
+    if ix.accounts.iter().any(|account| account.is_signer && account.pubkey == f.matcher.pubkey()) {
+        signers.push(&f.matcher);
+    }
     ixs.push(ix);
     let tx = Transaction::new(
-        &vec![&f.user, &f.matcher],
+        &signers,
         Message::new(&ixs, Some(&f.user.pubkey())),
         f.svm.latest_blockhash(),
     );
@@ -201,6 +205,63 @@ fn heap_probe_worst_case_launches() {
 }
 '''
 
+PAIRED_TEST = r"""
+#[test]
+fn heap_probe_paired_door_trades() {
+    let mut results = BTreeMap::new();
+    for shape in ["buy_door", "sell_door", "swap_doors"] {
+        let units = heap_probe_search(|units| {
+            let mut f = heap_probe_fixture();
+            let mut room = launch("Paired heap room");
+            room.max_fee_lamports = 18;
+            f.create(room, None);
+            let mut open = launch("Paired heap second door");
+            open.max_fee_lamports = 11;
+            f.open(open);
+            f.trade(Some(0), true, 1_010_000_000);
+            f.trade(None, true, 1_010_000_000); // settled by the next door buy
+            let mut ix = match shape {
+                "buy_door" => f.trade_ix(Some(1), true, 1_010_000_000, 0),
+                "sell_door" => f.trade_ix(Some(0), false, f.balance(f.doors[0].user) / 2, 0),
+                _ => f.swap_ix(0, 1, f.balance(f.doors[0].user) / 2),
+            };
+            let end = ix.data.len();
+            ix.data[end - 8..].copy_from_slice(&((units as u64) << 48).to_le_bytes());
+            heap_probe_try(&mut f, ix).is_ok()
+        });
+        results.insert(shape, units);
+    }
+    println!("HEAP_PAIRED {}", serde_json::to_string(&results).unwrap());
+}
+"""
+
+
+def instrument_paired(source):
+    allocation = """
+        let probe = vec![0u8; units * 16];
+        core::hint::black_box(&probe);
+"""
+    for name, minimum, trade in (
+        ("buy_door", "min_door_tokens_out", "trade(ctx, true, lamports_in, min_door_tokens_out)"),
+        ("sell_door", "min_lamports_out", "trade(ctx, false, door_tokens_in, min_lamports_out)"),
+    ):
+        begin = source.index(f"    pub fn {name}(")
+        end = source.index("\n    pub fn ", begin + 1)
+        code = source[begin:end]
+        assert trade in code
+        code = code.replace(trade, f"""let units = ({minimum} >> 48) as usize;
+        let {minimum} = {minimum} & ((1 << 48) - 1);
+        {trade}?;""" + allocation + "        Ok(())")
+        source = source[:begin] + code + source[end:]
+    begin = source.index("    pub fn swap_doors(")
+    end = source.index("\n    pub fn retire_pending(", begin)
+    code = source[begin:end]
+    code = code.replace("        let a = ctx.accounts;", """        let units = (min_out >> 48) as usize;
+        let min_out = min_out & ((1 << 48) - 1);
+        let a = ctx.accounts;""", 1)
+    index = code.rindex("        Ok(())")
+    return source[:begin] + code[:index] + allocation + code[index:] + source[end:]
+
 
 def run(cmd, cwd, **kw):
     r = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True, **kw)
@@ -231,9 +292,13 @@ def main():
             i = s.index(nxt)
             j = s.rindex("        Ok(())\n    }\n", 0, i)
             s = s[:j] + PROBE + s[j:]
+        paired = "    pub fn swap_doors(" in s
+        if paired:
+            s = instrument_paired(s)
         lib.write_text(s)
         tests = wt / "program/programs/doors_v1/tests/svm.rs"
-        tests.write_text(tests.read_text() + TEST.replace("__HEAP_FRAME__", str(args.heap_frame)))
+        tests.write_text(tests.read_text() + TEST.replace("__HEAP_FRAME__", str(args.heap_frame))
+                         + (PAIRED_TEST if paired else ""))
         prog = wt / "program"
         env = dict(os.environ)
         run(["rustup", "override", "set", "1.99.0-x86_64-unknown-linux-gnu"], prog)
@@ -241,6 +306,10 @@ def main():
         out = run(["cargo", "test", "--locked", "--test", "svm", "heap_probe_worst_case_launches", "--",
                    "--nocapture"], prog, env=env).stdout
         units = json.loads(re.search(r"HEAP_PROBE (\{.*\})", out)[1])
+        if paired:
+            paired_out = run(["cargo", "test", "--locked", "--test", "svm",
+                              "heap_probe_paired_door_trades", "--", "--nocapture"], prog, env=env).stdout
+            units.update(json.loads(re.search(r"HEAP_PAIRED (\{.*\})", paired_out)[1]))
         cu = json.loads(re.search(r"HEAP_CU (\{.*\})", out)[1])
         full_takeover = bool(units.pop("create_room_takeover_uri200_passes"))
         result = {
