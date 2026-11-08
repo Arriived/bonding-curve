@@ -750,3 +750,13 @@ produced identical lengths: legacy URI limits 35 creation, 3 one-holder takeover
 200 open, 194 open takeover, at name 32/symbol 10 with priority instruction.
 Full URI 200 creation remains 1,397 bytes and refused. The e2e launch fixture
 also uses the default constant. No production program or rent behavior changed.
+
+
+Final launch-budget CI [42536522731](https://github.com/Arriived/bonding-curve/actions/runs/42536522731)
+is green on program `0849033`: 71 SBF tests, 10,000 mixed iterations, pinned SPL
+binaries, cap feature checks, heap, 400,000 curve cases, client checks and unchanged
+`d1fb4975` production binary pin. The maximum heap fixture confirms 402,601 stressed
+CU, leaving **97,399 CU** under 500,000. Birth rent remains 17,515,840 lamports.
+Service `6109176` passes 172/172 tests; the full evasion JSON repeats identically.
+The config/message regression's pre-fix control is `b86ae42`; all committed
+candidate tests pass. Data and hashes: `data/launch_cu_budget_checks.json`.

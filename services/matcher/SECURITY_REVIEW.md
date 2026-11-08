@@ -174,3 +174,20 @@ boundaries wire size is 1,232 bytes except plain open (1,206). Full URI 200
 creation remains 1,397 bytes and does not fit; two-distinct-holder creation also
 does not fit even with URI zero. The service's packet refusal is retained.
 Production program source and the 35% birth-rent saving are untouched.
+
+
+Service candidate `6109176` passes 172/172 mocked pytest tests. The full repeated
+benchmark has the same 1,223 targets and byte-identical JSON (SHA-256
+`2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4`).
+The local 400,000-case curve run also passes. Rules and the birth rent are unchanged.
+Final pinned-SPL SBF/heap evidence is linked below.
+
+
+Final launch-budget CI [42536522731](https://github.com/Arriived/bonding-curve/actions/runs/42536522731)
+is green on program `0849033`: 71 SBF tests, 10,000 mixed iterations, pinned SPL
+binaries, cap feature checks, heap, 400,000 curve cases, client checks and unchanged
+`d1fb4975` production binary pin. The maximum heap fixture confirms 402,601 stressed
+CU, leaving **97,399 CU** under 500,000. Birth rent remains 17,515,840 lamports.
+Service `6109176` passes 172/172 tests; the full evasion JSON repeats identically.
+The config/message regression's pre-fix control is `b86ae42`; all committed
+candidate tests pass. Data and hashes: `data/launch_cu_budget_checks.json`.

@@ -1,0 +1,146 @@
+{
+  "controlled_service_commit": "b86ae42",
+  "candidate_service_commit": "6109176",
+  "red_regression": {
+    "failed": 1,
+    "passed": 1,
+    "default_before": 400000,
+    "expected_after": 500000
+  },
+  "service_tests": {
+    "passed": 172,
+    "failed": 0,
+    "command": "python -m pytest services/matcher/tests -q --tb=short --junitxml=.tmp/launch-cu-pytest.xml"
+  },
+  "evasion_benchmark_targets": 1223,
+  "evasion_json_sha256": "2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4",
+  "evasion_repeated_identically": true,
+  "priority_fee_example": {
+    "cu_price_micro_lamports": 10000,
+    "cu_limit": 500000,
+    "priority_fee_lamports": 5000,
+    "additional_priority_fee_lamports": 1000
+  },
+  "rounded_review_stress": {
+    "vm_cu": 351341,
+    "token_drift": 21000,
+    "bump_variance": 7500,
+    "extra_bump_tries": 15,
+    "cu_per_bump_try": 1500,
+    "stressed_cu": 402341,
+    "margin_cu": 97659
+  },
+  "conservative_stress": {
+    "vm_cu": 351341,
+    "priority_price_instruction": 150,
+    "token_drift": 21110,
+    "bump_variance": 7500,
+    "extra_bump_tries": 15,
+    "cu_per_bump_try": 1500,
+    "stressed_cu": 402601,
+    "margin_cu": 97399
+  },
+  "packet_sizes": "launch_cu_packet_sizes.json",
+  "source_sha256": {
+    "matcher_service/config.py": "0d44b2cc0d5627dca1aaced6b37f4fc66cf084f35875fde6d8d53669468615a8",
+    "scripts/max_uri.py": "82dde162f88df06a43d07173f93d28ab8453c60b46d8883108772c81290aaa8d",
+    "tests/test_launch_budget.py": "7b005cfc4b13be1cc732997ad9f329873b19b8fc26476fc9751d28a027576852",
+    "tests/test_failures.py": "2f7795bf9c3b08b7be2f7743d7084647905b859ddd5ded3b4eab6cf3a56cc939",
+    "tests/e2e/e2e.py": "05c39da68dd5bcfe42b52a1aeaa2a6b03077191d84ba233a605bb750afc34346"
+  },
+  "evasion_rule_source_sha256": "08287cc85c6dd276c9152812d6a311113e37495e3f179056e2bdb66c5421452b",
+  "packet_comparison_identical": true,
+  "curve_fuzz": {
+    "iterations": 400000,
+    "buys_checked": 272933,
+    "supply_refusals": 127067,
+    "round_trip_gains": 0,
+    "non_monotone": 0,
+    "backing_deficits": 0,
+    "max_rounding_kept_base": 19995,
+    "swap_round_trips": 19704,
+    "swap_gains": 0,
+    "swap_insolvent": 0,
+    "split_buys": 9998,
+    "split_buy_gains": 0,
+    "split_sell_differences": 0
+  },
+  "program_ci": {
+    "run_id": 42536522731,
+    "url": "https://github.com/Arriived/bonding-curve/actions/runs/42536522731",
+    "source_commit": "08490333d14778b2fde1a6b588168ff675da8831",
+    "sbf_tests": 71,
+    "property_iterations": 10000,
+    "executed_transactions": 12488,
+    "production_elf_sha256": "d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e",
+    "all_source_idl_and_binary_checks_passed": true,
+    "heap_probe_passed": true,
+    "curve_fuzz_iterations": 400000,
+    "stress_feature_checks_passed": true,
+    "client_checks_passed": true
+  },
+  "sbf_launch_margin": {
+    "create_room": {
+      "bump_variance_cu": 7500,
+      "cu_per_bump_try": 1500,
+      "extra_bump_tries": 15,
+      "launch_limit_cu": 500000,
+      "margin_cu": 97455,
+      "priority_price_instruction_cu_added": 150,
+      "stressed_transaction_cu": 402545,
+      "token_program_drift_cu": 21110,
+      "vm_transaction_cu": 351285
+    },
+    "open_door": {
+      "bump_variance_cu": 7500,
+      "cu_per_bump_try": 1500,
+      "extra_bump_tries": 15,
+      "launch_limit_cu": 500000,
+      "margin_cu": 164540,
+      "priority_price_instruction_cu_added": 150,
+      "stressed_transaction_cu": 335460,
+      "token_program_drift_cu": 21110,
+      "vm_transaction_cu": 284200
+    }
+  },
+  "heap_launch_budget": {
+    "limit_cu": 500000,
+    "token_program_drift_cu": 21110,
+    "bump_variance_cu": 7500,
+    "extra_bump_tries": 15,
+    "cu_per_bump_try": 1500,
+    "priority_price_instruction_cu_added": 150,
+    "rows": {
+      "create_room": {
+        "stressed_transaction_cu": 402601,
+        "margin_cu": 97399
+      },
+      "open_door": {
+        "stressed_transaction_cu": 335493,
+        "margin_cu": 164507
+      }
+    }
+  },
+  "birth_rent_lamports": 17515840,
+  "production_program_unchanged": true,
+  "program_source_sha256": {
+    "programs/doors_v1/src/contexts.rs": "7091a95f3858f8eefc26fc38b9288dc1b2cddbd24be1a6d9969f2bf2da29b279",
+    "programs/doors_v1/src/lib.rs": "ad8ff3c1f131b713322696dedd231d3477d9477f1575c0776f4e8c9e33714d7c",
+    "programs/doors_v1/src/math.rs": "ac7c88f69a0a4e6e094bd7f25fba61166cddd9264eb8c6d5620982d80e934c46",
+    "programs/doors_v1/src/state.rs": "87cd48576e5b2fc4459287a27bc67b48b01796037ba2a5677906d9493a9f1c4b",
+    "programs/doors_v1/src/trading.rs": "5d1019b6845da67c2cc80a06f5e3fb2311b8989746e0481fb0ef12a3e2eb93a5",
+    "programs/doors_v1/src/vaults.rs": "3ec60fb8df4394af8674f7f85c38e45761bf5cedb8a08366d004ae13ac8d1c3b",
+    "programs/doors_v1/tests/cases/adversarial_review.rs": "cd102cb944251698722beec293f00c216a7f56843448325b77b877ab1240de7c",
+    "programs/doors_v1/tests/cases/paired_doors.rs": "5a8fc27040f94a8430be52f01eed98732a754168b9b87a6ae382e1142b3ca386",
+    "programs/doors_v1/tests/cases/review_continuation.rs": "f2338d22831a847c86c2d00a79f9bfa072fc2bd86428c7fedacf99d9e7afdbb3",
+    "programs/doors_v1/tests/cases/sweeps.rs": "8b511768264024fd1bb212fdef222a8aefb74d26132dff51838aab9d1c65bb88",
+    "programs/doors_v1/tests/svm.rs": "666f495b96c5487e2086a0ce2a9b6f01cc96662cbe4f9d6208bf328454ed3237",
+    "programs/doors_v1/Cargo.toml": "ca8e422fa5dece2dd35d55589d9256fbcf656f040b6d699dbde9c121656d472b",
+    "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
+    "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",
+    "test-fixtures/launch_proxy/Cargo.lock": "e98c1572b4a90e4df2829f54418163a041dab3ee09b6f78081369a6b2f904eba",
+    "Cargo.lock": "1f20992f4c25877e3706d4bac49d073bb3bd6c908ab71c0ac35b14d6d1c710a5",
+    "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
+    "Anchor.toml": "41cf6eb06910ee82a2165d0a778e26d1b5bcb1db6892fdaf8ce1297632e6c8b3"
+  }
+}

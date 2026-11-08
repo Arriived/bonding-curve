@@ -1,14 +1,15 @@
 {
   "service_tests": {
-    "passed": 170,
+    "passed": 172,
     "failed": 0,
-    "command": "python -m pytest services/matcher/tests -q --tb=short --junitxml=.tmp/owner-pytest-final.xml",
+    "command": "python -m pytest services/matcher/tests -q --tb=short --junitxml=.tmp/launch-cu-pytest.xml",
     "test_sources_sha256": {
       "conftest.py": "12ffec74e5d27cfb0fca117c79ff0cec9b7e78c1d6afad91e59ba14465d4d5f8",
       "test_adversarial_sweep.py": "86925851e391ad6b46f7b201940678939f5791d7eb0bea05c5a523b56878aaeb",
       "test_app.py": "456c542bf8f922f03d1e838dcad70c31102e4494f6ce7cb32751341b96094323",
       "test_examples.py": "e636177c19264c7947e3d009c4cc6705afbc3f14d93c58ff9170b8f3fa3f6d07",
-      "test_failures.py": "8b236a2d2a5c1bd980a3433866e12f442e0faae311f9c58a5de91d2f20bc2d9b",
+      "test_failures.py": "2f7795bf9c3b08b7be2f7743d7084647905b859ddd5ded3b4eab6cf3a56cc939",
+      "test_launch_budget.py": "7b005cfc4b13be1cc732997ad9f329873b19b8fc26476fc9751d28a027576852",
       "test_liveness_and_ties.py": "a7fd4ba73922e0e6adf8ed7e2734cd2a415761102c2f765f22600b4fc17dc853",
       "test_paired_port.py": "fbe376740c782d2b5c488ebef03dd459cd6ca493dd613b2986ebce7290bfa829",
       "test_rpc_redaction.py": "e88f6c42759f0da24c518b0623e1e705aa6100d166d0f55d842881c44b2a3ec3",
@@ -26,7 +27,7 @@
     "matcher_service/app.py": "2dc23773a72a52cb89e717939037e4e7b5ec78af5b03004ab3017154a1f6c93d",
     "matcher_service/auth.py": "d1c327035d83d23679b07664e8adad0696d98bca25adfe32198484caca4dbc52",
     "matcher_service/chain.py": "a3b28775224c23b8990aed20add515b508c88df6dd4d71dc68574e1dfeb6b114",
-    "matcher_service/config.py": "0e639c396f69a2fb6119a257f811309a771df3b54727212d7b58eeec2804d400",
+    "matcher_service/config.py": "0d44b2cc0d5627dca1aaced6b37f4fc66cf084f35875fde6d8d53669468615a8",
     "matcher_service/decide.py": "f1fd86ee0959c669cfd794f1a97fc7a17453087e7e2a4420ca630536dafbaea6",
     "matcher_service/layouts.py": "39f4f8efe1f7a8fc0e7cf033a0e93d695e963338e8cb77344f5a98de4567dc15",
     "matcher_service/liveness.py": "c9945b58fb2029945ea8fe4f0dc51a5aaec38652748b28855382fca5e5e7158f",
@@ -38,32 +39,10 @@
     "matcher_service/signer.py": "a79057beb517c089dd0df5a553a04f05e1c5d209eb849168dba1ef9a98ec59fe",
     "matcher_service/store.py": "74df5d99ea4fa11492ae066f5ae54af99e31b91b7b45dc2e514e610dd6a45bec",
     "matcher_service/txbuild.py": "dc75a8110504a0a6d3b388e72787d5b46df259606ce17a52031a8bbb56cd381f",
-    "scripts/verify_decision.py": "60fe3515fefb30d3cce1b953afb442ad7c08f96ce6cd4767d078682b6fadb1f9"
+    "scripts/verify_decision.py": "60fe3515fefb30d3cce1b953afb442ad7c08f96ce6cd4767d078682b6fadb1f9",
+    "scripts/max_uri.py": "82dde162f88df06a43d07173f93d28ab8453c60b46d8883108772c81290aaa8d"
   },
   "previous_program_ci": {
-    "run_id": 42403905057,
-    "url": "https://github.com/Arriived/bonding-curve/actions/runs/42403905057",
-    "source_commit": "9ed04d73a2c057433b79adc1ddb9a279c1a3f2ba",
-    "sbf_tests": 71,
-    "property_iterations": 10000,
-    "executed_transactions": 12488,
-    "elf_sha256": "e3c9aa751d2745b6e89dee76dbf362556f460f42288421a55c57bae3b4ede6b4",
-    "all_sources_and_idl_match": true
-  },
-  "benchmark_sha256": "2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4",
-  "controlled_commits": {
-    "service": "f2f8451",
-    "program": "816b38d"
-  },
-  "owner_rulings": {
-    "A": "Fixed; current name holder, conflicting live slug refuses",
-    "B": "Fixed in paired program; normal ceiling plus isolated test feature",
-    "D": "Birth rent 26959560 -> 17515840; exact sparse liveness and lazy vaults"
-  },
-  "candidate_source_commit": "028e57e",
-  "evasion_rules_changed": false,
-  "routing_changed": true,
-  "program_ci": {
     "run_id": 42526798488,
     "url": "https://github.com/Arriived/bonding-curve/actions/runs/42526798488",
     "source_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
@@ -75,7 +54,34 @@
     "default_cap_refused": true,
     "test_feature_cap_accepted": true
   },
-  "verified_service_commit": "bf121dc",
+  "benchmark_sha256": "2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4",
+  "controlled_commits": {
+    "service": "f2f8451",
+    "program": "816b38d"
+  },
+  "owner_rulings": {
+    "A": "Fixed; current name holder, conflicting live slug refuses",
+    "B": "Fixed in paired program; normal ceiling plus isolated test feature",
+    "D": "Birth rent 26959560 -> 17515840; exact sparse liveness and lazy vaults"
+  },
+  "candidate_source_commit": "6109176",
+  "evasion_rules_changed": false,
+  "routing_changed": true,
+  "program_ci": {
+    "run_id": 42536522731,
+    "url": "https://github.com/Arriived/bonding-curve/actions/runs/42536522731",
+    "source_commit": "08490333d14778b2fde1a6b588168ff675da8831",
+    "sbf_tests": 71,
+    "property_iterations": 10000,
+    "executed_transactions": 12488,
+    "production_elf_sha256": "d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e",
+    "all_source_idl_and_binary_checks_passed": true,
+    "heap_probe_passed": true,
+    "curve_fuzz_iterations": 400000,
+    "stress_feature_checks_passed": true,
+    "client_checks_passed": true
+  },
+  "verified_service_commit": "6109176",
   "room_rent": {
     "controlled_commit": "816b38d",
     "before_lamports": 26959560,
@@ -86,5 +92,8 @@
   "room_wire_bytes": {
     "birth": 735,
     "trading": 1335
-  }
+  },
+  "launch_cu_budget_review": "launch_cu_budget_checks.json",
+  "launch_cu_limit": 500000,
+  "conservative_launch_margin_cu": 97399
 }
