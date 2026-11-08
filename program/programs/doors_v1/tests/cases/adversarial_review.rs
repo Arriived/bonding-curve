@@ -8,7 +8,7 @@ fn adversarial_evidence(name: &str, data: Value) {
 }
 
 #[test]
-fn adversarial_revived_former_holder_still_accepts_routed_flow() {
+fn adversarial_revived_former_holder_trades_but_successor_receives_new_doors() {
     let mut f = Fixture::empty(0);
     let wallet_start = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
     let mut first = launch("Revival Frog");
@@ -36,6 +36,7 @@ fn adversarial_revived_former_holder_still_accepts_routed_flow() {
     successor.symbol = "NEW".into();
     f.create(successor, None);
     let current = f.room;
+    let current_keys = (f.rid,f.room,f.doors.clone());
     assert_eq!(f.name_holder(&name), Some(current));
     let current_room = f.r();
     assert!(current_room
@@ -59,15 +60,22 @@ fn adversarial_revived_former_holder_still_accepts_routed_flow() {
     assert!(f.r().reserve > current_room.reserve);
     assert_eq!(f.name_holder(&name), Some(current));
 
-    // The service reproduction selects this revived room for a third symbol.
-    // Show that the program accepts that signed route while the successor lives.
+    // The owner ruling routes the new third symbol to the current NameLock
+    // holder. The revived former holder retains its existing trading positions.
+    let old_keys = (f.rid,f.room,f.doors.clone());
+    let old_door_count = f.r().door_count;
     paired_actor(&mut f, &mut other);
+    (f.rid,f.room,f.doors) = current_keys;
     let mut routed = launch("Revival Frog");
     routed.symbol = "THIRD".into();
     routed.first_buy_lamports = 1_010_000_000;
     routed.min_tokens_out = 1;
     f.open(routed);
+    assert_eq!(f.room,current);
+    assert_eq!(f.r().door_count,current_room.door_count+1);
     paired_actor(&mut f, &mut other);
+    (f.rid,f.room,f.doors) = old_keys;
+    assert_eq!(f.r().door_count,old_door_count);
     let before_exit = f.svm.get_account(&f.user.pubkey()).unwrap().lamports;
     f.trade(Some(0), false, held);
     f.claim(0, 0);
@@ -77,7 +85,8 @@ fn adversarial_revived_former_holder_still_accepts_routed_flow() {
     adversarial_evidence(
         "revival",
         json!({
-            "case":"revival_after_name_takeover", "owner_decision":true,
+            "case":"revival_after_name_takeover_fixed", "fixed":true,
+            "new_doors_received_by_former_holder":0,"new_doors_received_by_current_holder":1,
             "setup_cost_lamports":setup_cost, "recoverable_initial_reserve_lamports":1_000_000_000u64,
             "initial_gross_buy_lamports":1_010_000_000u64,
             "revival_operating_cost_lamports":revival_cost, "own_wash_fees_claimed_lamports":own_fees,
@@ -290,32 +299,17 @@ fn adversarial_self_owned_swap_loops_cannot_extract_room_value() {
 fn adversarial_normal_admin_can_select_the_stress_cap() {
     let mut f = Fixture::new(0);
     let old_cap = f.r().graduation_trigger_lamports;
-    let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
+    let mut settings = defaults(f.matcher.pubkey(),f.user.pubkey());
     settings.graduation_trigger_lamports = 120_000_000_000;
-    f.send(
-        instr(
-            a::UpdateConfig {
-                admin: f.user.pubkey(),
-                config: f.cfg,
-            },
-            ix::UpdateConfig {
-                settings,
-                new_admin: f.user.pubkey(),
-            },
-        ),
-        false,
-        "normal_admin_stress_cap",
-    );
+    let change = instr(a::UpdateConfig {admin:f.user.pubkey(),config:f.cfg},
+        ix::UpdateConfig {settings,new_admin:f.user.pubkey()});
+    #[cfg(not(feature="test-stress"))]
+    f.fail_error(change,false,Some("BadConfig"));
+    #[cfg(feature="test-stress")]
+    f.send(change,false,"isolated_stress_cap");
     let c = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
-    // Existing rooms keep the cap they were created with.
-    assert_eq!(f.r().graduation_trigger_lamports, old_cap);
-    // Finding, recorded as current behaviour (owner decision pending, SECURITY_REVIEW.md): a normal admin
-    // update selects the 120 SOL stress cap for every room created afterwards. If the owner rules that
-    // production builds must refuse it, this assertion flips to `old_cap` together with the program change.
-    assert_eq!(c.graduation_trigger_lamports, 120_000_000_000);
-    adversarial_evidence(
-        "stress_cap",
-        json!({"case": "normal admin update selects the stress cap", "owner_decision": true,
-               "existing_room_cap_lamports": old_cap, "new_rooms_cap_lamports": c.graduation_trigger_lamports}),
-    );
+    assert_eq!(f.r().graduation_trigger_lamports,old_cap);
+    assert_eq!(c.graduation_trigger_lamports,if cfg!(feature="test-stress") {120_000_000_000} else {old_cap});
+    adversarial_evidence("stress_cap",json!({"fixed":true,"test_feature":cfg!(feature="test-stress"),
+        "production_ceiling_lamports":85_018_013_680u64,"configured_cap_lamports":c.graduation_trigger_lamports}));
 }

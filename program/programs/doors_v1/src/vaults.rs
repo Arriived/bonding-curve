@@ -486,7 +486,13 @@ pub fn door_check(
         Error::Invariant
     );
     require!(
-        token(backing, &r.room_mint, di.key, &spl_token_2022_interface::ID)? >= d.backing,
+        token_or_empty(
+            backing,
+            &r.room_mint,
+            di.key,
+            &spl_token_2022_interface::ID,
+            d.backing
+        )? >= d.backing,
         Error::Invariant
     );
     Ok(())
@@ -502,6 +508,53 @@ pub fn core_check(c: &Core, local_door_fees: u64) -> Result<()> {
         &c.room_mint,
         local_door_fees,
     )
+}
+// Empty lazy PDAs accept donations but never turn them into credited liabilities.
+pub fn empty_pda(ai: &AccountInfo, seeds: &[&[u8]]) -> Result<u8> {
+    let bump = pda(ai, seeds)?;
+    require_keys_eq!(*ai.owner, anchor_lang::system_program::ID, Error::Account);
+    require!(ai.data_is_empty(), Error::Account);
+    Ok(bump)
+}
+pub fn token_or_empty(
+    ai: &AccountInfo,
+    mint: &Pubkey,
+    owner: &Pubkey,
+    program: &Pubkey,
+    owed: u64,
+) -> Result<u64> {
+    if ai.data_is_empty() {
+        require_keys_eq!(*ai.owner, anchor_lang::system_program::ID, Error::Account);
+        require!(owed == 0, Error::Invariant);
+        Ok(0)
+    } else {
+        token(ai, mint, owner, program)
+    }
+}
+pub fn native_available(ai: &AccountInfo, owed: u128) -> Result<u64> {
+    if ai.owner == &anchor_lang::system_program::ID {
+        require!(ai.data_is_empty() && owed == 0, Error::Invariant);
+        Ok(0)
+    } else {
+        require_keys_eq!(*ai.owner, crate::ID, Error::Account);
+        require!(ai.data_is_empty(), Error::Account);
+        sub(ai.lamports(), Rent::get()?.minimum_balance(0))
+    }
+}
+pub fn ensure_native<'a>(
+    payer: &AccountInfo<'a>,
+    target: &AccountInfo<'a>,
+    system: &AccountInfo<'a>,
+    seeds: &[&[u8]],
+) -> Result<()> {
+    pda(target, seeds)?;
+    if target.owner == &anchor_lang::system_program::ID {
+        create_pda(payer, target, system, &crate::ID, 0, 0, seeds)?;
+    } else {
+        require_keys_eq!(*target.owner, crate::ID, Error::Account);
+        require!(target.data_is_empty(), Error::Account);
+    }
+    Ok(())
 }
 pub fn room_check(
     r: &Room,
@@ -536,12 +589,17 @@ pub fn room_check(
         Error::Invariant
     ); // S1
     require!(
-        token(retired, &r.room_mint, &key, &spl_token_2022_interface::ID)? >= r.retired,
+        token_or_empty(
+            retired,
+            &r.room_mint,
+            &key,
+            &spl_token_2022_interface::ID,
+            r.retired
+        )? >= r.retired,
         Error::Invariant
     );
-    let rent = Rent::get()?.minimum_balance(0);
     require!(
-        sub(reserve.lamports(), rent)? >= r.reserve,
+        native_available(reserve, r.reserve as u128)? >= r.reserve,
         Error::Invariant
     );
     let known = add(
@@ -551,7 +609,10 @@ pub fn room_check(
         )?,
         local_door_fees,
     )?;
-    require!(sub(fees.lamports(), rent)? >= known, Error::Invariant);
+    require!(
+        native_available(fees, known as u128)? >= known,
+        Error::Invariant
+    );
     // The global sum over doors is inductive: every path changes the vault and
     // the sum of its touched counters by exactly the same amount. No scan is needed.
     Ok(())
@@ -611,7 +672,7 @@ pub fn holder_dead(
     require_keys_eq!(*holder.owner, crate::ID, Error::Holder);
     let data = holder.try_borrow_data()?;
     require!(
-        data.len() == Room::LEN && data[..8] == *Room::DISCRIMINATOR,
+        matches!(data.len(), Room::BIRTH_LEN | Room::LEN) && data[..8] == *Room::DISCRIMINATOR,
         Error::Holder
     );
     let room = RoomBytes(&data);

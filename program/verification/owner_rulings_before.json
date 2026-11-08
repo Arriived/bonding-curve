@@ -1,0 +1,108 @@
+{
+  "controlled_commit": "816b38d",
+  "rent": {
+    "additional_door_lamports": 8839200,
+    "first_buy": false,
+    "first_swap_vault_lamports": 1488440,
+    "room_with_door_0_lamports": 26959560,
+    "uri": "https://example.invalid/m.json"
+  },
+  "heap": {
+    "measured_commit": "9ed04d73a2c057433b79adc1ddb9a279c1a3f2ba",
+    "measured_tree": "clean checkout of measured_commit in a temporary worktree",
+    "heap_frame_requested_bytes": null,
+    "allocator_heap_bytes": 32768,
+    "method": "largest extra allocation appended at the end of the instruction that still succeeds, binary-searched in 16-byte steps; worst case = maximum metadata, all writable launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; create_room_takeover_uri70 uses an old_holder takeover with name 32, symbol 10 and URI 70; create_room_takeover_uri200 uses the program's maximum URI; transaction packet size is measured separately; open_door_takeover opens a maximum-metadata door whose identity a dead room holds",
+    "free_heap_at_end_bytes_at_least": {
+      "create_room": 2960,
+      "open_door": 10096,
+      "create_room_takeover_uri70": 4000,
+      "create_room_takeover_uri200": 3600,
+      "open_door_takeover": 10096,
+      "buy_door": 17440,
+      "claim_door_swap_fees": 25632,
+      "claim_protocol_swap_fees": 26512,
+      "sell_door": 19856,
+      "swap_doors": 18992,
+      "swap_doors_existing": 19248,
+      "swap_doors_prefunded": 18784
+    },
+    "resolution_bytes": 16,
+    "create_room_takeover_uri200_passes": true,
+    "worst_launch_cu": {
+      "create_room": {
+        "tx_cu": 328089,
+        "program_cu": 327939
+      },
+      "open_door": {
+        "tx_cu": 242597,
+        "program_cu": 242447
+      }
+    },
+    "zero_means": "the launch fails even with no probe allocation (out of memory, or the 64-entry instruction trace exceeded: see worst_launch_cu)"
+  },
+  "svm_cu": {
+    "buy_door": {
+      "min": 60884,
+      "max": 75429
+    },
+    "buy_room": {
+      "min": 43652,
+      "max": 53082
+    },
+    "claim_door_fees": {
+      "min": 37757,
+      "max": 41662
+    },
+    "claim_door_swap_fees": {
+      "min": 40600,
+      "max": 42182
+    },
+    "claim_founder_fees": {
+      "min": 27027,
+      "max": 27038
+    },
+    "claim_protocol_swap_fees": {
+      "min": 34171,
+      "max": 34182
+    },
+    "create_ata": {
+      "min": 6007,
+      "max": 19692
+    },
+    "create_room": {
+      "min": 257404,
+      "max": 257404
+    },
+    "initialize_config": {
+      "min": 11847,
+      "max": 11847
+    },
+    "open_door": {
+      "min": 148088,
+      "max": 161599
+    },
+    "retire_pending": {
+      "min": 20932,
+      "max": 30339
+    },
+    "sell_door": {
+      "min": 58129,
+      "max": 62963
+    },
+    "sell_room": {
+      "min": 40839,
+      "max": 40853
+    },
+    "swap_doors": {
+      "min": 81336,
+      "max": 94673
+    },
+    "sweep_protocol_fees": {
+      "min": 27016,
+      "max": 27775
+    }
+  },
+  "stress_cap_default_pre_fix": "accepted 120 SOL",
+  "birth_room_bytes": 1331
+}

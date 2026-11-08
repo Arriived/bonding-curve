@@ -411,7 +411,7 @@ fn sweep_atomic_temporary_holder_cannot_capture_legacy_pending_on_either_route()
         let core = f.core();
         let retired_output = core.retired;
         let retire = instr(
-            a::Retire {
+            a::Retire { payer:f.user.pubkey(),system_program:anchor_lang::system_program::ID,
                 core,
                 retired_output,
                 token_program: spl_token_2022_interface::ID,

@@ -15,6 +15,7 @@ def main():
     types={normal(t['name']):t['type'] for t in idl['types']}
     def size(ty):
         if isinstance(ty,str):return {'u8':1,'bool':1,'u16':2,'u32':4,'u64':8,'i64':8,'u128':16,'pubkey':32}[ty]
+        if 'vec' in ty:return 4+25*size(ty['vec'])
         if 'array' in ty:return size(ty['array'][0])*ty['array'][1]
         if 'defined' in ty:
             name=ty['defined'];name=name['name'] if isinstance(name,dict) else name
@@ -24,7 +25,7 @@ def main():
     # The prototype extends packed accounts after the deployed layouts.
     paired = any(field["name"] == "virtual_quote" for field in types["door"]["fields"])
     if paired:
-        layouts["Room"] = [*layouts["Room"], ("protocol_accrued_room", 8), ("swap_fees_unclaimed", 8)]
+        layouts["Room"] = [*((label,604 if label.startswith("liveness_buckets:") else width) for label,width in layouts["Room"]), ("protocol_accrued_room", 8), ("swap_fees_unclaimed", 8)]
         layouts["Door"] = [*layouts["Door"], ("virtual_quote", 16), ("sold", 8), ("accrued_room", 8)]
     out={}
     for name in ['Config','Room','Door','SlugLock','NameLock','PendingGate']:
@@ -35,6 +36,8 @@ def main():
             assert size(field['type'])==n,(name,field,n)
             rows.append({'field':field['name'],'offset':offset,'bytes':n});offset+=n
         out[name]={'bytes':offset,'fields':rows};assert offset==sum(n for _,n in layouts[name])
+    if paired:
+        out['Room'].update(min_bytes=735,max_bytes=1335,bucket_count_offset=665,bucket_data_offset=669,max_buckets=25)
     path=ROOT/'program/verification/layouts.json';path.write_text(json.dumps(out,indent=2)+'\n',encoding='utf-8',newline='\n')
     def leaves(accounts):
         return [leaf for a in accounts for leaf in (leaves(a['accounts']) if 'accounts' in a else [a])]

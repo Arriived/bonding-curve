@@ -107,6 +107,46 @@ pub fn execute_trade<'a>(
         selected_mint,
         &spl_token_2022_interface::ID,
     )?;
+    if buy {
+        let system = system.ok_or(Error::Account)?;
+        ensure_native(user, reserve, system, &[b"reserve", rk.as_ref()])?;
+        ensure_native(user, fees, system, &[b"fees", rk.as_ref()])?;
+        if ri.data_len() < Room::LEN {
+            deposit(
+                user,
+                ri,
+                system,
+                Rent::get()?
+                    .minimum_balance(Room::LEN)
+                    .saturating_sub(ri.lamports()),
+            )?;
+            ri.resize(Room::LEN)?;
+        }
+        if let Some(d) = route.as_ref() {
+            if d.backing.data_is_empty() {
+                create_token(
+                    user,
+                    &d.backing,
+                    room_mint,
+                    d.authority.key,
+                    system,
+                    tp,
+                    &[b"door_room_vault", d.authority.key.as_ref()],
+                )?;
+            }
+        }
+        if r.pending_reserve_sol > 0 && retired.data_is_empty() {
+            create_token(
+                user,
+                retired,
+                room_mint,
+                &rk,
+                system,
+                tp,
+                &[b"retired", rk.as_ref()],
+            )?;
+        }
+    }
     let bl = reserve.lamports();
     let br = r.reserve;
     let fl = fees.lamports();

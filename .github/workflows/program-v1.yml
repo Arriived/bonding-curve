@@ -93,6 +93,13 @@ jobs:
         run: |
           set -o pipefail
           cargo test --locked --test svm -- --nocapture 2>&1 | tee verification/svm.log
+      - name: Verify isolated test-only stress build
+        if: github.ref_name == 'claude/paired-doors'
+        run: |
+          "$HOME/.cargo/bin/cargo-build-sbf" --tools-version v1.58 --features test-stress --sbf-out-dir target/stress
+          cargo test --locked --features test-stress --test svm adversarial_normal_admin_can_select_the_stress_cap -- --nocapture
+          cargo test --locked --features test-stress --test svm paired_doors_stress_config_exercises_supply_exhaustion -- --nocapture
+          sha256sum target/stress/doors_v1.so > verification/stress-elf.sha256
       - name: Format check
         run: cargo fmt -- --check
       - name: Verify committed build inputs

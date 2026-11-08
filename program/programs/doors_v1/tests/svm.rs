@@ -169,7 +169,12 @@ impl Fixture {
             },
         )
         .unwrap();
-        let elf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/doors_v1.so");
+        let elf =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(if cfg!(feature = "test-stress") {
+                "../../target/stress/doors_v1.so"
+            } else {
+                "../../target/deploy/doors_v1.so"
+            });
         svm.add_program(ID, &std::fs::read(elf).expect("run cargo build-sbf first"))
             .unwrap();
         svm.airdrop(&user.pubkey(), 1_000_000_000_000).unwrap();
@@ -471,10 +476,26 @@ impl Fixture {
             .unwrap()
     }
     fn balance(&self, key: Pubkey) -> u64 {
-        StateWithExtensions::<TokenAccount>::unpack(&self.svm.get_account(&key).unwrap().data)
+        let Some(account) = self.svm.get_account(&key) else {
+            return 0;
+        };
+        if account.data.is_empty() {
+            assert_eq!(account.owner, anchor_lang::system_program::ID);
+            return 0;
+        }
+        StateWithExtensions::<TokenAccount>::unpack(&account.data)
             .unwrap()
             .base
             .amount
+    }
+    fn native_balance(&self, key: Pubkey) -> u64 {
+        self.svm.get_account(&key).map_or(0, |a| {
+            if a.owner == ID {
+                a.lamports - self.svm.minimum_balance_for_rent_exemption(0)
+            } else {
+                0
+            }
+        })
     }
     fn trade_ix(&self, door: Option<usize>, buy: bool, n: u64, min: u64) -> Instruction {
         let d = door.map(|i| &self.doors[i]);
@@ -549,11 +570,11 @@ impl Fixture {
     fn checked(&mut self, ix: Instruction, matcher: bool, name: &str) -> TransactionMetadata {
         let r = self.r();
         let reserve = p(&[b"reserve", self.room.as_ref()]);
-        let before = self.svm.get_account(&reserve).unwrap().lamports;
+        let before = self.native_balance(reserve);
         let meta = self.send(ix, matcher, name);
         let after = self.r();
         assert_eq!(
-            self.svm.get_account(&reserve).unwrap().lamports as i128 - before as i128,
+            self.native_balance(reserve) as i128 - before as i128,
             after.reserve as i128 - r.reserve as i128,
             "I2 ReserveVault delta in {name}"
         );
@@ -599,6 +620,8 @@ impl Fixture {
         self.checked(
             instr(
                 a::Retire {
+                    payer: self.user.pubkey(),
+                    system_program: anchor_lang::system_program::ID,
                     core: c,
                     retired_output: output,
                     token_program: spl_token_2022_interface::ID,
@@ -617,6 +640,7 @@ impl Fixture {
             None
         };
         let ac = a::Claim {
+            system_program: anchor_lang::system_program::ID,
             authority: self.user.pubkey(),
             core: self.core(),
             door: d.map(|d| d.door),
@@ -696,7 +720,11 @@ impl Fixture {
         let r = self.r();
         assert_eq!(
             self.svm.get_account(&self.room).unwrap().data.len(),
-            Room::LEN
+            if r.trades == 0 {
+                Room::BIRTH_LEN
+            } else {
+                Room::LEN
+            }
         );
         assert!(r.status <= 1);
         assert!(r.sold <= U && r.retired <= r.sold);
@@ -706,14 +734,7 @@ impl Fixture {
         assert!(self.balance(r.room_vault) >= U - r.sold);
         assert!(self.balance(r.retired_vault) >= r.retired);
         let rent = self.svm.minimum_balance_for_rent_exemption(0);
-        assert!(
-            self.svm
-                .get_account(&p(&[b"reserve", self.room.as_ref()]))
-                .unwrap()
-                .lamports
-                - rent
-                >= r.reserve
-        );
+        assert!(self.native_balance(p(&[b"reserve", self.room.as_ref()])) >= r.reserve);
         let mut fees = r.protocol_accrued_sol as u128
             + r.pending_reserve_sol as u128
             + r.founder_accrued as u128;
@@ -746,15 +767,7 @@ impl Fixture {
                 self.audit_door_metadata(key, &d);
             }
         }
-        assert!(
-            (self
-                .svm
-                .get_account(&p(&[b"fees", self.room.as_ref()]))
-                .unwrap()
-                .lamports
-                - rent) as u128
-                >= fees
-        );
+        assert!(self.native_balance(p(&[b"fees", self.room.as_ref()])) as u128 >= fees);
         assert!(self.balance(r.fee_wsol) as u128 >= wfees);
         let quote_fee_balance = self.swap_fee_balance();
         assert_eq!(r.swap_fees_unclaimed, room_fees);
@@ -1657,6 +1670,8 @@ fn pause_blocks_new_positions_but_holders_can_still_exit() {
     f.fail_error(
         instr(
             a::Retire {
+                payer: f.user.pubkey(),
+                system_program: anchor_lang::system_program::ID,
                 core: c,
                 retired_output: output,
                 token_program: spl_token_2022_interface::ID,
@@ -2045,6 +2060,7 @@ fn audit_settings(f: &mut Fixture, settings: Settings) {
 }
 
 #[test]
+#[cfg(feature = "test-stress")]
 fn paired_doors_stress_config_exercises_supply_exhaustion() {
     let mut f = Fixture::empty(0);
     let mut settings = defaults(f.matcher.pubkey(), f.user.pubkey());
@@ -2729,6 +2745,7 @@ fn takeover_holder_is_validated_in_place() {
     r.reserve = 0x0102_0304_0506_0708;
     r.created_at = 0x1112_1314_1516;
     r.last_trade_at = 0x2122_2324_2526;
+    r.liveness_buckets = vec![Bucket::default(); 25];
     for (i, b) in r.liveness_buckets.iter_mut().enumerate() {
         b.start = 3600 * (i as i64 + 7);
         b.amount = (i as u128 + 1) << 70;

@@ -307,3 +307,43 @@ fn review_price_fraction_comparison_covers_overflow_and_equality() {
     assert!(fraction_le(m,m,m,m));
     assert!(fraction_le(0,m,0,1));
 }
+
+
+#[test]
+fn owner_lazy_birth_accounts_and_exact_sparse_liveness() {
+    let mut f = Fixture::new(0);
+    assert_eq!(f.svm.get_account(&f.room).unwrap().data.len(),Room::BIRTH_LEN);
+    for key in [f.r().retired_vault,f.r().fee_wsol,f.doors[0].backing,
+        p(&[b"reserve",f.room.as_ref()]),p(&[b"fees",f.room.as_ref()]),p(&[b"grad_payer",f.room.as_ref()])] {
+        assert!(f.svm.get_account(&key).is_none());
+    }
+    f.trade(Some(0),true,1_010_000_000);
+    assert_eq!(f.svm.get_account(&f.room).unwrap().data.len(),Room::LEN);
+    assert_eq!(f.r().liveness_buckets.len(),1);
+    assert!(f.balance(f.doors[0].backing)>0);
+    assert!(f.svm.get_account(&f.r().retired_vault).is_none());
+    assert!(f.svm.get_account(&f.r().fee_wsol).is_none());
+    f.claim(0,0);
+    assert!(f.svm.get_account(&f.r().fee_wsol).is_some());
+    f.trade(None,true,1_010_000_000);
+    f.retire();
+    assert!(f.r().retired>0 && f.balance(f.r().retired_vault)>0);
+    let mut r = f.r();
+    r.liveness_buckets.clear();
+    let mut old = [Bucket::default();25];
+    let cfg = Config::try_deserialize(&mut &f.svm.get_account(&f.cfg).unwrap().data[..]).unwrap();
+    for i in 0..1000u64 {
+        let now = 1_800_000_000 + ((i*7919)%400_000) as i64;
+        let gross = if i%7 == 0 {u64::MAX} else {i*9_999_991};
+        r.record(now,gross).unwrap();
+        let start=now/3600*3600;
+        let b=&mut old[(start/3600%25) as usize];
+        if b.start!=start {*b=Bucket {start,amount:0};}
+        b.amount+=gross as u128;
+        assert!(r.liveness_buckets.len()<=25);
+        for clock in [now,now+3600,now+86400,now-3600] {
+            assert_eq!(r.live(&cfg,clock).unwrap(),live_rule(r.status,r.created_at,r.last_trade_at,r.reserve,old.iter().copied(),&cfg,clock).unwrap());
+        }
+        for b in &r.liveness_buckets {let o=old[(b.start/3600%25) as usize];assert_eq!((b.start,b.amount),(o.start,o.amount));}
+    }
+}

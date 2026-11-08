@@ -160,35 +160,15 @@ pub mod doors_v1 {
         let user = a.user.to_account_info();
         let system = a.system_program.to_account_info();
         let tp = a.token_program.to_account_info();
-        let reserve_b = create_pda(
-            &user,
-            &a.reserve,
-            &system,
-            &crate::ID,
-            0,
-            0,
-            &[b"reserve", rk.as_ref()],
-        )?;
-        let fee_b = create_pda(
-            &user,
-            &a.fees,
-            &system,
-            &crate::ID,
-            0,
-            0,
-            &[b"fees", rk.as_ref()],
-        )?;
-        let grad_b = create_pda(
-            &user,
-            &a.grad_payer,
-            &system,
-            &anchor_lang::system_program::ID,
-            0,
-            0,
-            &[b"grad_payer", rk.as_ref()],
-        )?;
-        // Separate initial rent/top-up from credited trading liabilities.
-        // Prefunded native donations remain unaccounted and locked.
+        let reserve_b = empty_pda(&a.reserve, &[b"reserve", rk.as_ref()])?;
+        let fee_b = empty_pda(&a.fees, &[b"fees", rk.as_ref()])?;
+        let grad_b = empty_pda(&a.grad_payer, &[b"grad_payer", rk.as_ref()])?;
+        if launch.first_buy_lamports > 0 {
+            ensure_native(&user, &a.reserve, &system, &[b"reserve", rk.as_ref()])?;
+        }
+        if fee > 0 || launch.first_buy_lamports > 0 {
+            ensure_native(&user, &a.fees, &system, &[b"fees", rk.as_ref()])?;
+        }
         let reserve_base = a.reserve.lamports();
         let fee_base = a.fees.lamports();
         let (_, rvb) = create_mint(
@@ -205,24 +185,8 @@ pub mod doors_v1 {
             &[b"room_vault", rk.as_ref()],
             rs,
         )?;
-        let retired_b = create_token(
-            &user,
-            &a.retired,
-            &a.room_mint,
-            &rk,
-            &system,
-            &tp,
-            &[b"retired", rk.as_ref()],
-        )?;
-        let fw_b = create_token(
-            &user,
-            &a.fee_wsol,
-            &a.wsol_mint,
-            &rk,
-            &system,
-            &a.classic_token_program,
-            &[b"fee_wsol", rk.as_ref()],
-        )?;
+        let retired_b = empty_pda(&a.retired, &[b"retired", rk.as_ref()])?;
+        let fw_b = empty_pda(&a.fee_wsol, &[b"fee_wsol", rk.as_ref()])?;
         let slug_b = if old.is_none() {
             create_pda(
                 &user,
@@ -412,6 +376,22 @@ pub mod doors_v1 {
         } else {
             require!(a.old_holder.is_none(), Error::Holder);
         }
+        if launch.first_buy_lamports > 0 {
+            ensure_native(
+                &a.user.to_account_info(),
+                &a.core.reserve,
+                &a.system_program.to_account_info(),
+                &[b"reserve", a.core.room.key().as_ref()],
+            )?;
+        }
+        if fee > 0 || launch.first_buy_lamports > 0 {
+            ensure_native(
+                &a.user.to_account_info(),
+                &a.core.fees,
+                &a.system_program.to_account_info(),
+                &[b"fees", a.core.room.key().as_ref()],
+            )?;
+        }
         let before_l = a.core.reserve.lamports();
         let before_r = a.core.room.reserve;
         let fl = a.core.fees.lamports();
@@ -569,6 +549,17 @@ pub mod doors_v1 {
                 &[b"swap_fees", rk.as_ref()],
             )?;
         }
+        if a.backing_b.data_is_empty() {
+            create_token(
+                &a.user,
+                &a.backing_b,
+                &a.core.room_mint,
+                &bi.key(),
+                &a.system_program,
+                &a.token_program,
+                &[b"door_room_vault", bi.key.as_ref()],
+            )?;
+        }
         let fee_before = token(&a.swap_fees, &quote_mint, &rk, a.token_program.key)?;
         let known_before = a.core.room.swap_fees_unclaimed;
         require!(fee_before >= known_before, Error::Invariant);
@@ -702,6 +693,17 @@ pub mod doors_v1 {
         let fl = a.core.fees.lamports();
         let fk = known(&a.core.room, &[]);
         let ri = a.core.room.to_account_info();
+        if a.core.room.pending_reserve_sol > 0 && a.retired_output.data_is_empty() {
+            create_token(
+                &a.payer,
+                &a.retired_output,
+                &a.core.room_mint,
+                &ri.key(),
+                &a.system_program,
+                &a.token_program,
+                &[b"retired", ri.key.as_ref()],
+            )?;
+        }
         let settled = settle_pending(
             &mut a.core.room,
             &ri,
@@ -824,15 +826,7 @@ fn initialize_door<'a>(
         &[b"door_vault", di.key.as_ref()],
         ds,
     )?;
-    let bk = create_token(
-        user,
-        backing,
-        room_mint,
-        di.key,
-        system,
-        tp,
-        &[b"door_room_vault", di.key.as_ref()],
-    )?;
+    let bk = empty_pda(backing, &[b"door_room_vault", di.key.as_ref()])?;
     d.room = rk;
     d.index = i;
     d.mint = mint.key();
@@ -1061,6 +1055,17 @@ fn claim(ctx: Context<Claim>, kind: u8) -> Result<()> {
         &spl_token_interface::native_mint::ID,
         &spl_token_interface::ID,
     )?;
+    if a.fee_wsol.data_is_empty() {
+        create_token(
+            &a.authority,
+            &a.fee_wsol,
+            &a.wsol_mint,
+            &rk,
+            &a.system_program,
+            &a.classic_token_program,
+            &[b"fee_wsol", rk.as_ref()],
+        )?;
+    }
     token(
         &a.fee_wsol,
         &spl_token_interface::native_mint::ID,

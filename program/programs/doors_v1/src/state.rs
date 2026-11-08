@@ -1,6 +1,8 @@
 use crate::{math::*, Error};
 use anchor_lang::prelude::*;
 
+pub const NORMAL_GRADUATION_CEILING: u64 = 85_018_013_680;
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct Settings {
     pub protocol_fee_recipient: Pubkey,
@@ -26,6 +28,11 @@ pub struct Settings {
 }
 impl Settings {
     pub fn validate(&self) -> Result<()> {
+        #[cfg(not(feature = "test-stress"))]
+        require!(
+            self.graduation_trigger_lamports <= NORMAL_GRADUATION_CEILING,
+            Error::BadConfig
+        );
         require!(
             self.fee_bps < 10_000
                 && self.door_share_bps as u32 + self.founder_share_bps as u32 <= 10_000,
@@ -289,7 +296,13 @@ impl RoomBytes<'_> {
         self.0[Self::BUMP]
     }
     pub fn live(&self, c: &Config, now: i64) -> Result<bool> {
-        let b = &self.0[Self::BUCKETS..Self::BUCKETS + 25 * Self::BUCKET_LEN];
+        let count = u32::from_le_bytes(self.0[Self::BUCKETS..Self::BUCKETS + 4].try_into().unwrap())
+            as usize;
+        require!(
+            count <= 25 && Self::BUCKETS + 4 + count * Self::BUCKET_LEN <= self.0.len(),
+            Error::Account
+        );
+        let b = &self.0[Self::BUCKETS + 4..Self::BUCKETS + 4 + count * Self::BUCKET_LEN];
         live_rule(
             self.0[Self::STATUS],
             self.i64_at(Self::CREATED_AT),
@@ -343,7 +356,7 @@ pub struct Room {
     pub uri: [u8; 200],
     pub fee_ckpt: u128,
     pub fee_ckpt_ts: i64,
-    pub liveness_buckets: [Bucket; 25],
+    pub liveness_buckets: Vec<Bucket>,
     pub founder: Pubkey,
     pub founder_accrued: u64,
     pub founder_accrued_wsol: u64,
@@ -352,7 +365,8 @@ pub struct Room {
     pub swap_fees_unclaimed: u64,
 }
 impl Room {
-    pub const LEN: usize = 1331;
+    pub const BIRTH_LEN: usize = 735;
+    pub const LEN: usize = Self::BIRTH_LEN + 25 * 24;
     pub fn curve(&self, q: u64) -> Result<u64> {
         reserve(self.v_sol_lamports, self.v_tok, q)
     }
@@ -395,11 +409,23 @@ impl Room {
         self.trades = add(self.trades, 1)?;
         self.last_trade_at = now;
         let start = now / 3600 * 3600;
-        let b = &mut self.liveness_buckets[(start / 3600 % 25) as usize];
-        if b.start != start {
-            *b = Bucket { start, amount: 0 };
+        let index = start / 3600 % 25;
+        if let Some(b) = self
+            .liveness_buckets
+            .iter_mut()
+            .find(|b| b.start / 3600 % 25 == index)
+        {
+            if b.start != start {
+                *b = Bucket { start, amount: 0 };
+            }
+            b.amount = b.amount.checked_add(gross as u128).ok_or(Error::Overflow)?;
+        } else {
+            require!(self.liveness_buckets.len() < 25, Error::Invariant);
+            self.liveness_buckets.push(Bucket {
+                start,
+                amount: gross as u128,
+            });
         }
-        b.amount = b.amount.checked_add(gross as u128).ok_or(Error::Overflow)?;
         Ok(())
     }
     pub fn split(&mut self, fee: u64, door: Option<&mut Door>) -> Result<()> {

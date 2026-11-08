@@ -816,11 +816,13 @@ impl Ctx {
             },
         )
     }
-    fn retire_ix(&self, r: &Room) -> Instruction {
+    fn retire_ix(&self, r: &Room, payer: Pubkey) -> Instruction {
         let c = self.core(r);
         let out = c.retired;
         instr(
             a::Retire {
+                payer,
+                system_program: anchor_lang::system_program::ID,
                 core: c,
                 retired_output: out,
                 token_program: T22,
@@ -837,6 +839,7 @@ impl Ctx {
     ) -> Instruction {
         instr(
             a::Claim {
+                system_program: anchor_lang::system_program::ID,
                 authority,
                 core: self.core(r),
                 door: Some(d.door),
@@ -1133,7 +1136,12 @@ fn smoke(dir: &str, out: &str) -> Result<()> {
     let fee_vault = c.account(&p(&[b"fees", ctx.room.as_ref()]))?.lamports;
 
     // 5. retire_pending; 6. claim_door_fees for door 0 by its fee recipient (the launcher).
-    c.send("retire_pending", &[ctx.retire_ix(&rr)], &launcher, &[])?;
+    c.send(
+        "retire_pending",
+        &[ctx.retire_ix(&rr, launcher.pubkey())],
+        &launcher,
+        &[],
+    )?;
     let after_retire = c.room(&ctx.room)?;
     c.send(
         "claim_door_fees",

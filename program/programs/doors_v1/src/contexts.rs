@@ -28,7 +28,7 @@ pub struct CreateRoom<'info> {
     pub matcher: Signer<'info>,
     #[account(seeds=[b"config"],bump=config.bump)]
     pub config: Box<Account<'info, Config>>,
-    #[account(init,payer=user,space=Room::LEN,seeds=[b"room".as_ref(),room_id.to_le_bytes().as_ref()],bump)]
+    #[account(init,payer=user,space=Room::BIRTH_LEN,seeds=[b"room".as_ref(),room_id.to_le_bytes().as_ref()],bump)]
     pub room: Box<Account<'info, Room>>,
     /// CHECK: canonical PDA, created program-owned by the handler.
     #[account(mut)]
@@ -100,10 +100,10 @@ pub struct Core<'info> {
     #[account(mut,seeds=[b"room",&room.room_id.to_le_bytes()],bump=room.bumps[0])]
     pub room: Box<Account<'info, Room>>,
     /// CHECK: canonical program-owned empty reserve PDA, checked by invariants too.
-    #[account(mut,seeds=[b"reserve",room.key().as_ref()],bump=room.bumps[1],owner=crate::ID)]
+    #[account(mut,seeds=[b"reserve",room.key().as_ref()],bump=room.bumps[1])]
     pub reserve: UncheckedAccount<'info>,
     /// CHECK: canonical program-owned empty fee PDA.
-    #[account(mut,seeds=[b"fees",room.key().as_ref()],bump=room.bumps[2],owner=crate::ID)]
+    #[account(mut,seeds=[b"fees",room.key().as_ref()],bump=room.bumps[2])]
     pub fees: UncheckedAccount<'info>,
     /// CHECK: fixed mint and authorities validated on every affected path.
     #[account(address=room.room_mint)]
@@ -235,6 +235,9 @@ pub struct ClaimSwapFees<'info> {
 }
 #[derive(Accounts)]
 pub struct Retire<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
     pub core: Core<'info>,
     /// CHECK: fixed RetiredVault, writable counterpart of core.retired.
     #[account(mut,address=core.room.retired_vault)]
@@ -245,6 +248,8 @@ pub struct Retire<'info> {
 }
 #[derive(Accounts)]
 pub struct Claim<'info> {
+    pub system_program: Program<'info, System>,
+    #[account(mut)]
     pub authority: Signer<'info>,
     pub core: Core<'info>,
     #[account(mut)]

@@ -9,6 +9,8 @@ name = "doors_v1"
 
 [features]
 default = []
+# Isolated supply-exhaustion fixtures only; never part of the production ELF pin.
+test-stress = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
