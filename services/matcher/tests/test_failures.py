@@ -108,7 +108,7 @@ def cfg(tmp_path):
     return Config(env="development", rpc_url="x", program_id=PROGRAM, signer="keyfile", keyfile=None,
                   gcp_key_version=None, aws_key_id=None, db_path=str(tmp_path / "d.sqlite3"), matcher_version=1,
                   budget=Budget(coherence_slots=30, max_lag_slots=30, max_age_seconds=8, refresh_seconds=2),
-                  cu_limit=400_000, max_cu_price=1_000_000, rate_ip_per_min=30, rate_launcher_per_min=6,
+                  cu_limit=500_000, max_cu_price=1_000_000, rate_ip_per_min=30, rate_launcher_per_min=6,
                   trust_forwarded_for=False)
 
 

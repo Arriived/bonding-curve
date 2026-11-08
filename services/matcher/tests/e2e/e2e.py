@@ -51,7 +51,7 @@ from solders.transaction import Transaction  # noqa: E402
 
 from matcher_service.app import create_app  # noqa: E402
 from matcher_service.chain import ChainState, RpcClient, RpcError, pda  # noqa: E402
-from matcher_service.config import Budget, Config  # noqa: E402
+from matcher_service.config import DEFAULT_CU_LIMIT, Budget, Config  # noqa: E402
 from matcher_service.ops import Metrics, logger  # noqa: E402
 from matcher_service.service import Service  # noqa: E402
 from matcher_service.signer import KeyfileSigner  # noqa: E402
@@ -186,7 +186,7 @@ def run(rpc, keys, target):
     db = tempfile.mkdtemp() + "/decisions.sqlite3"
     cfg = Config(env="development", rpc_url=URLS[target], program_id=PROGRAM, signer="keyfile",
                  keyfile=str(Path(keys) / "matcher-authority.json"), gcp_key_version=None, aws_key_id=None,
-                 db_path=db, matcher_version=1, budget=Budget(30, 60, 15, 1), cu_limit=400_000,
+                 db_path=db, matcher_version=1, budget=Budget(30, 60, 15, 1), cu_limit=DEFAULT_CU_LIMIT,
                  max_cu_price=1_000_000, rate_ip_per_min=1000, rate_launcher_per_min=1000, trust_forwarded_for=False)
     svc = Service(cfg, rpc, ChainState(rpc, PROGRAM), KeyfileSigner(cfg.keyfile, cfg.env), Store(db),
                   Builder(PROGRAM), logger(), Metrics())
@@ -425,7 +425,7 @@ def run(rpc, keys, target):
     slot = rpc.slot()
     bh = rpc.latest_blockhash()[0]
     msg = signed_open(slot - 1, int.from_bytes(os.urandom(8), "little") | 1,
-                      lambda ix: build_message(ix, trader.pubkey(), bh, 400_000, 0))
+                      lambda ix: build_message(ix, trader.pubkey(), bh, svc.cfg.cu_limit, 0))
     etx = Transaction([trader, matcher_kp], msg, Hash.from_string(bh))
     sig = send(rpc, etx, skip_preflight=True)
     st = confirm(rpc, sig)

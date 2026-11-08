@@ -168,7 +168,7 @@ start if `MATCHER_PRIVATE_KEY`, `MATCHER_SECRET_KEY` or `MATCHER_KEYPAIR` is set
 | `MATCHER_MAX_LAG_SLOTS` | 30 | snapshot at most this many slots behind the cluster when signing (about 6.5 s at 0.215 s/slot) |
 | `MATCHER_MAX_AGE_SECONDS` | 8 | snapshot read at most this long ago |
 | `MATCHER_REFRESH_SECONDS` | 2 | background snapshot refresh interval |
-| `MATCHER_CU_LIMIT` | 400000 | compute-unit limit in the launch transaction |
+| `MATCHER_CU_LIMIT` | 500000 | compute-unit limit in the launch transaction |
 | `MATCHER_MAX_CU_PRICE` | 1000000 | highest priority fee a request may ask for (micro-lamports) |
 | `MATCHER_RATE_IP_PER_MIN` | 30 | per-IP limit on `/route` |
 | `MATCHER_RATE_LAUNCHER_PER_MIN` | 6 | per-launcher limit on `/route`, keyed on the signature-verified launcher |
@@ -467,3 +467,22 @@ RPC responses expose only safe error classifications. Full exception/provider
 details are available at DEBUG through `matcher.rpc.internal`; attach a private
 logging handler and enable that logger for operator investigations. The default
 INFO configuration suppresses these details. API responses never include them.
+
+
+## Launch compute headroom (8 November 2026)
+
+The default launch CU limit is 500,000. The measured worst launch uses 351,341
+VM transaction CU. Adding the priority-price instruction (150), exact historical
+token-program drift (21,110), bump variance (7,500) and 15 extra failed bump tries
+(22,500) gives 402,601 CU, leaving 97,399. SBF regressions and the heap probe
+check this allowance. The limit remains configurable.
+
+At example cu_price 10,000 micro-lamports/CU, priority fee is 5,000 lamports
+(0.000005 SOL), up 1,000 lamports from the former limit. Base signature fees
+are separate; zero cu_price still adds no priority fee.
+
+Raising the fixed-width CU limit adds no packet bytes. With name 32/symbol 10
+and a priority-price instruction, legacy URI maxima remain 35 for creation,
+3 for a one-holder creation takeover, 200 for open and 194 for open takeover.
+Maximum 200-byte creation metadata is 1,397 bytes and remains refused. Run
+`scripts/max_uri.py --json` for all shapes and wire lengths.

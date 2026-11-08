@@ -146,3 +146,31 @@ not eliminated. Remaining birth accounts and immutable metadata need further
 compaction to reach the target. Program before/after evidence names control
 `816b38d`; historical B/D negative controls are assigned to the reviewer, not
 claimed as executed locally. Final service tests on `bf121dc`: 170 passing.
+
+
+## Launch CU budget blocker: Fixed (8 November 2026)
+
+Control `b86ae42` used 400,000 CU. The new config/message test first failed on
+that default (the explicit override passed), then both passed after the default
+became 500,000. Test fixtures, the e2e launch config and max_uri.py use the new
+budget; deployment or signing material is not needed for these checks.
+
+Current worst launch is 351,341 VM transaction CU, not the old 306,979 value.
+Rounded drift arithmetic gives 402,341 and 97,659 margin. The enforced allowance
+uses exact historical 21,110 plus 7,500 variance, 15*1,500 extra bump work and the
+150-CU priority-price instruction: **402,601 total, 97,399 CU margin**. Both SBF
+max-launch/takeover assertions and the heap probe check the allowance. The pinned
+SPL suite already includes its token binaries; this historical allowance is
+additional conservative headroom, not a new live-runtime measurement.
+
+At example cu_price 10,000 micro-lamports/CU, the 500,000 limit charges 5,000
+lamports of priority fee (0.000005 SOL), versus 4,000 previously. It uses requested
+limit, per [Solana fee documentation](https://solana.com/docs/core/fees).
+
+`data/launch_cu_packet_sizes.json` compares both budgets and records identical
+packet lengths. Name 32/symbol 10 URI limits are 35/3/200/194 bytes for fresh
+creation/one-holder creation takeover/open/open takeover. At their respective
+boundaries wire size is 1,232 bytes except plain open (1,206). Full URI 200
+creation remains 1,397 bytes and does not fit; two-distinct-holder creation also
+does not fit even with URI zero. The service's packet refusal is retained.
+Production program source and the 35% birth-rent saving are untouched.

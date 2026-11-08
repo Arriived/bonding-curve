@@ -5,6 +5,8 @@ import os
 from .program_id import PROGRAM_ID
 from dataclasses import dataclass
 
+DEFAULT_CU_LIMIT = 500_000
+
 
 @dataclass(frozen=True)
 class Budget:
@@ -66,7 +68,7 @@ def load() -> Config:
             max_age_seconds=float(os.environ.get("MATCHER_MAX_AGE_SECONDS", 8)),
             refresh_seconds=float(os.environ.get("MATCHER_REFRESH_SECONDS", 2)),
         ),
-        cu_limit=_int("MATCHER_CU_LIMIT", 400_000),
+        cu_limit=_int("MATCHER_CU_LIMIT", DEFAULT_CU_LIMIT),
         max_cu_price=_int("MATCHER_MAX_CU_PRICE", 1_000_000),
         rate_ip_per_min=_int("MATCHER_RATE_IP_PER_MIN", 30),
         rate_launcher_per_min=_int("MATCHER_RATE_LAUNCHER_PER_MIN", 6),

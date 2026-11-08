@@ -733,3 +733,20 @@ rent falls 26,959,560 -> 17,515,840 lamports, still 2,515,840 above the target;
 creation heap improves 2,960 -> 4,080 bytes and its matched worst-case CU rises
 328,089 -> 351,341. All source/test hashes in data/paired_review_checks.json
 match the 170-test service run and the unchanged-rule benchmark repeat.
+
+
+## 24. Launch CU budget and packet recheck (8 November 2026)
+
+The 400,000 default had only been checked against VM use, while the documented
+drift stress exceeds it. A new config/message regression first failed against
+`b86ae42` (400,000 != 500,000). The default is now 500,000, overrides remain
+supported, and SBF plus heap checks cover the complete drift allowance. Exact
+historical drift plus the priority-price instruction gives a conservative
+402,601 CU total and 97,399 margin (rounded review arithmetic: 402,341 / 97,659).
+At cu_price 10,000, priority fee is 5,000 lamports, up 1,000; base fees separate.
+
+max_uri.py imports the same default constant. Comparing 400,000 and 500,000
+produced identical lengths: legacy URI limits 35 creation, 3 one-holder takeover,
+200 open, 194 open takeover, at name 32/symbol 10 with priority instruction.
+Full URI 200 creation remains 1,397 bytes and refused. The e2e launch fixture
+also uses the default constant. No production program or rent behavior changed.

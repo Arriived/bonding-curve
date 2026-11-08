@@ -35,6 +35,7 @@ from solders.signature import Signature  # noqa: E402
 from solders.transaction import Transaction  # noqa: E402
 
 from matcher_service import txbuild  # noqa: E402
+from matcher_service.config import DEFAULT_CU_LIMIT  # noqa: E402
 
 from matcher_service.program_id import PROGRAM_ID as PROGRAM
 BLOCKHASH = "11111111111111111111111111111111"
@@ -42,7 +43,7 @@ NAME, SYMBOL = "N" * 32, "S" * 10
 
 
 def wire_len(ix, payer):
-    m = txbuild.build_message(ix, payer, BLOCKHASH, 400_000, 1)
+    m = txbuild.build_message(ix, payer, BLOCKHASH, DEFAULT_CU_LIMIT, 1)
     return len(bytes(Transaction.populate(m, [Signature.default()] * m.header.num_required_signatures)))
 
 
@@ -53,7 +54,7 @@ def static_alt(b):
 
 def wire_len_v0(ix, payer, alt):
     from solders.compute_budget import set_compute_unit_limit, set_compute_unit_price
-    m = MessageV0.try_compile(payer, [set_compute_unit_limit(400_000), set_compute_unit_price(1), ix], [alt],
+    m = MessageV0.try_compile(payer, [set_compute_unit_limit(DEFAULT_CU_LIMIT), set_compute_unit_price(1), ix], [alt],
                               Hash.from_string(BLOCKHASH))
     return len(bytes(VersionedTransaction.populate(m, [Signature.default()] * m.header.num_required_signatures)))
 
@@ -104,7 +105,11 @@ def main():
     v0 = {k: largest(f, user, lambda ix, payer: wire_len_v0(ix, payer, alt)) for k, f in rows.items()}
     out = {"idl": os.path.relpath(txbuild.IDL_PATH), "name_lock_in_idl": has_name_lock,
            "packet_limit": txbuild.PACKET_LIMIT, "name_bytes": len(NAME), "symbol_bytes": len(SYMBOL),
-           "priority_fee_instruction": True, "largest_uri_bytes": res,
+           "priority_fee_instruction": True, "compute_unit_limit": DEFAULT_CU_LIMIT,
+           "largest_uri_bytes": res,
+           "largest_uri_wire_bytes": {k: None if n is None else wire_len(rows[k]("u" * n), user)
+                                      for k, n in res.items()},
+           "full_200_byte_uri_wire_bytes": {k: wire_len(f("u" * 200), user) for k, f in rows.items()},
            "comparison_only_v0_with_static_lookup_table": v0}
     if "--json" in sys.argv:
         print(json.dumps(out, indent=2))
