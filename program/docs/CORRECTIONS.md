@@ -952,3 +952,62 @@ fuzz passed. Each of 33 doors in four resource states had a positive position an
 fee credit, and every position and credit was fully discharged. The service
 passes 163 tests and its repeated evasion JSON is identical. SECURITY_REVIEW.md
 contains the exact resource table, cost assumptions and ranked owner decisions.
+
+
+## Implemented owner rulings A, B and D (8 November 2026)
+
+Supersedes the two open owner choices in the previous continuation. A routes
+new doors only to the current live NameLock holder, with conflicting live
+SlugLock/NameLock holders refused. A revived former holder still trades. The SBF
+revival probe asserts successor door count increases and former count does not.
+The service and independent verifier implement the precedence; finding 4 is Fixed.
+
+Against control `816b38d`, B changes default Config validation from accepting
+120 SOL to refusing anything above 85,018,013,680 lamports. The isolated
+`test-stress` feature accepts 120 SOL. Both directions are permanent passing SBF
+tests with corresponding binaries; finding 7 is Fixed. The owner authorized the
+reviewer to run historical B/D controls independently against `816b38d`. No
+intentionally failing historical test is committed on this branch.
+
+D defers six unused birth vaults and stores liveness buckets sparsely, preserving
+exact u128 values, old ring replacement and liveness behavior. Birth Room drops
+from 1,331 to 735 bytes; first buy funds its complete 1,335-byte capacity. The
+retirement instruction gains a payer/system account; legacy fee claims gain the
+system account and a writable payer authority for first WSOL initialization.
+The standalone client and service pins are ported. Birth rent falls from
+26,959,560 to 17,515,840 lamports (35.0%). The 15 million target remains missed by
+2,515,840: remaining birth state, immutable mint metadata and inventory are needed
+by the current interface. Deferred rent is paid on first use rather than removed.
+
+The first full candidate run passed the new rules but found ten eager-account
+assumptions in old tests. Fixtures now initialize deferred token vaults through
+real claims/retirement, model pre-upgrade native vaults explicitly in the legacy
+backlog fixture, and make immutable-term changes within the normal envelope.
+The CU attribution test warms first-use vaults so it still isolates settlement.
+The prefunded first-swap rent includes both newly created token vaults. These
+repairs do not alter expected economic outcomes or weaken exits/claim coverage.
+
+RPC details remain available to operators via internal DEBUG logging in the
+service, while public error strings and API responses stay redacted.
+
+
+Measured production source `5ac41b9` passes all 71 SBF tests / 10,000 iterations,
+the default-refusal and feature-acceptance cap tests, heap and 400,000 curve cases.
+Worst launch heap improves 2,960 -> 4,080 bytes, while the matching launch CU rises
+328,089 -> 351,341 (open 242,597 -> 284,233). First-use initialization and room
+capacity funding cost compute. The matched economic scenario JSON is identical.
+Every source hash and emitted IDL was checked before updating the production ELF
+pin to `d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e`.
+Full before/after bounds, rent and two-sided cap evidence are in
+verification/owner_rulings_after.json. Final pin verification follows below.
+
+
+Final pinned verification is green: run 42526798488 on `86a0f44` passes every
+step, including all 71 SBF tests / 10,000 iterations, both permanent stress-cap
+directions, isolated supply-exhaustion exits, heap, 400,000 curve cases, client
+compile/unit test and production ELF pin. Offline SPL bytes and every recorded
+source hash were checked. The active program and service IDLs match emitted bytes.
+Service `bf121dc` passes 170 tests; the evasion JSON is identical to the prior
+review. Findings 4 and 7 are Fixed; room birth rent is 17,515,840 lamports,
+9,443,720 below the control but 2,515,840 above the target. Historical B/D controls
+remain assigned to the independent reviewer against `816b38d`, as authorized.

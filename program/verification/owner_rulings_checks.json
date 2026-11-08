@@ -1,0 +1,22 @@
+{
+  "ci_run_id": 42526798488,
+  "ci_url": "https://github.com/Arriived/bonding-curve/actions/runs/42526798488",
+  "program_source_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
+  "controlled_program_commit": "816b38d",
+  "controlled_service_commit": "f2f8451",
+  "source_files_checked": 18,
+  "program_service_and_emitted_idl_equal": true,
+  "production_elf_sha256": "d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e",
+  "svm_tests": 71,
+  "property_iterations": 10000,
+  "executed_transactions": 12488,
+  "stress_default_refused": true,
+  "stress_feature_accepted": true,
+  "historical_controls_run_locally": false,
+  "historical_control_execution": "independent reviewer, as approved",
+  "heap_probe_passed": true,
+  "curve_fuzz_iterations": 400000,
+  "client_compile_and_unit_tests_passed": true,
+  "service_pytest_passed": 170,
+  "evasion_json_repeated_identically": true
+}

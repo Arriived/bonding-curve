@@ -1,33 +1,33 @@
 {
-  "measured_commit": "9ed04d73a2c057433b79adc1ddb9a279c1a3f2ba",
+  "measured_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
   "measured_tree": "clean checkout of measured_commit in a temporary worktree",
   "heap_frame_requested_bytes": null,
   "allocator_heap_bytes": 32768,
   "method": "largest extra allocation appended at the end of the instruction that still succeeds, binary-searched in 16-byte steps; worst case = maximum metadata, all writable launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; create_room_takeover_uri70 uses an old_holder takeover with name 32, symbol 10 and URI 70; create_room_takeover_uri200 uses the program's maximum URI; transaction packet size is measured separately; open_door_takeover opens a maximum-metadata door whose identity a dead room holds",
   "free_heap_at_end_bytes_at_least": {
-    "create_room": 2960,
-    "open_door": 10096,
-    "create_room_takeover_uri70": 4000,
-    "create_room_takeover_uri200": 3600,
-    "open_door_takeover": 10096,
-    "buy_door": 17440,
-    "claim_door_swap_fees": 25632,
-    "claim_protocol_swap_fees": 26512,
-    "sell_door": 19856,
-    "swap_doors": 18992,
-    "swap_doors_existing": 19248,
-    "swap_doors_prefunded": 18784
+    "create_room": 4080,
+    "open_door": 10640,
+    "create_room_takeover_uri70": 5120,
+    "create_room_takeover_uri200": 4720,
+    "open_door_takeover": 10640,
+    "buy_door": 17456,
+    "claim_door_swap_fees": 26192,
+    "claim_protocol_swap_fees": 27072,
+    "sell_door": 20416,
+    "swap_doors": 19264,
+    "swap_doors_existing": 19808,
+    "swap_doors_prefunded": 19072
   },
   "resolution_bytes": 16,
   "create_room_takeover_uri200_passes": true,
   "worst_launch_cu": {
     "create_room": {
-      "tx_cu": 328089,
-      "program_cu": 327939
+      "tx_cu": 351341,
+      "program_cu": 351191
     },
     "open_door": {
-      "tx_cu": 242597,
-      "program_cu": 242447
+      "tx_cu": 284233,
+      "program_cu": 284083
     }
   },
   "zero_means": "the launch fails even with no probe allocation (out of memory, or the 64-entry instruction trace exceeded: see worst_launch_cu)"

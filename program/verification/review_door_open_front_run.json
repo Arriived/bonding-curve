@@ -8,7 +8,7 @@
   "runs": [
     {
       "accepted_by_min_tokens_out": true,
-      "attacker_net_lamports": 113391991,
+      "attacker_net_lamports": 111903551,
       "front_run_buy_lamports": 5000000000,
       "victim_door_tokens": 33842400385405,
       "victim_door_tokens_vs_quote_bps": 42,
@@ -17,7 +17,7 @@
     },
     {
       "accepted_by_min_tokens_out": true,
-      "attacker_net_lamports": 217061544,
+      "attacker_net_lamports": 215573104,
       "front_run_buy_lamports": 20000000000,
       "victim_door_tokens": 33933587802310,
       "victim_door_tokens_vs_quote_bps": 69,
@@ -26,7 +26,7 @@
     },
     {
       "accepted_by_min_tokens_out": true,
-      "attacker_net_lamports": -62846969,
+      "attacker_net_lamports": -64335409,
       "front_run_buy_lamports": 60000000000,
       "victim_door_tokens": 34044762119909,
       "victim_door_tokens_vs_quote_bps": 102,

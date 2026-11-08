@@ -1,6 +1,6 @@
 {
-  "case": "normal admin update selects the stress cap",
-  "existing_room_cap_lamports": 85018013680,
-  "new_rooms_cap_lamports": 120000000000,
-  "owner_decision": true
+  "configured_cap_lamports": 120000000000,
+  "fixed": true,
+  "production_ceiling_lamports": 85018013680,
+  "test_feature": true
 }

@@ -1,0 +1,213 @@
+{
+  "controlled_program_commit": "816b38d",
+  "controlled_service_commit": "f2f8451",
+  "measured_program_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
+  "measurement_ci_run": 42526798488,
+  "historical_B_D_controls": "authorized for independent reviewer execution; not run locally",
+  "rent": {
+    "additional_door_lamports": 7350760,
+    "first_buy": false,
+    "first_swap_vault_lamports": 1488440,
+    "room_with_door_0_lamports": 17515840,
+    "uri": "https://example.invalid/m.json"
+  },
+  "birth_room_bytes": 735,
+  "funded_trading_room_bytes": 1335,
+  "rent_saved_lamports": 9443720,
+  "target_gap_lamports": 2515840,
+  "heap": {
+    "measured_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
+    "measured_tree": "clean checkout of measured_commit in a temporary worktree",
+    "heap_frame_requested_bytes": null,
+    "allocator_heap_bytes": 32768,
+    "method": "largest extra allocation appended at the end of the instruction that still succeeds, binary-searched in 16-byte steps; worst case = maximum metadata, all writable launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; create_room_takeover_uri70 uses an old_holder takeover with name 32, symbol 10 and URI 70; create_room_takeover_uri200 uses the program's maximum URI; transaction packet size is measured separately; open_door_takeover opens a maximum-metadata door whose identity a dead room holds",
+    "free_heap_at_end_bytes_at_least": {
+      "create_room": 4080,
+      "open_door": 10640,
+      "create_room_takeover_uri70": 5120,
+      "create_room_takeover_uri200": 4720,
+      "open_door_takeover": 10640,
+      "buy_door": 17456,
+      "claim_door_swap_fees": 26192,
+      "claim_protocol_swap_fees": 27072,
+      "sell_door": 20416,
+      "swap_doors": 19264,
+      "swap_doors_existing": 19808,
+      "swap_doors_prefunded": 19072
+    },
+    "resolution_bytes": 16,
+    "create_room_takeover_uri200_passes": true,
+    "worst_launch_cu": {
+      "create_room": {
+        "tx_cu": 351341,
+        "program_cu": 351191
+      },
+      "open_door": {
+        "tx_cu": 284233,
+        "program_cu": 284083
+      }
+    },
+    "zero_means": "the launch fails even with no probe allocation (out of memory, or the 64-entry instruction trace exceeded: see worst_launch_cu)"
+  },
+  "svm_cu": {
+    "buy_door": {
+      "min": 70182,
+      "max": 108011
+    },
+    "buy_room": {
+      "min": 52215,
+      "max": 61850
+    },
+    "claim_door_fees": {
+      "min": 35700,
+      "max": 39605
+    },
+    "claim_door_swap_fees": {
+      "min": 38181,
+      "max": 39763
+    },
+    "claim_founder_fees": {
+      "min": 24918,
+      "max": 36436
+    },
+    "claim_protocol_swap_fees": {
+      "min": 31729,
+      "max": 31740
+    },
+    "create_ata": {
+      "min": 6007,
+      "max": 19692
+    },
+    "create_room": {
+      "min": 228681,
+      "max": 228681
+    },
+    "initialize_config": {
+      "min": 11849,
+      "max": 11849
+    },
+    "open_door": {
+      "min": 137153,
+      "max": 150664
+    },
+    "retire_pending": {
+      "min": 19107,
+      "max": 28526
+    },
+    "sell_door": {
+      "min": 56247,
+      "max": 61081
+    },
+    "sell_room": {
+      "min": 38899,
+      "max": 38913
+    },
+    "swap_doors": {
+      "min": 78997,
+      "max": 92334
+    },
+    "sweep_protocol_fees": {
+      "min": 24907,
+      "max": 25666
+    }
+  },
+  "resource_bounds": {
+    "buy_door": {
+      "transaction_cu": 108161,
+      "trace_entries": 13
+    },
+    "swap_doors_lazy_vault": {
+      "transaction_cu": 92031,
+      "trace_entries": 10
+    },
+    "swap_doors_existing_vault": {
+      "transaction_cu": 103046,
+      "trace_entries": 10
+    },
+    "sell_door": {
+      "transaction_cu": 100121,
+      "trace_entries": 6
+    },
+    "claim_door_swap_fees": {
+      "transaction_cu": 57968,
+      "trace_entries": 5
+    },
+    "claim_protocol_swap_fees": {
+      "transaction_cu": 32181,
+      "trace_entries": 5
+    },
+    "buy_room": {
+      "transaction_cu": 62000,
+      "trace_entries": 6
+    },
+    "sell_room": {
+      "transaction_cu": 39209,
+      "trace_entries": 4
+    },
+    "swap_doors": {
+      "transaction_cu": 109434,
+      "trace_entries": 11
+    },
+    "swap_doors_existing": {
+      "transaction_cu": 103046,
+      "trace_entries": 10
+    },
+    "claim_door_fees": {
+      "transaction_cu": 39755,
+      "trace_entries": 0
+    },
+    "claim_founder_fees": {
+      "transaction_cu": 36586,
+      "trace_entries": 0
+    },
+    "create_ata": {
+      "transaction_cu": 19842,
+      "trace_entries": 0
+    },
+    "create_room": {
+      "transaction_cu": 228831,
+      "trace_entries": 0
+    },
+    "initialize_config": {
+      "transaction_cu": 11999,
+      "trace_entries": 0
+    },
+    "open_door": {
+      "transaction_cu": 150814,
+      "trace_entries": 0
+    },
+    "retire_pending": {
+      "transaction_cu": 28676,
+      "trace_entries": 0
+    },
+    "sweep_protocol_fees": {
+      "transaction_cu": 25816,
+      "trace_entries": 0
+    }
+  },
+  "stress_feature": {
+    "configured_cap_lamports": 120000000000,
+    "fixed": true,
+    "production_ceiling_lamports": 85018013680,
+    "test_feature": true
+  },
+  "stress_default": {
+    "configured_cap_lamports": 85018013680,
+    "fixed": true,
+    "production_ceiling_lamports": 85018013680,
+    "test_feature": false
+  },
+  "first_use_cost_notes": {
+    "first_swap_with_empty_destination_backing_lamports": 2976880,
+    "fee_wsol_on_first_ordinary_claim_lamports": 1488440,
+    "prefunding": "reduces payer top-up; unaccounted donations remain locked",
+    "room_growth": "first buy funds full 1335-byte capacity; later sells require no growth rent"
+  },
+  "final_ci_success": true,
+  "production_elf_sha256": "d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e",
+  "stress_elf_sha256": "ad08f97816e960c093f18652015758b5eed34942aab28be738f7291bb7e71ce9",
+  "all_sources_idl_and_elf_match": true,
+  "svm_tests": 71,
+  "property_iterations": 10000,
+  "executed_transactions": 12488
+}

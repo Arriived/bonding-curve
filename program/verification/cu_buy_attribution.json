@@ -1,14 +1,14 @@
 {
-  "door_buy_delta_cu": 8814,
+  "door_buy_delta_cu": 9402,
   "kind": "executed compiled Anchor SBF in LiteSVM; same fixture, same input (1,010,000 lamports)",
   "room_buy_delta_cu": [
-    9616,
-    9392
+    9401,
+    9402
   ],
   "rows": [
     {
       "pending_before": 0,
-      "program_cu": 43428,
+      "program_cu": 52411,
       "route": "room",
       "settled": false,
       "step": 0,
@@ -19,7 +19,7 @@
     },
     {
       "pending_before": 6000,
-      "program_cu": 53044,
+      "program_cu": 61812,
       "route": "room",
       "settled": true,
       "step": 1,
@@ -31,7 +31,7 @@
     },
     {
       "pending_before": 0,
-      "program_cu": 43655,
+      "program_cu": 52412,
       "route": "room",
       "settled": false,
       "step": 2,
@@ -42,7 +42,7 @@
     },
     {
       "pending_before": 6000,
-      "program_cu": 53047,
+      "program_cu": 61814,
       "route": "room",
       "settled": true,
       "step": 3,
@@ -54,7 +54,7 @@
     },
     {
       "pending_before": 6000,
-      "program_cu": 71819,
+      "program_cu": 81234,
       "route": "door",
       "settled": true,
       "step": 4,
@@ -67,7 +67,7 @@
     },
     {
       "pending_before": 0,
-      "program_cu": 63005,
+      "program_cu": 71832,
       "route": "door",
       "settled": false,
       "step": 5,

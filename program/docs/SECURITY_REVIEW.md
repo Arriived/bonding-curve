@@ -12,7 +12,8 @@ The older sections below describe earlier program revisions and measurements.
 The paired door anchors its room-token curve at the room spot at creation.
 Consequently a room buy just before a launch can increase the number of door
 tokens delivered while reducing their room-token value. The old token minimum
-does not protect that value. `review_door_open_front_run.json` records a
+does not protect that value. The `816b38d` witness, preserved as
+`review_door_open_front_run.before_owner_rulings.json`, records a
 20 SOL front-run yielding 0.217061544 SOL attacker net and reducing the victim's
 immediate exit by 0.549648652 SOL, despite its 2% token minimum.
 
@@ -36,7 +37,7 @@ The blocking service quote previously returned room units: the reference
 1.01 SOL first buy in the 10.1 SOL seeded room now matches SBF exactly at
 33,699,309,828,108 door base units. Active IDL and layout pins are explicitly
 named `paired`, preserving the historical deployed pins. Room/Door lengths are
-1,331/360 bytes. The program ID comes from the active IDL. Door sweeps select
+735 at birth / 1,335 after the first buy, and 360 bytes respectively. The program ID comes from the active IDL. Door sweeps select
 `sell_door`; Trade and swap events use the paired layouts. Name keys and
 matching rules are unchanged. Legacy maximum-metadata creation now fits only
 a 35-byte URI, or 3 bytes for a one-holder takeover, with a priority fee.
@@ -75,49 +76,55 @@ a minimum unrecoverable upkeep charge, or accepting current economics are owner
 options. Recommendation: document the measured price first and decide acceptable
 name-lock carrying cost explicitly. No threshold or fee rule is changed here.
 
-### Revived former NameLock holder: owner decision, no routing change
+### Revived former NameLock holder: Fixed (owner ruling A)
 
-Current behaviour is reproduced by passing program and service tests. A room
-can go dead, lose its NameLock to a successor, resume trading and become live
-again. Text matching can choose the revived room's greater depth while the
-NameLock still points to the live successor. The program accepts that signed
-door route. Exact-identity SlugLock routing can also favour a different holder.
+Control service `f2f8451` let a deeper revived former room regain text flow while
+the live successor held the NameLock. The service now routes text only to the
+current live name holder, regardless of another room's depth or tier. A live
+SlugLock is an on-chain restriction, not permission to bypass that holder:
+conflicting live identity/name locks refuse the launch. Without a name key the
+identity floor remains. Ordinary service regressions failed before this fix.
 
-Options:
+The SBF revival probe now revives the former holder through ordinary trading,
+keeps its exit open, sends the next eligible door into the successor, and checks
+that the former room receives no new door. This implements the ruling; it is no
+longer an open policy choice. The service's independent verifier agrees.
 
-| Option | Benefit | Cost or tradeoff |
-|---|---|---|
-| Retain depth-based routing | Keeps current liquidity preference | NameLock ownership does not imply exclusive future text flow |
-| Prefer the live current NameLock holder for text matches | Gives succession stable meaning and prevents a former holder recapturing text flow by revival | May route to a shallower room; exact-identity SlugLock precedence needs an explicit rule |
-| Make takeover irreversible for the former room's narrative | Strongest exclusivity | Requires a new on-chain lifecycle rule and an explicit treatment of permanent doors and existing holders |
+### Admin-selectable 120 SOL stress cap: Fixed (owner ruling B)
 
-Recommendation: prefer the live current NameLock holder for text routing, while
-preserving existing holders' exits. The owner must decide how this interacts
-with an exact-identity floor before implementation. Current depth preference
-is recorded as a passing test, with no xfail, ignored wish or routing fix.
-The existing SBF revival probe records the wash cost, setup rent, recoverable
-reserve and third-party-flow payoff; no authority compromise is required.
+Control program `816b38d` accepted a normal admin's 120 SOL setting. Production
+Config validation now refuses triggers above 85,018,013,680 lamports. Only the
+`test-stress` cargo feature removes that ceiling. Existing room caps remain
+immutable. The permanent `adversarial_normal_admin_can_select_the_stress_cap`
+test asserts default refusal and feature-build acceptance, each against its own
+SBF binary. CI also runs the supply-exhaustion case in the isolated feature build,
+without overwriting the production ELF. No intentionally failing test is committed.
 
-### Admin-selectable 120 SOL stress cap: owner decision, no cap change
+The owner authorized independent historical B/D controls against `816b38d` on
+the reviewer's Linux runner; those historical controls were not executed locally. That commit accepted 120 SOL and allocated the old
+birth accounts and fixed volume array. Candidate tests all assert their own
+build's correct behavior; no historical failure harness is on this branch.
 
-The unchanged Config validator permits a normal authorized admin to select
-120 SOL for newly created rooms. Existing rooms retain their immutable cap.
-The supply-exhaustion stress fixture is isolated as a test, but its settings
-are not prohibited in an ordinary build. A passing SBF test records this fact.
+### Room birth rent: reduced (owner ruling D)
 
-| Option | Benefit | Cost or tradeoff |
-|---|---|---|
-| Retain the validator | Full admin flexibility | The production profile depends on operational discipline |
-| Bound production Config to the approved economic envelope | Enforces the intended profile on-chain | Requires an owner-selected upper bound and a future upgrade for wider curves |
-| Use a separate stress build/program identity | Keeps stress reachability while separating production | Additional build/pin discipline; still needs a production validator rule |
+Birth rent is 17,515,840 lamports, down from 26,959,560 at `816b38d`: 9,443,720
+lamports saved (35.0%). For a zero-first-buy launch under the default Config,
+no reserve, native fee, graduation payer,
+retirement, WSOL fee or door-backing vault is created. Each is created only when
+needed; graduation remains unimplemented. Liveness uses exact sparse u128 hourly
+buckets with the same 25-slot ring and 24-hour checks. Birth Room is 735 bytes;
+the first buy funds all 1,335 bytes of capacity, so sells never require storage
+rent. This changes the Room wire layout; the measurements use freshly created
+paired rooms, with no migration of existing 1,331-byte accounts performed. A 1,000-record differential test includes backward clocks and u64-maximum
+volumes and compares exact values and live decisions with the old ring.
 
-Recommendation: choose a production economic envelope and enforce it in the
-validator, with stress settings behind a separate test build. This changes admin
-policy, so this review implements neither restriction. Attack cost is one admin
-transaction (5,000 lamports without priority fee); an outsider has no such
-permission. There is no demonstrated direct withdrawal payoff. The risk is
-selection of economics outside the default profile, including reachable supply
-exhaustion. Existing holder exits remain tested under that stress profile.
+The 15,000,000 target is not reached: the gap is 2,515,840 lamports. The remaining
+birth accounts are needed for the existing launch: Room, Door, both immutable
+metadata mints, both inventory vaults, SlugLock and NameLock. Reaching the target
+with these accounts requires further state/metadata compaction or an interface
+change; first-use deferral alone cannot remove their rent. Deferred rent moves
+to the first user of a vault; it is not eliminated. Final before/after heap and
+CU measurements are recorded below after verification.
 
 ### RPC failure text: unambiguous service defect fixed
 
@@ -1224,7 +1231,7 @@ defect found. Program code: `program/programs/doors_v1/src/`.
 | item | verdict |
 |---|---|
 | `/route` input validation | Types, integer ranges and UTF-8 byte limits equal `Launch::validate`. Body cap and surrogates fixed (L-2, L-3). Requests are launcher-signed with unknown fields refused (M-3). First buys always carry a price limit (M-4). Oversize transactions are refused before signing. |
-| routing influence by crafted input | **By design, yes.** Matching a live room's name routes into it. Look-alikes the rules miss get their own room, at the measured recall. Among several matching rooms, the tie-break prefers the highest reserve, so a room's holders can buy their way to winning ties (capital at risk, fees paid). |
+| routing influence by crafted input | **By design, yes.** Matching a live room's name routes into it. Look-alikes the rules miss get their own room, at the measured recall. Only the current live NameLock holder receives text-routed doors; revived former holders cannot buy their way back into routing. Conflicting live SlugLock/NameLock holders cause a refusal. |
 | rate-limit evasion | Per IP: proxy-correct (L-1). Per launcher: keyed on the signature-verified launcher (M-3, fixed); evasion needs a new key per request, which is free (H-1). |
 | decision store rewrite / fork | No fork (process lock plus `BEGIN IMMEDIATE`). Rewrite is possible for the operator until the head is published (I-9). |
 | concurrent identical launches, duplicates, retries | New-room: the second request is refused (M-2 fixed). Door: each request gets its own random nonce; both can land if the launcher signs both, each paying its own rent. Retries after a timeout see `409` until the first decision expires (about 60–90 s); there is no idempotency key. |
@@ -1286,7 +1293,7 @@ versions across both lockfiles:
   dormant in v1 (I-1).
 - **Dependency source code.** Only advisory databases were consulted.
 
-### Final measured verification (8 November 2026)
+### Previous measured verification (8 November 2026, before A/B/D)
 
 [Successful Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42403905057) tested program source `9ed04d7`: **71 SBF tests passed**, including 10,000 mixed iterations and 12,488 executed transactions. IDL, account layout, source hashes, offline SPL hashes, binary pin, standalone client unit test, heap probe and 400,000-iteration curve fuzz all passed. The service passed **163 pytest tests**. Repeating the full evasion benchmark reproduced its JSON exactly.
 
@@ -1322,10 +1329,93 @@ Evasion catch rates: mixed-script words **74.5%** with the symbol kept (**74.3%*
 | 1 | High, release blocker | Service quote used room units for a door-token minimum | Fixed | Ordinary launch | Correct first-buy fills and slippage minima |
 | 2 | Medium | Room front-run changes a new door's birth anchor | Fixed, approved price bound | Recorded 5-20 SOL front-run capital | Up to 0.217061544 SOL attacker net in the supplied cases; refused at 2% now |
 | 3 | Medium | Public RPC failure text can expose endpoint credentials | Fixed | Failure-triggering HTTP request | Prevents RPC quota/billing credential exposure |
-| 4 | Medium | Revived former NameLock holder can regain text routing | Owner decision | 0.020015002 SOL measured revival wash cost, plus rent and reserve capital | 0.004755423 SOL measured fixture net; potential future launch flow |
+| 4 | Medium | Revived former NameLock holder can regain text routing | Fixed | Funded revival no longer buys new launch eligibility | Current live NameLock holder exclusively receives text flow; conflicts refuse |
 | 5 | Low | Default liveness is inexpensive to maintain | Owner decision | 0.02002 SOL/room/day; 2.002 SOL/100 rooms with the measured pattern | Continued name lock and routing eligibility |
 | 6 | Low | Name evasion through mixed scripts and truncation | Owner decision; rules unchanged | Launch rent plus upkeep | Possible separate room/routing diversion; catch rates 74.5% and 5.5% |
-| 7 | Low | Authorized admin can choose the 120 SOL stress cap | Owner decision | 5,000-lamport admin transaction | Wider future-room economics; no direct extraction demonstrated |
+| 7 | Low | Authorized admin can choose the 120 SOL stress cap | Fixed | Default build enforces 85,018,013,680-lamport ceiling | 120 SOL accepts only in isolated test-stress build |
+| 8 | Info | Excess unused storage at room birth | Implemented; 15 million target not reached | Birth rent 26,959,560 -> 17,515,840 lamports; first-use costs deferred | Saves 9,443,720 lamports per room at birth; exact liveness preserved |
 
 The same-slot NameLock race, request replay/alteration and resource exit/claim
 checks found no additional defect. Their passing tests are retained as coverage.
+
+
+### Owner-ruling measurements (8 November 2026)
+
+Controlled baseline is program `816b38d` / service `f2f8451`. Production source
+`5ac41b9` passed 71/71 SBF tests, 10,000 mixed iterations (12,488 transactions),
+the isolated stress feature checks, heap probe, client compile/unit test and
+400,000 curve-fuzz iterations in run 42526020048. That run stopped only at the
+old binary hash. Every recorded source hash and the emitted IDL matched the
+working tree before pinning the new production ELF. The final pinned run is
+[42526798488](https://github.com/Arriived/bonding-curve/actions/runs/42526798488),
+which passed every step on `86a0f44` with the same production source. Historical B/D negative controls are assigned to
+the independent reviewer, as approved; they were not executed on this machine.
+
+| Measurement | Before (`816b38d`) | After (`5ac41b9`) |
+|---|---:|---:|
+| Room with door 0 birth rent, lamports | 26,959,560 | 17,515,840 |
+| Additional empty door rent, lamports | 8,839,200 | 7,350,760 |
+| First swap-fee vault rent, lamports | 1,488,440 | 1,488,440 |
+| Worst-case creation free heap, bytes at least | 2,960 | 4,080 |
+| Worst-case open free heap, bytes at least | 10,096 | 10,640 |
+| Worst-case creation CU, heap-probe fixture | 328,089 | 351,341 |
+| Worst-case open CU, heap-probe fixture | 242,597 | 284,233 |
+
+These CU rows compare the same maximum-metadata/prefunding/first-buy fixture.
+Birth rent uses the same zero-first-buy/default-Config metadata fixture.
+Birth-only initialization is cheaper; first-use initialization and Room growth
+shift work into buys. The tested launches still fit 400,000 CU and the 64-entry
+trace. Heap figures use the default 32 KiB allocator and 16-byte resolution.
+
+| Instruction | Before free heap | After free heap | After maximum measured transaction CU | After trace entries / 64 |
+|---|---:|---:|---:|---:|
+| buy_door | 17,440 | 17,456 | 108,161 | 13 |
+| sell_door | 19,856 | 20,416 | 100,121 | 6 |
+| swap_doors | 18,784 | 19,072 | 109,434 | 11 |
+| swap_doors_existing | 19,248 | 19,808 | 103,046 | 10 |
+| claim_door_swap_fees | 25,632 | 26,192 | 57,968 | 5 |
+| claim_protocol_swap_fees | 26,512 | 27,072 | 32,181 | 5 |
+
+The economic scenario JSON is unchanged exactly. All 33
+doors in each of four resource scenarios still fully sell and discharge their
+fee credits. Sparse storage preserves exact hourly values; fees, curves, liveness
+thresholds and name normalization are unchanged. The 15 million birth target is
+unreached with the current required layouts. Data and full CU ranges are in
+`verification/owner_rulings_before.json` and `owner_rulings_after.json`.
+
+The service's final 170-test suite passes. Its IP spoofing burst test now uses a
+fixed limiter timestamp: on a slower run, 31 request constructions had taken long
+enough for a real token refill, which invalidated that test's burst assumption.
+Production rate limiting is unchanged. The repeated evasion benchmark is
+byte-identical, retaining 74.5% / 74.3% mixed-script and 5.5% truncation catch rates.
+
+
+The current unbounded 20 SOL front-run still reduces victim exit by the same
+549,648,652 lamports. Its attacker wallet net is now 215,573,104 lamports rather
+than the baseline 217,061,544: the first fee claim pays the newly deferred
+1,488,440-lamport WSOL vault rent. This is a first-use storage cost, not a fee or
+curve change. The bounded launch remains refused at 2%, and zero remains accepted.
+The historical witness is preserved separately so the original numbers stay
+reproducible and distinguishable from current wallet-cost accounting.
+
+
+First-use costs: a swap into an unused receiving door creates its backing as
+well as the swap-fee vault (2,976,880 lamports total before prefunding offsets).
+The first ordinary fee claim creates the WSOL vault (1,488,440 lamports), and the
+first buy funds full Room capacity plus its necessary native/backing accounts.
+These costs are paid by the respective first-use payer, not by later sellers.
+
+
+### Final owner-ruling verification
+
+[Run 42526798488](https://github.com/Arriived/bonding-curve/actions/runs/42526798488)
+is green on `86a0f44`: 71 SBF tests, 10,000 mixed iterations / 12,488 transactions,
+offline pinned SPL executables, both permanent cap-test directions, the isolated
+supply-exhaustion exit test, heap probe, client compile/unit test, 400,000 curve
+iterations, source/IDL checks and the updated production binary pin all pass.
+Every emitted source hash matches this branch; program/service IDLs match emitted
+bytes exactly. Findings 4 and 7 are Fixed. D is implemented with the documented
+15 million target gap and first-use costs. Historical B/D control commit is
+`816b38d`, assigned to the independent reviewer by the owner's instruction.
+The local service run on `bf121dc` passed 170 tests. Its unchanged-rule benchmark
+JSON repeated exactly. Machine-readable checks: `verification/owner_rulings_checks.json`.
