@@ -1497,6 +1497,7 @@ fn direct_donations_and_holder_burns_preserve_coverage_and_quotes() {
     f.trade(Some(0), true, 1_010_000_000);
     f.trade(None, true, 1_010_000_000);
     f.retire(); // create the retirement vault through its first real use
+    f.trade(None, true, 1_010_000_000); // restore a non-zero backlog for the quote check
     let r = f.r();
     let d = f.d(0);
     let keys = f.doors[0].clone();
