@@ -62,5 +62,29 @@
   },
   "candidate_source_commit": "028e57e",
   "evasion_rules_changed": false,
-  "routing_changed": true
+  "routing_changed": true,
+  "program_ci": {
+    "run_id": 42526798488,
+    "url": "https://github.com/Arriived/bonding-curve/actions/runs/42526798488",
+    "source_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
+    "sbf_tests": 71,
+    "property_iterations": 10000,
+    "executed_transactions": 12488,
+    "elf_sha256": "d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e",
+    "all_sources_and_idl_match": true,
+    "default_cap_refused": true,
+    "test_feature_cap_accepted": true
+  },
+  "verified_service_commit": "bf121dc",
+  "room_rent": {
+    "controlled_commit": "816b38d",
+    "before_lamports": 26959560,
+    "after_lamports": 17515840,
+    "saved_lamports": 9443720,
+    "target_gap_lamports": 2515840
+  },
+  "room_wire_bytes": {
+    "birth": 735,
+    "trading": 1335
+  }
 }

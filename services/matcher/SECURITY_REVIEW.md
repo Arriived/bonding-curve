@@ -131,3 +131,18 @@ Repeated final benchmark: 1,223 targets, byte-identical JSON to the prior review
 Mixed-script catch rates remain 74.5% with the symbol kept and 74.3% fuzzed;
 actual 32-byte truncations remain 5.5%. Rules are unchanged. Final mocked pytest
 run passes 170/170. Service code under test is `028e57e`; data hashes identify it.
+
+
+Final owner-ruling program verification is green:
+[42526798488](https://github.com/Arriived/bonding-curve/actions/runs/42526798488)
+on `86a0f44` passes 71 SBF tests / 10,000 iterations, both cap directions,
+isolated stress exits, pinned SPL bytes, heap, 400,000 curve cases, client checks
+and the production ELF pin. Every source hash and emitted IDL matches the
+candidate; the service's paired IDL matches byte-for-byte. Findings 4 and 7 are
+Fixed. Birth rent is 26,959,560 -> 17,515,840 lamports (35.0% saved), missing the
+15 million target by 2,515,840. Creation heap rises 2,960 -> 4,080 bytes; its
+matching worst-case CU rises 328,089 -> 351,341. First-use vault costs are deferred,
+not eliminated. Remaining birth accounts and immutable metadata need further
+compaction to reach the target. Program before/after evidence names control
+`816b38d`; historical B/D negative controls are assigned to the reviewer, not
+claimed as executed locally. Final service tests on `bf121dc`: 170 passing.

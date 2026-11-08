@@ -723,3 +723,13 @@ passes a fixed timestamp through RateLimiter.allow's existing clock argument,
 so it checks a single burst regardless of machine speed. The limiter and its
 refill policy are unchanged. The stronger revival case also checks a former T3
 text match loses to the current holder's T2n match after its old SlugLock release.
+
+
+The final pinned program run 42526798488 on `86a0f44` is green: 71 SBF tests,
+10,000 mixed iterations, both cap directions, stress exits, offline SPL pins,
+heap probe, 400,000 curve cases, client checks and production binary pin.
+Program/service emitted IDLs agree exactly. Findings 4 and 7 are Fixed. Birth
+rent falls 26,959,560 -> 17,515,840 lamports, still 2,515,840 above the target;
+creation heap improves 2,960 -> 4,080 bytes and its matched worst-case CU rises
+328,089 -> 351,341. All source/test hashes in data/paired_review_checks.json
+match the 170-test service run and the unchanged-rule benchmark repeat.
