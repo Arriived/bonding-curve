@@ -1,12 +1,66 @@
 {
-  "run_id": 41472716224,
-  "url": "https://github.com/Arriived/bonding-curve/actions/runs/41472716224",
-  "build_commit": "f6eb007627d30fdf74d5df2847c0feed1241c535",
+  "run_id": 42403905057,
+  "url": "https://github.com/Arriived/bonding-curve/actions/runs/42403905057",
+  "build_commit": "9ed04d73a2c057433b79adc1ddb9a279c1a3f2ba",
   "result": "success",
-  "sbf_tests_passed": 27,
+  "sbf_tests_passed": 71,
   "mixed_operation_iterations": 10000,
-  "mixed_operation_executed_transactions": 10862,
-  "dependency_vulnerabilities_or_unreviewed_notices": 0,
-  "reviewed_upstream_maintenance_notices": 5,
-  "local_sources_and_lockfiles_match_build_hashes": true
+  "mixed_operation_executed_transactions": 12488,
+  "local_sources_and_lockfiles_match_build_hashes": true,
+  "elf_sha256": "e3c9aa751d2745b6e89dee76dbf362556f460f42288421a55c57bae3b4ede6b4",
+  "pinned_spl_offline": true,
+  "service_pytest_passed": 163,
+  "evasion_benchmark_repeated_identically": true,
+  "worst_resource_transactions": {
+    "buy_door": {
+      "max_transaction_cu": 74064,
+      "max_trace_entries": 9
+    },
+    "swap_doors_lazy_vault": {
+      "max_transaction_cu": 94370,
+      "max_trace_entries": 10
+    },
+    "swap_doors_existing_vault": {
+      "max_transaction_cu": 88025,
+      "max_trace_entries": 8
+    },
+    "sell_door": {
+      "max_transaction_cu": 102003,
+      "max_trace_entries": 6
+    },
+    "claim_door_swap_fees": {
+      "max_transaction_cu": 60387,
+      "max_trace_entries": 5
+    },
+    "claim_protocol_swap_fees": {
+      "max_transaction_cu": 34623,
+      "max_trace_entries": 5
+    }
+  },
+  "combined_measured_trade_limits": {
+    "buy_door": {
+      "max_transaction_cu": 75579,
+      "max_trace_entries": 9
+    },
+    "swap_doors_lazy_vault": {
+      "max_transaction_cu": 94823,
+      "max_trace_entries": 10
+    },
+    "swap_doors_existing_vault": {
+      "max_transaction_cu": 88025,
+      "max_trace_entries": 8
+    },
+    "sell_door": {
+      "max_transaction_cu": 102003,
+      "max_trace_entries": 6
+    },
+    "claim_door_swap_fees": {
+      "max_transaction_cu": 60387,
+      "max_trace_entries": 5
+    },
+    "claim_protocol_swap_fees": {
+      "max_transaction_cu": 34623,
+      "max_trace_entries": 5
+    }
+  }
 }

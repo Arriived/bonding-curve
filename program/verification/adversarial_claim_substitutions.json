@@ -1,0 +1,6 @@
+{
+  "attacker_fee_per_failed_transaction_lamports": 5000,
+  "case": "swap_claim_substitution",
+  "direct_payoff_lamports": 0,
+  "rejected_attempts": 41
+}

@@ -4,12 +4,36 @@
   "rows": [
     {
       "error": "",
+      "first_buy": false,
+      "instruction": "create_room",
+      "logged_invocations": 38,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "program_cu": 254404,
+      "succeeded": true,
+      "transaction_cu": 254554
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "open_door",
+      "logged_invocations": 18,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "program_cu": 161572,
+      "succeeded": true,
+      "transaction_cu": 161722
+    },
+    {
+      "error": "",
       "first_buy": true,
       "instruction": "create_room",
       "logged_invocations": 47,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "succeeded": true
+      "program_cu": 316877,
+      "succeeded": true,
+      "transaction_cu": 317027
     },
     {
       "error": "",
@@ -18,7 +42,64 @@
       "logged_invocations": 27,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "succeeded": true
+      "program_cu": 227046,
+      "succeeded": true,
+      "transaction_cu": 227196
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_takeover",
+      "logged_invocations": 45,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "program_cu": 323102,
+      "succeeded": true,
+      "transaction_cu": 323252
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_split_takeover",
+      "logged_invocations": 45,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "program_cu": 323294,
+      "succeeded": true,
+      "transaction_cu": 323444
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door_takeover_with_retirement",
+      "logged_invocations": 28,
+      "prefunded": false,
+      "priority_fee_instruction": false,
+      "program_cu": 217874,
+      "succeeded": true,
+      "transaction_cu": 218024
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "create_room",
+      "logged_invocations": 39,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "program_cu": 254404,
+      "succeeded": true,
+      "transaction_cu": 254704
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "open_door",
+      "logged_invocations": 19,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "program_cu": 161572,
+      "succeeded": true,
+      "transaction_cu": 161872
     },
     {
       "error": "",
@@ -27,7 +108,9 @@
       "logged_invocations": 48,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "succeeded": true
+      "program_cu": 316877,
+      "succeeded": true,
+      "transaction_cu": 317177
     },
     {
       "error": "",
@@ -36,7 +119,64 @@
       "logged_invocations": 28,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "succeeded": true
+      "program_cu": 227046,
+      "succeeded": true,
+      "transaction_cu": 227346
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_takeover",
+      "logged_invocations": 46,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "program_cu": 323102,
+      "succeeded": true,
+      "transaction_cu": 323402
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_split_takeover",
+      "logged_invocations": 46,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "program_cu": 323294,
+      "succeeded": true,
+      "transaction_cu": 323594
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door_takeover_with_retirement",
+      "logged_invocations": 29,
+      "prefunded": false,
+      "priority_fee_instruction": true,
+      "program_cu": 217874,
+      "succeeded": true,
+      "transaction_cu": 218174
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "create_room",
+      "logged_invocations": 37,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "program_cu": 252235,
+      "succeeded": true,
+      "transaction_cu": 252385
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "open_door",
+      "logged_invocations": 18,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "program_cu": 161603,
+      "succeeded": true,
+      "transaction_cu": 161753
     },
     {
       "error": "",
@@ -45,7 +185,9 @@
       "logged_invocations": 48,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "succeeded": true
+      "program_cu": 317789,
+      "succeeded": true,
+      "transaction_cu": 317939
     },
     {
       "error": "",
@@ -54,7 +196,64 @@
       "logged_invocations": 29,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "succeeded": true
+      "program_cu": 230158,
+      "succeeded": true,
+      "transaction_cu": 230308
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_takeover",
+      "logged_invocations": 46,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "program_cu": 324112,
+      "succeeded": true,
+      "transaction_cu": 324262
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_split_takeover",
+      "logged_invocations": 46,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "program_cu": 324304,
+      "succeeded": true,
+      "transaction_cu": 324454
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door_takeover_with_retirement",
+      "logged_invocations": 30,
+      "prefunded": true,
+      "priority_fee_instruction": false,
+      "program_cu": 220986,
+      "succeeded": true,
+      "transaction_cu": 221136
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "create_room",
+      "logged_invocations": 38,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "program_cu": 252235,
+      "succeeded": true,
+      "transaction_cu": 252535
+    },
+    {
+      "error": "",
+      "first_buy": false,
+      "instruction": "open_door",
+      "logged_invocations": 19,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "program_cu": 161603,
+      "succeeded": true,
+      "transaction_cu": 161903
     },
     {
       "error": "",
@@ -63,7 +262,9 @@
       "logged_invocations": 49,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "succeeded": true
+      "program_cu": 317789,
+      "succeeded": true,
+      "transaction_cu": 318089
     },
     {
       "error": "",
@@ -72,7 +273,42 @@
       "logged_invocations": 30,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "succeeded": true
+      "program_cu": 230158,
+      "succeeded": true,
+      "transaction_cu": 230458
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_takeover",
+      "logged_invocations": 47,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "program_cu": 324112,
+      "succeeded": true,
+      "transaction_cu": 324412
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "create_room_split_takeover",
+      "logged_invocations": 47,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "program_cu": 324304,
+      "succeeded": true,
+      "transaction_cu": 324604
+    },
+    {
+      "error": "",
+      "first_buy": true,
+      "instruction": "open_door_takeover_with_retirement",
+      "logged_invocations": 31,
+      "prefunded": true,
+      "priority_fee_instruction": true,
+      "program_cu": 220986,
+      "succeeded": true,
+      "transaction_cu": 221286
     }
   ]
 }

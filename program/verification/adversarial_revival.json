@@ -1,0 +1,14 @@
+{
+  "attacker_wallet_net_lamports": 4755423,
+  "case": "revival_after_name_takeover",
+  "exit_received_after_fees_lamports": 1060179505,
+  "initial_gross_buy_lamports": 1010000000,
+  "name_lock_still_points_to_successor": true,
+  "own_wash_fees_claimed_lamports": 30000000,
+  "owner_decision": true,
+  "recoverable_initial_reserve_lamports": 1000000000,
+  "revival_operating_cost_lamports": 20015002,
+  "setup_cost_lamports": 31399080,
+  "successor_remains_live": true,
+  "victim_first_buy_lamports": 1010000000
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "direct_profit_lamports": 0,
+    "initial_room_sol": 0,
+    "net_cost_lamports": 67514679,
+    "protocol_swap_fees_room_base": 2056583609079,
+    "round_trips": 8,
+    "self_claimed_swap_fees_room_base": 3084875413602,
+    "swap_fees_room_base": 5141459022681
+  },
+  {
+    "direct_profit_lamports": 0,
+    "initial_room_sol": 10,
+    "net_cost_lamports": 67957457,
+    "protocol_swap_fees_room_base": 1166249503376,
+    "round_trips": 8,
+    "self_claimed_swap_fees_room_base": 1749374255046,
+    "swap_fees_room_base": 2915623758422
+  },
+  {
+    "direct_profit_lamports": 0,
+    "initial_room_sol": 50,
+    "net_cost_lamports": 68634480,
+    "protocol_swap_fees_room_base": 295168090954,
+    "round_trips": 8,
+    "self_claimed_swap_fees_room_base": 442752136416,
+    "swap_fees_room_base": 737920227370
+  }
+]

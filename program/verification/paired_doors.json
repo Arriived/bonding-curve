@@ -1,0 +1,1366 @@
+[
+  {
+    "a_payout_lamports": 8097503855,
+    "buy_slippage": {
+      "extra_bps": 546.9875817092995,
+      "paired_bps": 1166.166108369091,
+      "single_room_bps": 619.1785266597916
+    },
+    "dump": false,
+    "first_rotation_swap_slippage": null,
+    "followers_rotate": false,
+    "initial_room_sol": 0,
+    "sell_slippage": {
+      "extra_bps": 535.4129960582768,
+      "paired_bps": 2223.699032557488,
+      "single_room_bps": 1688.2860364992114
+    },
+    "source_door_launch_fdv_sol": 27.95832628061253,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 31.770893400363143,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 31.770893400363143,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 62567194462255,
+            "fdv_sol": 35.82718712060226,
+            "index": 2,
+            "room_reserve_base": 66439441887444
+          }
+        ],
+        "room_price_multiple": 1.1363660714695358,
+        "room_reserve_lamports": 1980198019,
+        "room_sold_base": 66439441887444,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 83.29499393071517,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 83.29499393071517,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 317722235035748,
+            "fdv_sol": 168.11103677636595,
+            "index": 2,
+            "room_reserve_base": 451360888377499
+          }
+        ],
+        "room_price_multiple": 2.9792553779757327,
+        "room_reserve_lamports": 21782178199,
+        "room_sold_base": 451360888377499,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 59.05971320477759,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 59.05971320477759,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 255155040573493,
+            "fdv_sol": 101.65818422933758,
+            "index": 2,
+            "room_reserve_base": 334747476157345
+          }
+        ],
+        "room_price_multiple": 2.1124194850580897,
+        "room_reserve_lamports": 13602881375,
+        "room_sold_base": 334747476157345,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.95832628061295,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.95832628061295,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.95832628061295,
+            "index": 2,
+            "room_reserve_base": 8
+          }
+        ],
+        "room_price_multiple": 1.0000000000000149,
+        "room_reserve_lamports": 0,
+        "room_sold_base": 8,
+        "step": "after_followers_cash_out"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 8097503855,
+    "buy_slippage": {
+      "extra_bps": 546.9875817092995,
+      "paired_bps": 1166.166108369091,
+      "single_room_bps": 619.1785266597916
+    },
+    "dump": false,
+    "first_rotation_swap_slippage": {
+      "extra_bps": 285.6024911455817,
+      "paired_bps": 683.7859690955672,
+      "single_door_bps": 398.1834779499849
+    },
+    "followers_rotate": true,
+    "initial_room_sol": 0,
+    "sell_slippage": {
+      "extra_bps": 535.4129960582768,
+      "paired_bps": 2223.699032557488,
+      "single_room_bps": 1688.2860364992114
+    },
+    "source_door_launch_fdv_sol": 27.95832628061253,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 31.770893400363143,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 31.770893400363143,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 62567194462255,
+            "fdv_sol": 35.82718712060226,
+            "index": 2,
+            "room_reserve_base": 66439441887444
+          }
+        ],
+        "room_price_multiple": 1.1363660714695358,
+        "room_reserve_lamports": 1980198019,
+        "room_sold_base": 66439441887444,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 83.29499393071517,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 83.29499393071517,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 317722235035748,
+            "fdv_sol": 168.11103677636595,
+            "index": 2,
+            "room_reserve_base": 451360888377499
+          }
+        ],
+        "room_price_multiple": 2.9792553779757327,
+        "room_reserve_lamports": 21782178199,
+        "room_sold_base": 451360888377499,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 59.05971320477759,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 59.05971320477759,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 255155040573493,
+            "fdv_sol": 101.65818422933758,
+            "index": 2,
+            "room_reserve_base": 334747476157345
+          }
+        ],
+        "room_price_multiple": 2.1124194850580897,
+        "room_reserve_lamports": 13602881375,
+        "room_sold_base": 334747476157345,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 59.05971320477759,
+            "index": 0,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 253205588401200,
+            "fdv_sol": 101.17529252113194,
+            "index": 1,
+            "room_reserve_base": 331400001395755
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 59.05971320477759,
+            "index": 2,
+            "room_reserve_base": 8
+          }
+        ],
+        "room_price_multiple": 2.1124194850580897,
+        "room_reserve_lamports": 13602881375,
+        "room_sold_base": 334747476157345,
+        "step": "after_followers_rotate"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 7335805961,
+    "buy_slippage": {
+      "extra_bps": 563.805945851692,
+      "paired_bps": 1035.4944746340277,
+      "single_room_bps": 471.6885287823358
+    },
+    "dump": false,
+    "first_rotation_swap_slippage": null,
+    "followers_rotate": false,
+    "initial_room_sol": 10,
+    "sell_slippage": {
+      "extra_bps": 613.4165592614983,
+      "paired_bps": 1903.6270946713462,
+      "single_room_bps": 1290.210535409848
+    },
+    "source_door_launch_fdv_sol": 27.95832628061251,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 85.54051058681539,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 30.794934036832807,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 63492699471620,
+            "fdv_sol": 34.79032537019095,
+            "index": 2,
+            "room_reserve_base": 37960310032325
+          }
+        ],
+        "room_price_multiple": 1.1014584252200863,
+        "room_reserve_lamports": 11980198019,
+        "room_sold_base": 306210991140201,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 185.26937973982805,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 66.6977352484066,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 343120407719188,
+            "fdv_sol": 144.14458955248614,
+            "index": 2,
+            "room_reserve_base": 283730831670585
+          }
+        ],
+        "room_price_multiple": 2.385612592791638,
+        "room_reserve_lamports": 31782178199,
+        "room_sold_base": 551981512778461,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 143.49402935304002,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 51.658438069778306,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 279627708247568,
+            "fdv_sol": 94.48858637875924,
+            "index": 2,
+            "room_reserve_base": 212723561919381
+          }
+        ],
+        "room_price_multiple": 1.847694227161247,
+        "room_reserve_lamports": 24372273187,
+        "room_sold_base": 480974243027257,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 77.6611342091497,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.95832628061265,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.95832628061265,
+            "index": 2,
+            "room_reserve_base": 2
+          }
+        ],
+        "room_price_multiple": 1.000000000000005,
+        "room_reserve_lamports": 10000000001,
+        "room_sold_base": 268250681107878,
+        "step": "after_followers_cash_out"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 3801439748,
+    "buy_slippage": {
+      "extra_bps": 563.805945851692,
+      "paired_bps": 1035.4944746340277,
+      "single_room_bps": 471.6885287823358
+    },
+    "dump": true,
+    "first_rotation_swap_slippage": null,
+    "followers_rotate": false,
+    "initial_room_sol": 10,
+    "sell_slippage": {
+      "extra_bps": 660.7172215133285,
+      "paired_bps": 1608.863718431548,
+      "single_room_bps": 948.1464969182197
+    },
+    "source_door_launch_fdv_sol": 27.95832628061251,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 85.54051058681539,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 30.794934036832807,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 63492699471620,
+            "fdv_sol": 34.79032537019095,
+            "index": 2,
+            "room_reserve_base": 37960310032325
+          }
+        ],
+        "room_price_multiple": 1.1014584252200863,
+        "room_reserve_lamports": 11980198019,
+        "room_sold_base": 306210991140201,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 185.26937973982805,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 66.6977352484066,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 343120407719188,
+            "fdv_sol": 144.14458955248614,
+            "index": 2,
+            "room_reserve_base": 283730831670585
+          }
+        ],
+        "room_price_multiple": 2.385612592791638,
+        "room_reserve_lamports": 31782178199,
+        "room_sold_base": 551981512778461,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 49986283511350,
+            "fdv_sol": 65.22106838881727,
+            "index": 0,
+            "room_reserve_base": 52427151101123
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 33.34886762420328,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 343120407719188,
+            "fdv_sol": 72.07229477624301,
+            "index": 2,
+            "room_reserve_base": 283730831670585
+          }
+        ],
+        "room_price_multiple": 1.1928062963958181,
+        "room_reserve_lamports": 13686347325,
+        "room_sold_base": 336157982771708,
+        "step": "after_unrelated_room_dump"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 49986283511350,
+            "fdv_sol": 54.25985582001864,
+            "index": 0,
+            "room_reserve_base": 52427151101123
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.744175214406834,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 279627708247568,
+            "fdv_sol": 50.746944627185115,
+            "index": 2,
+            "room_reserve_base": 212723561919381
+          }
+        ],
+        "room_price_multiple": 0.992340347413637,
+        "room_reserve_lamports": 9846509195,
+        "room_sold_base": 265150713020504,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 49986283511350,
+            "fdv_sol": 33.99828774190949,
+            "index": 0,
+            "room_reserve_base": 52427151101123
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 17.384020614248527,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 17.384020614248527,
+            "index": 2,
+            "room_reserve_base": 2
+          }
+        ],
+        "room_price_multiple": 0.6217833084773514,
+        "room_reserve_lamports": 1541114672,
+        "room_sold_base": 52427151101125,
+        "step": "after_followers_cash_out"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 7335805961,
+    "buy_slippage": {
+      "extra_bps": 563.805945851692,
+      "paired_bps": 1035.4944746340277,
+      "single_room_bps": 471.6885287823358
+    },
+    "dump": false,
+    "first_rotation_swap_slippage": {
+      "extra_bps": 302.0541914354503,
+      "paired_bps": 738.7399434641162,
+      "single_door_bps": 436.685752028666
+    },
+    "followers_rotate": true,
+    "initial_room_sol": 10,
+    "sell_slippage": {
+      "extra_bps": 613.4165592614983,
+      "paired_bps": 1903.6270946713462,
+      "single_room_bps": 1290.210535409848
+    },
+    "source_door_launch_fdv_sol": 27.95832628061251,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 85.54051058681539,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 30.794934036832807,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 63492699471620,
+            "fdv_sol": 34.79032537019095,
+            "index": 2,
+            "room_reserve_base": 37960310032325
+          }
+        ],
+        "room_price_multiple": 1.1014584252200863,
+        "room_reserve_lamports": 11980198019,
+        "room_sold_base": 306210991140201,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 185.26937973982805,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 66.6977352484066,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 343120407719188,
+            "fdv_sol": 144.14458955248614,
+            "index": 2,
+            "room_reserve_base": 283730831670585
+          }
+        ],
+        "room_price_multiple": 2.385612592791638,
+        "room_reserve_lamports": 31782178199,
+        "room_sold_base": 551981512778461,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 143.49402935304002,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 51.658438069778306,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 279627708247568,
+            "fdv_sol": 94.48858637875924,
+            "index": 2,
+            "room_reserve_base": 212723561919381
+          }
+        ],
+        "room_price_multiple": 1.847694227161247,
+        "room_reserve_lamports": 24372273187,
+        "room_sold_base": 480974243027257,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 143.49402935304002,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 277554731644485,
+            "fdv_sol": 93.9967584171936,
+            "index": 1,
+            "room_reserve_base": 210596326300176
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 51.658438069778306,
+            "index": 2,
+            "room_reserve_base": 2
+          }
+        ],
+        "room_price_multiple": 1.847694227161247,
+        "room_reserve_lamports": 24372273187,
+        "room_sold_base": 480974243027257,
+        "step": "after_followers_rotate"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 3801439748,
+    "buy_slippage": {
+      "extra_bps": 563.805945851692,
+      "paired_bps": 1035.4944746340277,
+      "single_room_bps": 471.6885287823358
+    },
+    "dump": true,
+    "first_rotation_swap_slippage": {
+      "extra_bps": 302.0541914354503,
+      "paired_bps": 738.7399434641162,
+      "single_door_bps": 436.685752028666
+    },
+    "followers_rotate": true,
+    "initial_room_sol": 10,
+    "sell_slippage": {
+      "extra_bps": 660.7172215133285,
+      "paired_bps": 1608.863718431548,
+      "single_room_bps": 948.1464969182197
+    },
+    "source_door_launch_fdv_sol": 27.95832628061251,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 85.54051058681539,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 30.794934036832807,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 63492699471620,
+            "fdv_sol": 34.79032537019095,
+            "index": 2,
+            "room_reserve_base": 37960310032325
+          }
+        ],
+        "room_price_multiple": 1.1014584252200863,
+        "room_reserve_lamports": 11980198019,
+        "room_sold_base": 306210991140201,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 214606341565754,
+            "fdv_sol": 185.26937973982805,
+            "index": 0,
+            "room_reserve_base": 268250681107876
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 66.6977352484066,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 343120407719188,
+            "fdv_sol": 144.14458955248614,
+            "index": 2,
+            "room_reserve_base": 283730831670585
+          }
+        ],
+        "room_price_multiple": 2.385612592791638,
+        "room_reserve_lamports": 31782178199,
+        "room_sold_base": 551981512778461,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 49986283511350,
+            "fdv_sol": 65.22106838881727,
+            "index": 0,
+            "room_reserve_base": 52427151101123
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 33.34886762420328,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 343120407719188,
+            "fdv_sol": 72.07229477624301,
+            "index": 2,
+            "room_reserve_base": 283730831670585
+          }
+        ],
+        "room_price_multiple": 1.1928062963958181,
+        "room_reserve_lamports": 13686347325,
+        "room_sold_base": 336157982771708,
+        "step": "after_unrelated_room_dump"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 49986283511350,
+            "fdv_sol": 54.25985582001864,
+            "index": 0,
+            "room_reserve_base": 52427151101123
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.744175214406834,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 279627708247568,
+            "fdv_sol": 50.746944627185115,
+            "index": 2,
+            "room_reserve_base": 212723561919381
+          }
+        ],
+        "room_price_multiple": 0.992340347413637,
+        "room_reserve_lamports": 9846509195,
+        "room_sold_base": 265150713020504,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 49986283511350,
+            "fdv_sol": 54.25985582001864,
+            "index": 0,
+            "room_reserve_base": 52427151101123
+          },
+          {
+            "door_sold_base": 277554731644485,
+            "fdv_sol": 50.48279879446385,
+            "index": 1,
+            "room_reserve_base": 210596326300176
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.744175214406834,
+            "index": 2,
+            "room_reserve_base": 2
+          }
+        ],
+        "room_price_multiple": 0.992340347413637,
+        "room_reserve_lamports": 9846509195,
+        "room_sold_base": 265150713020504,
+        "step": "after_followers_rotate"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 6153969291,
+    "buy_slippage": {
+      "extra_bps": 590.5270182826816,
+      "paired_bps": 832.0703986722722,
+      "single_room_bps": 241.54338038959057
+    },
+    "dump": false,
+    "first_rotation_swap_slippage": null,
+    "followers_rotate": false,
+    "initial_room_sol": 50,
+    "sell_slippage": {
+      "extra_bps": 760.791417380098,
+      "paired_bps": 1425.7041801878634,
+      "single_room_bps": 664.9127628077645
+    },
+    "source_door_launch_fdv_sol": 27.9583262806124,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 551.2944163753289,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 29.359516363723337,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 64933486549478,
+            "fdv_sol": 33.2635524967174,
+            "index": 2,
+            "room_reserve_base": 9719506422075
+          }
+        ],
+        "room_price_multiple": 1.0501170946017104,
+        "room_reserve_lamports": 51980198019,
+        "room_sold_base": 680353359585560,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 849.7817329847995,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 45.25563828343702,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 389869489948464,
+            "fdv_sol": 111.64851335360247,
+            "index": 2,
+            "room_reserve_base": 86114244812582
+          }
+        ],
+        "room_price_multiple": 1.618681956466735,
+        "room_reserve_lamports": 71782178199,
+        "room_sold_base": 756748097976067,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 749.1549146609585,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 39.896696434120585,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 324936003398986,
+            "fdv_sol": 82.08236678780082,
+            "index": 2,
+            "room_reserve_base": 65542035370303
+          }
+        ],
+        "room_price_multiple": 1.4270058956206833,
+        "room_reserve_lamports": 65566047602,
+        "room_sold_base": 736175888533788,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 524.9837558205111,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.9583262806124,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 27.9583262806124,
+            "index": 2,
+            "room_reserve_base": 0
+          }
+        ],
+        "room_price_multiple": 1.0,
+        "room_reserve_lamports": 50000000000,
+        "room_sold_base": 670633853163485,
+        "step": "after_followers_cash_out"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 3133027240,
+    "buy_slippage": {
+      "extra_bps": 590.5270182826816,
+      "paired_bps": 832.0703986722722,
+      "single_room_bps": 241.54338038959057
+    },
+    "dump": true,
+    "first_rotation_swap_slippage": null,
+    "followers_rotate": false,
+    "initial_room_sol": 50,
+    "sell_slippage": {
+      "extra_bps": 790.0338662000621,
+      "paired_bps": 1269.5364253518171,
+      "single_room_bps": 479.50255915175546
+    },
+    "source_door_launch_fdv_sol": 27.9583262806124,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 551.2944163753289,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 29.359516363723337,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 64933486549478,
+            "fdv_sol": 33.2635524967174,
+            "index": 2,
+            "room_reserve_base": 9719506422075
+          }
+        ],
+        "room_price_multiple": 1.0501170946017104,
+        "room_reserve_lamports": 51980198019,
+        "room_sold_base": 680353359585560,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 849.7817329847995,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 45.25563828343702,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 389869489948464,
+            "fdv_sol": 111.64851335360247,
+            "index": 2,
+            "room_reserve_base": 86114244812582
+          }
+        ],
+        "room_price_multiple": 1.618681956466735,
+        "room_reserve_lamports": 71782178199,
+        "room_sold_base": 756748097976067,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 359063595499890,
+            "fdv_sol": 363.4416472885685,
+            "index": 0,
+            "room_reserve_base": 539627419866407
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 22.62781914171855,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 389869489948464,
+            "fdv_sol": 55.82425667680135,
+            "index": 2,
+            "room_reserve_base": 86114244812582
+          }
+        ],
+        "room_price_multiple": 0.8093409782333691,
+        "room_reserve_lamports": 41970618572,
+        "room_sold_base": 625741664678989,
+        "step": "after_unrelated_room_dump"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 359063595499890,
+            "fdv_sol": 332.18239938305646,
+            "index": 0,
+            "room_reserve_base": 539627419866407
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 20.681623340029212,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 324936003398986,
+            "fdv_sol": 42.54980347975868,
+            "index": 2,
+            "room_reserve_base": 65542035370303
+          }
+        ],
+        "room_price_multiple": 0.7397303805832901,
+        "room_reserve_lamports": 38805944592,
+        "room_sold_base": 605169455236710,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 359063595499890,
+            "fdv_sol": 255.5631517714464,
+            "index": 0,
+            "room_reserve_base": 539627419866407
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 15.911321172777852,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 15.911321172777852,
+            "index": 2,
+            "room_reserve_base": 0
+          }
+        ],
+        "room_price_multiple": 0.5691085014560224,
+        "room_reserve_lamports": 30351214751,
+        "room_sold_base": 539627419866407,
+        "step": "after_followers_cash_out"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 6153969291,
+    "buy_slippage": {
+      "extra_bps": 590.5270182826816,
+      "paired_bps": 832.0703986722722,
+      "single_room_bps": 241.54338038959057
+    },
+    "dump": false,
+    "first_rotation_swap_slippage": {
+      "extra_bps": 331.6763947738011,
+      "paired_bps": 846.1993754063479,
+      "single_door_bps": 514.5229806325468
+    },
+    "followers_rotate": true,
+    "initial_room_sol": 50,
+    "sell_slippage": {
+      "extra_bps": 760.791417380098,
+      "paired_bps": 1425.7041801878634,
+      "single_room_bps": 664.9127628077645
+    },
+    "source_door_launch_fdv_sol": 27.9583262806124,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 551.2944163753289,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 29.359516363723337,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 64933486549478,
+            "fdv_sol": 33.2635524967174,
+            "index": 2,
+            "room_reserve_base": 9719506422075
+          }
+        ],
+        "room_price_multiple": 1.0501170946017104,
+        "room_reserve_lamports": 51980198019,
+        "room_sold_base": 680353359585560,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 849.7817329847995,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 45.25563828343702,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 389869489948464,
+            "fdv_sol": 111.64851335360247,
+            "index": 2,
+            "room_reserve_base": 86114244812582
+          }
+        ],
+        "room_price_multiple": 1.618681956466735,
+        "room_reserve_lamports": 71782178199,
+        "room_sold_base": 756748097976067,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 749.1549146609585,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 39.896696434120585,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 324936003398986,
+            "fdv_sol": 82.08236678780082,
+            "index": 2,
+            "room_reserve_base": 65542035370303
+          }
+        ],
+        "room_price_multiple": 1.4270058956206833,
+        "room_reserve_lamports": 65566047602,
+        "room_sold_base": 736175888533788,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 749.1549146609585,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 322663740890130,
+            "fdv_sol": 81.58599219197748,
+            "index": 1,
+            "room_reserve_base": 64886615016589
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 39.896696434120585,
+            "index": 2,
+            "room_reserve_base": 0
+          }
+        ],
+        "room_price_multiple": 1.4270058956206833,
+        "room_reserve_lamports": 65566047602,
+        "room_sold_base": 736175888533788,
+        "step": "after_followers_rotate"
+      }
+    ]
+  },
+  {
+    "a_payout_lamports": 3133027240,
+    "buy_slippage": {
+      "extra_bps": 590.5270182826816,
+      "paired_bps": 832.0703986722722,
+      "single_room_bps": 241.54338038959057
+    },
+    "dump": true,
+    "first_rotation_swap_slippage": {
+      "extra_bps": 331.6763947738011,
+      "paired_bps": 846.1993754063479,
+      "single_door_bps": 514.5229806325468
+    },
+    "followers_rotate": true,
+    "initial_room_sol": 50,
+    "sell_slippage": {
+      "extra_bps": 790.0338662000621,
+      "paired_bps": 1269.5364253518171,
+      "single_room_bps": 479.50255915175546
+    },
+    "source_door_launch_fdv_sol": 27.9583262806124,
+    "steps": [
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 551.2944163753289,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 29.359516363723337,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 64933486549478,
+            "fdv_sol": 33.2635524967174,
+            "index": 2,
+            "room_reserve_base": 9719506422075
+          }
+        ],
+        "room_price_multiple": 1.0501170946017104,
+        "room_reserve_lamports": 51980198019,
+        "room_sold_base": 680353359585560,
+        "step": "after_a_buys"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 412706669318779,
+            "fdv_sol": 849.7817329847995,
+            "index": 0,
+            "room_reserve_base": 670633853163485
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 45.25563828343702,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 389869489948464,
+            "fdv_sol": 111.64851335360247,
+            "index": 2,
+            "room_reserve_base": 86114244812582
+          }
+        ],
+        "room_price_multiple": 1.618681956466735,
+        "room_reserve_lamports": 71782178199,
+        "room_sold_base": 756748097976067,
+        "step": "after_followers_buy"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 359063595499890,
+            "fdv_sol": 363.4416472885685,
+            "index": 0,
+            "room_reserve_base": 539627419866407
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 22.62781914171855,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 389869489948464,
+            "fdv_sol": 55.82425667680135,
+            "index": 2,
+            "room_reserve_base": 86114244812582
+          }
+        ],
+        "room_price_multiple": 0.8093409782333691,
+        "room_reserve_lamports": 41970618572,
+        "room_sold_base": 625741664678989,
+        "step": "after_unrelated_room_dump"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 359063595499890,
+            "fdv_sol": 332.18239938305646,
+            "index": 0,
+            "room_reserve_base": 539627419866407
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 20.681623340029212,
+            "index": 1,
+            "room_reserve_base": 0
+          },
+          {
+            "door_sold_base": 324936003398986,
+            "fdv_sol": 42.54980347975868,
+            "index": 2,
+            "room_reserve_base": 65542035370303
+          }
+        ],
+        "room_price_multiple": 0.7397303805832901,
+        "room_reserve_lamports": 38805944592,
+        "room_sold_base": 605169455236710,
+        "step": "after_a_exits"
+      },
+      {
+        "doors": [
+          {
+            "door_sold_base": 359063595499890,
+            "fdv_sol": 332.18239938305646,
+            "index": 0,
+            "room_reserve_base": 539627419866407
+          },
+          {
+            "door_sold_base": 322663740890130,
+            "fdv_sol": 42.2924931422141,
+            "index": 1,
+            "room_reserve_base": 64886615016589
+          },
+          {
+            "door_sold_base": 0,
+            "fdv_sol": 20.681623340029212,
+            "index": 2,
+            "room_reserve_base": 0
+          }
+        ],
+        "room_price_multiple": 0.7397303805832901,
+        "room_reserve_lamports": 38805944592,
+        "room_sold_base": 605169455236710,
+        "step": "after_followers_rotate"
+      }
+    ]
+  }
+]

@@ -1,0 +1,267 @@
+{
+  "rent": {
+    "additional_door_lamports": 8839200,
+    "first_buy": false,
+    "first_swap_vault_lamports": 1488440,
+    "room_with_door_0_lamports": 26959560,
+    "uri": "https://example.invalid/m.json"
+  },
+  "trades": [
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 43762,
+      "shape": "buy_room",
+      "trace_entries": 5,
+      "transaction_cu": 43912
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 40849,
+      "shape": "sell_room",
+      "trace_entries": 3,
+      "transaction_cu": 40999
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 65537,
+      "shape": "buy_door",
+      "trace_entries": 6,
+      "transaction_cu": 65687
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 59960,
+      "shape": "sell_door",
+      "trace_entries": 4,
+      "transaction_cu": 60110
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 94113,
+      "shape": "swap_doors",
+      "trace_entries": 8,
+      "transaction_cu": 94263
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 86138,
+      "shape": "swap_doors_existing",
+      "trace_entries": 6,
+      "transaction_cu": 86288
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 42182,
+      "shape": "claim_door_swap_fees",
+      "trace_entries": 3,
+      "transaction_cu": 42332
+    },
+    {
+      "prefunded": false,
+      "priority_fee": false,
+      "program_cu": 34182,
+      "shape": "claim_protocol_swap_fees",
+      "trace_entries": 3,
+      "transaction_cu": 34332
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 43762,
+      "shape": "buy_room",
+      "trace_entries": 6,
+      "transaction_cu": 44062
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 40849,
+      "shape": "sell_room",
+      "trace_entries": 4,
+      "transaction_cu": 41149
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 65537,
+      "shape": "buy_door",
+      "trace_entries": 7,
+      "transaction_cu": 65837
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 59960,
+      "shape": "sell_door",
+      "trace_entries": 5,
+      "transaction_cu": 60260
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 94113,
+      "shape": "swap_doors",
+      "trace_entries": 9,
+      "transaction_cu": 94413
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 86138,
+      "shape": "swap_doors_existing",
+      "trace_entries": 7,
+      "transaction_cu": 86438
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 42182,
+      "shape": "claim_door_swap_fees",
+      "trace_entries": 4,
+      "transaction_cu": 42482
+    },
+    {
+      "prefunded": false,
+      "priority_fee": true,
+      "program_cu": 34182,
+      "shape": "claim_protocol_swap_fees",
+      "trace_entries": 4,
+      "transaction_cu": 34482
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 43762,
+      "shape": "buy_room",
+      "trace_entries": 5,
+      "transaction_cu": 43912
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 40849,
+      "shape": "sell_room",
+      "trace_entries": 3,
+      "transaction_cu": 40999
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 65537,
+      "shape": "buy_door",
+      "trace_entries": 6,
+      "transaction_cu": 65687
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 59960,
+      "shape": "sell_door",
+      "trace_entries": 4,
+      "transaction_cu": 60110
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 94064,
+      "shape": "swap_doors",
+      "trace_entries": 8,
+      "transaction_cu": 94214
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 86138,
+      "shape": "swap_doors_existing",
+      "trace_entries": 6,
+      "transaction_cu": 86288
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 42182,
+      "shape": "claim_door_swap_fees",
+      "trace_entries": 3,
+      "transaction_cu": 42332
+    },
+    {
+      "prefunded": true,
+      "priority_fee": false,
+      "program_cu": 34182,
+      "shape": "claim_protocol_swap_fees",
+      "trace_entries": 3,
+      "transaction_cu": 34332
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 43762,
+      "shape": "buy_room",
+      "trace_entries": 6,
+      "transaction_cu": 44062
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 40849,
+      "shape": "sell_room",
+      "trace_entries": 4,
+      "transaction_cu": 41149
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 65537,
+      "shape": "buy_door",
+      "trace_entries": 7,
+      "transaction_cu": 65837
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 59960,
+      "shape": "sell_door",
+      "trace_entries": 5,
+      "transaction_cu": 60260
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 94064,
+      "shape": "swap_doors",
+      "trace_entries": 9,
+      "transaction_cu": 94364
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 86138,
+      "shape": "swap_doors_existing",
+      "trace_entries": 7,
+      "transaction_cu": 86438
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 42182,
+      "shape": "claim_door_swap_fees",
+      "trace_entries": 4,
+      "transaction_cu": 42482
+    },
+    {
+      "prefunded": true,
+      "priority_fee": true,
+      "program_cu": 34182,
+      "shape": "claim_protocol_swap_fees",
+      "trace_entries": 4,
+      "transaction_cu": 34482
+    }
+  ]
+}

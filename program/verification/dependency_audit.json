@@ -1,16 +1,10 @@
 {
-  "scan_at_utc": "2026-11-05T02:14:33.503760+00:00",
-  "service": "https://osv-vulnerabilities.storage.googleapis.com/crates.io/all.zip",
+  "scan_at_utc": "2026-11-07T18:59:26.790591+00:00",
+  "service": "https://api.osv.dev/v1",
   "source": {
-    "url": "https://osv-vulnerabilities.storage.googleapis.com/crates.io/all.zip",
-    "last_modified": "Wed, 04 Nov 2026 06:48:14 GMT",
-    "gcs_generation": "1793774894013088",
-    "sha256": "dea150c55f72b6e6764c8e138fd4c66793d4889a80e57ed53985ddeabd6ee3fc",
-    "bytes": 3778692,
-    "records": 3036,
-    "withdrawn_excluded": 124
+    "url": "https://api.osv.dev/v1"
   },
-  "method": "OSV bulk export, local exact-version evaluation of versions/SEMVER ranges; all lockfile dependencies including dev/host",
+  "method": "OSV querybatch, exact crates.io versions; all lockfile dependencies including dev/host",
   "lock_sha256": {
     "Cargo.lock": "1f20992f4c25877e3706d4bac49d073bb3bd6c908ab71c0ac35b14d6d1c710a5",
     "test-fixtures/launch_proxy/Cargo.lock": "e98c1572b4a90e4df2829f54418163a041dab3ee09b6f78081369a6b2f904eba"
@@ -71,12 +65,28 @@
   ],
   "records": {
     "RUSTSEC-2021-0139": {
-      "schema_version": "1.7.3",
       "id": "RUSTSEC-2021-0139",
-      "published": "2021-08-18T12:00:00Z",
-      "modified": "2023-09-06T22:52:31Z",
       "summary": "ansi_term is Unmaintained",
       "details": "The maintainer has advised that this crate is deprecated and will not receive any maintenance.\n\nThe crate does not seem to have much dependencies and may or may not be ok to use as-is.\n\nLast release seems to have been three years ago.\n\n## Possible Alternative(s)\n\n The below list has not been vetted in any way and may or may not contain alternatives;\n\n - [ansiterm](https://crates.io/crates/ansiterm)\n - [anstyle](https://github.com/epage/anstyle)\n - [console](https://crates.io/crates/console)\n - [nu-ansi-term](https://crates.io/crates/nu-ansi-term)\n - [owo-colors](https://crates.io/crates/owo-colors)\n - [stylish](https://crates.io/crates/stylish)\n - [yansi](https://crates.io/crates/yansi)\n\n## Dependency Specific Migration(s)\n\n - [structopt, clap2](https://github.com/clap-rs/clap/discussions/4172)",
+      "modified": "2023-09-06T22:52:31Z",
+      "published": "2021-08-18T12:00:00Z",
+      "database_specific": {
+        "license": "CC0-1.0"
+      },
+      "references": [
+        {
+          "type": "PACKAGE",
+          "url": "https://crates.io/crates/ansi_term"
+        },
+        {
+          "type": "ADVISORY",
+          "url": "https://rustsec.org/advisories/RUSTSEC-2021-0139.html"
+        },
+        {
+          "type": "REPORT",
+          "url": "https://github.com/ogham/rust-ansi-term/issues/72"
+        }
+      ],
       "affected": [
         {
           "package": {
@@ -110,31 +120,31 @@
           }
         }
       ],
+      "schema_version": "1.7.3"
+    },
+    "RUSTSEC-2024-0388": {
+      "id": "RUSTSEC-2024-0388",
+      "summary": "`derivative` is unmaintained; consider using an alternative",
+      "details": "The [`derivative`](https://crates.io/crates/derivative) crate is no longer maintained.\nConsider using any alternative, for instance:\n- [derive_more](https://crates.io/crates/derive_more)\n- [derive-where](https://crates.io/crates/derive-where)\n- [educe](https://crates.io/crates/educe)",
+      "modified": "2024-11-10T13:34:40Z",
+      "published": "2024-06-26T12:00:00Z",
+      "database_specific": {
+        "license": "CC0-1.0"
+      },
       "references": [
         {
           "type": "PACKAGE",
-          "url": "https://crates.io/crates/ansi_term"
+          "url": "https://crates.io/crates/derivative"
         },
         {
           "type": "ADVISORY",
-          "url": "https://rustsec.org/advisories/RUSTSEC-2021-0139.html"
+          "url": "https://rustsec.org/advisories/RUSTSEC-2024-0388.html"
         },
         {
           "type": "REPORT",
-          "url": "https://github.com/ogham/rust-ansi-term/issues/72"
+          "url": "https://github.com/mcarton/rust-derivative/issues/117"
         }
       ],
-      "database_specific": {
-        "license": "CC0-1.0"
-      }
-    },
-    "RUSTSEC-2024-0388": {
-      "schema_version": "1.7.3",
-      "id": "RUSTSEC-2024-0388",
-      "published": "2024-06-26T12:00:00Z",
-      "modified": "2024-11-10T13:34:40Z",
-      "summary": "`derivative` is unmaintained; consider using an alternative",
-      "details": "The [`derivative`](https://crates.io/crates/derivative) crate is no longer maintained.\nConsider using any alternative, for instance:\n- [derive_more](https://crates.io/crates/derive_more)\n- [derive-where](https://crates.io/crates/derive-where)\n- [educe](https://crates.io/crates/educe)",
       "affected": [
         {
           "package": {
@@ -153,12 +163,12 @@
             }
           ],
           "ecosystem_specific": {
-            "affected_functions": null,
             "affects": {
-              "arch": [],
               "functions": [],
-              "os": []
-            }
+              "os": [],
+              "arch": []
+            },
+            "affected_functions": null
           },
           "database_specific": {
             "categories": [],
@@ -168,31 +178,31 @@
           }
         }
       ],
+      "schema_version": "1.7.3"
+    },
+    "RUSTSEC-2024-0436": {
+      "id": "RUSTSEC-2024-0436",
+      "summary": "paste - no longer maintained",
+      "details": "The creator of the crate `paste` has stated in the [`README.md`](https://github.com/dtolnay/paste/blob/master/README.md) \nthat this project is not longer maintained as well as archived the repository\n\n## Possible Alternative(s)\n\n- [`pastey`]: a fork of paste and is aimed to be a drop-in replacement with additional features for paste crate\n- [`with_builtin_macros`]: crate providing a [superset of `paste`'s functionality including general `macro_rules!` eager expansions](https://docs.rs/with_builtin_macros/0.1.0/with_builtin_macros/macro.with_eager_expansions.html)  and `concat!`/`concat_idents!` macros\n\n[`pastey`]: https://crates.io/crates/pastey\n[`with_builtin_macros`]: https://crates.io/crates/with_builtin_macros",
+      "modified": "2026-01-27T22:03:15.694766Z",
+      "published": "2024-10-07T12:00:00Z",
+      "database_specific": {
+        "license": "CC0-1.0"
+      },
       "references": [
         {
           "type": "PACKAGE",
-          "url": "https://crates.io/crates/derivative"
+          "url": "https://crates.io/crates/paste"
         },
         {
           "type": "ADVISORY",
-          "url": "https://rustsec.org/advisories/RUSTSEC-2024-0388.html"
+          "url": "https://rustsec.org/advisories/RUSTSEC-2024-0436.html"
         },
         {
-          "type": "REPORT",
-          "url": "https://github.com/mcarton/rust-derivative/issues/117"
+          "type": "WEB",
+          "url": "https://github.com/dtolnay/paste"
         }
       ],
-      "database_specific": {
-        "license": "CC0-1.0"
-      }
-    },
-    "RUSTSEC-2024-0436": {
-      "schema_version": "1.7.3",
-      "id": "RUSTSEC-2024-0436",
-      "published": "2024-10-07T12:00:00Z",
-      "modified": "2026-01-27T22:03:15.694766Z",
-      "summary": "paste - no longer maintained",
-      "details": "The creator of the crate `paste` has stated in the [`README.md`](https://github.com/dtolnay/paste/blob/master/README.md) \nthat this project is not longer maintained as well as archived the repository\n\n## Possible Alternative(s)\n\n- [`pastey`]: a fork of paste and is aimed to be a drop-in replacement with additional features for paste crate\n- [`with_builtin_macros`]: crate providing a [superset of `paste`'s functionality including general `macro_rules!` eager expansions](https://docs.rs/with_builtin_macros/0.1.0/with_builtin_macros/macro.with_eager_expansions.html)  and `concat!`/`concat_idents!` macros\n\n[`pastey`]: https://crates.io/crates/pastey\n[`with_builtin_macros`]: https://crates.io/crates/with_builtin_macros",
       "affected": [
         {
           "package": {
@@ -226,31 +236,31 @@
           }
         }
       ],
+      "schema_version": "1.7.3"
+    },
+    "RUSTSEC-2025-0141": {
+      "id": "RUSTSEC-2025-0141",
+      "summary": "Bincode is unmaintained",
+      "details": "Due to a doxxing and harassment incident, the bincode team has taken the decision to cease development permanently.\n\nThe team considers version 1.3.3 a complete version of bincode that is not in need of any updates.\n\n## Alternatives to consider\n\n* [wincode](https://crates.io/crates/wincode)\n* [postcard](https://crates.io/crates/postcard)\n* [bitcode](https://crates.io/crates/bitcode)\n* [rkyv](https://crates.io/crates/rkyv)",
+      "modified": "2026-01-16T11:07:28.867553Z",
+      "published": "2025-12-16T12:00:00Z",
+      "database_specific": {
+        "license": "CC0-1.0"
+      },
       "references": [
         {
           "type": "PACKAGE",
-          "url": "https://crates.io/crates/paste"
+          "url": "https://crates.io/crates/bincode"
         },
         {
           "type": "ADVISORY",
-          "url": "https://rustsec.org/advisories/RUSTSEC-2024-0436.html"
+          "url": "https://rustsec.org/advisories/RUSTSEC-2025-0141.html"
         },
         {
           "type": "WEB",
-          "url": "https://github.com/dtolnay/paste"
+          "url": "https://git.sr.ht/~stygianentity/bincode/tree/v3.0/item/README.md"
         }
       ],
-      "database_specific": {
-        "license": "CC0-1.0"
-      }
-    },
-    "RUSTSEC-2025-0141": {
-      "schema_version": "1.7.3",
-      "id": "RUSTSEC-2025-0141",
-      "published": "2025-12-16T12:00:00Z",
-      "modified": "2026-01-16T11:07:28.867553Z",
-      "summary": "Bincode is unmaintained",
-      "details": "Due to a doxxing and harassment incident, the bincode team has taken the decision to cease development permanently.\n\nThe team considers version 1.3.3 a complete version of bincode that is not in need of any updates.\n\n## Alternatives to consider\n\n* [wincode](https://crates.io/crates/wincode)\n* [postcard](https://crates.io/crates/postcard)\n* [bitcode](https://crates.io/crates/bitcode)\n* [rkyv](https://crates.io/crates/rkyv)",
       "affected": [
         {
           "package": {
@@ -271,9 +281,9 @@
           "ecosystem_specific": {
             "affected_functions": null,
             "affects": {
+              "os": [],
               "arch": [],
-              "functions": [],
-              "os": []
+              "functions": []
             }
           },
           "database_specific": {
@@ -284,31 +294,31 @@
           }
         }
       ],
+      "schema_version": "1.7.3"
+    },
+    "RUSTSEC-2025-0161": {
+      "id": "RUSTSEC-2025-0161",
+      "summary": "libsecp256k1 is unmaintained",
+      "details": "The maintainers recommend using [k256](https://crates.io/crates/k256) instead.",
+      "modified": "2026-04-14T11:30:08.962845Z",
+      "published": "2025-01-14T12:00:00Z",
+      "database_specific": {
+        "license": "CC0-1.0"
+      },
       "references": [
         {
           "type": "PACKAGE",
-          "url": "https://crates.io/crates/bincode"
+          "url": "https://crates.io/crates/libsecp256k1"
         },
         {
           "type": "ADVISORY",
-          "url": "https://rustsec.org/advisories/RUSTSEC-2025-0141.html"
+          "url": "https://rustsec.org/advisories/RUSTSEC-2025-0161.html"
         },
         {
           "type": "WEB",
-          "url": "https://git.sr.ht/~stygianentity/bincode/tree/v3.0/item/README.md"
+          "url": "https://github.com/paritytech/libsecp256k1/pull/159"
         }
       ],
-      "database_specific": {
-        "license": "CC0-1.0"
-      }
-    },
-    "RUSTSEC-2025-0161": {
-      "schema_version": "1.7.5",
-      "id": "RUSTSEC-2025-0161",
-      "published": "2025-01-14T12:00:00Z",
-      "modified": "2026-04-14T11:30:08.962845Z",
-      "summary": "libsecp256k1 is unmaintained",
-      "details": "The maintainers recommend using [k256](https://crates.io/crates/k256) instead.",
       "affected": [
         {
           "package": {
@@ -342,23 +352,7 @@
           }
         }
       ],
-      "references": [
-        {
-          "type": "PACKAGE",
-          "url": "https://crates.io/crates/libsecp256k1"
-        },
-        {
-          "type": "ADVISORY",
-          "url": "https://rustsec.org/advisories/RUSTSEC-2025-0161.html"
-        },
-        {
-          "type": "WEB",
-          "url": "https://github.com/paritytech/libsecp256k1/pull/159"
-        }
-      ],
-      "database_specific": {
-        "license": "CC0-1.0"
-      }
+      "schema_version": "1.7.5"
     }
   },
   "unreviewed": []

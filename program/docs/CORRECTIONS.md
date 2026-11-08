@@ -943,3 +943,12 @@ A preserved service draft also reproduced public RPC error leakage using synthet
 markers. Both HTTP exception text and JSON-RPC bodies could disclose authenticated
 endpoint text. The service now retains safe diagnostic codes only; both tests and
 the 163-test full suite pass. No production key or credential was read.
+
+
+Final verification, 8 November 2026: run 42403905057 on `9ed04d7` is green.
+All 71 SBF tests, 10,000 mixed iterations (12,488 transactions), offline SPL pins,
+source/IDL/binary checks, client unit test, heap probe and 400,000-iteration curve
+fuzz passed. Each of 33 doors in four resource states had a positive position and
+fee credit, and every position and credit was fully discharged. The service
+passes 163 tests and its repeated evasion JSON is identical. SECURITY_REVIEW.md
+contains the exact resource table, cost assumptions and ranked owner decisions.

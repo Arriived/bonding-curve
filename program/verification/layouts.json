@@ -115,7 +115,7 @@
     ]
   },
   "Room": {
-    "bytes": 1315,
+    "bytes": 1331,
     "fields": [
       {
         "field": "room_id",
@@ -321,11 +321,21 @@
         "field": "founder_share_bps",
         "offset": 1313,
         "bytes": 2
+      },
+      {
+        "field": "protocol_accrued_room",
+        "offset": 1315,
+        "bytes": 8
+      },
+      {
+        "field": "swap_fees_unclaimed",
+        "offset": 1323,
+        "bytes": 8
       }
     ]
   },
   "Door": {
-    "bytes": 328,
+    "bytes": 360,
     "fields": [
       {
         "field": "room",
@@ -436,6 +446,21 @@
         "field": "reserved",
         "offset": 311,
         "bytes": 17
+      },
+      {
+        "field": "virtual_quote",
+        "offset": 328,
+        "bytes": 16
+      },
+      {
+        "field": "sold",
+        "offset": 344,
+        "bytes": 8
+      },
+      {
+        "field": "accrued_room",
+        "offset": 352,
+        "bytes": 8
       }
     ]
   },

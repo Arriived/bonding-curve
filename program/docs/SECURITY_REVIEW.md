@@ -1285,3 +1285,47 @@ versions across both lockfiles:
   adapter must be reviewed on its own, including the WSOL fee paths that are
   dormant in v1 (I-1).
 - **Dependency source code.** Only advisory databases were consulted.
+
+### Final measured verification (8 November 2026)
+
+[Successful Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42403905057) tested program source `9ed04d7`: **71 SBF tests passed**, including 10,000 mixed iterations and 12,488 executed transactions. IDL, account layout, source hashes, offline SPL hashes, binary pin, standalone client unit test, heap probe and 400,000-iteration curve fuzz all passed. The service passed **163 pytest tests**. Repeating the full evasion benchmark reproduced its JSON exactly.
+
+The source-verified ELF SHA-256 is `e3c9aa751d2745b6e89dee76dbf362556f460f42288421a55c57bae3b4ede6b4`. The matching program and service IDL pins were compared byte-for-byte with emitted Anchor output.
+
+| Instruction | Maximum measured transaction CU | Maximum trace entries / 64 | Free heap, at least (bytes) |
+|---|---:|---:|---:|
+| buy_door | 75,579 | 9 | 17,440 |
+| sell_door | 102,003 | 6 | 19,856 |
+| swap_doors (new/prefunded vault) | 94,823 | 10 | 18,784 |
+| swap_doors (existing vault) | 88,025 | 8 | 19,248 |
+| claim_door_swap_fees | 60,387 | 5 | 25,632 |
+| claim_protocol_swap_fees | 34,623 | 5 | 26,512 |
+
+CU maxima combine the boundary resource fixture, paired trade-limit fixture and mixed-operation run. The latter records inclusive program CU; its single compute-budget instruction adds 150 transaction CU. Trace figures are measured successful instruction invocations, including the compute-budget instructions. The boundary fixture uses a 400,000-CU limit, priority fee and a 32 KiB heap request. Heap is measured separately by an appended allocation in 16-byte steps. These are tested bounds, not an exhaustive maximum over every possible public key or future Config.
+
+Every one of the 33 doors in each of four resource scenarios had a positive token position and positive swap credit before its full sale and claim. All ended at zero position/credit; the room-wide unclaimed swap total also ended at zero. Creation retains at least **2,960 bytes** of the default 32 KiB heap, above the existing 1,500-byte target.
+
+**Lowest measured ordinary-operator liveness construction:** 20,020,000 lamports (**0.02002 SOL**) per room per day; 2,002,000,000 lamports (**2.002 SOL**) for 100 rooms using the same per-room transaction pattern. It uses four signed transactions/day, zero priority fee, default thresholds, a self-owned door recipient and a distinct protocol recipient. The SBF test bootstraps the first rolling window and checks liveness before and after the maintenance trades over two further days. It spends 40,040,000 lamports for those two days.
+
+The irrecoverable **program-fee floor** is 0.02 SOL/room/day, or **2 SOL/100 rooms/day**: 5 SOL curve volume times 1% fee times the 40% unrebatable protocol share. The remaining measured 0.00002 SOL/room/day is four 5,000-lamport signature fees. Cross-room transaction batching can reduce that network overhead; 2.002 SOL is the measured unbatched construction, not a proof of the globally cheapest 100-room packet schedule. Organic activity or protocol-fee ownership changes the operator economics.
+
+The 0.5 SOL reserve floor per room (**50 SOL for 100 rooms**) is recoverable capital, not daily spend. The alternating buy temporarily needs another 1.2625 SOL gross per room. Creation rent, one-off bootstrap fees and account rent are excluded from upkeep. No liveness parameter was changed.
+
+Evasion catch rates: mixed-script words **74.5%** with the symbol kept (**74.3%** with the symbol fuzzed); actual 32-byte UTF-8 truncations **5.5%** in both modes. The baseline disguise recall remains **95.4% / 95.1%**. Rules are unchanged.
+
+
+
+### Ranked continuation findings
+
+| Rank | Severity | Finding | Status | Cost | Payoff or protection |
+|---|---|---|---|---|---|
+| 1 | High, release blocker | Service quote used room units for a door-token minimum | Fixed | Ordinary launch | Correct first-buy fills and slippage minima |
+| 2 | Medium | Room front-run changes a new door's birth anchor | Fixed, approved price bound | Recorded 5-20 SOL front-run capital | Up to 0.217061544 SOL attacker net in the supplied cases; refused at 2% now |
+| 3 | Medium | Public RPC failure text can expose endpoint credentials | Fixed | Failure-triggering HTTP request | Prevents RPC quota/billing credential exposure |
+| 4 | Medium | Revived former NameLock holder can regain text routing | Owner decision | 0.020015002 SOL measured revival wash cost, plus rent and reserve capital | 0.004755423 SOL measured fixture net; potential future launch flow |
+| 5 | Low | Default liveness is inexpensive to maintain | Owner decision | 0.02002 SOL/room/day; 2.002 SOL/100 rooms with the measured pattern | Continued name lock and routing eligibility |
+| 6 | Low | Name evasion through mixed scripts and truncation | Owner decision; rules unchanged | Launch rent plus upkeep | Possible separate room/routing diversion; catch rates 74.5% and 5.5% |
+| 7 | Low | Authorized admin can choose the 120 SOL stress cap | Owner decision | 5,000-lamport admin transaction | Wider future-room economics; no direct extraction demonstrated |
+
+The same-slot NameLock race, request replay/alteration and resource exit/claim
+checks found no additional defect. Their passing tests are retained as coverage.

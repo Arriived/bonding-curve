@@ -1,0 +1,1414 @@
+{
+  "depths_sol": [
+    1,
+    80
+  ],
+  "doors_per_room": 33,
+  "metadata_bytes": [
+    32,
+    10,
+    200
+  ],
+  "rows": [
+    {
+      "instruction": "buy_door",
+      "trace_entries": 9,
+      "transaction_cu": 73806
+    },
+    {
+      "instruction": "swap_doors_lazy_vault",
+      "trace_entries": 10,
+      "transaction_cu": 93624
+    },
+    {
+      "instruction": "swap_doors_existing_vault",
+      "trace_entries": 8,
+      "transaction_cu": 87512
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59802
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 62797
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59828
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40845
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58305
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70293
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42334
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58296
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59801
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42336
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65798
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58296
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59797
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58301
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70325
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 46844
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64310
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 101794
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 60335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 74800
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45336
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59800
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 68797
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65798
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61302
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65802
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61302
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59823
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40857
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58301
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 62802
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64298
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61296
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "claim_protocol_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 34622
+    },
+    {
+      "instruction": "buy_door",
+      "trace_entries": 9,
+      "transaction_cu": 73806
+    },
+    {
+      "instruction": "swap_doors_lazy_vault",
+      "trace_entries": 10,
+      "transaction_cu": 93575
+    },
+    {
+      "instruction": "swap_doors_existing_vault",
+      "trace_entries": 8,
+      "transaction_cu": 87512
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59802
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 62797
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59828
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40845
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58305
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70293
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42334
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58296
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59801
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42336
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65798
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58296
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59797
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58301
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70325
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 46844
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64310
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 101794
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 60335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 74800
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45336
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59800
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 68797
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65798
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43835
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61302
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65802
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61302
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 59823
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40857
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58301
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 62802
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64298
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61296
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42335
+    },
+    {
+      "instruction": "claim_protocol_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 34622
+    },
+    {
+      "instruction": "buy_door",
+      "trace_entries": 9,
+      "transaction_cu": 74064
+    },
+    {
+      "instruction": "swap_doors_lazy_vault",
+      "trace_entries": 10,
+      "transaction_cu": 94370
+    },
+    {
+      "instruction": "swap_doors_existing_vault",
+      "trace_entries": 8,
+      "transaction_cu": 88025
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60088
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40908
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 63317
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42408
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58589
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40908
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60086
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40907
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58588
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40909
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70593
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42409
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58580
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40904
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60085
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40908
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64516
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42385
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65999
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58543
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40900
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61526
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42389
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60003
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40886
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58510
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40889
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58510
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40888
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70541
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 46898
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64516
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43888
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61501
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42386
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 102003
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 60387
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 75042
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45400
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60057
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40900
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 69056
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45400
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 66014
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61539
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40899
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 66009
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64496
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61497
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60016
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40905
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58349
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 62793
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40834
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64301
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42336
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42334
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42336
+    },
+    {
+      "instruction": "claim_protocol_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 34623
+    },
+    {
+      "instruction": "buy_door",
+      "trace_entries": 9,
+      "transaction_cu": 74064
+    },
+    {
+      "instruction": "swap_doors_lazy_vault",
+      "trace_entries": 10,
+      "transaction_cu": 94321
+    },
+    {
+      "instruction": "swap_doors_existing_vault",
+      "trace_entries": 8,
+      "transaction_cu": 88025
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60088
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40908
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 63317
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42408
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58589
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40908
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60086
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40907
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58588
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40909
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70593
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42409
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58580
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40904
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60085
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40908
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64516
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42385
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 65999
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58543
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40900
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61526
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42389
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60003
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40886
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58510
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40889
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58510
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40888
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 70541
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 46898
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64516
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43888
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61501
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42386
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 102003
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 60387
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 75042
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45400
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60057
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40900
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 69056
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 45400
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 66014
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61539
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40899
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 66009
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 43885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64496
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61497
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40885
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 60016
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40905
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 58349
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40836
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 62793
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 40834
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 64301
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42336
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61297
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42334
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 61299
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 42336
+    },
+    {
+      "instruction": "claim_protocol_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 34623
+    }
+  ]
+}

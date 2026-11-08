@@ -1,0 +1,12 @@
+{
+  "claim_instructions_bundled": 2,
+  "days": 2,
+  "minimum_100_rooms_daily_cost_lamports": 2002000000,
+  "minimum_daily_cost_lamports": 20020000,
+  "minimum_network_fee_per_day_bundled_lamports": 20000,
+  "protocol_fees_lamports": 40000000,
+  "recoverable_floor_per_room_lamports": 500000000,
+  "trade_transactions": 8,
+  "volume_lamports": "10000000000",
+  "wallet_cost_with_bundled_claims_lamports": 40040000
+}
