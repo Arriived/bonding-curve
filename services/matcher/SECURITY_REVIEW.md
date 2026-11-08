@@ -84,3 +84,16 @@ the method, exception class, HTTP status or numeric RPC code, suppressing endpoi
 text, provider messages/data and chained transport text. No real credential was
 read or used. Both reproductions now pass. The complete service suite passes
 163 tests after this fix.
+
+
+Final program verification, 8 November 2026: [CI 42403905057](https://github.com/Arriived/bonding-curve/actions/runs/42403905057)
+passed all 71 SBF tests, 10,000 mixed iterations / 12,488 transactions, offline
+SPL and source/IDL/ELF pins, heap probe and curve fuzz. Each of 33 doors in four
+resource scenarios had a positive position and fee credit and fully exited and
+claimed. Measured upkeep is 0.02002 SOL per room/day; 2.002 SOL for 100 rooms
+using the same unbatched transaction pattern. The program-fee floor is 0.02 SOL
+per room/day (2 SOL for 100); cross-room batching can reduce network overhead.
+The 0.5 SOL reserve floor per room is recoverable capital, separate from rent,
+bootstrap fees and the temporary 1.2625 SOL gross maintenance buy. The program
+and service IDL files match emitted output byte-for-byte. Final service tests:
+163 passed. The repeated benchmark produced identical JSON.

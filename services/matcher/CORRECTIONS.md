@@ -681,3 +681,10 @@ URL; provider error objects could echo it too. RpcError now retains only safe
 method/class/status or numeric-code context, with transport exception chaining
 suppressed. Both synthetic-marker regressions pass; no actual credentials were
 accessed. The final full service run passes 163 tests.
+
+
+Final verification on 8 November 2026: the program's green CI run 42403905057
+passed 71 SBF tests and every required probe with the offline executable pins.
+Program source `9ed04d7`, its emitted IDL, the service's paired IDL and the binary
+pin were compared. The service passed 163 tests; the repeated full evasion JSON
+matched exactly. Detailed identities and checks are in data/paired_review_checks.json.

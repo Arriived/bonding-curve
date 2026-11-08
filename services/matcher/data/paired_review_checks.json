@@ -26,5 +26,15 @@
     "matcher_service/signer.py": "a79057beb517c089dd0df5a553a04f05e1c5d209eb849168dba1ef9a98ec59fe",
     "matcher_service/store.py": "74df5d99ea4fa11492ae066f5ae54af99e31b91b7b45dc2e514e610dd6a45bec",
     "matcher_service/txbuild.py": "dc75a8110504a0a6d3b388e72787d5b46df259606ce17a52031a8bbb56cd381f"
+  },
+  "program_ci": {
+    "run_id": 42403905057,
+    "url": "https://github.com/Arriived/bonding-curve/actions/runs/42403905057",
+    "source_commit": "9ed04d73a2c057433b79adc1ddb9a279c1a3f2ba",
+    "sbf_tests": 71,
+    "property_iterations": 10000,
+    "executed_transactions": 12488,
+    "elf_sha256": "e3c9aa751d2745b6e89dee76dbf362556f460f42288421a55c57bae3b4ede6b4",
+    "all_sources_and_idl_match": true
   }
 }
