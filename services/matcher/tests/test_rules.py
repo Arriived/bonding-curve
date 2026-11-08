@@ -202,8 +202,8 @@ def test_verifier_recompute_returns_the_same_fields_on_every_path():
                 "created_at": created_at, "reserve": 0, "last_trade_at": created_at, "buckets": []}
     live, dead = now - 60, now - 10 * 86400
     want = {"kind", "rule", "room_id", "old_holder", "old_name_holder"}
-    cases = [({1: room(1, [("Elon", "ELON")], live)}, 1, None),     # floor door
-             ({1: room(1, [("Elon", "ELON")], live)}, None, None),  # text door
+    cases = [({1: room(1, [("Elon", "ELON")], live)}, 1, 1),        # floor door
+             ({1: room(1, [("Elon", "ELON")], live)}, None, 1),     # text door
              ({1: room(1, [("Elon", "ELON")], dead)}, 1, 1),        # new room over two dead holders
              ({}, None, None)]                                      # new room
     for rooms, holder, name_holder in cases:

@@ -38,7 +38,12 @@ def test_service_decision(name, inp):
     inp = copy.deepcopy(inp)
     exp = inp.pop("expect")
     c = inp["candidate"]
-    d = decide(snapshot_from_example(inp), c["name"], c["symbol"], c.get("uri", ""))
+    snap = snapshot_from_example(inp)
+    if exp['room_id'] is not None and name not in GRADUATED and name not in UNREACHABLE_IN_V1:
+        from matcher_service import rules
+        key=rules.name_lock_key(c['name'],c['symbol'])
+        if key is not None: snap.names[key.hex()]=exp['room_id']
+    d = decide(snap,c['name'],c['symbol'],c.get('uri',''))
     if name in UNREACHABLE_IN_V1:
         assert d.kind == "new_room", "a face whose key differs from door 0's is not matchable in v1"
         return

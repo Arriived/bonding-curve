@@ -462,7 +462,12 @@
       ],
       "accounts": [
         {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
           "name": "authority",
+          "writable": true,
           "signer": true
         },
         {
@@ -770,7 +775,12 @@
       ],
       "accounts": [
         {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
           "name": "authority",
+          "writable": true,
           "signer": true
         },
         {
@@ -1769,6 +1779,15 @@
       ],
       "accounts": [
         {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
           "name": "core",
           "accounts": [
             {
@@ -2538,7 +2557,12 @@
       ],
       "accounts": [
         {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
           "name": "authority",
+          "writable": true,
           "signer": true
         },
         {
@@ -4003,14 +4027,11 @@
           {
             "name": "liveness_buckets",
             "type": {
-              "array": [
-                {
-                  "defined": {
-                    "name": "Bucket"
-                  }
-                },
-                25
-              ]
+              "vec": {
+                "defined": {
+                  "name": "Bucket"
+                }
+              }
             }
           },
           {

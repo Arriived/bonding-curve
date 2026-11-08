@@ -688,3 +688,30 @@ passed 71 SBF tests and every required probe with the offline executable pins.
 Program source `9ed04d7`, its emitted IDL, the service's paired IDL and the binary
 pin were compared. The service passed 163 tests; the repeated full evasion JSON
 matched exactly. Detailed identities and checks are in data/paired_review_checks.json.
+
+
+## 23. Implemented owner rulings and retained RPC diagnostics (8 November 2026)
+
+Supersedes the open routing and stress-cap choices in section 22. Against service
+`f2f8451`, routing regressions first failed: a deeper revived former holder could
+win and its live SlugLock could bypass the current NameLock holder. The service
+now routes only to the current live name holder, or refuses conflicting live
+identity/name locks. The independent verifier uses the same explicit precedence.
+A former holder remains tradeable. Finding 4 is Fixed.
+
+Program control `816b38d` accepted the admin's 120 SOL trigger and created unused
+vaults plus 25 fixed liveness slots at birth. The candidate's normal build refuses
+above 85,018,013,680 lamports; only `test-stress` accepts 120 SOL. Finding 7 is
+Fixed. Its permanent two-sided test is run with each corresponding SBF build.
+The owner authorized independent reviewer B/D controls against that historical
+commit, with no deliberately failing tests committed on the candidate branch.
+
+The paired port decodes 735-byte birth / 1,335-byte trading rooms and discovers
+both by discriminator. Sparse buckets preserve exact u128 volume and hourly ring
+semantics. Native, backing, retirement and WSOL vaults are created on first use;
+IDL account ordering includes the required first-use payer/system accounts.
+
+RPC exception/provider detail is retained in internal DEBUG records while public
+errors remain redacted. Two new tests first failed against the old logger behavior,
+then passed after the fix; a mocked API regression checks both health and route.
+Current complete service suite: 170 passing tests. Evasion rules remain unchanged.

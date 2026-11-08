@@ -59,16 +59,25 @@ def revived_snapshot():
     return FakeSnapshot([old, current], NOW, names={key: 2})
 
 
-def test_revived_former_name_holder_currently_recaptures_text_routing():
+def test_live_current_name_holder_wins_over_deeper_revived_former_holder():
     snapshot = revived_snapshot()
     # A third symbol has no SlugLock, so it reaches text matching.
     out = decide(snapshot, "Revival Frog", "THIRD", "")
-    # Owner decision, documented in SECURITY_REVIEW.md. Do not encode a failing wish.
-    assert out.room_id == 1
+    assert out.room_id == 2
 
 
-def test_revived_routing_attack_is_reproducible_without_signer_compromise():
+def test_revived_former_holder_receives_no_new_door():
     snapshot = revived_snapshot()
     out = decide(snapshot, "Revival Frog", "THIRD", "")
-    assert out.kind == "door" and out.room_id == 1
+    assert out.kind == "door" and out.room_id == 2
     assert snapshot.name_holder(rules.name_lock_key("Revival Frog", "THIRD").hex()) == 2
+
+
+def test_live_slug_of_former_holder_cannot_override_current_name_holder():
+    snap = revived_snapshot()
+    snap.locks[rules.program_identity('Revival Frog', 'OLD').hex()] = 1
+    # The program's identity floor forbids moving this exact identity while its
+    # former room is live. Refuse the conflict; do not give it a new door.
+    with pytest.raises(Refusal) as err:
+        decide(snap, 'Revival Frog', 'OLD', '')
+    assert err.value.code == 'slug_name_conflict'

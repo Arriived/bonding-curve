@@ -56,7 +56,23 @@ class FakeSnapshot:
         self.clock_unix = now
         self.config = cfg or config()
         self.locks = locks or {}  # identity hex -> holder room_id
-        self.names = names or {}  # NameLock key hex -> holder room_id
+        # Default fixtures model valid rooms with a current lock. Duplicate-key
+        # policy tests pass names explicitly; choose the first live holder here.
+        self.names = {} if names is None else dict(names)
+        if names is None:
+            from matcher_service import rules
+            from matcher_service.decide import thresholds
+            from matcher_service.liveness import is_live, GraduatedRoom
+            ordered = sorted(rooms,key=lambda r:r['status']>1)
+            for r in ordered:
+                if not r['faces']: continue
+                face=r['faces'][0]; key=rules.name_lock_key(face['name'],face['symbol'])
+                if key is None: continue
+                try: live=is_live(r,now,thresholds(self.config))[0]
+                except GraduatedRoom: continue
+                prior=self.names.get(key.hex())
+                if prior is None or (live and not is_live(self.rooms[prior],now,thresholds(self.config))[0]):
+                    self.names[key.hex()]=r['room_id']
         self.program_id = PROGRAM
 
     def name_holder(self, key_hex):

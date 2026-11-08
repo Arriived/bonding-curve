@@ -398,41 +398,34 @@ def recompute(rm, rooms, holder_id, cfg, now, name, symbol, name_holder_id=None)
                 "liveness_buckets": [{"start": s, "amount": a} for s, a in r["buckets"] if s or a]}
     p = dict(rm.DEFAULTS, **params)
     old_holder = None
+    live_slug = None
     if holder_id is not None:
         h = rooms[holder_id]
-        if h["status"] > 1:
-            return {"kind": "refuse", "rule": "graduated_identity"}
-        if rm.is_live(research_room(h), now, p)[0]:
-            return {"kind": "door", "rule": "floor", "room_id": holder_id, "old_holder": None, "old_name_holder": None}
-        old_holder = holder_id
-    # Text rule: rooms whose door 0 carries the candidate's key, live, research liveness; T3 if a same-key face also
-    # has the candidate's folded symbol; ties as the research decide(): tier, SOL depth (room_weight), lowest id.
-    csk, _, ckey = research_keys(rm, name, symbol)
-    matches = []
-    for r in rooms.values():
-        if r["status"] > 1 or ckey is None or not r["faces"]:
-            continue
-        if research_keys(rm, r["faces"][0]["name"], r["faces"][0]["symbol"])[2] != ckey:
-            continue
-        rr = research_room(r)
-        if not rm.is_live(rr, now, p)[0]:
-            continue
-        t3 = bool(csk) and any(research_keys(rm, f["name"], f["symbol"])[0] == csk for f in rr["faces"])
-        tier = "T3" if t3 else "T2n"
-        matches.append(((rm.TIER_RANK[tier], rm.room_weight(rr), -r["room_id"]), tier, r["room_id"]))
-    if matches:
-        _, tier, rid = max(matches)
-        return {"kind": "door", "rule": tier, "room_id": rid, "old_holder": old_holder, "old_name_holder": None}
+        if h['status'] > 1: return {'kind':'refuse','rule':'graduated_identity'}
+        if rm.is_live(research_room(h),now,p)[0]: live_slug=holder_id
+        else: old_holder=holder_id
     old_name_holder = None
+    live_name = None
     if name_holder_id is not None:
-        h = rooms[name_holder_id]
-        if h["status"] > 1:
-            return {"kind": "refuse", "rule": "graduated_name"}
-        if rm.is_live(research_room(h), now, p)[0]:
-            return {"kind": "refuse", "rule": "inconsistent_state"}
-        old_name_holder = name_holder_id
-    return {"kind": "new_room", "rule": "new_room", "room_id": None, "old_holder": old_holder,
-            "old_name_holder": old_name_holder}
+        h=rooms[name_holder_id]
+        if h['status'] > 1: return {'kind':'refuse','rule':'graduated_name'}
+        if rm.is_live(research_room(h),now,p)[0]: live_name=name_holder_id
+        else: old_name_holder=name_holder_id
+    csk,_,ckey=research_keys(rm,name,symbol)
+    if live_slug is not None:
+        if ckey is not None and live_slug != live_name:
+            return {'kind':'refuse','rule':'slug_name_conflict'}
+        return {'kind':'door','rule':'floor','room_id':live_slug,'old_holder':None,'old_name_holder':None}
+    if live_name is not None:
+        h=rooms[live_name]
+        if not h['faces'] or research_keys(rm,h['faces'][0]['name'],h['faces'][0]['symbol'])[2]!=ckey:
+            return {'kind':'refuse','rule':'inconsistent_state'}
+        same=keyed_faces(h['faces'])
+        t3=bool(csk) and any(research_keys(rm,f['name'],f['symbol'])[0]==csk for f in same)
+        return {'kind':'door','rule':'T3' if t3 else 'T2n','room_id':live_name,
+                'old_holder':old_holder,'old_name_holder':None}
+    return {'kind':'new_room','rule':'new_room','room_id':None,'old_holder':old_holder,
+            'old_name_holder':old_name_holder}
 
 
 def verify(record, rpc_url, chain_ok=True):

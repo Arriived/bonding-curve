@@ -14,13 +14,14 @@ def account_discriminator(name: str) -> bytes:
     return hashlib.sha256(f"account:{name}".encode()).digest()[:8]
 
 
-ROOM_LEN, DOOR_LEN, SLUG_LEN, NAME_LEN, CONFIG_LEN = 1331, 360, 17, 33, 248
+ROOM_LEN, DOOR_LEN, SLUG_LEN, NAME_LEN, CONFIG_LEN = 1335, 360, 17, 33, 248
+ROOM_BIRTH_LEN = 735
 DISC = {k: account_discriminator(k) for k in ("Room", "Door", "SlugLock", "NameLock", "Config")}
 
 # field -> (offset, bytes), the subset the service reads
 ROOM_FIELDS = {"room_id": (8, 8), "status": (23, 1), "room_mint": (24, 32), "reserve": (196, 8),
                "door_count": (220, 4), "volume_gross": (264, 16), "created_at": (288, 8),
-               "last_trade_at": (296, 8), "identity": (408, 32), "liveness_buckets": (665, 600),
+               "last_trade_at": (296, 8), "identity": (408, 32), "liveness_buckets": (665, 604),
                # curve state for the first-buy quote (quote.py)
                "v_sol_lamports": (152, 8), "v_tok": (160, 8), "supply": (168, 8),
                "graduation_trigger_lamports": (184, 8), "fee_bps": (192, 2), "sold": (204, 8),
@@ -49,12 +50,19 @@ def _check(data: bytes, name: str, length: int):
 
 
 def decode_room(data: bytes) -> dict:
-    _check(data, "Room", ROOM_LEN)
+    if len(data) not in (ROOM_BIRTH_LEN,ROOM_LEN) or data[:8] != DISC['Room']:
+        raise LayoutError(f'not a sparse Room account (len {len(data)})')
     f = ROOM_FIELDS
     lo, hi = struct.unpack_from("<QQ", data, f["volume_gross"][0])
     buckets = []
     off = f["liveness_buckets"][0]
-    for i in range(BUCKETS):
+    count = struct.unpack_from('<I',data,off)[0]
+    off += 4
+    if count > BUCKETS or off+24*count+66 > len(data):
+        raise LayoutError('invalid sparse liveness bucket count')
+    if len(data)==ROOM_BIRTH_LEN and count:
+        raise LayoutError('birth room cannot contain allocated volume slots')
+    for i in range(count):
         start = struct.unpack_from("<q", data, off + 24 * i)[0]
         a_lo, a_hi = struct.unpack_from("<QQ", data, off + 24 * i + 8)
         buckets.append((start, a_lo + (a_hi << 64)))

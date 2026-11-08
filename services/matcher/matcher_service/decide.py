@@ -1,19 +1,14 @@
 """The routing decision: a pure function of a snapshot and the candidate's metadata.
 
-Order (research matcher plus the two rules the program itself enforces):
-  1. Metadata limits (`Launch::validate`).
-  2. Exact-identity floor. The candidate's SlugLock is keyed by the program's own fold. If it is held:
-       - holder graduated (status 2)   -> refuse: the program cannot route this identity in v1;
-       - holder live                   -> door into the holder (the program rejects anything else);
-       - holder not live               -> the lock can be taken over; continue, passing the holder.
-  3. Text rule over every room with status 0/1: the candidate's name key (rules.name_lock_key) equals the room's
-     own key, its door 0's, and the room is live. The face is the best T3/T2n face carrying that key. Faces that
-     entered through the floor with another key are never matched (face laundering, CORRECTIONS §17); since T3/T2n
-     hold exactly when keys are equal, this is the calibrated rule without the floor bridge.
-     Ties: stronger text tier, greater SOL depth (reserve), lowest room id. Graduated rooms are not
-     routing targets in v1 (open_door into one fails with PhaseTwo).
-  4. Otherwise a new room. Its NameLock key (`rules.name_lock_key`) is signed with it; if a dead room holds
-     that key, it is passed as the old name holder (a live holder would have matched in step 3).
+Order:
+  1. Validate metadata and pause state.
+  2. Enforce the program's exact-identity SlugLock restriction. A live identity
+     holder may receive a door only when it also holds the candidate's live
+     NameLock. Conflicting live locks cause a refusal, never a reroute to a
+     former holder. Metadata without a name key retains the identity floor.
+  3. Route text only to the live current NameLock holder, regardless of another
+     room's reserve depth or text tier. No holder means no text target.
+  4. Otherwise create a room, passing any dead holders needed for takeover.
 The function never reads the clock, the network or the key: the caller supplies `now` from the
 snapshot. That is what makes a recorded decision recomputable.
 """
@@ -65,74 +60,57 @@ def decide(snapshot, name, symbol, uri) -> Decision:
     d = Decision(kind="new_room", rule="new_room", identity=identity,
                  candidate_keys={"symbol": c["sk"], "name": c["nk"], "unicode": rules.UNICODE_VERSION})
 
-    # 2. exact-identity floor
+    key = rules.name_lock_key(name, symbol)
+    d.name_key = key.hex() if key is not None else ""
+    # SlugLock is an on-chain restriction, never permission to override NameLock.
+    slug_live = None
     holder_id = snapshot.slug_holder(identity)
     if holder_id is not None:
         holder = snapshot.rooms.get(holder_id)
         if holder is None:
-            raise Refusal("inconsistent_state", f"SlugLock points at room {holder_id}, which the snapshot lacks", 503)
+            raise Refusal("inconsistent_state", f"SlugLock points at missing room {holder_id}", 503)
         try:
             live, why = is_live(holder, now, t)
         except GraduatedRoom:
-            raise Refusal("graduated_identity", f"identity is held by graduated room {holder_id}; v1 has no "
-                          "graduation adapter and the program rejects both a door and a new room", 409)
-        d.evaluated.append({"room_id": holder_id, "role": "slug_lock_holder", "live": live, "live_reason": why})
+            raise Refusal("graduated_identity", f"identity is held by graduated room {holder_id}", 409)
+        d.evaluated.append({"room_id":holder_id,"role":"slug_lock_holder","live":live,"live_reason":why})
         if live:
-            s, tier, face, _ = rules.score_room(c, holder["faces"])
-            d.kind, d.rule, d.room_id, d.face = "door", "floor", holder_id, face if s else 0
-            return d
-        d.old_holder_room_id = holder_id
+            slug_live = holder
+        else:
+            d.old_holder_room_id = holder_id
 
-    # 3. text rule: rooms whose own name key (door 0's) is the candidate's
-    key = rules.name_lock_key(name, symbol)
-    matches = []
-    for room in snapshot.rooms.values():
-        if key is None or not room["faces"]:
-            continue
-        d0 = room["faces"][0]
-        if rules.name_lock_key(d0["name"], d0["symbol"]) != key:
-            continue
-        scored = rules.score_room_keyed(c, room["faces"], key)
-        if scored is None or scored[1] not in rules.ROUTING_TIERS:
-            continue
-        s, tier, face, why = scored
-        row = {"room_id": room["room_id"], "role": "text_match", "text": tier, "text_reason": why, "face": face}
-        if room["status"] > 1:
-            row.update(live=False, live_reason="graduated: not a routing target in v1")
-            d.evaluated.append(row)
-            continue
-        live, lwhy = is_live(room, now, t)
-        row.update(live=live, live_reason=lwhy)
-        d.evaluated.append(row)
+    # 3. Only the current name holder can receive text-routed launches. A revived
+    # former holder's depth and text tier cannot restore its launch eligibility.
+    name_holder_id = snapshot.name_holder(d.name_key) if key is not None else None
+    name_live = None
+    if name_holder_id is not None:
+        holder = snapshot.rooms.get(name_holder_id)
+        if holder is None:
+            raise Refusal("inconsistent_state", f"NameLock points at missing room {name_holder_id}", 503)
+        try:
+            live, why = is_live(holder, now, t)
+        except GraduatedRoom:
+            raise Refusal("graduated_name", f"name is held by graduated room {name_holder_id}", 409)
+        d.evaluated.append({"room_id":name_holder_id,"role":"name_lock_holder","live":live,"live_reason":why})
         if live:
-            matches.append((row, room))
-    d.evaluated.sort(key=lambda r: r["room_id"])
-    if matches:
-        matches.sort(key=lambda m: (-rules.TIER_RANK[m[0]["text"]], -m[1]["reserve"], m[1]["room_id"]))
-        row, room = matches[0]
-        d.kind, d.rule, d.room_id, d.face = "door", row["text"], room["room_id"], row["face"]
-        if d.old_holder_room_id == room["room_id"]:
-            d.old_holder_room_id = None  # cannot happen (a dead holder is never live), kept explicit
+            name_live = holder
+        else:
+            d.old_name_holder_room_id = name_holder_id
+    if slug_live is not None:
+        if key is not None and (name_live is None or slug_live["room_id"] != name_holder_id):
+            raise Refusal("slug_name_conflict", "the live identity holder is not the current live name holder; "
+                          "the identity floor prevents rerouting this launch", 409)
+        score = rules.score_room(c, slug_live["faces"])
+        d.kind, d.rule, d.room_id, d.face = "door", "floor", slug_live["room_id"], score[2] if score[0] else 0
+        d.name_key = ""
         return d
-
-    # 4. new room: the NameLock
-    if key is not None:
-        d.name_key = key.hex()
-        holder_id = snapshot.name_holder(d.name_key)
-        if holder_id is not None:
-            holder = snapshot.rooms.get(holder_id)
-            if holder is None:
-                raise Refusal("inconsistent_state", f"NameLock points at room {holder_id}, which the snapshot lacks", 503)
-            try:
-                live, why = is_live(holder, now, t)
-            except GraduatedRoom:
-                raise Refusal("graduated_name", f"this name is held by graduated room {holder_id}; v1 has no "
-                              "graduation adapter and the program rejects a new room under it", 409)
-            d.evaluated.append({"room_id": holder_id, "role": "name_lock_holder", "live": live, "live_reason": why})
-            if live:
-                # Its door 0 has this key, so step 3 would have matched it. Different Unicode tables from the
-                # service that created the lock can cause this; fail closed rather than sign a failing launch.
-                raise Refusal("inconsistent_state", f"NameLock is held by live room {holder_id}, which the text "
-                              f"rule did not match (unicode {rules.UNICODE_VERSION})", 503)
-            d.old_name_holder_room_id = holder_id
+    if name_live is not None:
+        faces = name_live["faces"]
+        if not faces or rules.name_lock_key(faces[0]["name"], faces[0]["symbol"]) != key:
+            raise Refusal("inconsistent_state", "current name holder's immutable face does not match its lock", 503)
+        scored = rules.score_room_keyed(c, faces, key)
+        if scored is None or scored[1] not in rules.ROUTING_TIERS:
+            raise Refusal("inconsistent_state", "current name holder has no matching immutable face", 503)
+        d.kind, d.rule, d.room_id, d.face = "door", scored[1], name_holder_id, scored[2]
+        d.name_key = ""
     return d

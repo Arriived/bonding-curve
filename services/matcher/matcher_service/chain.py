@@ -13,6 +13,7 @@ Freshness budget (enforced in `Snapshot.check_fresh`, values from config):
 A decision that would use state outside the budget is refused, never computed.
 """
 import base64
+import logging
 import struct
 import threading
 import time
@@ -21,6 +22,8 @@ import httpx
 from solders.pubkey import Pubkey
 
 from . import layouts
+
+_RPC_DEBUG = logging.getLogger("matcher.rpc.internal")
 
 CLOCK_SYSVAR = "SysvarC1ock11111111111111111111111111111111"
 
@@ -61,10 +64,12 @@ class RpcClient:
             self.errors += 1
             # httpx embeds the request URL in exception text; provider responses
             # may echo it too. These errors reach public refusals and logs.
+            _RPC_DEBUG.debug("RPC %s transport failure: %s", method, e, exc_info=True)
             status = f" (HTTP {e.response.status_code})" if isinstance(e, httpx.HTTPStatusError) else ""
             raise RpcError(f"{method}: {type(e).__name__}{status}") from None
         if "error" in body:
             self.errors += 1
+            _RPC_DEBUG.debug("RPC %s provider failure: %r", method, body['error'])
             error = body['error']
             code = error.get('code') if isinstance(error, dict) else None
             suffix = f" (code {code})" if type(code) is int else ""
@@ -115,6 +120,10 @@ class RpcClient:
         disc = base64.b64encode(layouts.DISC[name]).decode()
         cfg = {"encoding": "base64", "commitment": "confirmed", "withContext": True,
                "filters": [{"dataSize": size}, {"memcmp": {"offset": 0, "bytes": disc, "encoding": "base64"}}]}
+        if name == 'Room':
+            # Birth and trading rooms have different allocated lengths. The
+            # discriminator plus strict decoder validates both in one snapshot.
+            cfg['filters'] = cfg['filters'][1:]
         if min_slot:
             cfg["minContextSlot"] = min_slot
         r = self.call("getProgramAccounts", [str(program), cfg])

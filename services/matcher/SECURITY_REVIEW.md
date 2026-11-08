@@ -9,10 +9,10 @@ evidence. No deployment or production signing material is used.
 | 1 | High, release blocker | First-buy minimum used room tokens instead of door tokens | Fixed | Ordinary launch; can refuse legitimate fills or leave a weaker minimum. Exact SBF parity now tested |
 | 2 | Medium | New-door anchoring bypasses a token-only launch slippage limit | Fixed with owner approval | Recorded 20 SOL front-run earned 0.217061544 SOL and reduced victim exit by 0.549648652 SOL |
 | 3 | Medium | RPC failure text disclosed endpoint credentials or provider text | Fixed | Unauthenticated failure-triggering request; possible RPC quota or billing abuse |
-| 4 | Medium | Revived former holder can regain text flow despite a successor's live NameLock | Owner decision | Requires a funded room and revival volume; greater depth can regain later launches |
+| 4 | Medium | Revived former holder can regain text flow despite a successor's live NameLock | Fixed | Current live NameLock holder exclusively receives new doors; conflicting live SlugLock refuses |
 | 5 | Low | Paid liveness permits long-term name carrying | Owner decision | 0.02002 SOL/day with the measured four-transaction pattern, plus setup and recoverable capital |
 | 6 | Low | Mixed-script and 32-byte truncation variants evade existing name keys | Owner decision; rules unchanged | New-room rent and ongoing carrying cost; possible routing diversion |
-| 7 | Low | Authorized admin can choose the 120 SOL stress cap | Owner decision | One authorized config transaction; no demonstrated direct extraction |
+| 7 | Low | Authorized admin can choose the 120 SOL stress cap | Fixed in paired program | Default build refuses above the normal ceiling; isolated test-stress build accepts 120 SOL |
 | 8 | Info | Request replay and alteration | Existing M-3 protection confirmed | Concurrent replay accepts exactly one of 32 requests; every changed signed field is refused |
 
 The first-buy regression failed before the port: 19,628,248,343,287 room base
@@ -30,7 +30,7 @@ launcher request, encoded in the transaction, and checked by the verifier.
 The NameLock key remains a function of the actual name and symbol only.
 
 The active program ID is read from `idl/doors_v1.paired.json`; active account
-lengths are Room 1,331 and Door 360. Historical deployed interface pins remain
+lengths are Room 735 at birth / 1,335 after its first buy, and Door 360. Historical deployed interface pins remain
 untouched. This is an offline port, not a deployment claim. The added field
 costs 16 transaction bytes: at name 32/symbol 10 with priority fee, creation
 allows URI 35 bytes, and a one-holder takeover URI 3. Oversized launches are
@@ -55,20 +55,31 @@ meaningful letters, so this recall figure does not prove all escapes are copies.
 Recommendation: retain current rules pending an owner-approved precision study.
 Full output is in `EVASION_BENCHMARK_REVIEW.md` and the corresponding data JSON.
 
-## Open owner decisions
+## Implemented owner rulings, 8 November 2026
 
-Revival options are (a) retain depth preference, (b) prefer the live current
-NameLock holder for text matches, or (c) add irreversible narrative succession.
-Recommendation: (b), preserving exits, after explicitly resolving precedence
-against a live exact-identity SlugLock holder. No routing rule is changed.
-The passing regression records that the revived deeper former holder currently
-wins; it is not an xfail or a deliberately failing desired-policy assertion.
+A is fixed. Text routing consults only the current live NameLock holder, never a
+revived former holder's reserve or tier. The exact-identity SlugLock remains an
+on-chain restriction: when a candidate has a name key, its live identity holder
+must also be its current live name holder. Conflicting live locks refuse with
+409 `slug_name_conflict`; the service does not sign a door into the former holder.
+Names without a name key retain the identity floor. The independent decision
+verifier follows the same precedence. Ordinary regressions failed on service
+`f2f8451` before this change and pass with it.
 
-Stress-cap options are (a) retain authorized admin flexibility, (b) enforce an
-owner-selected production economic envelope in Config validation, or (c) use a
-separate stress build alongside that envelope. Recommendation: (b) and (c).
-The current program permits 120 SOL for future rooms and leaves existing room
-caps unchanged; no cap restriction is implemented here.
+B is fixed in the paired program. The default build refuses graduation triggers
+above 85,018,013,680 lamports. Only the isolated `test-stress` feature accepts
+120 SOL. A permanent two-sided SBF test asserts refusal in the default build and
+acceptance in that feature build; existing room caps stay immutable.
+
+D uses exact sparse u128 hourly volumes and deferred unused vaults. RPC scans
+filter Room by discriminator, then strictly validate the two permitted lengths,
+bucket count and layout. Active IDL/layout pins match the paired program.
+Historical B/D control is program `816b38d`; the owner authorized independent
+reviewer execution against that commit. No deliberately failing historical
+control is committed on either candidate branch.
+
+Liveness thresholds and evasion normalization remain owner decisions. They were
+not changed by these rulings.
 
 The complete program measurements and owner tradeoffs are in the paired branch's
 [security review](https://github.com/Arriived/bonding-curve/blob/claude/paired-doors/program/docs/SECURITY_REVIEW.md).
@@ -97,3 +108,18 @@ The 0.5 SOL reserve floor per room is recoverable capital, separate from rent,
 bootstrap fees and the temporary 1.2625 SOL gross maintenance buy. The program
 and service IDL files match emitted output byte-for-byte. Final service tests:
 163 passed. The repeated benchmark produced identical JSON.
+
+
+## Operator diagnostics
+
+Public RpcError text retains safe method, class, HTTP status or numeric RPC code.
+Full transport exceptions and provider error details are emitted only at DEBUG
+on `matcher.rpc.internal`. Operators can attach a private handler and enable that
+logger when investigating a failure; DEBUG is disabled under the default INFO
+configuration. Neither `/health` nor `/route` serializes those records. Synthetic
+HTTP and JSON-RPC marker tests prove both internal availability and response
+redaction. No real endpoint credential was accessed.
+
+Current service validation: 170 tests pass, without xfail or skipped desired-policy
+assertions. The final program run and updated benchmark are recorded below once
+verification completes; earlier results above describe the previous candidate.

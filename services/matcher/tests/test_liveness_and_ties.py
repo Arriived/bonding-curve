@@ -78,20 +78,20 @@ def test_tie_floor_beats_text():
     assert (d.kind, d.rule, d.room_id) == ("door", "floor", 1)
 
 
-def test_tie_stronger_text_tier_wins():
+def test_name_holder_wins_over_a_stronger_text_tier():
     snap = FakeSnapshot([live_room(1, [("Elon", "OTHER")], reserve=99 * 10**9), live_room(2, [("Elon", "ELON")], reserve=1)], NOW)
     d = decide(snap, "Elon", "ELON", "")
-    assert (d.rule, d.room_id) == ("T3", 2)
+    assert (d.rule, d.room_id) == ("T2n", 1)
 
 
-def test_tie_deeper_reserve_wins():
+def test_name_holder_wins_over_deeper_reserve():
     snap = FakeSnapshot([live_room(1, [("Elon", "ELON")], reserve=5), live_room(2, [("ELON", "elon")], reserve=6)], NOW)
-    assert decide(snap, "Elon", "ELON", "").room_id == 2
+    assert decide(snap, "Elon", "ELON", "").room_id == 1
 
 
-def test_tie_lowest_room_id_wins():
+def test_name_holder_wins_over_lower_room_id():
     snap = FakeSnapshot([live_room(7, [("Elon", "ELON")], reserve=5), live_room(3, [("Elon", "ELON")], reserve=5)], NOW)
-    assert decide(snap, "Elon", "ELON", "").room_id == 3
+    assert decide(snap, "Elon", "ELON", "").room_id == 7
 
 
 def test_dead_floor_holder_is_passed_and_text_routing_continues():
@@ -138,10 +138,13 @@ def test_face_laundering_through_the_floor_is_not_matchable():
     genuine = live_room(3, [("Pepe", "PEPE")], reserve=2_000_000_000)
     d = decide(FakeSnapshot([genuine, laundered], NOW), "Pepe", "FROG", "")
     assert (d.kind, d.rule, d.room_id) == ("door", "T2n", 3)
-    # The floor itself still routes the exact identity into room 7, as the program requires.
+    # The joined normalization gives this exact identity the room's own name
+    # key, so both locks agree and the identity floor may route it.
     ident = rules.program_identity("Sol Pepe", "PEPE").hex()
-    d = decide(FakeSnapshot([laundered], NOW, locks={ident: 7}), "Sol Pepe", "PEPE", "")
-    assert (d.kind, d.rule, d.room_id) == ("door", "floor", 7)
+    snap = FakeSnapshot([laundered],NOW,locks={ident:7})
+    assert snap.name_holder(rules.name_lock_key("Sol Pepe","PEPE").hex()) == 7
+    d = decide(snap,"Sol Pepe","PEPE","")
+    assert (d.kind,d.rule,d.room_id)==("door","floor",7)
     # And its own key's launches still find it.
     d = decide(FakeSnapshot([laundered], NOW), "solpepe", "OTHER", "")
     assert (d.kind, d.rule, d.room_id) == ("door", "T2n", 7)
@@ -198,3 +201,8 @@ def test_live_name_holder_the_text_rule_missed_fails_closed():
     with pytest.raises(Refusal) as e:
         decide(FakeSnapshot([], NOW, names={key: 9}), "Elon", "OTHER", "")
     assert e.value.code == "inconsistent_state"
+
+
+def test_matching_room_without_name_lock_gets_no_new_door():
+    snap=FakeSnapshot([live_room(1,[("Elon","ELON")])],NOW,names={})
+    assert decide(snap,"Elon","OTHER","").kind=='new_room'

@@ -56,7 +56,10 @@ class Snap:
         return "lock"
 
     def name_holder(self, k):
-        return None
+        from matcher_service import rules
+        return next((r['room_id'] for r in self.rooms.values() if r['faces'] and
+            rules.name_lock_key(r['faces'][0]['name'],r['faces'][0]['symbol']) is not None and
+            rules.name_lock_key(r['faces'][0]['name'],r['faces'][0]['symbol']).hex()==k),None)
 
     def name_pda(self, k):
         return "name:" + k

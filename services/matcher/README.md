@@ -45,10 +45,10 @@ Concurrent door launches into one room do not contend, and a dropped one blocks 
 | stage | rule |
 |---|---|
 | metadata | `Launch::validate` limits, in bytes: name 1–32, symbol 1–10, uri ≤ 200 |
-| floor | The candidate's SlugLock, keyed by the program's own fold. A live holder means a door into it (rule `floor`); the program enforces this. A dead holder is passed as `old_holder`. A graduated holder is refused (409). |
+| floor | SlugLock is an on-chain identity restriction. For a name-key candidate, a live identity holder must also be the current live NameLock holder; conflicting locks refuse with 409 `slug_name_conflict`. A missing name key retains the identity floor. A dead holder is passed as `old_holder`; a graduated holder is refused. |
 | text | Research normalisation (NFKC, homoglyphs, digit and rn/vv folds, stopwords, suffixes). A match is **T3**, folded symbol and name both equal, or **T2n**, folded name equal with at least 4 characters. Since CORRECTIONS §17 a room is matched only through faces carrying its own name key (door 0's): equivalent to the calibrated rule, without the floor bridge that let one room absorb another narrative. Since CORRECTIONS §18 and §20, four rules are live. A: the 4-character minimum is measured on the whole name. B: Unicode confusables, and I/l/1/| read alike. C: other non-ASCII letters are transliterated (anyascii). I: the name's letters are joined and folded once, so case and spacing cannot change the key; a trailing COIN/TOKEN/OFFICIAL/SOLANA/CTO and a leading THE/OFFICIAL are stripped. Two launches route together exactly when their name keys are equal. Name keys are pinned to Unicode 15.1.0, to the hash of `data/confusables_ascii.json` and to anyascii 0.3.3; the service and verifier refuse anything else. Symbol-only, fuzzy, image and social-link matching are not implemented; measured candidates are in `RULE_CANDIDATES.md`, and dodge recall per rule is in `EVASION_BENCHMARK.md` (`scripts/evasion_benchmark.py`; the phonetic candidate needs `requirements-research.txt`). |
 | liveness | The program's `Room::live` with thresholds read from Config: `age < live_new_seconds OR (reserve ≥ live_min_reserve AND idle ≤ live_max_idle AND 24 h hourly-bucket volume ≥ live_min_volume)`. Defaults: 1 h, 0.5 SOL, 6 h, 5 SOL. |
-| ties | floor; then T3 over T2n; then greater reserve; then lowest room id |
+| target | Only the current live NameLock holder receives text-routed doors, regardless of any other room's reserve or tier. A revived former holder keeps trading but receives no new doors. No live current holder means a new room. |
 | graduated rooms | Never a target in v1. The program fails closed with `PhaseTwo` (CORRECTIONS §8). |
 | otherwise | A new room with a CSPRNG u64 room-id nonce. |
 
@@ -453,3 +453,17 @@ The paired Launch appends this 16-byte field. Room creation NameLock derivation
 still reads name and symbol only; no matching or normalization rule changed.
 Run `scripts/max_uri.py --json` for the resulting transaction-size limits.
 The offline program ID is read once from the paired IDL by `program_id.py`.
+
+
+## Sparse rooms and operator RPC diagnostics (8 November 2026)
+
+Paired Room accounts occupy 735 bytes at birth and 1,335 after their first buy.
+The decoder validates the sparse bucket count and keeps exact u128 amounts;
+account discovery uses the Room discriminator so it includes both lengths.
+The first buy funds the complete 25-bucket capacity, keeping later sells free of
+storage rent. Unused native and token vaults are initialized on first use.
+
+RPC responses expose only safe error classifications. Full exception/provider
+details are available at DEBUG through `matcher.rpc.internal`; attach a private
+logging handler and enable that logger for operator investigations. The default
+INFO configuration suppresses these details. API responses never include them.
