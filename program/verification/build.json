@@ -1,5 +1,5 @@
 {
-  "git_commit": "86a0f44a0818ebc05a314e8113c9618ff828fed5",
+  "git_commit": "08490333d14778b2fde1a6b588168ff675da8831",
   "versions": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
@@ -24,7 +24,7 @@
     "programs/doors_v1/tests/cases/paired_doors.rs": "5a8fc27040f94a8430be52f01eed98732a754168b9b87a6ae382e1142b3ca386",
     "programs/doors_v1/tests/cases/review_continuation.rs": "f2338d22831a847c86c2d00a79f9bfa072fc2bd86428c7fedacf99d9e7afdbb3",
     "programs/doors_v1/tests/cases/sweeps.rs": "8b511768264024fd1bb212fdef222a8aefb74d26132dff51838aab9d1c65bb88",
-    "programs/doors_v1/tests/svm.rs": "1b362d2c8444239dad64128637ff03b3988cabb02e1a271b72931e59ca4f60cd",
+    "programs/doors_v1/tests/svm.rs": "666f495b96c5487e2086a0ce2a9b6f01cc96662cbe4f9d6208bf328454ed3237",
     "programs/doors_v1/Cargo.toml": "ca8e422fa5dece2dd35d55589d9256fbcf656f040b6d699dbde9c121656d472b",
     "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
     "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",

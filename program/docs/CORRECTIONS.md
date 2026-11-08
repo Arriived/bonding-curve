@@ -1011,3 +1011,32 @@ Service `bf121dc` passes 170 tests; the evasion JSON is identical to the prior
 review. Findings 4 and 7 are Fixed; room birth rent is 17,515,840 lamports,
 9,443,720 below the control but 2,515,840 above the target. Historical B/D controls
 remain assigned to the independent reviewer against `816b38d`, as authorized.
+
+
+## Launch CU margin correction (8 November 2026)
+
+The CU-seam row still quoted 306,979 at `71d32f3`; that was obsolete. Current
+worst launch is 351,341 VM transaction CU. The old 400,000 service limit fails
+the documented drift stress: 351,341 + 21,000 + 7,500 + 15*1,500 = 402,341.
+The service default is raised to 500,000. SBF maximum-metadata and takeover
+assertions and the heap probe add the full allowance; using exact historical
+21,110 plus the missing 150-CU priority-price instruction gives 402,601, leaving
+97,399 CU. Production program source, binary pin and rent savings are untouched.
+
+At example cu_price 10,000 micro-lamports/CU, priority fee rises 4,000 -> 5,000
+lamports (+0.000001 SOL); base signature fees are separate. Packet lengths are
+identical at both limits. Maximum name/symbol legacy URI limits remain 35 for
+creation, 3 for a one-holder takeover, 200 for open and 194 for open takeover.
+Full 200-byte creation is still 1,397 bytes and refused; its service maximum is
+1,232 bytes. The service regression first failed on `b86ae42`'s 400,000 default.
+
+
+Final launch-budget verification: [CI 42536522731](https://github.com/Arriived/bonding-curve/actions/runs/42536522731)
+is green on `0849033`: 71 SBF tests, 10,000 mixed iterations / 12,488 transactions,
+pinned SPL binaries, both stress-feature checks, heap, 400,000 curve cases,
+client compile/unit test and unchanged production binary pin. The maximum heap
+fixture records 402,601 stressed CU / **97,399 margin**. Birth rent remains
+17,515,840 lamports; creation heap remains at least 4,080 bytes. Every source hash
+and emitted IDL matches the candidate. Service `6109176` passes 172 tests; the
+1,223-target evasion benchmark repeats byte-identically. Full cross-branch data:
+`verification/launch_cu_budget_checks.json` and `launch_cu_packet_sizes.json`.

@@ -1,0 +1,42 @@
+{
+  "idl": "services/matcher/idl/doors_v1.paired.json",
+  "name_lock_in_idl": true,
+  "packet_limit": 1232,
+  "name_bytes": 32,
+  "symbol_bytes": 10,
+  "priority_fee_instruction": true,
+  "compute_unit_limit": 500000,
+  "largest_uri_bytes": {
+    "create_room": 35,
+    "create_room_takeover": 3,
+    "open_door": 200,
+    "open_door_takeover": 194,
+    "create_room_name_takeover": 3,
+    "create_room_both_takeovers": null
+  },
+  "largest_uri_wire_bytes": {
+    "create_room": 1232,
+    "create_room_takeover": 1232,
+    "open_door": 1206,
+    "open_door_takeover": 1232,
+    "create_room_name_takeover": 1232,
+    "create_room_both_takeovers": null
+  },
+  "full_200_byte_uri_wire_bytes": {
+    "create_room": 1397,
+    "create_room_takeover": 1429,
+    "open_door": 1206,
+    "open_door_takeover": 1238,
+    "create_room_name_takeover": 1429,
+    "create_room_both_takeovers": 1461
+  },
+  "comparison_only_v0_with_static_lookup_table": {
+    "create_room": 185,
+    "create_room_takeover": 153,
+    "open_door": 200,
+    "open_door_takeover": 200,
+    "create_room_name_takeover": 153,
+    "create_room_both_takeovers": 121
+  },
+  "unchanged_from_400000_cu": true
+}

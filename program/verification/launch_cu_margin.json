@@ -1,0 +1,24 @@
+{
+  "create_room": {
+    "bump_variance_cu": 7500,
+    "cu_per_bump_try": 1500,
+    "extra_bump_tries": 15,
+    "launch_limit_cu": 500000,
+    "margin_cu": 97455,
+    "priority_price_instruction_cu_added": 150,
+    "stressed_transaction_cu": 402545,
+    "token_program_drift_cu": 21110,
+    "vm_transaction_cu": 351285
+  },
+  "open_door": {
+    "bump_variance_cu": 7500,
+    "cu_per_bump_try": 1500,
+    "extra_bump_tries": 15,
+    "launch_limit_cu": 500000,
+    "margin_cu": 164540,
+    "priority_price_instruction_cu_added": 150,
+    "stressed_transaction_cu": 335460,
+    "token_program_drift_cu": 21110,
+    "vm_transaction_cu": 284200
+  }
+}

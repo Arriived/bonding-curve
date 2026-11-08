@@ -10,7 +10,7 @@ the room's launch metadata relationship.
 ## Default-room measurements
 
 <!-- BEGIN GENERATED STATUS -->
-Source commit `86a0f44a0818ebc05a314e8113c9618ff828fed5`. [Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42526798488).
+Source commit `08490333d14778b2fde1a6b588168ff675da8831`. [Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42536522731).
 
 The SBF suite passed 71 tests, including 10,000 property iterations and 12,488 executed transactions. The standalone devnet client tests also passed.
 
@@ -89,7 +89,7 @@ Maximum measured program CU was 341,042.
 ## Creation before and after the review
 
 <!-- BEGIN GENERATED CREATION -->
-Before is [915b075](https://github.com/Arriived/bonding-curve/actions/runs/42378291009). After is 86a0f44.
+Before is [915b075](https://github.com/Arriived/bonding-curve/actions/runs/42378291009). After is 0849033.
 The heap fixture uses maximum metadata and prefunded accounts. Rent uses the same rent-only metadata in both runs.
 
 | Measurement | Fixture | Before | After | Change |

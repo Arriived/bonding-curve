@@ -1238,7 +1238,7 @@ defect found. Program code: `program/programs/doors_v1/src/`.
 | service assumes, program does not enforce | Text rules (T2n, normalisation, tie-break); single-replica in-flight state; the decision log. |
 | program enforces, service relies on | Exact-identity floor, room liveness at execution, launch expiry, door nonce rules, signed fee cap, terms hash. A stale snapshot can only make a launch fail on-chain, never route it wrongly past these checks. |
 | expiry seam | `expires_at_slot = blockhash slot + 150`. Slots advance at least as fast as block height, so the program's expiry never outlives the blockhash. Durable nonces are caught by the program (localnet e2e step 6c). |
-| CU seam | Worst tested launch 306,979 VM CU at `71d32f3` (the v0 maximum takeover; 306,064 for the worst the service signs), under the service's 400,000 limit (asserted in SBF). The VM is not an upper bound: live devnet `create_room` runs about 17,000–21,000 CU above it because devnet's deployed Token-2022, SPL Token and ATA programs cost more than LiteSVM's bundled ones, plus a ±7,500 bump-search term that depends on each launch's random addresses (`scripts/bump_drift.py`, `DEPLOYMENT.md` §7). With 15 unlucky extra bump tries on top, about 49,000 CU of margin remains. |
+| CU seam | Current worst prefunded, maximum-metadata atomic-first-buy launch: 351,341 VM transaction CU (351,191 program-inclusive), production ELF `d1fb4975`. The matcher default is now 500,000 CU. Rounded review stress: 351,341 + 21,000 token drift + 7,500 bump variance + 15 x 1,500 extra bump tries = 402,341, leaving 97,659 CU. The enforced conservative check also includes the 150-CU priority-price instruction and exact historical 21,110 peak: 351,341 + 150 + 21,110 + 7,500 + 22,500 = 402,601, leaving **97,399 CU**. The SBF maximum-launch/takeover tests and heap probe enforce the allowance. Current SBF already loads pinned SPL binaries; historical drift is retained as additional stress headroom, not presented as a fresh live-runtime measurement. |
 | key seam | The service refuses to sign unless its key equals `Config.matcher_authority` in the snapshot. A KMS signature is verified before use. |
 
 ### Supply chain
@@ -1419,3 +1419,54 @@ bytes exactly. Findings 4 and 7 are Fixed. D is implemented with the documented
 `816b38d`, assigned to the independent reviewer by the owner's instruction.
 The local service run on `bf121dc` passed 170 tests. Its unchanged-rule benchmark
 JSON repeated exactly. Machine-readable checks: `verification/owner_rulings_checks.json`.
+
+
+### Launch CU margin blocker: Fixed (8 November 2026)
+
+Control service `b86ae42` defaulted to 400,000 CU. The new default/message
+regression failed with 400,000 versus 500,000 before changing config; the explicit
+override still passed. `MATCHER_CU_LIMIT` now defaults to 500,000 and remains
+configurable. The SBF maximum-metadata prefunded launch and takeover tests assert
+the full drift allowance; launch trace transactions use the new limit. The heap
+probe separately checks its measured maximum, including the priority-price
+instruction and exact historical 21,110-CU token offset. No rent-saving code or
+production program source changes.
+
+The review's rounded arithmetic gives 97,659 CU margin. Counting the extra
+priority-price instruction (150) and using the exact historical peak rather than
+rounded 21,000 makes the enforced margin **97,399 CU**: 500,000 - 402,601.
+
+Priority fee for these legacy transactions is
+`ceil(cu_limit * cu_price_micro_lamports / 1,000,000)` lamports, based on requested
+limit. At a representative price of 10,000 micro-lamports/CU, the new priority
+fee is **5,000 lamports (0.000005 SOL)**, versus 4,000 at the old limit: an extra
+1,000 lamports (0.000001 SOL). At price zero it stays zero. Base signature fees
+are separate. Formula source: [Solana fee documentation](https://solana.com/docs/core/fees).
+
+`max_uri.py` now reads the same default constant as service config. Comparing
+400,000 and 500,000 yields identical packet sizes: the limit is a fixed-width
+u32 in the existing instruction. At name 32/symbol 10 with a priority instruction:
+
+| Shape | Largest legacy URI bytes | Wire bytes at that URI | Wire bytes at URI 200 |
+|---|---:|---:|---:|
+| create_room | 35 | 1,232 | 1,397 |
+| create_room, one old holder | 3 | 1,232 | 1,429 |
+| open_door | 200 | 1,206 | 1,206 |
+| open_door takeover | 194 | 1,232 | 1,238 |
+| create_room, two distinct old holders | Does not fit | Over limit even at URI 0 | 1,461 |
+
+Thus full 200-byte creation metadata still does not fit legacy packets; the
+service's existing size refusal remains. Raising the CU limit consumes no extra
+packet bytes. No v0 signing support is introduced. Rent remains 17,515,840
+lamports at birth, 35.0% below its earlier baseline.
+
+
+Final launch-budget verification: [CI 42536522731](https://github.com/Arriived/bonding-curve/actions/runs/42536522731)
+is green on `0849033`: 71 SBF tests, 10,000 mixed iterations / 12,488 transactions,
+pinned SPL binaries, both stress-feature checks, heap, 400,000 curve cases,
+client compile/unit test and unchanged production binary pin. The maximum heap
+fixture records 402,601 stressed CU / **97,399 margin**. Birth rent remains
+17,515,840 lamports; creation heap remains at least 4,080 bytes. Every source hash
+and emitted IDL matches the candidate. Service `6109176` passes 172 tests; the
+1,223-target evasion benchmark repeats byte-identically. Full cross-branch data:
+`verification/launch_cu_budget_checks.json` and `launch_cu_packet_sizes.json`.
