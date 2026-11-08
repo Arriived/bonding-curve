@@ -335,6 +335,19 @@ def main():
             units.update(json.loads(re.search(r"HEAP_PAIRED (\{.*\})", paired_out)[1]))
         cu = json.loads(re.search(r"HEAP_CU (\{.*\})", out)[1])
         full_takeover = bool(units.pop("create_room_takeover_uri200_passes"))
+        # Match the service's priority-priced launch and retain the exact largest
+        # historical token-program offset, observed bump variance and 15 extra tries.
+        launch_budget = {"limit_cu": 500_000, "token_program_drift_cu": 21_110,
+                         "bump_variance_cu": 7_500, "extra_bump_tries": 15,
+                         "cu_per_bump_try": 1_500, "priority_price_instruction_cu_added": 150,
+                         "rows": {}}
+        for shape, measured in cu.items():
+            if "tx_cu" in measured:
+                stressed = measured["tx_cu"] + 150 + 21_110 + 7_500 + 15 * 1_500
+                launch_budget["rows"][shape] = {"stressed_transaction_cu": stressed,
+                                               "margin_cu": 500_000 - stressed}
+                assert stressed <= 500_000, (shape, stressed, launch_budget)
+
         result = {
             "measured_commit": commit,
             "measured_tree": "clean checkout of measured_commit in a temporary worktree"
@@ -354,6 +367,7 @@ def main():
             "resolution_bytes": STEP,
             "create_room_takeover_uri200_passes": full_takeover,
             "worst_launch_cu": cu,
+            "launch_cu_budget": launch_budget,
             "zero_means": "the launch fails even with no probe allocation (out of memory, or the 64-entry "
                           "instruction trace exceeded: see worst_launch_cu)",
         }

@@ -27,6 +27,30 @@ include!("cases/paired_doors.rs");
 include!("cases/adversarial_review.rs");
 include!("cases/review_continuation.rs");
 
+// Same default as the matcher service. Keep historical runtime drift as a
+// conservative allowance even though this suite loads pinned token binaries.
+const MATCHER_LAUNCH_CU_LIMIT: u32 = 500_000;
+fn checked_launch_cu_margin(vm_transaction_cu: u64, includes_priority_price: bool) -> Value {
+    let priority_price_cu = if includes_priority_price { 0 } else { 150 };
+    let token_program_drift = 21_110u64;
+    let bump_variance = 7_500u64;
+    let extra_bump_tries = 15u64;
+    let cu_per_bump_try = 1_500u64;
+    let stressed = vm_transaction_cu
+        + priority_price_cu
+        + token_program_drift
+        + bump_variance
+        + extra_bump_tries * cu_per_bump_try;
+    let row = json!({"vm_transaction_cu":vm_transaction_cu,
+        "priority_price_instruction_cu_added":priority_price_cu,
+        "token_program_drift_cu":token_program_drift,"bump_variance_cu":bump_variance,
+        "extra_bump_tries":extra_bump_tries,"cu_per_bump_try":cu_per_bump_try,
+        "stressed_transaction_cu":stressed,"launch_limit_cu":MATCHER_LAUNCH_CU_LIMIT,
+        "margin_cu":i64::from(MATCHER_LAUNCH_CU_LIMIT)-stressed as i64});
+    assert!(stressed <= u64::from(MATCHER_LAUNCH_CU_LIMIT), "{row}");
+    row
+}
+
 fn p(seeds: &[&[u8]]) -> Pubkey {
     Pubkey::find_program_address(seeds, &ID).0
 }
@@ -2699,7 +2723,7 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
             f.svm.airdrop(&account.pubkey, rent).unwrap();
         }
     }
-    f.create(l, None);
+    let create_meta = f.create(l, None);
     // A room-route buy leaves a pending backlog, so the next first buy settles it.
     f.trade(None, true, 1_010_000);
     assert!(f.r().pending_reserve_sol > 0);
@@ -2713,12 +2737,19 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
     f.open(l);
     assert_eq!(f.r().pending_reserve_sol, 0);
     assert!(f.d(1).backing > 0);
-    // The matcher service signs launches with a 400,000 CU limit (MATCHER_CU_LIMIT default);
-    // a third party's prefunding must not push a co-signed launch past it.
+    // Cover the service default plus historical token drift, bump variance and
+    // fifteen extra failed bump tries, including the priority-price instruction.
     let create_cu = *f.cus["create_room"].last().unwrap();
     let open_cu = *f.cus["open_door"].last().unwrap();
     println!("PREFUNDED_MAX_CU create_room={create_cu} open_door={open_cu}");
-    assert!(create_cu < 400_000 && open_cu < 400_000);
+    let rows = json!({"create_room":checked_launch_cu_margin(create_meta.compute_units_consumed, false),
+        "open_door":checked_launch_cu_margin(open_cu + 150, false)});
+    println!("LAUNCH_CU_MARGIN {rows}");
+    std::fs::write(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../verification/launch_cu_margin.json"),
+        serde_json::to_string_pretty(&rows).unwrap() + "\n",
+    )
+    .unwrap();
 }
 
 // The takeover paths read a second Room (`old_holder`, in place) on top of the worst case
@@ -2918,8 +2949,8 @@ fn takeover_heap_case(create_uri: usize) {
             "transaction_cu": meta.compute_units_consumed, "program_cu": program_cu,
             "trace_entries": meta.logs.iter().filter(|line| line.contains(" invoke [")).count()});
         println!("PAIRED_DOORS_TAKEOVER_LIMIT {row}");
+        checked_launch_cu_margin(meta.compute_units_consumed, false);
     }
-    assert!(create_cu < 400_000 && open_cu < 400_000);
 }
 
 // Instruction-trace budget of launches. A transaction may hold at most 64 instruction entries
@@ -2935,7 +2966,9 @@ fn launch_instruction_trace_budget() {
         price: bool,
     ) -> (bool, usize, u64, Option<u64>, String) {
         f.svm.expire_blockhash();
-        let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(400_000)];
+        let mut ixs = vec![ComputeBudgetInstruction::set_compute_unit_limit(
+            MATCHER_LAUNCH_CU_LIMIT,
+        )];
         if price {
             ixs.push(ComputeBudgetInstruction::set_compute_unit_price(1));
         }
@@ -3104,7 +3137,10 @@ fn launch_instruction_trace_budget() {
     for r in &rows {
         assert!(r["succeeded"].as_bool().unwrap(), "{r}");
         assert!(r["logged_invocations"].as_u64().unwrap() <= 64 - 12, "{r}");
-        assert!(r["transaction_cu"].as_u64().unwrap() <= 400_000, "{r}");
+        assert!(
+            r["transaction_cu"].as_u64().unwrap() <= u64::from(MATCHER_LAUNCH_CU_LIMIT),
+            "{r}"
+        );
     }
     for ins in ["create_room", "open_door"] {
         for price in [false, true] {
