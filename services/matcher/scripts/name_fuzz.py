@@ -176,6 +176,47 @@ def decoration(name):
     return {"$" + name, name + "!", name + " 🐸", "🚀" + name, "[" + name + "]", name + ".", '"' + name + '"'}
 
 
+def mixed_script_words(name):
+    """Compose substitutions across words, rather than one glyph per name."""
+    words = name.split()
+    # Alternate alphabets inside a word too, including one-word names.
+    out = {"".join(LATIN_TO_CYRILLIC.get(c.lower(), c) if i % 2 == parity else c
+                   for i, c in enumerate(name)) for parity in (0, 1)}
+    for parity in (0, 1):
+        changed = []
+        for index, word in enumerate(words):
+            changed.append("".join(LATIN_TO_CYRILLIC.get(c.lower(), c) for c in word)
+                           if index % 2 == parity else word)
+        out.add(" ".join(changed))
+    return out
+
+
+def internal_spacing(name):
+    # Applied to the symbol as well by the benchmark's symbol-fuzzed mode.
+    return {sep.join(name.replace(" ", "")) for sep in (" ", "\u2009", "_", ".")}
+
+
+def composed_lookalike(name):
+    # Existing individual escapes (including cl/d and unlisted Cyrillic
+    # glyphs) combined with a second disguise, without changing the rules.
+    out = set()
+    for changed in sorted(cyrillic_lookalike(name) | ascii_lookalike(name)):
+        out.add(changed.swapcase())
+        out.add(changed.replace(" ", "_"))
+    return out
+
+
+def utf8_boundary(name):
+    """Explicit client-side 32-byte truncation; the service itself never truncates.
+
+    This is a separate boundary class: dropping a word's tail can change meaning.
+    """
+    candidates = {prefix + name for prefix in ("Official ", "The Real ", "🐸 ")}
+    candidates |= mixed_script_words(name)
+    return {value.encode("utf-8")[:32].decode("utf-8", errors="ignore")
+            for value in candidates if len(value.encode("utf-8")) > 32}
+
+
 # ---- typo (dnstwist generators on the letters of the name) ----------------------------------------
 def omission(name):
     return {_sub(name, i, "") for i in _letters(name)}
@@ -221,4 +262,6 @@ FUZZERS = {
                                          small_caps, ascii_lookalike, leet, decoration)},
     "typo": {f.__name__: f for f in (ascii_glyph, omission, repetition, insertion, replacement, transposition, vowel_swap, plural)},
     "affix": {"affix": affix},
+    "composition": {f.__name__: f for f in (mixed_script_words, internal_spacing, composed_lookalike)},
+    "boundary": {"utf8_boundary": utf8_boundary},
 }

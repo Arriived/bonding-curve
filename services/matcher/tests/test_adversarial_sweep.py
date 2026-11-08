@@ -1,0 +1,74 @@
+"""Adversarial signing-time and lifecycle regressions. No live keys or RPCs."""
+import json
+
+import pytest
+
+from conftest import FakeSnapshot, room
+from test_failures import NOW, REQ, Snap, make, rows
+from matcher_service import rules
+from matcher_service.decide import Refusal, decide
+
+
+@pytest.mark.parametrize("stage", ["blockhash", "signer"])
+@pytest.mark.parametrize("expired", ["age", "lag"])
+def test_snapshot_must_still_be_fresh_when_signature_is_released(tmp_path, kp, stage, expired):
+    snap = Snap(1000)
+    svc = make(tmp_path, kp, snap)
+    calls = []
+
+    def expire():
+        if expired == "age":
+            snap.read_wall -= svc.cfg.budget.max_age_seconds + 1
+        else:
+            svc.rpc._slot += svc.cfg.budget.max_lag_slots + 1
+
+    blockhash, sign = svc.rpc.latest_blockhash, svc.signer.sign
+
+    def slow_blockhash():
+        out = blockhash()
+        if stage == "blockhash":
+            expire()
+        return out
+
+    def slow_sign(message):
+        calls.append(True)
+        out = sign(message)
+        if stage == "signer":
+            expire()
+        return out
+
+    svc.rpc.latest_blockhash, svc.signer.sign = slow_blockhash, slow_sign
+    with pytest.raises(Refusal) as err:
+        svc.route(dict(REQ))
+    assert err.value.code == "stale_state"
+    assert rows(svc) == 0
+    assert len(calls) == (stage == "signer")
+    print(json.dumps({"case": "signing_time_freshness", "stage": stage, "expired": expired,
+                      "attack_cost_lamports": 0, "direct_payoff_lamports": 0,
+                      "decisions_released": 0}))
+
+
+def revived_snapshot():
+    # Both rooms were legitimately created: room 1 went dead, room 2 took its
+    # NameLock, then room 1 resumed trading. Room/door permanence allows revival.
+    name = "Revival Frog"
+    key = rules.name_lock_key(name, "NEW").hex()
+    old = room(1, [(name, "OLD")], created_at=NOW - 90000, reserve=1_000_000_000,
+               last_trade_at=NOW, buckets=[(NOW // 3600 * 3600, 5_000_000_000)])
+    current = room(2, [(name, "NEW")], created_at=NOW - 10, reserve=500_000_000)
+    return FakeSnapshot([old, current], NOW, names={key: 2})
+
+
+def test_revived_former_name_holder_currently_recaptures_text_routing():
+    snapshot = revived_snapshot()
+    # A third symbol has no SlugLock, so it reaches text matching.
+    out = decide(snapshot, "Revival Frog", "THIRD", "")
+    # Owner decision, documented in SECURITY_REVIEW.md. Do not encode a failing wish.
+    assert out.room_id == 1
+
+
+def test_revived_routing_attack_is_reproducible_without_signer_compromise():
+    snapshot = revived_snapshot()
+    out = decide(snapshot, "Revival Frog", "THIRD", "")
+    assert out.kind == "door" and out.room_id == 1
+    assert snapshot.name_holder(rules.name_lock_key("Revival Frog", "THIRD").hex()) == 2

@@ -1,0 +1,502 @@
+{
+  "Config": {
+    "bytes": 248,
+    "fields": [
+      {
+        "field": "admin",
+        "offset": 8,
+        "bytes": 32
+      },
+      {
+        "field": "protocol_fee_recipient",
+        "offset": 40,
+        "bytes": 32
+      },
+      {
+        "field": "fee_bps",
+        "offset": 72,
+        "bytes": 2
+      },
+      {
+        "field": "door_share_bps",
+        "offset": 74,
+        "bytes": 2
+      },
+      {
+        "field": "door_fee_lamports",
+        "offset": 76,
+        "bytes": 8
+      },
+      {
+        "field": "room_fee_lamports",
+        "offset": 84,
+        "bytes": 8
+      },
+      {
+        "field": "convert_fee_lamports",
+        "offset": 92,
+        "bytes": 8
+      },
+      {
+        "field": "v_sol_lamports",
+        "offset": 100,
+        "bytes": 8
+      },
+      {
+        "field": "v_tok",
+        "offset": 108,
+        "bytes": 8
+      },
+      {
+        "field": "supply",
+        "offset": 116,
+        "bytes": 8
+      },
+      {
+        "field": "r_star_lamports",
+        "offset": 124,
+        "bytes": 8
+      },
+      {
+        "field": "meteora_dynamic_config",
+        "offset": 132,
+        "bytes": 32
+      },
+      {
+        "field": "graduation_trigger_lamports",
+        "offset": 164,
+        "bytes": 8
+      },
+      {
+        "field": "paused",
+        "offset": 172,
+        "bytes": 1
+      },
+      {
+        "field": "bump",
+        "offset": 173,
+        "bytes": 1
+      },
+      {
+        "field": "matcher_authority",
+        "offset": 174,
+        "bytes": 32
+      },
+      {
+        "field": "live_min_reserve_lamports",
+        "offset": 206,
+        "bytes": 8
+      },
+      {
+        "field": "live_max_idle_seconds",
+        "offset": 214,
+        "bytes": 8
+      },
+      {
+        "field": "live_new_seconds",
+        "offset": 222,
+        "bytes": 8
+      },
+      {
+        "field": "live_min_volume_lamports",
+        "offset": 230,
+        "bytes": 8
+      },
+      {
+        "field": "pool_min_window_lp_fee",
+        "offset": 238,
+        "bytes": 8
+      },
+      {
+        "field": "founder_share_bps",
+        "offset": 246,
+        "bytes": 2
+      }
+    ]
+  },
+  "Room": {
+    "bytes": 1315,
+    "fields": [
+      {
+        "field": "room_id",
+        "offset": 8,
+        "bytes": 8
+      },
+      {
+        "field": "bumps",
+        "offset": 16,
+        "bytes": 7
+      },
+      {
+        "field": "status",
+        "offset": 23,
+        "bytes": 1
+      },
+      {
+        "field": "room_mint",
+        "offset": 24,
+        "bytes": 32
+      },
+      {
+        "field": "room_vault",
+        "offset": 56,
+        "bytes": 32
+      },
+      {
+        "field": "retired_vault",
+        "offset": 88,
+        "bytes": 32
+      },
+      {
+        "field": "fee_wsol",
+        "offset": 120,
+        "bytes": 32
+      },
+      {
+        "field": "v_sol_lamports",
+        "offset": 152,
+        "bytes": 8
+      },
+      {
+        "field": "v_tok",
+        "offset": 160,
+        "bytes": 8
+      },
+      {
+        "field": "supply",
+        "offset": 168,
+        "bytes": 8
+      },
+      {
+        "field": "r_star_lamports",
+        "offset": 176,
+        "bytes": 8
+      },
+      {
+        "field": "graduation_trigger_lamports",
+        "offset": 184,
+        "bytes": 8
+      },
+      {
+        "field": "fee_bps",
+        "offset": 192,
+        "bytes": 2
+      },
+      {
+        "field": "door_share_bps",
+        "offset": 194,
+        "bytes": 2
+      },
+      {
+        "field": "reserve",
+        "offset": 196,
+        "bytes": 8
+      },
+      {
+        "field": "sold",
+        "offset": 204,
+        "bytes": 8
+      },
+      {
+        "field": "retired",
+        "offset": 212,
+        "bytes": 8
+      },
+      {
+        "field": "door_count",
+        "offset": 220,
+        "bytes": 4
+      },
+      {
+        "field": "protocol_accrued_sol",
+        "offset": 224,
+        "bytes": 8
+      },
+      {
+        "field": "protocol_accrued_wsol",
+        "offset": 232,
+        "bytes": 8
+      },
+      {
+        "field": "pending_reserve_sol",
+        "offset": 240,
+        "bytes": 8
+      },
+      {
+        "field": "pending_reserve_wsol",
+        "offset": 248,
+        "bytes": 8
+      },
+      {
+        "field": "reserve_share_total",
+        "offset": 256,
+        "bytes": 8
+      },
+      {
+        "field": "volume_gross",
+        "offset": 264,
+        "bytes": 16
+      },
+      {
+        "field": "trades",
+        "offset": 280,
+        "bytes": 8
+      },
+      {
+        "field": "created_at",
+        "offset": 288,
+        "bytes": 8
+      },
+      {
+        "field": "last_trade_at",
+        "offset": 296,
+        "bytes": 8
+      },
+      {
+        "field": "graduated_at",
+        "offset": 304,
+        "bytes": 8
+      },
+      {
+        "field": "damm_pool",
+        "offset": 312,
+        "bytes": 32
+      },
+      {
+        "field": "damm_position",
+        "offset": 344,
+        "bytes": 32
+      },
+      {
+        "field": "position_nft_mint",
+        "offset": 376,
+        "bytes": 32
+      },
+      {
+        "field": "identity",
+        "offset": 408,
+        "bytes": 32
+      },
+      {
+        "field": "uri_len",
+        "offset": 440,
+        "bytes": 1
+      },
+      {
+        "field": "uri",
+        "offset": 441,
+        "bytes": 200
+      },
+      {
+        "field": "fee_ckpt",
+        "offset": 641,
+        "bytes": 16
+      },
+      {
+        "field": "fee_ckpt_ts",
+        "offset": 657,
+        "bytes": 8
+      },
+      {
+        "field": "liveness_buckets",
+        "offset": 665,
+        "bytes": 600
+      },
+      {
+        "field": "founder",
+        "offset": 1265,
+        "bytes": 32
+      },
+      {
+        "field": "founder_accrued",
+        "offset": 1297,
+        "bytes": 8
+      },
+      {
+        "field": "founder_accrued_wsol",
+        "offset": 1305,
+        "bytes": 8
+      },
+      {
+        "field": "founder_share_bps",
+        "offset": 1313,
+        "bytes": 2
+      }
+    ]
+  },
+  "Door": {
+    "bytes": 328,
+    "fields": [
+      {
+        "field": "room",
+        "offset": 8,
+        "bytes": 32
+      },
+      {
+        "field": "index",
+        "offset": 40,
+        "bytes": 4
+      },
+      {
+        "field": "mint",
+        "offset": 44,
+        "bytes": 32
+      },
+      {
+        "field": "door_vault",
+        "offset": 76,
+        "bytes": 32
+      },
+      {
+        "field": "room_token_vault",
+        "offset": 108,
+        "bytes": 32
+      },
+      {
+        "field": "creator",
+        "offset": 140,
+        "bytes": 32
+      },
+      {
+        "field": "fee_recipient",
+        "offset": 172,
+        "bytes": 32
+      },
+      {
+        "field": "bumps",
+        "offset": 204,
+        "bytes": 4
+      },
+      {
+        "field": "backing",
+        "offset": 208,
+        "bytes": 8
+      },
+      {
+        "field": "accrued_sol",
+        "offset": 216,
+        "bytes": 8
+      },
+      {
+        "field": "accrued_wsol",
+        "offset": 224,
+        "bytes": 8
+      },
+      {
+        "field": "claimed_sol",
+        "offset": 232,
+        "bytes": 8
+      },
+      {
+        "field": "claimed_wsol",
+        "offset": 240,
+        "bytes": 8
+      },
+      {
+        "field": "buy_volume",
+        "offset": 248,
+        "bytes": 16
+      },
+      {
+        "field": "sell_volume",
+        "offset": 264,
+        "bytes": 16
+      },
+      {
+        "field": "trades",
+        "offset": 280,
+        "bytes": 8
+      },
+      {
+        "field": "created_at",
+        "offset": 288,
+        "bytes": 8
+      },
+      {
+        "field": "matcher_version",
+        "offset": 296,
+        "bytes": 2
+      },
+      {
+        "field": "rule",
+        "offset": 298,
+        "bytes": 1
+      },
+      {
+        "field": "face",
+        "offset": 299,
+        "bytes": 4
+      },
+      {
+        "field": "nonce",
+        "offset": 303,
+        "bytes": 8
+      },
+      {
+        "field": "reserved",
+        "offset": 311,
+        "bytes": 17
+      }
+    ]
+  },
+  "SlugLock": {
+    "bytes": 17,
+    "fields": [
+      {
+        "field": "room_id",
+        "offset": 8,
+        "bytes": 8
+      },
+      {
+        "field": "bump",
+        "offset": 16,
+        "bytes": 1
+      }
+    ]
+  },
+  "NameLock": {
+    "bytes": 33,
+    "fields": [
+      {
+        "field": "room_id",
+        "offset": 8,
+        "bytes": 8
+      },
+      {
+        "field": "key",
+        "offset": 16,
+        "bytes": 16
+      },
+      {
+        "field": "bump",
+        "offset": 32,
+        "bytes": 1
+      }
+    ]
+  },
+  "PendingGate": {
+    "bytes": 65,
+    "fields": [
+      {
+        "field": "gate",
+        "offset": 8,
+        "bytes": 40
+      },
+      {
+        "field": "proposed_at",
+        "offset": 48,
+        "bytes": 8
+      },
+      {
+        "field": "effective_at",
+        "offset": 56,
+        "bytes": 8
+      },
+      {
+        "field": "bump",
+        "offset": 64,
+        "bytes": 1
+      }
+    ]
+  }
+}

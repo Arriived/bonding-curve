@@ -10,7 +10,7 @@ Measured by diffing the two IDLs field by field (7 November 2026).
 
 - `create_room` and `open_door`: same accounts, same arguments, same discriminators. (The swap-fee vault moved out
   of `create_room` in `3a3a6fd`.)
-- `Launch`, `Config`, `Settings`, `SlugLock` and `NameLock` layouts.
+- `Config`, `Settings`, `SlugLock` and `NameLock` layouts. Launch gains the approved field in item 8.
 - The liveness rule and its Room fields. The new Room and Door fields are appended, so every existing offset in
   `idl/layouts.deployed.json` is unchanged.
 - The name key, NameLock key and SlugLock identity.
@@ -53,11 +53,26 @@ Measured by diffing the two IDLs field by field (7 November 2026).
 7. **Events.** `convert` and `Converted` are gone. The new events are `DoorsSwapped` and `SwapFeesClaimed`, and
    `Trade` gains `room_tokens`. The verifier's event table (`EVENTS` in `verify_decision.py`) should list the new
    names. Nothing in the decision path reads them.
-8. **Room-price limit (owner ruling pending).** If the optional room-price field on Launch is adopted (0 = no
-   limit, filled from the user's slippage choice), `Launch` gains a field. The builder, quote, verifier and NameLock
+8. **Room-price limit (approved in the review brief).** The optional room-price field on Launch is approved (0 = no
+   limit, filled from the user's slippage choice); `Launch` gains a field. The builder, quote, verifier and NameLock
    key code must then follow the new layout. Nothing else in this list depends on it.
 
 ## Not needed
 
 - No change to `rules.py`, `decide.py`, routing, the liveness computation, NameLock handling or signing.
 - The launch watcher (`watcher/`) reads pump.fun and LaunchLab, not this program.
+
+## Port implemented in this review
+
+Items 1-8 are implemented for offline paired-program verification. The owner approved
+item 8 in the review brief: Launch appends `max_room_price: u128` (16 bytes), scale
+10^18 lamports per room base unit; zero disables it. Both create and open check the
+pre-buy spot. The service defaults it from the user's slippage independently of a
+custom token minimum. Authentication, builder, record and independent verifier
+include it. NameLock keys are unchanged because their inputs remain the metadata.
+
+The active pins are `doors_v1.paired.json` and `layouts.paired.json`; the deployed pins
+remain historical, avoiding a false deployment claim. `program_id.py` reads the IDL
+address for config, tests and utilities. The reference SBF quote is tested exactly.
+The independent verifier includes both quote legs, pending settlement, the updated
+Trade event and the two new swap events. Door sweeps select `sell_door`.

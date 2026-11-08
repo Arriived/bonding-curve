@@ -2,6 +2,7 @@
 the signer is selected here, but its key lives in a KMS (production) or a keyfile path (development).
 """
 import os
+from .program_id import PROGRAM_ID
 from dataclasses import dataclass
 
 
@@ -52,7 +53,7 @@ def load() -> Config:
     return Config(
         env=env,
         rpc_url=os.environ["MATCHER_RPC_URL"],
-        program_id=os.environ.get("MATCHER_PROGRAM_ID", "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"),
+        program_id=os.environ.get("MATCHER_PROGRAM_ID", PROGRAM_ID),
         signer=signer,
         keyfile=os.environ.get("MATCHER_KEYFILE"),
         gcp_key_version=os.environ.get("MATCHER_GCP_KEY_VERSION"),

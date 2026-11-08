@@ -9,9 +9,10 @@ intentional: it refuses rather than guesses.
 
 - **Rules:** ported from `research/doors_into_one_room/scripts/narrative/matcher.py`, with the
   calibration in `research/doors_into_one_room/NARRATIVE_DETECTION.md`.
-- **Program:** `doors_v1` at `claude/program-v1` `e9bd2aa`, deploy ELF `36e22dab…3b31`, program ID
-  `D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG`. Its IDL is pinned in `idl/doors_v1.deployed.json`.
-  It is not on devnet yet.
+- **Program:** the paired-doors prototype, ID `8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ`.
+  This branch targets its offline interface, pinned in `idl/doors_v1.paired.json` and
+  `idl/layouts.paired.json`. The older `*.deployed.json` pins are historical.
+  This port does not deploy or claim a deployment.
 - **Conflicts with the brief:** [CORRECTIONS.md](CORRECTIONS.md).
 
 ## What a decision is
@@ -432,3 +433,23 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
 11. **The branch tip** is fixed, and the service targets it (CORRECTIONS §4). On any later program
     change, update `idl/`, `txbuild.encode_launch` and `program/devnet/DEPLOY_ELF.sha256` together,
     and rerun both test suites.
+
+## Paired launch price protection (7 November 2026)
+
+`first_buy_quote.tokens` and `min_tokens_out` are door base units (six decimals).
+The quote anchors the new door at the room spot before pending settlement, settles
+pending room fees, quotes SOL to room tokens, then quotes room tokens to door tokens.
+The independent verifier rebuilds the room's sold amount and pending fees from events.
+
+`max_room_price` is an optional decimal u128 string, in lamports per room base unit
+multiplied by 10^18. With a first buy, omission fills it from the snapshot spot
+multiplied by (10000 + max_slippage_bps)/10000, rounded down. `"0"` disables this
+additional bound. An explicit `min_tokens_out` does not disable room-price protection.
+The token minimum and room-price bound are both included in the co-signed Launch.
+The canonical launcher request appends `max_room_price` after `issued_at`; clients
+must sign the updated `auth.FIELDS` sequence, including null when omitted.
+
+The paired Launch appends this 16-byte field. Room creation NameLock derivation
+still reads name and symbol only; no matching or normalization rule changed.
+Run `scripts/max_uri.py --json` for the resulting transaction-size limits.
+The offline program ID is read once from the paired IDL by `program_id.py`.

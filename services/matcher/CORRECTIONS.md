@@ -634,3 +634,57 @@ matcher on each in shadow mode (README, "Launch watcher").
 - "StonkFun" is not a program. It is a self-declared name in about 150 LaunchLab `PlatformConfig` accounts with
   distinct fee wallets, so a launch's StonkFun label cannot be verified on-chain.
 - Mainnet now carries version-1 transactions, so `getTransaction` needs `maxSupportedTransactionVersion: 1`.
+
+
+## 22. Paired program port and approved launch room-price limit (7 November 2026)
+
+Starting point: service `9750e03`, paired program `2bf6f40`. The quote regression
+first failed with 19,628,248,343,287 room units against the SBF door-unit vector
+33,699,309,828,108. The service now prices SOL to room tokens, then room to door
+tokens, using the birth anchor captured before pending settlement. The independent
+verifier implements its own arithmetic and replays sold/pending state from events.
+
+The owner approved the separate Launch room-price limit. `max_room_price` is a
+16-byte u128, decimal string at the HTTP boundary, scaled by 10^18 lamports per
+room base unit. Zero disables it. A first buy defaults to the pre-buy snapshot
+spot plus the user's slippage. Both the request authentication and the co-signed
+transaction cover it. Explicit token minima do not disable the default price bound.
+Name-key normalization is unchanged; a regression checks its position after the
+new field in create_room instruction bytes.
+
+The active IDL and layout files are named `paired`, preserving deployed-history
+pins and avoiding a false deployment claim. Room/Door are 1,331/360 bytes. Program
+identity comes from that IDL; door sweeps use sell_door; the verifier decodes the
+new Trade field and both swap events. Legacy URI limits with maximum name/symbol
+and priority fee are 35 for creation and 3 for a one-holder takeover. Oversized
+messages remain refusals. No v0 support or routing-rule change is introduced.
+
+M-3 was already fixed. New tests alter every authenticated field, exercise 32
+concurrent replays and preserve the original valid signature after tampering is
+refused. Exactly one replay attempt succeeds. The current revival-routing decision
+is recorded as a passing assertion instead of an expected failure. Its options
+and the 120 SOL cap options are in SECURITY_REVIEW.md; neither is implemented.
+
+The benchmark adds mixed scripts within and across words and a distinct class of
+actual 32-byte UTF-8 truncations. Short untruncated names are excluded from that
+boundary denominator. With the target symbol kept, mixed-script recall is
+2,909/3,904 (74.5%); boundary recall is 14/255 (5.5%). Rules remain unchanged.
+The full service suite passes 163 tests. This review performs no deployment or
+production-key access. The Windows HTTP tests require ordinary local socket access;
+inside the restricted sandbox their in-process test client hung, so they were run
+outside it against mocks. No live service or RPC was used by pytest.
+
+
+The preserved RPC redaction draft was restored and failed in both HTTP and
+JSON-RPC cases before the fix. Raw transport exceptions included an authenticated
+URL; provider error objects could echo it too. RpcError now retains only safe
+method/class/status or numeric-code context, with transport exception chaining
+suppressed. Both synthetic-marker regressions pass; no actual credentials were
+accessed. The final full service run passes 163 tests.
+
+
+Final verification on 8 November 2026: the program's green CI run 42403905057
+passed 71 SBF tests and every required probe with the offline executable pins.
+Program source `9ed04d7`, its emitted IDL, the service's paired IDL and the binary
+pin were compared. The service passed 163 tests; the repeated full evasion JSON
+matched exactly. Detailed identities and checks are in data/paired_review_checks.json.

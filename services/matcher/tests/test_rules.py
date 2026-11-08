@@ -126,7 +126,7 @@ def test_metadata_limits_are_bytes_not_characters():
 
 
 def test_layout_constants_match_the_deployed_layout_file():
-    lay = json.load(open(SERVICE / "idl/layouts.deployed.json"))
+    lay = json.load(open(SERVICE / "idl/layouts.paired.json"))
     for name, fields in (("Room", ROOM_FIELDS), ("Door", DOOR_FIELDS), ("SlugLock", SLUG_FIELDS),
                          ("Config", CONFIG_FIELDS)):
         table = {f["field"]: (f["offset"], f["bytes"]) for f in lay[name]["fields"]}

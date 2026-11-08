@@ -1,0 +1,40 @@
+{
+  "service_tests": {
+    "passed": 163,
+    "failed": 0,
+    "command": "python -m pytest services/matcher/tests -q --tb=short --basetemp=.tmp/review-service-with-redaction --junitxml=.tmp/paired-review-pytest.xml"
+  },
+  "sbf_reference_door_tokens": 33699309828108,
+  "baseline_wrong_unit_room_tokens": 19628248343287,
+  "benchmark_targets": 1223,
+  "rules_changed": false,
+  "benchmark_repeated_identically": true,
+  "source_sha256": {
+    "matcher_service/__init__.py": "9bebdfa64bac76d6dc1f01a2a4c4f144887f9baf7fb72cb30c54b259237411f8",
+    "matcher_service/app.py": "2dc23773a72a52cb89e717939037e4e7b5ec78af5b03004ab3017154a1f6c93d",
+    "matcher_service/auth.py": "d1c327035d83d23679b07664e8adad0696d98bca25adfe32198484caca4dbc52",
+    "matcher_service/chain.py": "1a6de95c0f13caa91ba0789607eaa950c95811f1e81d779d184bf0b167900710",
+    "matcher_service/config.py": "0e639c396f69a2fb6119a257f811309a771df3b54727212d7b58eeec2804d400",
+    "matcher_service/decide.py": "b0e015da7d041724f968b918cf946bec3faccf3873a08cb27c42e5e9fcb3ea26",
+    "matcher_service/layouts.py": "e04e37b45c489a98081344e9f16ca991bc0b2c1e77eba5b1e02eba411352c167",
+    "matcher_service/liveness.py": "c9945b58fb2029945ea8fe4f0dc51a5aaec38652748b28855382fca5e5e7158f",
+    "matcher_service/ops.py": "911c365b1e09e8de0e820a8424e86a771e5ceff51dd5f37507460b818ac3ece0",
+    "matcher_service/program_id.py": "92aa5833d54151460656dd44697ae2423fe4e0483564f6b6306c98d1575b4662",
+    "matcher_service/quote.py": "9fe8a6d42abed0d65551149c2e824c3789291c5cb930e4bc593cf9ecc72d43ce",
+    "matcher_service/rules.py": "08287cc85c6dd276c9152812d6a311113e37495e3f179056e2bdb66c5421452b",
+    "matcher_service/service.py": "c006bc661d93257d2048455fa96a951c010cd6ea19eee4b9d0490d5905c6f216",
+    "matcher_service/signer.py": "a79057beb517c089dd0df5a553a04f05e1c5d209eb849168dba1ef9a98ec59fe",
+    "matcher_service/store.py": "74df5d99ea4fa11492ae066f5ae54af99e31b91b7b45dc2e514e610dd6a45bec",
+    "matcher_service/txbuild.py": "dc75a8110504a0a6d3b388e72787d5b46df259606ce17a52031a8bbb56cd381f"
+  },
+  "program_ci": {
+    "run_id": 42403905057,
+    "url": "https://github.com/Arriived/bonding-curve/actions/runs/42403905057",
+    "source_commit": "9ed04d73a2c057433b79adc1ddb9a279c1a3f2ba",
+    "sbf_tests": 71,
+    "property_iterations": 10000,
+    "executed_transactions": 12488,
+    "elf_sha256": "e3c9aa751d2745b6e89dee76dbf362556f460f42288421a55c57bae3b4ede6b4",
+    "all_sources_and_idl_match": true
+  }
+}

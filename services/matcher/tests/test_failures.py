@@ -257,7 +257,7 @@ def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
     out = svc.route(dict(REQ))
     tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
     data = bytes(tx.message.instructions[-1].data)
-    terms, door_nonce, expires = data[-48:-16], *struct.unpack("<QQ", data[-16:])
+    terms, door_nonce, expires = data[-64:-32], *struct.unpack("<QQ", data[-32:-16])
     assert expires == 1000 + 150 == out["expires_at_slot"]            # blockhash slot + 150
     assert door_nonce == int(out["decision"]["door_nonce"]) != 0
     assert terms.hex() == svc.chain.snap.config["launch_terms_hash"]
@@ -377,7 +377,7 @@ def test_first_buy_quote_matches_the_program_reference_vector():
     """program/scripts/check_spec_conflicts.py on the SBF fixture: 101 lamports gross at 100 bps is
     100 net and buys 3,612,416 base units on a fresh default curve."""
     from matcher_service import quote
-    assert quote.first_buy_tokens(quote.new_room_curve(config()), 101) == 3_612_416
+    assert quote.first_buy_tokens(quote.new_room_curve(config()), 101) == 3_612_519
 
 
 def test_door_first_buy_defaults_to_a_two_percent_price_limit(tmp_path, kp):

@@ -1,0 +1,559 @@
+{
+ "targets": 1223,
+ "per": 4,
+ "seed": "evasion-benchmark-v1",
+ "stats": {
+  "symbol kept": {
+   "disguise": {
+    "case": {
+     "n": 3742,
+     "dropped": 107,
+     "v1": 3330,
+     "A + B": 3330,
+     "A + B + C": 3330,
+     "A + B + F5": 3359,
+     "A + B + G": 3737,
+     "A + B + I": 3742,
+     "A + B + I + C (service)": 3742
+    },
+    "spacing": {
+     "n": 4711,
+     "dropped": 171,
+     "v1": 4198,
+     "A + B": 4198,
+     "A + B + C": 4198,
+     "A + B + F5": 4302,
+     "A + B + G": 4710,
+     "A + B + I": 4711,
+     "A + B + I + C (service)": 4711
+    },
+    "invisible": {
+     "n": 4692,
+     "dropped": 192,
+     "v1": 4689,
+     "A + B": 4689,
+     "A + B + C": 4689,
+     "A + B + F5": 4689,
+     "A + B + G": 4691,
+     "A + B + I": 4692,
+     "A + B + I + C (service)": 4692
+    },
+    "fullwidth": {
+     "n": 1097,
+     "dropped": 1338,
+     "v1": 1097,
+     "A + B": 1097,
+     "A + B + C": 1097,
+     "A + B + F5": 1097,
+     "A + B + G": 1097,
+     "A + B + I": 1097,
+     "A + B + I + C (service)": 1097
+    },
+    "homoglyph": {
+     "n": 4719,
+     "dropped": 141,
+     "v1": 3627,
+     "A + B": 3871,
+     "A + B + C": 4507,
+     "A + B + F5": 4000,
+     "A + B + G": 3876,
+     "A + B + I": 3877,
+     "A + B + I + C (service)": 4586
+    },
+    "cyrillic": {
+     "n": 4636,
+     "dropped": 165,
+     "v1": 3484,
+     "A + B": 4095,
+     "A + B + C": 4092,
+     "A + B + F5": 3953,
+     "A + B + G": 4163,
+     "A + B + I": 4163,
+     "A + B + I + C (service)": 4163
+    },
+    "cyrillic_lookalike": {
+     "n": 2356,
+     "dropped": 92,
+     "v1": 885,
+     "A + B": 1330,
+     "A + B + C": 1330,
+     "A + B + F5": 1596,
+     "A + B + G": 1330,
+     "A + B + I": 1330,
+     "A + B + I + C (service)": 1330
+    },
+    "small_caps": {
+     "n": 4605,
+     "dropped": 233,
+     "v1": 15,
+     "A + B": 1399,
+     "A + B + C": 4531,
+     "A + B + F5": 1924,
+     "A + B + G": 1436,
+     "A + B + I": 1436,
+     "A + B + I + C (service)": 4598
+    },
+    "ascii_lookalike": {
+     "n": 3616,
+     "dropped": 123,
+     "v1": 1898,
+     "A + B": 3243,
+     "A + B + C": 3243,
+     "A + B + F5": 2382,
+     "A + B + G": 3274,
+     "A + B + I": 3275,
+     "A + B + I + C (service)": 3275
+    },
+    "leet": {
+     "n": 4346,
+     "dropped": 135,
+     "v1": 4341,
+     "A + B": 4341,
+     "A + B + C": 4341,
+     "A + B + F5": 4341,
+     "A + B + G": 4346,
+     "A + B + I": 4346,
+     "A + B + I + C (service)": 4346
+    },
+    "decoration": {
+     "n": 4729,
+     "dropped": 163,
+     "v1": 4729,
+     "A + B": 4729,
+     "A + B + C": 4729,
+     "A + B + F5": 4729,
+     "A + B + G": 4729,
+     "A + B + I": 4729,
+     "A + B + I + C (service)": 4729
+    }
+   },
+   "typo": {
+    "ascii_glyph": {
+     "n": 4568,
+     "dropped": 137,
+     "v1": 992,
+     "A + B": 1673,
+     "A + B + C": 1673,
+     "A + B + F5": 1358,
+     "A + B + G": 1685,
+     "A + B + I": 1685,
+     "A + B + I + C (service)": 1685
+    },
+    "omission": {
+     "n": 4656,
+     "dropped": 136,
+     "v1": 6,
+     "A + B": 6,
+     "A + B + C": 6,
+     "A + B + F5": 966,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "repetition": {
+     "n": 4652,
+     "dropped": 140,
+     "v1": 0,
+     "A + B": 0,
+     "A + B + C": 0,
+     "A + B + F5": 2500,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "insertion": {
+     "n": 4720,
+     "dropped": 140,
+     "v1": 5,
+     "A + B": 5,
+     "A + B + C": 5,
+     "A + B + F5": 833,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "replacement": {
+     "n": 4724,
+     "dropped": 136,
+     "v1": 152,
+     "A + B": 152,
+     "A + B + C": 152,
+     "A + B + F5": 637,
+     "A + B + G": 153,
+     "A + B + I": 153,
+     "A + B + I + C (service)": 153
+    },
+    "transposition": {
+     "n": 4545,
+     "dropped": 136,
+     "v1": 0,
+     "A + B": 50,
+     "A + B + C": 51,
+     "A + B + F5": 1510,
+     "A + B + G": 50,
+     "A + B + I": 50,
+     "A + B + I + C (service)": 51
+    },
+    "vowel_swap": {
+     "n": 4672,
+     "dropped": 136,
+     "v1": 2,
+     "A + B": 2,
+     "A + B + C": 2,
+     "A + B + F5": 2488,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "plural": {
+     "n": 1139,
+     "dropped": 33,
+     "v1": 0,
+     "A + B": 0,
+     "A + B + C": 0,
+     "A + B + F5": 0,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    }
+   },
+   "affix": {
+    "affix": {
+     "n": 4654,
+     "dropped": 238,
+     "v1": 1163,
+     "A + B": 1130,
+     "A + B + C": 1130,
+     "A + B + F5": 1404,
+     "A + B + G": 0,
+     "A + B + I": 926,
+     "A + B + I + C (service)": 926
+    }
+   },
+   "composition": {
+    "mixed_script_words": {
+     "n": 3904,
+     "dropped": 339,
+     "v1": 1669,
+     "A + B": 2804,
+     "A + B + C": 2796,
+     "A + B + F5": 2490,
+     "A + B + G": 2909,
+     "A + B + I": 2909,
+     "A + B + I + C (service)": 2909
+    },
+    "internal_spacing": {
+     "n": 3634,
+     "dropped": 1250,
+     "v1": 1392,
+     "A + B": 1392,
+     "A + B + C": 1392,
+     "A + B + F5": 2258,
+     "A + B + G": 3628,
+     "A + B + I": 3634,
+     "A + B + I + C (service)": 3634
+    },
+    "composed_lookalike": {
+     "n": 4558,
+     "dropped": 138,
+     "v1": 2189,
+     "A + B": 3322,
+     "A + B + C": 3205,
+     "A + B + F5": 2887,
+     "A + B + G": 3542,
+     "A + B + I": 3543,
+     "A + B + I + C (service)": 3431
+    }
+   },
+   "boundary": {
+    "utf8_boundary": {
+     "n": 255,
+     "dropped": 5,
+     "v1": 9,
+     "A + B": 14,
+     "A + B + C": 14,
+     "A + B + F5": 18,
+     "A + B + G": 9,
+     "A + B + I": 14,
+     "A + B + I + C (service)": 14
+    }
+   }
+  },
+  "symbol fuzzed": {
+   "disguise": {
+    "case": {
+     "n": 3742,
+     "dropped": 107,
+     "v1": 3330,
+     "A + B": 3330,
+     "A + B + C": 3330,
+     "A + B + F5": 3359,
+     "A + B + G": 3737,
+     "A + B + I": 3742,
+     "A + B + I + C (service)": 3742
+    },
+    "spacing": {
+     "n": 4240,
+     "dropped": 642,
+     "v1": 3771,
+     "A + B": 3771,
+     "A + B + C": 3771,
+     "A + B + F5": 3855,
+     "A + B + G": 4239,
+     "A + B + I": 4240,
+     "A + B + I + C (service)": 4240
+    },
+    "invisible": {
+     "n": 3632,
+     "dropped": 1252,
+     "v1": 3631,
+     "A + B": 3631,
+     "A + B + C": 3631,
+     "A + B + F5": 3631,
+     "A + B + G": 3632,
+     "A + B + I": 3632,
+     "A + B + I + C (service)": 3632
+    },
+    "fullwidth": {
+     "n": 97,
+     "dropped": 2338,
+     "v1": 97,
+     "A + B": 97,
+     "A + B + C": 97,
+     "A + B + F5": 97,
+     "A + B + G": 97,
+     "A + B + I": 97,
+     "A + B + I + C (service)": 97
+    },
+    "homoglyph": {
+     "n": 4459,
+     "dropped": 401,
+     "v1": 3395,
+     "A + B": 3653,
+     "A + B + C": 4260,
+     "A + B + F5": 3775,
+     "A + B + G": 3658,
+     "A + B + I": 3659,
+     "A + B + I + C (service)": 4336
+    },
+    "cyrillic": {
+     "n": 4197,
+     "dropped": 604,
+     "v1": 3123,
+     "A + B": 3689,
+     "A + B + C": 3687,
+     "A + B + F5": 3560,
+     "A + B + G": 3751,
+     "A + B + I": 3751,
+     "A + B + I + C (service)": 3751
+    },
+    "cyrillic_lookalike": {
+     "n": 2255,
+     "dropped": 193,
+     "v1": 856,
+     "A + B": 1286,
+     "A + B + C": 1286,
+     "A + B + F5": 1531,
+     "A + B + G": 1286,
+     "A + B + I": 1286,
+     "A + B + I + C (service)": 1286
+    },
+    "small_caps": {
+     "n": 3723,
+     "dropped": 1115,
+     "v1": 11,
+     "A + B": 1110,
+     "A + B + C": 3667,
+     "A + B + F5": 1526,
+     "A + B + G": 1139,
+     "A + B + I": 1139,
+     "A + B + I + C (service)": 3718
+    },
+    "ascii_lookalike": {
+     "n": 3573,
+     "dropped": 166,
+     "v1": 1866,
+     "A + B": 3206,
+     "A + B + C": 3206,
+     "A + B + F5": 2355,
+     "A + B + G": 3236,
+     "A + B + I": 3237,
+     "A + B + I + C (service)": 3237
+    },
+    "leet": {
+     "n": 4346,
+     "dropped": 135,
+     "v1": 4341,
+     "A + B": 4341,
+     "A + B + C": 4341,
+     "A + B + F5": 4341,
+     "A + B + G": 4346,
+     "A + B + I": 4346,
+     "A + B + I + C (service)": 4346
+    },
+    "decoration": {
+     "n": 3849,
+     "dropped": 1043,
+     "v1": 3849,
+     "A + B": 3849,
+     "A + B + C": 3849,
+     "A + B + F5": 3849,
+     "A + B + G": 3849,
+     "A + B + I": 3849,
+     "A + B + I + C (service)": 3849
+    }
+   },
+   "typo": {
+    "ascii_glyph": {
+     "n": 4504,
+     "dropped": 201,
+     "v1": 958,
+     "A + B": 1638,
+     "A + B + C": 1638,
+     "A + B + F5": 1328,
+     "A + B + G": 1649,
+     "A + B + I": 1649,
+     "A + B + I + C (service)": 1649
+    },
+    "omission": {
+     "n": 4720,
+     "dropped": 72,
+     "v1": 6,
+     "A + B": 6,
+     "A + B + C": 6,
+     "A + B + F5": 991,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "repetition": {
+     "n": 4478,
+     "dropped": 314,
+     "v1": 0,
+     "A + B": 0,
+     "A + B + C": 0,
+     "A + B + F5": 2356,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "insertion": {
+     "n": 4544,
+     "dropped": 316,
+     "v1": 5,
+     "A + B": 5,
+     "A + B + C": 5,
+     "A + B + F5": 787,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "replacement": {
+     "n": 4724,
+     "dropped": 136,
+     "v1": 150,
+     "A + B": 150,
+     "A + B + C": 150,
+     "A + B + F5": 635,
+     "A + B + G": 151,
+     "A + B + I": 151,
+     "A + B + I + C (service)": 151
+    },
+    "transposition": {
+     "n": 4545,
+     "dropped": 136,
+     "v1": 0,
+     "A + B": 50,
+     "A + B + C": 51,
+     "A + B + F5": 1510,
+     "A + B + G": 50,
+     "A + B + I": 50,
+     "A + B + I + C (service)": 51
+    },
+    "vowel_swap": {
+     "n": 4672,
+     "dropped": 136,
+     "v1": 2,
+     "A + B": 2,
+     "A + B + C": 2,
+     "A + B + F5": 2488,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    },
+    "plural": {
+     "n": 1088,
+     "dropped": 84,
+     "v1": 0,
+     "A + B": 0,
+     "A + B + C": 0,
+     "A + B + F5": 0,
+     "A + B + G": 0,
+     "A + B + I": 0,
+     "A + B + I + C (service)": 0
+    }
+   },
+   "affix": {
+    "affix": {
+     "n": 2190,
+     "dropped": 2702,
+     "v1": 494,
+     "A + B": 497,
+     "A + B + C": 497,
+     "A + B + F5": 626,
+     "A + B + G": 0,
+     "A + B + I": 400,
+     "A + B + I + C (service)": 400
+    }
+   },
+   "composition": {
+    "mixed_script_words": {
+     "n": 2738,
+     "dropped": 1505,
+     "v1": 1196,
+     "A + B": 1962,
+     "A + B + C": 1957,
+     "A + B + F5": 1750,
+     "A + B + G": 2034,
+     "A + B + I": 2034,
+     "A + B + I + C (service)": 2034
+    },
+    "internal_spacing": {
+     "n": 1593,
+     "dropped": 3291,
+     "v1": 637,
+     "A + B": 637,
+     "A + B + C": 637,
+     "A + B + F5": 943,
+     "A + B + G": 1590,
+     "A + B + I": 1593,
+     "A + B + I + C (service)": 1593
+    },
+    "composed_lookalike": {
+     "n": 4478,
+     "dropped": 218,
+     "v1": 2126,
+     "A + B": 3259,
+     "A + B + C": 3143,
+     "A + B + F5": 2824,
+     "A + B + G": 3477,
+     "A + B + I": 3478,
+     "A + B + I + C (service)": 3367
+    }
+   },
+   "boundary": {
+    "utf8_boundary": {
+     "n": 255,
+     "dropped": 5,
+     "v1": 9,
+     "A + B": 14,
+     "A + B + C": 14,
+     "A + B + F5": 18,
+     "A + B + G": 9,
+     "A + B + I": 14,
+     "A + B + I + C (service)": 14
+    }
+   }
+  }
+ }
+}

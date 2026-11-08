@@ -95,6 +95,18 @@ class Service:
         except StaleState as e:
             raise Refusal("stale_state", f"room state outside the freshness budget: {e}", 503)
 
+    def _signing_freshness(self, snap):
+        # RPC retries, a queued worker or KMS latency can use up the budget
+        # after routing. Check this same decision snapshot again; refreshing
+        # here would leave a decision computed from different state.
+        try:
+            slot = self.rpc.slot()
+            return snap.check_fresh(slot, self.cfg.budget), slot
+        except RpcError as e:
+            raise Refusal("rpc_unavailable", f"cannot check signing-time freshness: {e}", 503)
+        except StaleState as e:
+            raise Refusal("stale_state", f"room state expired during signing: {e}", 503)
+
     def route(self, req):
         t0 = time.monotonic()
         try:
@@ -153,6 +165,18 @@ class Service:
         if snap.config["door_fee_lamports"] > max_fee and d.kind == "door":
             raise Refusal("fee_limit", f"door fee {snap.config['door_fee_lamports']} > max_fee_lamports {max_fee}")
         first_buy_quote = None
+        requested_price = req.get('max_room_price')
+        if requested_price is not None:
+            try:
+                if isinstance(requested_price, bool) or not isinstance(requested_price, (str, int)):
+                    raise ValueError()
+                max_room_price = int(requested_price)
+                if not 0 <= max_room_price < 2**128 or str(max_room_price) != str(requested_price):
+                    raise ValueError()
+            except ValueError:
+                raise Refusal('invalid_request', 'max_room_price must be a decimal u128 (0 disables the bound)')
+        else:
+            max_room_price = 0
         if first_buy > 0:
             curve = quote.new_room_curve(snap.config) if d.kind == "new_room" else snap.rooms[d.room_id]
             try:
@@ -164,8 +188,15 @@ class Service:
                                                       "(capped, complete or zero tokens)")
             if min_out is None:
                 min_out = quote.min_out(tokens, slippage)
+            if requested_price is None:
+                max_room_price = quote.room_price_limit(curve, slippage)
+            if max_room_price >= 2**128:
+                raise Refusal('first_buy_unfillable', 'room price exceeds the signed price representation')
             first_buy_quote = {"tokens": tokens, "max_slippage_bps": slippage if req_min_out is None else None,
-                               "min_tokens_out": min_out, "snapshot_slot": snap.slot}
+                               "min_tokens_out": min_out, "snapshot_slot": snap.slot,
+                               "curve": {k:curve[k] for k in ('v_sol_lamports','v_tok','supply',
+                                   'graduation_trigger_lamports','fee_bps','sold','reserve','pending_reserve_sol','status')},
+                               "max_room_price": str(max_room_price), "price_slippage_bps": slippage}
         elif min_out is None:
             min_out = 0
 
@@ -191,7 +222,8 @@ class Service:
 
         launch = txbuild.encode_launch(name, symbol, uri, first_buy, min_out, self.cfg.matcher_version,
                                        RULE_CODE[d.rule], d.face, max_fee,
-                                       bytes.fromhex(snap.config["launch_terms_hash"]), door_nonce, expires_at_slot)
+                                       bytes.fromhex(snap.config["launch_terms_hash"]), door_nonce, expires_at_slot,
+                                       max_room_price)
         if d.kind == "new_room":
             ix, room_pk, door = self.builder.create_room_ix(
                 launcher, matcher, room_id, identity, d.old_holder_room_id, launch,
@@ -206,6 +238,7 @@ class Service:
             raise Refusal("tx_too_large", f"transaction would be {placeholder} bytes > {txbuild.PACKET_LIMIT}; "
                                           "shorten the metadata (v0 lookup tables are not supported in v1)", 413)
         msg_bytes = bytes(message)
+        freshness, cluster_slot = self._signing_freshness(snap)
         try:
             sig = self.signer.sign(msg_bytes)
         except SignerUnavailable as e:
@@ -236,7 +269,9 @@ class Service:
             "request": {"launcher": str(launcher), "name": name, "symbol": symbol, "uri": uri,
                         "first_buy_lamports": first_buy, "min_tokens_out": req_min_out,
                         "max_slippage_bps": req.get("max_slippage_bps"), "max_fee_lamports": max_fee,
-                        "cu_price_micro_lamports": cu_price},
+                        "cu_price_micro_lamports": cu_price,
+                        "max_room_price": None if requested_price is None else str(max_room_price)},
+            "launch_max_room_price": str(max_room_price),
             "first_buy_quote": first_buy_quote,
             "launch_min_tokens_out": min_out,
             "state": {"slots": snap.slots, "slot": snap.slot, "clock_unix": snap.clock_unix,

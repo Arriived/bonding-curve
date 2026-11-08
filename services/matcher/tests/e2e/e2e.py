@@ -58,7 +58,7 @@ from matcher_service.signer import KeyfileSigner  # noqa: E402
 from matcher_service.store import Store  # noqa: E402
 from matcher_service.txbuild import Builder, load_idl  # noqa: E402
 
-PROGRAM = "D7YsLsiJXoAF38vCUhFqYStepvSz6goG7EddHDe5NVJG"
+from matcher_service.program_id import PROGRAM_ID as PROGRAM
 PINNED = (REPO / "program/devnet/DEPLOY_ELF.sha256").read_text().split()[0]
 URLS = {"localnet": "http://127.0.0.1:8899", "devnet": "https://api.devnet.solana.com"}
 
