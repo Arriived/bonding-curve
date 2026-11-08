@@ -467,8 +467,8 @@
         },
         {
           "name": "authority",
-          "signer": true,
-          "writable": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "core",
@@ -780,8 +780,8 @@
         },
         {
           "name": "authority",
-          "signer": true,
-          "writable": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "core",
@@ -2562,8 +2562,8 @@
         },
         {
           "name": "authority",
-          "signer": true,
-          "writable": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "core",
