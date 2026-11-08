@@ -104,7 +104,11 @@ def test_oversized_body_and_launcher_are_refused_before_use(tmp_path, kp):
     assert r.status_code == 422 and r.json()["error"] == "invalid_request"
 
 
-def test_spoofed_forwarded_for_entries_do_not_evade_the_ip_limit(tmp_path, kp):
+def test_spoofed_forwarded_for_entries_do_not_evade_the_ip_limit(tmp_path, kp, monkeypatch):
+    # A slow machine can refill this token bucket while constructing 31 launches.
+    # Keep the limiter's own clock fixed to test the intended single burst.
+    allow = RateLimiter.allow
+    monkeypatch.setattr(RateLimiter, "allow", lambda limiter, key, now=None: allow(limiter, key, now=1000.0))
     svc = make(tmp_path, kp, Snap(1000))
     import dataclasses
     svc.cfg = dataclasses.replace(svc.cfg, trust_forwarded_for=True, forwarded_hops=1)

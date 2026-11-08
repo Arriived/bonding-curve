@@ -13,7 +13,8 @@ evidence. No deployment or production signing material is used.
 | 5 | Low | Paid liveness permits long-term name carrying | Owner decision | 0.02002 SOL/day with the measured four-transaction pattern, plus setup and recoverable capital |
 | 6 | Low | Mixed-script and 32-byte truncation variants evade existing name keys | Owner decision; rules unchanged | New-room rent and ongoing carrying cost; possible routing diversion |
 | 7 | Low | Authorized admin can choose the 120 SOL stress cap | Fixed in paired program | Default build refuses above the normal ceiling; isolated test-stress build accepts 120 SOL |
-| 8 | Info | Request replay and alteration | Existing M-3 protection confirmed | Concurrent replay accepts exactly one of 32 requests; every changed signed field is refused |
+| 8 | Info | Excess unused room birth storage | Implemented; target not reached | Rent 26,959,560 -> 17,515,840 lamports, 35.0% saved; unused vault costs deferred |
+| 9 | Info | Request replay and alteration | Existing M-3 protection confirmed | Concurrent replay accepts exactly one of 32 requests; every changed signed field is refused |
 
 The first-buy regression failed before the port: 19,628,248,343,287 room base
 units versus the recorded SBF output of 33,699,309,828,108 door base units.
@@ -123,3 +124,10 @@ redaction. No real endpoint credential was accessed.
 Current service validation: 170 tests pass, without xfail or skipped desired-policy
 assertions. The final program run and updated benchmark are recorded below once
 verification completes; earlier results above describe the previous candidate.
+
+
+Repeated final benchmark: 1,223 targets, byte-identical JSON to the prior review
+(SHA-256 `2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4`).
+Mixed-script catch rates remain 74.5% with the symbol kept and 74.3% fuzzed;
+actual 32-byte truncations remain 5.5%. Rules are unchanged. Final mocked pytest
+run passes 170/170. Service code under test is `028e57e`; data hashes identify it.

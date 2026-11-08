@@ -66,9 +66,11 @@ def test_live_current_name_holder_wins_over_deeper_revived_former_holder():
     assert out.room_id == 2
 
 
-def test_revived_former_holder_receives_no_new_door():
+def test_revived_former_holder_receives_no_new_door_even_with_stronger_text_tier():
     snapshot = revived_snapshot()
-    out = decide(snapshot, "Revival Frog", "THIRD", "")
+    # Its old identity lock was released while dead. Its T3 text match still
+    # cannot beat the current holder's T2n match when the name lock has moved.
+    out = decide(snapshot, "Revival Frog", "OLD", "")
     assert out.kind == "door" and out.room_id == 2
     assert snapshot.name_holder(rules.name_lock_key("Revival Frog", "THIRD").hex()) == 2
 

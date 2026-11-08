@@ -715,3 +715,11 @@ RPC exception/provider detail is retained in internal DEBUG records while public
 errors remain redacted. Two new tests first failed against the old logger behavior,
 then passed after the fix; a mocked API regression checks both health and route.
 Current complete service suite: 170 passing tests. Evasion rules remain unchanged.
+
+
+One repeated suite run exposed a timing-dependent IP spoofing regression: building
+31 legitimate responses took long enough to refill the token bucket. The test now
+passes a fixed timestamp through RateLimiter.allow's existing clock argument,
+so it checks a single burst regardless of machine speed. The limiter and its
+refill policy are unchanged. The stronger revival case also checks a former T3
+text match loses to the current holder's T2n match after its old SlugLock release.
