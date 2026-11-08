@@ -106,6 +106,7 @@ fn adversarial_swap_donations_pause_and_claims_preserve_exit() {
     f.trade(Some(0), true, 2_020_000_000);
     f.trade(None, true, 1_010_000_000);
     f.swap(0, 1, f.balance(f.doors[0].user) / 2);
+    f.claim(0, 0); // first fee claim initializes the deferred WSOL vault
     let vault = p(&[b"swap_fees", f.room.as_ref()]);
     let room_ata = ata(
         f.user.pubkey(),
@@ -139,7 +140,12 @@ fn adversarial_swap_donations_pause_and_claims_preserve_exit() {
         p(&[b"grad_payer", f.room.as_ref()]),
     ] {
         f.send(
-            solana_system_interface::instruction::transfer(&f.user.pubkey(), &address, 777),
+            solana_system_interface::instruction::transfer(
+                &f.user.pubkey(), &address,
+                if f.svm.get_account(&address).is_none() {
+                    f.svm.minimum_balance_for_rent_exemption(0) + 777
+                } else { 777 },
+            ),
             false,
             "donate_native_lamports",
         );

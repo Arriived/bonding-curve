@@ -20,8 +20,8 @@
     "signers": 1
   },
   "claim_door_fees": {
-    "metas_with_optionals": 17,
-    "writable": 9,
+    "metas_with_optionals": 18,
+    "writable": 10,
     "signers": 1
   },
   "claim_door_swap_fees": {
@@ -30,8 +30,8 @@
     "signers": 1
   },
   "claim_founder_fees": {
-    "metas_with_optionals": 17,
-    "writable": 9,
+    "metas_with_optionals": 18,
+    "writable": 10,
     "signers": 1
   },
   "claim_protocol_swap_fees": {
@@ -70,9 +70,9 @@
     "signers": 1
   },
   "retire_pending": {
-    "metas_with_optionals": 9,
-    "writable": 6,
-    "signers": 0
+    "metas_with_optionals": 11,
+    "writable": 7,
+    "signers": 1
   },
   "sell": {
     "metas_with_optionals": 15,
@@ -95,8 +95,8 @@
     "signers": 1
   },
   "sweep_protocol_fees": {
-    "metas_with_optionals": 17,
-    "writable": 9,
+    "metas_with_optionals": 18,
+    "writable": 10,
     "signers": 1
   },
   "update_config": {

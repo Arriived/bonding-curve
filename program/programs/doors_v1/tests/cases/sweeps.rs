@@ -363,11 +363,13 @@ fn sweep_signed_launch_rejects_changed_curve_and_trade_fee_snapshot() {
 fn sweep_legacy_backlog() -> Fixture {
     let mut f = Fixture::new(0);
     let fees = f.core().fees;
-    f.send(
-        solana_system_interface::instruction::transfer(&f.user.pubkey(), &fees, 20_000_000_000),
-        false,
-        "legacy_fee_funding",
-    );
+    // This is an explicit pre-upgrade fixture: both native vaults existed at birth.
+    for (key, credit) in [(fees, 20_000_000_000), (f.core().reserve, 0)] {
+        f.svm.set_account(key, Account {
+            lamports: f.svm.minimum_balance_for_rent_exemption(0) + credit,
+            data: vec![], owner: ID, executable: false, rent_epoch: 0,
+        }).unwrap();
+    }
     let mut r = f.r();
     r.pending_reserve_sol = 12_000_000_000;
     r.protocol_accrued_sol = 8_000_000_000;
@@ -530,7 +532,7 @@ fn sweep_every_mutable_room_economic_term_is_bound_to_signed_launches() {
             0 => s.v_sol_lamports /= 2,
             1 => s.v_tok += 1_000_000,
             2 => s.r_star_lamports -= 1,
-            3 => s.graduation_trigger_lamports += 1,
+            3 => s.graduation_trigger_lamports -= 1,
             4 => s.fee_bps += 1,
             5 => s.door_share_bps -= 1,
             _ => s.founder_share_bps += 1,

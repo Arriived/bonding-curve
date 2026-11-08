@@ -1292,7 +1292,7 @@ fn founder_split_snapshot_claims_and_admin_bounds() {
     assert_eq!(f.r().protocol_accrued_sol, 3_000_000);
     let mut s = defaults(f.matcher.pubkey(), f.user.pubkey());
     s.founder_share_bps = 0;
-    s.graduation_trigger_lamports += 1000;
+    s.graduation_trigger_lamports -= 1000;
     f.checked(
         instr(
             a::UpdateConfig {
@@ -1388,8 +1388,9 @@ fn retirement_is_capped_and_does_not_retire_surplus() {
 #[test]
 fn wsol_fee_plumbing_claims_only_accounted_fees_and_leaves_donations_locked() {
     let mut f = Fixture::new(1000);
-    // Explicit future-phase fee fixture: v1 itself never accrues pool WSOL fees.
-    // Transfers and claims below still execute real classic-SPL CPIs in SBF.
+    f.claim(0, 0); // initialize the deferred WSOL vault before seeding legacy credit
+                   // Explicit future-phase fee fixture: v1 itself never accrues pool WSOL fees.
+                   // Transfers and claims below still execute real classic-SPL CPIs in SBF.
     let rk = f.room;
     let dk = f.doors[0].door;
     let mut r = f.r();
@@ -1495,6 +1496,7 @@ fn direct_donations_and_holder_burns_preserve_coverage_and_quotes() {
     let mut f = Fixture::new(0);
     f.trade(Some(0), true, 1_010_000_000);
     f.trade(None, true, 1_010_000_000);
+    f.retire(); // create the retirement vault through its first real use
     let r = f.r();
     let d = f.d(0);
     let keys = f.doors[0].clone();
@@ -2589,6 +2591,10 @@ fn buy_cu_attribution_with_and_without_pending_settlement() {
     let root_prefix = format!("Program {ID} consumed ");
     let mut rows = Vec::new();
     let mut f = Fixture::new(0);
+    // Attribute settlement separately from first-use account initialization.
+    f.trade(Some(0), true, 1_010_000);
+    f.trade(None, true, 1_010_000);
+    f.retire();
     // (step, route, retire first). Room buys put the door share into pending, door buys do not.
     for (step, route, clear) in [
         (0, None, false),

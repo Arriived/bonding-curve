@@ -115,7 +115,7 @@
     ]
   },
   "Room": {
-    "bytes": 1331,
+    "bytes": 1335,
     "fields": [
       {
         "field": "room_id",
@@ -300,39 +300,44 @@
       {
         "field": "liveness_buckets",
         "offset": 665,
-        "bytes": 600
+        "bytes": 604
       },
       {
         "field": "founder",
-        "offset": 1265,
+        "offset": 1269,
         "bytes": 32
       },
       {
         "field": "founder_accrued",
-        "offset": 1297,
+        "offset": 1301,
         "bytes": 8
       },
       {
         "field": "founder_accrued_wsol",
-        "offset": 1305,
+        "offset": 1309,
         "bytes": 8
       },
       {
         "field": "founder_share_bps",
-        "offset": 1313,
+        "offset": 1317,
         "bytes": 2
       },
       {
         "field": "protocol_accrued_room",
-        "offset": 1315,
+        "offset": 1319,
         "bytes": 8
       },
       {
         "field": "swap_fees_unclaimed",
-        "offset": 1323,
+        "offset": 1327,
         "bytes": 8
       }
-    ]
+    ],
+    "min_bytes": 735,
+    "max_bytes": 1335,
+    "bucket_count_offset": 665,
+    "bucket_data_offset": 669,
+    "max_buckets": 25
   },
   "Door": {
     "bytes": 360,

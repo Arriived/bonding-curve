@@ -384,7 +384,8 @@ fn paired_swap_vault_is_lazy_prefundable_and_atomic() {
         let created = f.svm.get_account(&vault).unwrap();
         assert_eq!(created.owner, spl_token_2022_interface::ID);
         assert_eq!(created.lamports, rent);
-        let paid_rent = rent - before.as_ref().map_or(0, |account| account.lamports);
+        // The destination backing is also created on its first receiving swap.
+        let paid_rent = 2 * rent - before.as_ref().map_or(0, |account| account.lamports);
         assert_eq!(
             before_user - f.svm.get_account(&f.user.pubkey()).unwrap().lamports,
             paid_rent + 5_000
