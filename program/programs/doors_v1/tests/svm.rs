@@ -79,7 +79,7 @@ fn launch(name: &str) -> Launch {
         // 0 = filled by the fixture: door nonce from room state, expiry from the VM clock.
         door_nonce: 0,
         expires_at_slot: 0,
-        max_room_price: 0,
+        max_reserve_lamports: 0,
     }
 }
 fn defaults(matcher: Pubkey, recipient: Pubkey) -> Settings {

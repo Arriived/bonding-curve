@@ -81,10 +81,10 @@ jobs:
           cp programs/doors_v1/src/lib.rs "$RUNNER_TEMP/review-lib.rs"
           cp target/deploy/doors_v1.so "$RUNNER_TEMP/review-program.so"
           trap 'cp "$RUNNER_TEMP/review-lib.rs" programs/doors_v1/src/lib.rs; cp "$RUNNER_TEMP/review-program.so" target/deploy/doors_v1.so' EXIT
-          python3 -c 'from pathlib import Path; p=Path("programs/doors_v1/src/lib.rs"); s=p.read_text(); lines=s.splitlines(True); assert sum("launch.check_room_price(" in l for l in lines)==2; p.write_text("".join(l for l in lines if "launch.check_room_price(" not in l))'
+          python3 -c 'from pathlib import Path; p=Path("programs/doors_v1/src/lib.rs"); s=p.read_text(); lines=s.splitlines(True); assert sum("launch.check_room_reserve(" in l for l in lines)==2; p.write_text("".join(l for l in lines if "launch.check_room_reserve(" not in l))'
           "$HOME/.cargo/bin/cargo-build-sbf" --tools-version v1.58 > verification/price-limit-negative-build.log 2>&1
           set +e
-          cargo test --locked --test svm review_room_price_limit_refuses_front_run_and_zero_accepts -- --nocapture > verification/price-limit-negative.log 2>&1
+          cargo test --locked --test svm review_room_reserve_limit_refuses_front_run_and_zero_accepts -- --nocapture > verification/price-limit-negative.log 2>&1
           status=$?
           set -e
           test "$status" -ne 0

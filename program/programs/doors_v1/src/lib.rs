@@ -108,6 +108,8 @@ pub mod doors_v1 {
         });
         Ok(())
     }
+    // Separate the compact reserve wire format from previously signed price-bound launches.
+    #[instruction(discriminator = [229, 160, 197, 44, 79, 28, 117, 166])]
     pub fn create_room(
         ctx: Context<CreateRoom>,
         room_id: u64,
@@ -260,7 +262,7 @@ pub mod doors_v1 {
             r.door_share_bps as u32 + r.founder_share_bps as u32 <= 10000,
             Error::BadConfig
         );
-        launch.check_room_price(&r.price()?)?;
+        launch.check_room_reserve(r.reserve)?;
         let door_info = a.door.to_account_info();
         initialize_door(
             r,
@@ -354,6 +356,7 @@ pub mod doors_v1 {
         );
         Ok(())
     }
+    #[instruction(discriminator = [164, 83, 47, 138, 236, 0, 239, 227])]
     pub fn open_door(ctx: Context<OpenDoor>, launch: Launch) -> Result<()> {
         require_top_level_launch()?;
         let a = ctx.accounts;
@@ -365,7 +368,7 @@ pub mod doors_v1 {
         let fee = a.core.config.door_fee_lamports;
         require!(fee <= launch.max_fee_lamports, Error::FeeLimit);
         require!(a.core.room.live(&a.core.config, now)?, Error::Dead);
-        launch.check_room_price(&a.core.room.price()?)?;
+        launch.check_room_reserve(a.core.room.reserve)?;
         let identity = launch.identity();
         if let Some(lock) = read_slug(&a.slug, &identity)? {
             if lock.room_id != a.core.room.room_id {

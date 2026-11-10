@@ -467,6 +467,10 @@ fn sweep_open_first_buy_settles_legacy_pending_and_slippage_rolls_it_back() {
     let tokens = doors_v1::math::door_advance(virtual_quote, 0, room_tokens).unwrap();
     let mut l = launch("Retirement first buy");
     l.first_buy_lamports = 1_010_000_000;
+    // A reserve cap below the pending 12 SOL must still allow this launch.
+    // The cap uses the accounted reserve before settlement or the first buy.
+    assert_eq!(f.r().reserve, 0);
+    l.max_reserve_lamports = 1;
     l.min_tokens_out = tokens + 1;
     f.fail_error(f.open_ix(l.clone(), None), true, Some("Slippage"));
     assert_eq!(f.r().pending_reserve_sol, 12_000_000_000);

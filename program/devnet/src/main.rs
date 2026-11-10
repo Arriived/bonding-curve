@@ -608,7 +608,7 @@ impl DoorKeys {
 }
 fn launch(name: &str, symbol: &str) -> Launch {
     Launch {
-        max_room_price: 0,
+        max_reserve_lamports: 0,
         name: name.into(),
         symbol: symbol.into(),
         uri: "https://example.invalid/p.json".into(),

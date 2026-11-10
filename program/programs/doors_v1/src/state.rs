@@ -526,20 +526,14 @@ pub struct Launch {
     // Last slot at which this signed launch may execute (inclusive). Bounds a
     // co-signed launch even if its transaction uses a durable nonce.
     pub expires_at_slot: u64,
-    // Maximum pre-buy room spot, in lamports per room base unit times 10^18.
-    // Zero disables this bound. Signed by both the launcher and matcher.
-    pub max_room_price: u128,
+    // Maximum accounted room reserve before pending settlement or the first buy.
+    // Zero disables the bound. Signed by both the launcher and matcher.
+    pub max_reserve_lamports: u64,
 }
 impl Launch {
-    pub fn check_room_price(&self, price: &Price) -> Result<()> {
+    pub fn check_room_reserve(&self, reserve: u64) -> Result<()> {
         require!(
-            self.max_room_price == 0
-                || crate::math::fraction_le(
-                    price.numerator,
-                    price.denominator,
-                    self.max_room_price,
-                    1_000_000_000_000_000_000,
-                ),
+            self.max_reserve_lamports == 0 || reserve <= self.max_reserve_lamports,
             Error::Slippage
         );
         Ok(())

@@ -13,7 +13,7 @@ fn lamports_of(f: &Fixture, who: &Pubkey) -> u64 {
 
 /// Opens a door with a first buy, optionally after a front-running room buy by another wallet that sells right
 /// after. Returns (accepted, victim door tokens, victim exit lamports, attacker net lamports).
-fn door_open_sandwich_limit(front: u64, min_out: u64, max_room_price: u128) -> (bool, u64, u64, i128) {
+fn door_open_sandwich_limit(front: u64, min_out: u64, max_reserve_lamports: u64) -> (bool, u64, u64, i128) {
     const FIRST_BUY: u64 = 1_010_000_000;
     let mut f = Fixture::new(0);
     // A bystander gives the room 10 SOL of depth first, as an established narrative would have.
@@ -39,7 +39,7 @@ fn door_open_sandwich_limit(front: u64, min_out: u64, max_room_price: u128) -> (
     l.symbol = "COPY".into();
     l.first_buy_lamports = FIRST_BUY;
     l.min_tokens_out = min_out;
-    l.max_room_price = max_room_price;
+    l.max_reserve_lamports = max_reserve_lamports;
     let l = f.fill(l, true); // fix the door nonce once, before the room's door counter moves
     let accepted = {
         let ix = f.open_ix(l.clone(), None);
@@ -85,13 +85,13 @@ fn door_open_sandwich(front: u64, min_out: u64) -> (bool, u64, u64, i128) {
 }
 
 #[test]
-fn review_room_price_limit_refuses_front_run_and_zero_accepts() {
+fn review_room_reserve_limit_refuses_front_run_and_zero_accepts() {
     let mut f = Fixture::new(0);
     f.trade(None, true, 10_100_000_000);
-    let price = f.r().price().unwrap();
-    // Reduce before multiplying: these fixture constants fit u128 after division.
-    let scaled = price.numerator * 1_000_000 / (price.denominator / 1_000_000_000_000);
-    let limit = scaled * 102 / 100;
+    let room = f.r();
+    let v_sol = u128::from(room.v_sol_lamports);
+    let virtual_reserve = v_sol + u128::from(room.reserve);
+    let limit = u64::try_from((virtual_reserve.pow(2) * 10_200 / 10_000).isqrt() - v_sol).unwrap();
     let (ok, quote, _, _) = door_open_sandwich(0, 1);
     assert!(ok);
     for front in [5_000_000_000, 20_000_000_000, 60_000_000_000] {
@@ -99,14 +99,13 @@ fn review_room_price_limit_refuses_front_run_and_zero_accepts() {
         assert!(door_open_sandwich_limit(front, quote * 98 / 100, 0).0);
     }
     assert!(door_open_sandwich_limit(0, quote * 98 / 100, limit).0);
-    // create_room enforces the same bound, including a launch without a first buy.
+    // Creation compares its zero birth reserve before executing the first buy.
     let mut empty = Fixture::empty(0);
-    let mut l = launch("Price bounded creation");
-    l.max_room_price = 1;
-    let ix = empty.create_ix(l.clone(), None);
-    empty.fail_error(ix, true, Some("Slippage"));
-    l.max_room_price = 0;
+    let mut l = launch("Reserve bounded creation");
+    l.max_reserve_lamports = 1;
+    l.first_buy_lamports = 1_010_000_000;
     empty.create(l, None);
+    assert_eq!(empty.r().reserve, 1_000_000_000);
 }
 
 #[test]
@@ -290,24 +289,63 @@ fn review_door_open_room_front_run_versus_min_tokens_out() {
 }
 
 #[test]
-fn review_price_fraction_comparison_covers_overflow_and_equality() {
-    use doors_v1::math::fraction_le;
-    for a in 0u128..20 {
-        for b in 1u128..20 {
-            for c in 0u128..20 {
-                for d in 1u128..20 {
-                    assert_eq!(fraction_le(a,b,c,d), a*d <= c*b);
-                }
-            }
+fn reserve_price_relation_covers_validated_curve_extremes() {
+    let f = Fixture::new(0);
+    let mut r = f.r();
+    let default = defaults(f.matcher.pubkey(), f.user.pubkey());
+    for (vs, vt, cap) in [
+        (default.v_sol_lamports, default.v_tok, default.graduation_trigger_lamports),
+        (1, U + 1, NORMAL_GRADUATION_CEILING),
+        (1 << 63, U + 1, 1_000_000),
+        (u64::MAX, U + 1, 1_000_000),
+        (u64::MAX, u64::MAX, NORMAL_GRADUATION_CEILING),
+    ] {
+        let mut settings = default.clone();
+        settings.v_sol_lamports = vs;
+        settings.v_tok = vt;
+        settings.r_star_lamports = 1;
+        settings.graduation_trigger_lamports = cap;
+        settings.validate().unwrap();
+        r.v_sol_lamports = vs;
+        r.v_tok = vt;
+        r.sold = 0;
+        let mut previous = r.price().unwrap();
+        for step in 0..=1024 {
+            let reserve = cap * step / 1024;
+            r.sold = doors_v1::math::inverse(vs, vt, reserve).unwrap();
+            let price = r.price().unwrap();
+            // The rounded inverse can hold sold constant as reserve rises.
+            assert_eq!(price.numerator, previous.numerator);
+            assert!(price.denominator <= previous.denominator);
+            previous = price;
         }
     }
-    let m = u128::MAX;
-    assert!(fraction_le(m-1,m,m,m));
-    assert!(!fraction_le(m,m-1,m,m));
-    assert!(fraction_le(m,m,m,m));
-    assert!(fraction_le(0,m,0,1));
+    // The exact sold-based spot can have plateaus, unlike the nominal reserve formula.
+    let sold = |reserve| doors_v1::math::inverse(1 << 63, U + 1, reserve).unwrap();
+    assert_eq!(sold(1), sold(2));
 }
 
+#[test]
+fn legacy_price_bound_launches_are_rejected_by_the_compact_entrypoints() {
+    let mut f = Fixture::empty(0);
+    let old_wire = |mut ix: Instruction, name: &[u8], suffix: usize| {
+        let old = solana_sha256_hasher::hashv(&[name]).to_bytes();
+        ix.data[..8].copy_from_slice(&old[..8]);
+        let price_end = ix.data.len() - suffix;
+        ix.data.splice(price_end..price_end, [0; 8]);
+        ix
+    };
+    let l = launch("Wire version root");
+    let create = old_wire(f.create_ix(l.clone(), None), b"global:create_room", 17);
+    f.fail_error(create, true, Some("InstructionFallbackNotFound"));
+    assert!(f.svm.get_account(&f.room).is_none());
+    f.create(l, None);
+    let l = launch("Wire version door");
+    let open = old_wire(f.open_ix(l.clone(), None), b"global:open_door", 0);
+    f.fail_error(open, true, Some("InstructionFallbackNotFound"));
+    assert_eq!(f.r().door_count, 1);
+    f.open(l);
+}
 
 #[test]
 fn owner_lazy_birth_accounts_and_exact_sparse_liveness() {
@@ -346,4 +384,74 @@ fn owner_lazy_birth_accounts_and_exact_sparse_liveness() {
         }
         for b in &r.liveness_buckets {let o=old[(b.start/3600%25) as usize];assert_eq!((b.start,b.amount),(o.start,o.amount));}
     }
+}
+
+
+#[test]
+fn priority_priced_launch_metadata_packet_budgets_match_service() {
+    use solana_message::{v0, AddressLookupTableAccount, VersionedMessage};
+
+    const PACKET_LIMIT: usize = 1232;
+    let f = Fixture::new(0);
+    let old = p(&[b"packet-old-holder"]);
+    let other = p(&[b"packet-other-holder"]);
+    let key = [9; NAME_KEY_LEN];
+    let lock = p(&[b"name", &key]);
+    let static_table = AddressLookupTableAccount {
+        key: p(&[b"packet-lookup-table"]),
+        addresses: vec![
+            f.cfg,
+            spl_token_2022_interface::ID,
+            spl_token_interface::ID,
+            spl_token_interface::native_mint::ID,
+            ATA,
+            anchor_lang::system_program::ID,
+        ],
+    };
+    let payer = f.user.pubkey();
+    let hash = f.svm.latest_blockhash();
+    let mut rows = BTreeMap::new();
+    for (shape, is_create, slug_holder, name_holder, legacy, v0) in [
+        ("create_room", true, None, None, 85, 235),
+        ("create_room_takeover", true, Some(old), None, 53, 203),
+        ("open_door", false, None, None, 276, 364),
+        ("open_door_takeover", false, Some(old), None, 244, 332),
+        ("create_room_name_takeover", true, None, Some(old), 53, 203),
+        ("create_room_both_takeovers", true, Some(old), Some(other), 21, 171),
+    ] {
+        let wire_bytes = |metadata_bytes: usize, versioned: bool| {
+            // Two one-byte fields plus a synthetic URI isolate the packet envelope
+            // from the program's independent 32/10/200 metadata validation.
+            let mut l = launch("N");
+            l.symbol = "S".into();
+            l.uri = "u".repeat(metadata_bytes - 2);
+            l.first_buy_lamports = 1_010_000_000;
+            let ix = if is_create {
+                f.create_ix_named(l, slug_holder, Some(key), Some(lock), name_holder)
+            } else {
+                f.open_ix(l, slug_holder)
+            };
+            let ixs = [
+                ComputeBudgetInstruction::set_compute_unit_limit(MATCHER_LAUNCH_CU_LIMIT),
+                ComputeBudgetInstruction::set_compute_unit_price(1),
+                ix,
+            ];
+            let message = if versioned {
+                VersionedMessage::V0(v0::Message::try_compile(
+                    &payer, &ixs, std::slice::from_ref(&static_table), hash,
+                ).unwrap())
+            } else {
+                VersionedMessage::Legacy(Message::new_with_blockhash(&ixs, Some(&payer), &hash))
+            };
+            assert_eq!(message.header().num_required_signatures, 2);
+            1 + 2 * 64 + message.serialize().len()
+        };
+        for (budget, versioned) in [(legacy, false), (v0, true)] {
+            assert_eq!(wire_bytes(budget, versioned), PACKET_LIMIT, "{shape}");
+            assert_eq!(wire_bytes(budget + 1, versioned), PACKET_LIMIT + 1, "{shape}");
+        }
+        rows.insert(shape, json!({"legacy":legacy,"v0_with_static_lookup_table":v0}));
+    }
+    review_evidence("metadata_packet_budgets", json!({"packet_limit":PACKET_LIMIT,
+        "priority_price_instruction":true,"metadata_field_limit_bytes":242,"rows":rows}));
 }
