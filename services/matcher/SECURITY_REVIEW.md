@@ -190,7 +190,7 @@ candidate tests pass. Data and hashes: `data/launch_cu_budget_checks.json`.
 `Launch.max_reserve_lamports` carries an eight-byte u64. Both launch paths check
 accounted reserve before pending fee settlement and the first buy. Zero disables
 this cap. For a first buy with an omitted cap, the matcher uses the snapshot's
-pre-settlement reserve `R` and the chosen slippage `b` in basis points:
+pre-settlement reserve `R` and the chosen slippage `b` in basis points.
 
 `floor(sqrt((v_sol + R)^2 * (10_000 + b) / 10_000)) - v_sol`
 
@@ -251,3 +251,13 @@ one-holder takeover with the old field. The compact field raises those limits
 to 193 and 161. This is the path for standard-length metadata URIs. The service
 still signs legacy messages. Its `max_uri.py` measures both formats, and SBF
 asserts the packet budget and the first overflowing byte for every shape.
+
+
+The service regression measured 1,240 bytes for an 85-byte creation payload on
+`a76a35c`. The compact version measures 1,232 and refuses the next byte.
+The pinned program passed 73 SBF tests and 10,000 mixed iterations using the
+archived SPL binaries. The heap probe measured 4,304 bytes of creation headroom,
+and curve fuzz passed 400,000 cases. Birth rent measured 17,515,840 lamports.
+The paired IDLs and program source hashes match the verified `fc2d615e` ELF.
+The service passed 178 tests on `d2e8f0e` and reproduced its 1,223-target evasion
+reference byte for byte. [Pinned verification run 42754852665](https://github.com/Arriived/bonding-curve/actions/runs/42754852665)

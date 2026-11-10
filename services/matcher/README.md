@@ -100,9 +100,9 @@ Concurrent door launches into one room do not contend, and a dropped one blocks 
   default should be ≤ 2–3%", and must be 1–5,000.
 - **An explicit `min_tokens_out`** is used as given.
 - **An explicit 0** is refused.
-- **What it guarantees:** no launch buy is signed without a price limit. A price
-  that moves further than the tolerance before the launch lands makes the program
-  reject it (`Slippage`, e2e step 3b).
+- **Launch checks.** The token minimum protects the fill. The reserve guard
+  checks accounted reserve before pending settlement. The e2e test expects
+  `Slippage` when a preceding buy pushes reserve above that cap.
 - **Recorded:** the quote is stored in the decision record (`first_buy_quote`).
 
 `200` returns:
@@ -463,20 +463,19 @@ logging handler and enable that logger for operator investigations. The default
 INFO configuration suppresses these details. API responses never include them.
 
 
-## Launch compute headroom (8 November 2026)
+## Launch compute headroom
 
-The default launch CU limit is 500,000. The measured worst launch uses 351,341
+The default launch CU limit is 500,000. The measured worst launch uses 350,906
 VM transaction CU. Adding the priority-price instruction (150), exact historical
 token-program drift (21,110), bump variance (7,500) and 15 extra failed bump tries
-(22,500) gives 402,601 CU, leaving 97,399. SBF regressions and the heap probe
+(22,500) gives 402,166 CU, leaving 97,834. SBF regressions and the heap probe
 check this allowance. The limit remains configurable.
 
 At example cu_price 10,000 micro-lamports/CU, priority fee is 5,000 lamports
-(0.000005 SOL), up 1,000 lamports from the former limit. Base signature fees
-are separate; zero cu_price still adds no priority fee.
+(0.000005 SOL). Base signature fees are separate. Zero cu_price adds no priority fee.
 
-Raising the fixed-width CU limit adds no packet bytes. With name 32/symbol 10
-and a priority-price instruction, legacy URI maxima remain 35 for creation,
-3 for a one-holder creation takeover, 200 for open and 194 for open takeover.
-Maximum 200-byte creation metadata is 1,397 bytes and remains refused. Run
-`scripts/max_uri.py --json` for all shapes and wire lengths.
+With name 32 and symbol 10 plus a priority-price instruction, the compact launch
+allows URI 43 for legacy creation, 11 for a one-holder creation takeover and 200
+for either open shape. A creation with URI 200 is 1,389 bytes and exceeds the
+1,232-byte packet limit. `scripts/max_uri.py --json` reports total metadata budgets
+and URI limits for legacy and static-table v0 messages.
