@@ -19,6 +19,10 @@ service does since the face-laundering fix). Candidates change how the key is co
          (data/confusables_ascii.json), and I, l, 1 and | fold together.
   E      not a key: also route into a room whose door 0 has the same folded symbol and shares a 4+ character
          name word (oldest such room). Cannot be enforced by the on-chain NameLock.
+  IMG AND x   image match that must also agree on a second signal: the folded symbol, a shared 4+ character name
+         word, the creator wallet, or a social link (twitter / website / telegram) from the launch metadata
+         (outputs/narrative/social_metadata_snapshot.json, 1,749 parseable records). A single weak signal is
+         noisy; the conjunction of two independent weak signals is the question these rows answer.
   IMG    not a key: also route into the oldest room whose door 0 has the same launch image. "exact" compares the
          image file's SHA-256; "p<n>" also accepts a perceptual hash (phash) within Hamming distance n, so a
          recompressed or lightly edited copy still matches. Image hashes come from
@@ -66,6 +70,25 @@ LABELS = NARR / "labels_assistant.csv"
 CONF = {k: v for k, v in json.loads((SERVICE / "data/confusables_ascii.json").read_text(encoding="utf-8"))["map"].items()}
 AFFIX = {"BABY", "FAUCET", "INU", "AI", "REAL", "OG", "CLASSIC", "V2", "2"}
 IMAGES = REPO / "research/doors_into_one_room/outputs/narrative/token_images.jsonl"
+SOCIALS = REPO / "research/doors_into_one_room/outputs/narrative/social_metadata_snapshot.json"
+
+
+def load_socials():
+    """launch metadata uri -> frozenset of social links (twitter / website / telegram), lower-cased."""
+    rec = json.loads(SOCIALS.read_text(encoding="utf-8"))["records"]
+    out = {}
+    for uri, r in rec.items():
+        if "raw_json" not in r:
+            continue
+        try:
+            m = json.loads(r["raw_json"])
+        except ValueError:
+            continue
+        links = {str(m[k]).strip().lower().rstrip("/") for k in ("twitter", "website", "telegram")
+                 if isinstance(m.get(k), str) and m[k].strip()}
+        if links:
+            out[uri] = frozenset(links)
+    return out
 
 
 def load_images():
@@ -201,6 +224,14 @@ CANDIDATES = [
     ("A+B+I+C + IMG p8", dict(confusables=True, split_invariant=True, translit=True), True, False, None, 8),
     ("IMG p4 alone (no name rule)", dict(confusables=True, split_invariant=True, translit=True), True, False, None, 4,
      True),
+    ("A+B+I+C + IMG p4 AND same symbol", dict(confusables=True, split_invariant=True, translit=True), True, False,
+     None, (4, "symbol")),
+    ("A+B+I+C + IMG p4 AND shared 4-char word", dict(confusables=True, split_invariant=True, translit=True), True,
+     False, None, (4, "word")),
+    ("A+B+I+C + IMG p4 AND same creator", dict(confusables=True, split_invariant=True, translit=True), True, False,
+     None, (4, "creator")),
+    ("A+B+I+C + IMG p4 AND shared social link", dict(confusables=True, split_invariant=True, translit=True), True,
+     False, None, (4, "social")),
     ("A + B + H (invisibles before camelCase split)", dict(confusables=True, invisible_first=True), True, False),
     ("A + B + C (transliteration)", dict(confusables=True, translit=True), True, False),
     ("A + B + F4 (phonetic, code >= 4)", dict(confusables=True), True, False, 4),
@@ -266,7 +297,7 @@ def main():
 
     rows = []
     service_key = lambda n, s: R.ident(n, s)["key"]  # noqa: E731  the live service rule, for the check row
-    images = load_images()
+    images, socials = load_images(), load_socials()
     for name, opts, exact_fix, use_e, *rest in CANDIDATES + [("service code (matcher_service.rules)", None, None, False)]:
         ph = rest[0] if rest else None
         use_img = rest[1] if len(rest) > 1 else None
@@ -286,11 +317,27 @@ def main():
             rid = by_key.get(k) if k else None
             how = "key"
             if rid is None and use_img is not None and (m := images.get(r.get("mint"))):
-                hit = by_sha.get(m[0])
-                if hit is None and use_img:
-                    hit = next((i for h, i in phs if bin(h ^ m[1]).count("1") <= use_img), None)
-                if hit is not None:
-                    rid, how = hit, "IMG"
+                thresh, require = use_img if isinstance(use_img, tuple) else (use_img, None)
+                hits = [i for h, i in phs if bin(h ^ m[1]).count("1") <= thresh] if thresh else []
+                if (x := by_sha.get(m[0])) is not None:
+                    hits = [x] + [h for h in hits if h != x]
+                if require:
+                    c = ident(r["name"], r["symbol"])
+                    words = {t for t in c["nt"] if len(t) >= 4}
+                    mine = socials.get(r.get("uri"), frozenset())
+                    keep = []
+                    for h in hits:
+                        d0 = L[rooms[h][0]]
+                        e = ident(d0["name"], d0["symbol"])
+                        ok = {"symbol": lambda: bool(c["sk"]) and c["sk"] == e["sk"],
+                              "word": lambda: bool(words & {t for t in e["nt"] if len(t) >= 4}),
+                              "creator": lambda: bool(r.get("creator")) and r.get("creator") == d0.get("creator"),
+                              "social": lambda: bool(mine & socials.get(d0.get("uri"), frozenset()))}[require]()
+                        if ok:
+                            keep.append(h)
+                    hits = keep
+                if hits:
+                    rid, how = hits[0], "IMG"
             if rid is None and use_e:
                 c = ident(r["name"], r["symbol"])
                 words = {t for t in c["nt"] if len(t) >= 4}
