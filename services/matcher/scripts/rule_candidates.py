@@ -19,6 +19,11 @@ service does since the face-laundering fix). Candidates change how the key is co
          (data/confusables_ascii.json), and I, l, 1 and | fold together.
   E      not a key: also route into a room whose door 0 has the same folded symbol and shares a 4+ character
          name word (oldest such room). Cannot be enforced by the on-chain NameLock.
+  IMG    not a key: also route into the oldest room whose door 0 has the same launch image. "exact" compares the
+         image file's SHA-256; "p<n>" also accepts a perceptual hash (phash) within Hamming distance n, so a
+         recompressed or lightly edited copy still matches. Image hashes come from
+         outputs/narrative/token_images.jsonl (2,692 of 2,956 launches; the rest could not be fetched and can
+         never match). Like E, it cannot be enforced on-chain.
   C      transliteration: after B, every remaining non-ASCII letter or digit is replaced by its anyascii
          transliteration (anyascii 0.3.3), so "Пепе" reads as Pepe and "ᴇʟᴏɴ" as elon. Phonetic, not visual:
          Cyrillic п becomes p, not n.
@@ -60,6 +65,17 @@ LAUNCHES = REPO / "research/doors_into_one_room/outputs/narrative/pump_launches.
 LABELS = NARR / "labels_assistant.csv"
 CONF = {k: v for k, v in json.loads((SERVICE / "data/confusables_ascii.json").read_text(encoding="utf-8"))["map"].items()}
 AFFIX = {"BABY", "FAUCET", "INU", "AI", "REAL", "OG", "CLASSIC", "V2", "2"}
+IMAGES = REPO / "research/doors_into_one_room/outputs/narrative/token_images.jsonl"
+
+
+def load_images():
+    """mint -> (image sha256, phash int). Launches without a fetched image are absent and never image-match."""
+    out = {}
+    for line in IMAGES.read_text(encoding="utf-8").splitlines():
+        r = json.loads(line)
+        if r.get("phash") and r.get("image_sha256"):
+            out[r["mint"]] = (r["image_sha256"], int(r["phash"], 16))
+    return out
 
 
 def _fold_v1(word_lower):  # the pre-rule-B fold, kept here so candidates are measured independently of the service
@@ -180,6 +196,11 @@ CANDIDATES = [
     ("A + B + I (split-invariant affixes)", dict(confusables=True, split_invariant=True), True, False),
     ("A + B + I + C (adopted 7 Nov 2026, CORRECTIONS §20)", dict(confusables=True, split_invariant=True, translit=True),
      True, False),
+    ("A+B+I+C + IMG exact", dict(confusables=True, split_invariant=True, translit=True), True, False, None, 0),
+    ("A+B+I+C + IMG p4", dict(confusables=True, split_invariant=True, translit=True), True, False, None, 4),
+    ("A+B+I+C + IMG p8", dict(confusables=True, split_invariant=True, translit=True), True, False, None, 8),
+    ("IMG p4 alone (no name rule)", dict(confusables=True, split_invariant=True, translit=True), True, False, None, 4,
+     True),
     ("A + B + H (invisibles before camelCase split)", dict(confusables=True, invisible_first=True), True, False),
     ("A + B + C (transliteration)", dict(confusables=True, translit=True), True, False),
     ("A + B + F4 (phonetic, code >= 4)", dict(confusables=True), True, False, 4),
@@ -245,11 +266,18 @@ def main():
 
     rows = []
     service_key = lambda n, s: R.ident(n, s)["key"]  # noqa: E731  the live service rule, for the check row
-    for name, opts, exact_fix, use_e, *ph in CANDIDATES + [("service code (matcher_service.rules)", None, None, False)]:
-        ident, key = candidate_key(opts or {}, exact_fix, ph[0] if ph else None)
+    images = load_images()
+    for name, opts, exact_fix, use_e, *rest in CANDIDATES + [("service code (matcher_service.rules)", None, None, False)]:
+        ph = rest[0] if rest else None
+        use_img = rest[1] if len(rest) > 1 else None
+        img_only = bool(rest[2]) if len(rest) > 2 else False
+        ident, key = candidate_key(opts or {}, exact_fix, ph)
         if opts is None:
             key = service_key
+        if img_only:
+            key = lambda n, s: None   # noqa: E731  image routing with the name rule switched off
         rooms, by_key, by_sym = [], {}, collections.defaultdict(list)
+        by_sha, phs = {}, []
         routed = no_signal = 0
         c_mid = c_lo = c_cert = 0.0
         examples = []
@@ -257,6 +285,12 @@ def main():
             k = key(r["name"], r["symbol"])
             rid = by_key.get(k) if k else None
             how = "key"
+            if rid is None and use_img is not None and (m := images.get(r.get("mint"))):
+                hit = by_sha.get(m[0])
+                if hit is None and use_img:
+                    hit = next((i for h, i in phs if bin(h ^ m[1]).count("1") <= use_img), None)
+                if hit is not None:
+                    rid, how = hit, "IMG"
             if rid is None and use_e:
                 c = ident(r["name"], r["symbol"])
                 words = {t for t in c["nt"] if len(t) >= 4}
@@ -272,6 +306,9 @@ def main():
                 sk = ident(r["name"], r["symbol"])["sk"]
                 if sk:
                     by_sym[sk].append(len(rooms) - 1)
+                if use_img is not None and (m := images.get(r.get("mint"))):
+                    by_sha.setdefault(m[0], len(rooms) - 1)
+                    phs.append((m[1], len(rooms) - 1))
                 continue
             rooms[rid].append(j)
             routed += 1
