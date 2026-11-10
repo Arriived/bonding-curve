@@ -2754,9 +2754,9 @@ fn prefunded_maximum_metadata_launches_fit_the_heap() {
 
 // The takeover paths read a second Room (`old_holder`, in place) on top of the worst case
 // above: every new account prefunded, non-zero fees, first buy. The create_room takeover
-// uses the largest metadata the matcher service can sign in a legacy transaction
-// (name 32, symbol 10, URI 70: services/matcher/scripts/max_uri.py); open_door uses the
-// program maximum (URI 200), which fits a legacy transaction.
+// uses the historical 70-byte URI fixture for comparable heap measurements.
+// The current legacy limit is measured separately in the packet budget test.
+// open_door uses the program maximum of 200 URI bytes.
 #[test]
 fn prefunded_maximum_metadata_takeovers_fit_the_heap() {
     takeover_heap_case(70);

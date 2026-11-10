@@ -17,19 +17,17 @@ does not protect that value. The `816b38d` witness, preserved as
 20 SOL front-run yielding 0.217061544 SOL attacker net and reducing the victim's
 immediate exit by 0.549648652 SOL, despite its 2% token minimum.
 
-The approved `Launch.max_room_price: u128` appends 16 signed bytes. Units are
-lamports per room base unit times 10^18; zero disables the bound. Both launch
-paths compare the exact pre-buy spot with it, before pending settlement and
-door initialization. Fraction comparison uses Euclid's algorithm, avoiding
-overflowing cross products. The service fills an omitted bound from the user's
-slippage choice and quotes the two legs in door tokens. An explicit token
-minimum leaves the room-price bound enabled. The independent verifier ports
-both legs separately and reconstructs pending fees and sold amounts from events.
+The approved launch guard now uses `Launch.max_reserve_lamports: u64`. Both
+launches compare accounted reserve at the original pre-settlement point. The
+service derives an omitted first-buy cap from the snapshot reserve and slippage.
+An explicit token minimum leaves the derived guard enabled. Zero bypasses this
+cap and the separate token minimum remains signed. The compact reserve guard
+and packet budgets are detailed below.
 
 The runtime regression checks all three original front-run sizes: 5, 20 and
 60 SOL. Each is refused at 2%; each is accepted at zero. Unmoved prices still
 fill, and creation checks the same bound. A temporary CI negative control
-disables only the two price checks and requires this regression to fail, then
+disables only the two reserve checks and requires this regression to fail, then
 restores the protected program before running the full suite. No deliberately
 failing test is committed.
 
@@ -39,9 +37,9 @@ The blocking service quote previously returned room units: the reference
 named `paired`, preserving the historical deployed pins. Room/Door lengths are
 735 at birth / 1,335 after the first buy, and 360 bytes respectively. The program ID comes from the active IDL. Door sweeps select
 `sell_door`; Trade and swap events use the paired layouts. Name keys and
-matching rules are unchanged. Legacy maximum-metadata creation now fits only
-a 35-byte URI, or 3 bytes for a one-holder takeover, with a priority fee.
-Oversized transactions are refused; v0 transactions remain an owner choice.
+matching rules are unchanged. At maximum name and symbol lengths, legacy creation fits a 43-byte URI, or
+11 bytes for a one-holder takeover with a priority fee. v0 lookup-table
+integration is a pre-mainnet blocker.
 
 ### Name-lock race and resource availability
 
@@ -195,7 +193,7 @@ known (already documented).
 | M-4 | Medium | fixed | Launch first buys defaulted to no slippage limit. The default is now the quote less 2% |
 | M-5 | Medium | fixed (spec updated) | Pause stopped sells. Pause now stops only new positions; sells and `convert` stay open |
 | M-6 | Medium | fixed (7-day timelock) | Liveness thresholds were global and changeable at once: the admin could make every room dead in one transaction |
-| M-7 | Medium | **fixed** (`8f54026`: old holder read in place) | A prefunded maximum-metadata `create_room` takeover exhausted the heap (pre-existing; v0-only size). It now keeps ≥ 1,280 bytes |
+| M-7 | Medium | Heap fixed. v0 lookup-table integration is a **pre-mainnet blocker** | A prefunded maximum-metadata `create_room` takeover exhausted the heap (pre-existing; v0-only size). It now keeps ≥ 1,280 bytes |
 | M-8 | Medium | fixed | A prefunded `create_room` with a first buy and a priority fee used 64 of the 64 allowed instruction-trace entries; 48 after the fix, 49 with the NameLock |
 | L-1 | Low | fixed | X-Forwarded-For: the client-supplied leftmost entry was the rate-limit key |
 | L-2 | Low | fixed | `/route` body size unbounded; any string became a rate-limiter key |
@@ -658,7 +656,7 @@ days with an on-chain event.
 notice. Watchers, founders and the matcher service see `GateChangeProposed` the
 moment it lands.
 
-### M-7 — Prefunded maximum-metadata takeover exhausts the heap (fixed, pre-existing)
+### M-7 — Takeover heap fixed, v0 lookup-table integration blocks mainnet
 
 **Attack.**
 1. A launch takes over a dead room's identity: `create_room` with `old_holder`.
@@ -1072,7 +1070,7 @@ route their own trades through it to earn the 60% door share back.
 
 **Can, but not through today's service:**
 - make a maximum-metadata takeover launch fail by prefunding its accounts. That
-  size needs a v0 transaction (M-7, open);
+  size needs a v0 transaction (M-7 lookup-table integration);
 - make a prefunded launch fail by adding one instruction. Today's launches have
   no room for one: they sit at the 64-entry trace limit (M-8, open). A launch
   built by the matcher adds none.
@@ -1238,7 +1236,7 @@ defect found. Program code: `program/programs/doors_v1/src/`.
 | service assumes, program does not enforce | Text rules (T2n, normalisation, tie-break); single-replica in-flight state; the decision log. |
 | program enforces, service relies on | Exact-identity floor, room liveness at execution, launch expiry, door nonce rules, signed fee cap, terms hash. A stale snapshot can only make a launch fail on-chain, never route it wrongly past these checks. |
 | expiry seam | `expires_at_slot = blockhash slot + 150`. Slots advance at least as fast as block height, so the program's expiry never outlives the blockhash. Durable nonces are caught by the program (localnet e2e step 6c). |
-| CU seam | Current worst prefunded, maximum-metadata atomic-first-buy launch: 351,341 VM transaction CU (351,191 program-inclusive), production ELF `d1fb4975`. The matcher default is now 500,000 CU. Rounded review stress: 351,341 + 21,000 token drift + 7,500 bump variance + 15 x 1,500 extra bump tries = 402,341, leaving 97,659 CU. The enforced conservative check also includes the 150-CU priority-price instruction and exact historical 21,110 peak: 351,341 + 150 + 21,110 + 7,500 + 22,500 = 402,601, leaving **97,399 CU**. The SBF maximum-launch/takeover tests and heap probe enforce the allowance. Current SBF already loads pinned SPL binaries; historical drift is retained as additional stress headroom, not presented as a fresh live-runtime measurement. |
+| CU seam | The compact reserve build `fc2d615e` uses 350,906 VM transaction CU in the worst measured heap-probe launch. The matcher limit is 500,000. Adding 150 for the priority-price instruction, the historical token-program drift peak of 21,110, bump variance of 7,500 and 15 extra tries at 1,500 gives 402,166 CU and **97,834 CU of margin**. SBF and the heap probe enforce the allowance with pinned SPL binaries. |
 | key seam | The service refuses to sign unless its key equals `Config.matcher_authority` in the snapshot. A KMS signature is verified before use. |
 
 ### Supply chain
@@ -1421,7 +1419,7 @@ The local service run on `bf121dc` passed 170 tests. Its unchanged-rule benchmar
 JSON repeated exactly. Machine-readable checks: `verification/owner_rulings_checks.json`.
 
 
-### Launch CU margin blocker: Fixed (8 November 2026)
+### Launch CU margin fix before compact reserve encoding (8 November 2026)
 
 Control service `b86ae42` defaulted to 400,000 CU. The new default/message
 regression failed with 400,000 versus 500,000 before changing config; the explicit
@@ -1470,3 +1468,72 @@ fixture records 402,601 stressed CU / **97,399 margin**. Birth rent remains
 and emitted IDL matches the candidate. Service `6109176` passes 172 tests; the
 1,223-target evasion benchmark repeats byte-identically. Full cross-branch data:
 `verification/launch_cu_budget_checks.json` and `launch_cu_packet_sizes.json`.
+
+
+## Compact reserve guard
+
+`Launch.max_reserve_lamports` carries an eight-byte u64. Both launch paths check
+accounted reserve before pending fee settlement and the first buy. Zero disables
+this cap. For a first buy with an omitted cap, the matcher uses the snapshot's
+pre-settlement reserve `R` and the chosen slippage `b` in basis points:
+
+`floor(sqrt((v_sol + R)^2 * (10_000 + b) / 10_000)) - v_sol`
+
+The derived result is bounded by the configured graduation trigger and has a
+one-lamport minimum to preserve the zero sentinel. An explicit cap, including
+zero, passes through. The first-buy minimum remains in door tokens.
+
+The nominal price `(v_sol + R)^2 / (v_sol * v_tok)` strictly increases for
+positive virtual reserves. The exact on-chain spot uses sold tokens. The rounded
+inverse can leave sold unchanged as reserve increases, and cash rounding can
+leave surplus reserve. The guard enforces the chosen accounted-reserve policy.
+At `v_sol = 2^63` and `v_tok = U + 1`, the rounded inverse selects the same sold amount at 1 and 2 lamports.
+Tests cover the nominal formula and quote boundaries, the exact spot's
+nondecreasing behavior along the rounded inverse at validated Config extremes,
+and pre-settlement ordering and front-run rejection in SBF.
+
+The two eight-byte launch discriminators are versioned so earlier signed price
+payloads cannot execute with reserve semantics. The independent verifier still
+reads historical price-bound decisions. Requests that omit the cap preserve
+the v1 signature domain and null slot. An explicit reserve cap uses the v2
+signature domain so a previously signed absolute price cannot authorize it.
+
+
+## Launch metadata packet budget
+
+The 1,232-byte transaction limit gives name, symbol and URI a shared UTF-8 byte
+budget. These measurements include both signatures, a 500,000-CU limit and the
+priority-price instruction. The v0 column uses a static lookup table for Config,
+Token-2022, classic SPL Token, the WSOL mint, ATA and System. The program's
+individual metadata maxima sum to 242 bytes, so larger packet budgets still
+have at most 242 usable metadata bytes.
+
+| Shape | Legacy before | Legacy after | v0 before | v0 after |
+|---|---:|---:|---:|---:|
+| Creation | 77 | 85 | 227 | 235 |
+| Creation with a SlugLock takeover | 45 | 53 | 195 | 203 |
+| Open | 268 | 276 | 356 | 364 |
+| Open with a SlugLock takeover | 236 | 244 | 324 | 332 |
+| Creation with a NameLock takeover | 45 | 53 | 195 | 203 |
+| Creation with two distinct holders | 13 | 21 | 163 | 171 |
+
+A single old holder shared by both locks costs the same packet bytes as a
+one-holder takeover. At name 32 and symbol 10, legacy creation allows URI 43,
+a one-holder takeover allows 11, and both open shapes allow 200. Two distinct
+old holders leave 21 bytes for all three metadata strings. The earlier legacy
+creation budgets before the 16-byte price field were 93 and 61 bytes for plain
+creation and one-holder takeover, respectively.
+
+The 90-byte example `Pepe Wif Sword` / `SwordPepe` with a 67-byte URI is still
+1,237 bytes with priority pricing and fails the legacy size check. Until v0
+lands, the frontend must use short metadata URIs. Target about 25 bytes and
+apply the combined limit for the actual shape. A one-holder takeover with a
+25-byte URI leaves 28 bytes for name plus symbol. Two distinct holders need
+shorter metadata.
+
+**M-7 lookup-table integration is a pre-mainnet blocker.** At name 32 and symbol
+10, the static v0 table allowed URI 185 for plain creation and 153 for a
+one-holder takeover with the old field. The compact field raises those limits
+to 193 and 161. This is the path for standard-length metadata URIs. The service
+still signs legacy messages. Its `max_uri.py` measures both formats, and SBF
+asserts the packet budget and the first overflowing byte for every shape.

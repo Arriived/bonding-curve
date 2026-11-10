@@ -136,9 +136,9 @@ fn heap_probe_worst_case_launches() {
         if !prefunded { heap_probe_prefund(&mut f, &ix); prefunded = true; }
         heap_probe_try(&mut f, ix).is_ok()
     });
-    // create_room takeover of a dead room's identity (old_holder) at a given URI length: 70 is the
-    // largest the matcher service signs in a legacy transaction (name 32, symbol 10), 200 the
-    // program's maximum, reachable in a v0 transaction (finding M-7).
+    // Preserve the historical 70-byte URI fixture and the program's 200-byte
+    // maximum for comparable heap measurements. The SBF packet budget test
+    // measures legacy and static-table v0 limits separately.
     let takeover_at = |uri: usize| heap_probe_search(|units| {
         let mut f = heap_probe_fixture();
         let mut held = heap_probe_launch("Taken", 18, 0, 1);
