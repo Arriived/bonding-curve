@@ -117,5 +117,33 @@
       "create_room_both_takeovers": 171
     }
   },
-  "metadata_bytes_recovered": 8
+  "metadata_bytes_recovered": 8,
+  "verification": {
+    "program_ci": {
+      "run_id": 42754852665,
+      "url": "https://github.com/Arriived/bonding-curve/actions/runs/42754852665",
+      "source_commit": "311d43ac63edfccb6e0003e90fe4fc215c8ed90a",
+      "sbf_tests": 73,
+      "property_iterations": 10000,
+      "executed_transactions": 12488,
+      "production_elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+      "all_sources_and_idl_match": true,
+      "heap_probe_passed": true,
+      "curve_fuzz_iterations": 400000,
+      "stress_feature_checks_passed": true,
+      "client_checks_passed": true
+    },
+    "service_source_commit": "d2e8f0e",
+    "service_pytest_passed": 178,
+    "evasion_targets": 1223,
+    "evasion_json_sha256": "2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4",
+    "evasion_reproduced_reference": true,
+    "sbf_packet_assertions_agree": true,
+    "reserve_cap_front_run_and_pre_settlement_tests_passed": true,
+    "legacy_instruction_version_rejected": true,
+    "birth_rent_lamports": 17515840,
+    "creation_heap_headroom_bytes": 4304,
+    "worst_launch_vm_transaction_cu": 350906,
+    "conservative_launch_margin_cu": 97834
+  }
 }

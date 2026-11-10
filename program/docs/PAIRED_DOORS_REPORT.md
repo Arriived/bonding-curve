@@ -10,13 +10,13 @@ the room's launch metadata relationship.
 ## Default-room measurements
 
 <!-- BEGIN GENERATED STATUS -->
-Source commit `08490333d14778b2fde1a6b588168ff675da8831`. [Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42536522731).
+Source commit `311d43ac63edfccb6e0003e90fe4fc215c8ed90a`. [Linux verification](https://github.com/Arriived/bonding-curve/actions/runs/42754852665).
 
-The SBF suite passed 71 tests, including 10,000 property iterations and 12,488 executed transactions. The standalone devnet client tests also passed.
+The SBF suite passed 73 tests, including 10,000 property iterations and 12,488 executed transactions. The standalone devnet client tests also passed.
 
 The deployed Token-2022, SPL Token and ATA binary hashes matched the pinned capture. Their verification read was at finalized slot 519,096,745.
 
-Compiled ELF SHA-256 is `d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e`.
+Compiled ELF SHA-256 is `fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002`.
 <!-- END GENERATED STATUS -->
 
 | Initial room reserve | A receives after 20 buys | Supplied reference | After a 50% room dump | Dump reference |
@@ -58,45 +58,45 @@ Transaction CU also includes the compute-budget instructions. Property-run sampl
 
 | SBF fixture | Instruction | Prefunded | Priority fee | Program CU | Transaction CU | Trace entries |
 |---|---|---|---|---:|---:|---:|
-| launch_instruction_trace_budget | create_room | True | True | 341,042 | 341,342 | 46 |
-| launch_instruction_trace_budget | create_room_split_takeover | True | True | 322,235 | 322,535 | 44 |
-| launch_instruction_trace_budget | create_room_takeover | True | True | 322,043 | 322,343 | 44 |
-| launch_instruction_trace_budget | open_door | True | True | 276,740 | 277,040 | 33 |
-| launch_instruction_trace_budget | open_door_takeover_with_retirement | True | True | 242,467 | 242,767 | 33 |
+| launch_instruction_trace_budget | create_room | True | True | 340,607 | 340,907 | 46 |
+| launch_instruction_trace_budget | create_room_split_takeover | True | True | 321,800 | 322,100 | 44 |
+| launch_instruction_trace_budget | create_room_takeover | True | True | 321,608 | 321,908 | 44 |
+| launch_instruction_trace_budget | open_door | True | True | 276,313 | 276,613 | 33 |
+| launch_instruction_trace_budget | open_door_takeover_with_retirement | True | True | 242,041 | 242,341 | 33 |
 | mixed_10000_sbf_operations_and_cu_report | buy_door | False | False | 108,011 | — | — |
-| mixed_10000_sbf_operations_and_cu_report | claim_door_swap_fees | False | False | 39,763 | — | — |
-| mixed_10000_sbf_operations_and_cu_report | claim_protocol_swap_fees | False | False | 31,740 | — | — |
-| mixed_10000_sbf_operations_and_cu_report | create_room | False | False | 228,681 | — | — |
-| mixed_10000_sbf_operations_and_cu_report | open_door | False | False | 150,664 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | claim_door_swap_fees | False | False | 39,765 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | claim_protocol_swap_fees | False | False | 31,742 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | create_room | False | False | 228,246 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | open_door | False | False | 150,237 | — | — |
 | mixed_10000_sbf_operations_and_cu_report | sell_door | False | False | 61,081 | — | — |
-| mixed_10000_sbf_operations_and_cu_report | swap_doors | False | False | 92,334 | — | — |
+| mixed_10000_sbf_operations_and_cu_report | swap_doors | False | False | 92,330 | — | — |
 | paired_door_trade_limits_and_launch_rent | buy_door | False | True | 91,712 | 92,012 | 9 |
 | paired_door_trade_limits_and_launch_rent | buy_room | False | True | 52,518 | 52,818 | 6 |
-| paired_door_trade_limits_and_launch_rent | claim_door_swap_fees | False | True | 39,763 | 40,063 | 4 |
-| paired_door_trade_limits_and_launch_rent | claim_protocol_swap_fees | False | True | 31,740 | 32,040 | 4 |
+| paired_door_trade_limits_and_launch_rent | claim_door_swap_fees | False | True | 39,765 | 40,065 | 4 |
+| paired_door_trade_limits_and_launch_rent | claim_protocol_swap_fees | False | True | 31,742 | 32,042 | 4 |
 | paired_door_trade_limits_and_launch_rent | sell_door | False | True | 58,078 | 58,378 | 5 |
-| paired_door_trade_limits_and_launch_rent | sell_room | False | True | 38,909 | 39,209 | 4 |
-| paired_door_trade_limits_and_launch_rent | swap_doors | False | True | 109,134 | 109,434 | 11 |
-| paired_door_trade_limits_and_launch_rent | swap_doors_existing | False | True | 83,799 | 84,099 | 7 |
-| takeover_heap_case / 200-byte URI | create_room | True | False | 332,153 | 332,303 | 44 |
-| takeover_heap_case / 200-byte URI | open_door | True | False | 251,258 | 251,408 | 33 |
-| takeover_heap_case / 70-byte URI | create_room | True | False | 331,141 | 331,291 | 44 |
+| paired_door_trade_limits_and_launch_rent | sell_room | False | True | 38,911 | 39,211 | 4 |
+| paired_door_trade_limits_and_launch_rent | swap_doors | False | True | 109,130 | 109,430 | 11 |
+| paired_door_trade_limits_and_launch_rent | swap_doors_existing | False | True | 83,795 | 84,095 | 7 |
+| takeover_heap_case / 200-byte URI | create_room | True | False | 331,718 | 331,868 | 44 |
+| takeover_heap_case / 200-byte URI | open_door | True | False | 250,832 | 250,982 | 33 |
+| takeover_heap_case / 70-byte URI | create_room | True | False | 330,706 | 330,856 | 44 |
 
-Maximum measured transaction CU was 341,342.
-Maximum measured program CU was 341,042.
+Maximum measured transaction CU was 340,907.
+Maximum measured program CU was 340,607.
 <!-- END GENERATED CU -->
 
 ## Creation before and after the review
 
 <!-- BEGIN GENERATED CREATION -->
-Before is [915b075](https://github.com/Arriived/bonding-curve/actions/runs/42378291009). After is 0849033.
+Before is [915b075](https://github.com/Arriived/bonding-curve/actions/runs/42378291009). After is 311d43a.
 The heap fixture uses maximum metadata and prefunded accounts. Rent uses the same rent-only metadata in both runs.
 
 | Measurement | Fixture | Before | After | Change |
 |---|---|---:|---:|---:|
-| Additional heap bytes | heap_probe_worst_case_launches / create_room | 64 | 4,080 | +4,016 |
-| Program CU | heap_probe_worst_case_launches / create_room, instrumented build | 337,430 | 351,191 | +13,761 |
-| Transaction CU | heap_probe_worst_case_launches / create_room, instrumented build | 337,580 | 351,341 | +13,761 |
+| Additional heap bytes | heap_probe_worst_case_launches / create_room | 64 | 4,304 | +4,240 |
+| Program CU | heap_probe_worst_case_launches / create_room, instrumented build | 337,430 | 350,756 | +13,326 |
+| Transaction CU | heap_probe_worst_case_launches / create_room, instrumented build | 337,580 | 350,906 | +13,326 |
 | Room creation including door 0 rent, lamports | paired_door_trade_limits_and_launch_rent | 28,407,360 | 17,515,840 | -10,891,520 |
 
 An additional door uses 7,350,760 lamports of rent.
@@ -172,7 +172,7 @@ and resolving the interruption. Pass the live report to
 `Launch.max_reserve_lamports` carries an eight-byte u64. Both launch paths check
 accounted reserve before pending fee settlement and the first buy. Zero disables
 this cap. For a first buy with an omitted cap, the matcher uses the snapshot's
-pre-settlement reserve `R` and the chosen slippage `b` in basis points:
+pre-settlement reserve `R` and the chosen slippage `b` in basis points.
 
 `floor(sqrt((v_sol + R)^2 * (10_000 + b) / 10_000)) - v_sol`
 
@@ -233,3 +233,13 @@ one-holder takeover with the old field. The compact field raises those limits
 to 193 and 161. This is the path for standard-length metadata URIs. The service
 still signs legacy messages. Its `max_uri.py` measures both formats, and SBF
 asserts the packet budget and the first overflowing byte for every shape.
+
+
+The service regression measured 1,240 bytes for an 85-byte creation payload on
+`a76a35c`. The compact version measures 1,232 and refuses the next byte.
+The pinned program passed 73 SBF tests and 10,000 mixed iterations using the
+archived SPL binaries. The heap probe measured 4,304 bytes of creation headroom,
+and curve fuzz passed 400,000 cases. Birth rent measured 17,515,840 lamports.
+The paired IDLs and program source hashes match the verified `fc2d615e` ELF.
+The service passed 178 tests on `d2e8f0e` and reproduced its 1,223-target evasion
+reference byte for byte. [Pinned verification run 42754852665](https://github.com/Arriived/bonding-curve/actions/runs/42754852665)

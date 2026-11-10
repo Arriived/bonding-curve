@@ -22,28 +22,28 @@
       11849
     ],
     "open_door": [
-      152933
+      152507
     ],
     "sell_door": [
       58555,
       61589
     ],
     "sell_room": [
-      39028
+      39030
     ],
     "swap_doors": [
-      92850,
-      84770
+      92846,
+      84766
     ]
   },
   "first_buy_lamports": 1010000000,
-  "legacy_bytes": 1385,
+  "legacy_bytes": 1377,
   "metadata_bytes": {
     "name": 32,
     "symbol": 10,
     "uri": 200
   },
   "packet_limit": 1232,
-  "transaction_cu": 343502,
-  "v0_bytes": 770
+  "transaction_cu": 343067,
+  "v0_bytes": 762
 }

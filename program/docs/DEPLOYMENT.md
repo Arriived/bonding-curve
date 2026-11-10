@@ -586,15 +586,12 @@ causes:
 - **So the widening does not continue.** The gap is about 17,000–21,000 CU from the deployed token
   programs, plus or minus the launch's own bump luck.
 
-**Current service limit: 500,000 CU.** The paired program's measured worst launch
-is 351,341 VM transaction CU (`d1fb4975`). Keep the historical offset as additional
-stress headroom: 351,341 + 150 for the priority-price instruction + 21,110 token
-program drift + 7,500 bump variance + 15 x 1,500 extra tries = 402,601, leaving
-97,399 CU. SBF max-launch/takeover assertions and the heap probe check that bound.
-The rounded review arithmetic (21,000 drift, without the extra price instruction)
-gives 402,341 and 97,659 margin. Current SBF loads the pinned token-program bytes;
-this allowance remains deliberately conservative, not a fresh live measurement.
-The old 306,979 figure at `71d32f3` and its 400,000-limit margin are historical.
+**Current service limit is 500,000 CU.** The compact reserve build `fc2d615e`
+uses 350,906 VM transaction CU in the worst measured launch. The conservative
+allowance adds 150 for the priority-price instruction, 21,110 of historical
+token-program drift, 7,500 of bump variance and 15 extra tries at 1,500 CU each.
+That gives 402,166 CU and 97,834 of margin. The pinned SPL suite and heap probe
+check this allowance.
 
 ## 8. Open owner decision: upgrade authority
 

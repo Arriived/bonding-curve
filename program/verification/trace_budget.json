@@ -9,9 +9,9 @@
       "logged_invocations": 29,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 225681,
+      "program_cu": 225246,
       "succeeded": true,
-      "transaction_cu": 225831
+      "transaction_cu": 225396
     },
     {
       "error": "",
@@ -20,9 +20,9 @@
       "logged_invocations": 16,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 150637,
+      "program_cu": 150210,
       "succeeded": true,
-      "transaction_cu": 150787
+      "transaction_cu": 150360
     },
     {
       "error": "",
@@ -31,9 +31,9 @@
       "logged_invocations": 43,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 338129,
+      "program_cu": 337694,
       "succeeded": true,
-      "transaction_cu": 338279
+      "transaction_cu": 337844
     },
     {
       "error": "",
@@ -42,9 +42,9 @@
       "logged_invocations": 30,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 273808,
+      "program_cu": 273381,
       "succeeded": true,
-      "transaction_cu": 273958
+      "transaction_cu": 273531
     },
     {
       "error": "",
@@ -53,9 +53,9 @@
       "logged_invocations": 41,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 319032,
+      "program_cu": 318597,
       "succeeded": true,
-      "transaction_cu": 319182
+      "transaction_cu": 318747
     },
     {
       "error": "",
@@ -64,9 +64,9 @@
       "logged_invocations": 41,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 319224,
+      "program_cu": 318789,
       "succeeded": true,
-      "transaction_cu": 319374
+      "transaction_cu": 318939
     },
     {
       "error": "",
@@ -75,9 +75,9 @@
       "logged_invocations": 30,
       "prefunded": false,
       "priority_fee_instruction": false,
-      "program_cu": 239404,
+      "program_cu": 238978,
       "succeeded": true,
-      "transaction_cu": 239554
+      "transaction_cu": 239128
     },
     {
       "error": "",
@@ -86,9 +86,9 @@
       "logged_invocations": 30,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 225681,
+      "program_cu": 225246,
       "succeeded": true,
-      "transaction_cu": 225981
+      "transaction_cu": 225546
     },
     {
       "error": "",
@@ -97,9 +97,9 @@
       "logged_invocations": 17,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 150637,
+      "program_cu": 150210,
       "succeeded": true,
-      "transaction_cu": 150937
+      "transaction_cu": 150510
     },
     {
       "error": "",
@@ -108,9 +108,9 @@
       "logged_invocations": 44,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 338129,
+      "program_cu": 337694,
       "succeeded": true,
-      "transaction_cu": 338429
+      "transaction_cu": 337994
     },
     {
       "error": "",
@@ -119,9 +119,9 @@
       "logged_invocations": 31,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 273808,
+      "program_cu": 273381,
       "succeeded": true,
-      "transaction_cu": 274108
+      "transaction_cu": 273681
     },
     {
       "error": "",
@@ -130,9 +130,9 @@
       "logged_invocations": 42,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 319032,
+      "program_cu": 318597,
       "succeeded": true,
-      "transaction_cu": 319332
+      "transaction_cu": 318897
     },
     {
       "error": "",
@@ -141,9 +141,9 @@
       "logged_invocations": 42,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 319224,
+      "program_cu": 318789,
       "succeeded": true,
-      "transaction_cu": 319524
+      "transaction_cu": 319089
     },
     {
       "error": "",
@@ -152,9 +152,9 @@
       "logged_invocations": 31,
       "prefunded": false,
       "priority_fee_instruction": true,
-      "program_cu": 239404,
+      "program_cu": 238978,
       "succeeded": true,
-      "transaction_cu": 239704
+      "transaction_cu": 239278
     },
     {
       "error": "",
@@ -163,9 +163,9 @@
       "logged_invocations": 29,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 225742,
+      "program_cu": 225307,
       "succeeded": true,
-      "transaction_cu": 225892
+      "transaction_cu": 225457
     },
     {
       "error": "",
@@ -174,9 +174,9 @@
       "logged_invocations": 16,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 150717,
+      "program_cu": 150290,
       "succeeded": true,
-      "transaction_cu": 150867
+      "transaction_cu": 150440
     },
     {
       "error": "",
@@ -185,9 +185,9 @@
       "logged_invocations": 45,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 341042,
+      "program_cu": 340607,
       "succeeded": true,
-      "transaction_cu": 341192
+      "transaction_cu": 340757
     },
     {
       "error": "",
@@ -196,9 +196,9 @@
       "logged_invocations": 32,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 276740,
+      "program_cu": 276313,
       "succeeded": true,
-      "transaction_cu": 276890
+      "transaction_cu": 276463
     },
     {
       "error": "",
@@ -207,9 +207,9 @@
       "logged_invocations": 43,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 322043,
+      "program_cu": 321608,
       "succeeded": true,
-      "transaction_cu": 322193
+      "transaction_cu": 321758
     },
     {
       "error": "",
@@ -218,9 +218,9 @@
       "logged_invocations": 43,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 322235,
+      "program_cu": 321800,
       "succeeded": true,
-      "transaction_cu": 322385
+      "transaction_cu": 321950
     },
     {
       "error": "",
@@ -229,9 +229,9 @@
       "logged_invocations": 32,
       "prefunded": true,
       "priority_fee_instruction": false,
-      "program_cu": 242467,
+      "program_cu": 242041,
       "succeeded": true,
-      "transaction_cu": 242617
+      "transaction_cu": 242191
     },
     {
       "error": "",
@@ -240,9 +240,9 @@
       "logged_invocations": 30,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 225742,
+      "program_cu": 225307,
       "succeeded": true,
-      "transaction_cu": 226042
+      "transaction_cu": 225607
     },
     {
       "error": "",
@@ -251,9 +251,9 @@
       "logged_invocations": 17,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 150717,
+      "program_cu": 150290,
       "succeeded": true,
-      "transaction_cu": 151017
+      "transaction_cu": 150590
     },
     {
       "error": "",
@@ -262,9 +262,9 @@
       "logged_invocations": 46,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 341042,
+      "program_cu": 340607,
       "succeeded": true,
-      "transaction_cu": 341342
+      "transaction_cu": 340907
     },
     {
       "error": "",
@@ -273,9 +273,9 @@
       "logged_invocations": 33,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 276740,
+      "program_cu": 276313,
       "succeeded": true,
-      "transaction_cu": 277040
+      "transaction_cu": 276613
     },
     {
       "error": "",
@@ -284,9 +284,9 @@
       "logged_invocations": 44,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 322043,
+      "program_cu": 321608,
       "succeeded": true,
-      "transaction_cu": 322343
+      "transaction_cu": 321908
     },
     {
       "error": "",
@@ -295,9 +295,9 @@
       "logged_invocations": 44,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 322235,
+      "program_cu": 321800,
       "succeeded": true,
-      "transaction_cu": 322535
+      "transaction_cu": 322100
     },
     {
       "error": "",
@@ -306,9 +306,9 @@
       "logged_invocations": 33,
       "prefunded": true,
       "priority_fee_instruction": true,
-      "program_cu": 242467,
+      "program_cu": 242041,
       "succeeded": true,
-      "transaction_cu": 242767
+      "transaction_cu": 242341
     }
   ]
 }

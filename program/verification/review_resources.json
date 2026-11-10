@@ -18,12 +18,12 @@
     {
       "instruction": "swap_doors_lazy_vault",
       "trace_entries": 10,
-      "transaction_cu": 91285
+      "transaction_cu": 91281
     },
     {
       "instruction": "swap_doors_existing_vault",
       "trace_entries": 10,
-      "transaction_cu": 102533
+      "transaction_cu": 102529
     },
     {
       "instruction": "sell_door",
@@ -33,7 +33,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -43,7 +43,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -53,7 +53,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -63,7 +63,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38426
+      "transaction_cu": 38428
     },
     {
       "instruction": "sell_door",
@@ -73,7 +73,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -83,7 +83,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39915
+      "transaction_cu": 39917
     },
     {
       "instruction": "sell_door",
@@ -93,7 +93,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -103,7 +103,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -113,7 +113,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39917
+      "transaction_cu": 39919
     },
     {
       "instruction": "sell_door",
@@ -123,7 +123,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41417
+      "transaction_cu": 41419
     },
     {
       "instruction": "sell_door",
@@ -133,7 +133,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -143,7 +143,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -153,7 +153,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -163,7 +163,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -173,7 +173,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -183,7 +183,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 44425
+      "transaction_cu": 44427
     },
     {
       "instruction": "sell_door",
@@ -193,7 +193,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41417
+      "transaction_cu": 41419
     },
     {
       "instruction": "sell_door",
@@ -203,7 +203,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -213,7 +213,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 57916
+      "transaction_cu": 57918
     },
     {
       "instruction": "sell_door",
@@ -223,7 +223,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42917
+      "transaction_cu": 42919
     },
     {
       "instruction": "sell_door",
@@ -233,7 +233,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -243,7 +243,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42916
+      "transaction_cu": 42918
     },
     {
       "instruction": "sell_door",
@@ -253,7 +253,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41416
+      "transaction_cu": 41418
     },
     {
       "instruction": "sell_door",
@@ -263,7 +263,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -273,7 +273,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41417
+      "transaction_cu": 41419
     },
     {
       "instruction": "sell_door",
@@ -283,7 +283,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -293,7 +293,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -303,7 +303,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38438
+      "transaction_cu": 38440
     },
     {
       "instruction": "sell_door",
@@ -313,7 +313,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -323,7 +323,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -333,7 +333,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -343,7 +343,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -353,12 +353,12 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "claim_protocol_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 32180
+      "transaction_cu": 32182
     },
     {
       "instruction": "buy_door",
@@ -368,12 +368,12 @@
     {
       "instruction": "swap_doors_lazy_vault",
       "trace_entries": 10,
-      "transaction_cu": 91236
+      "transaction_cu": 91232
     },
     {
       "instruction": "swap_doors_existing_vault",
       "trace_entries": 10,
-      "transaction_cu": 102533
+      "transaction_cu": 102529
     },
     {
       "instruction": "sell_door",
@@ -383,7 +383,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -393,7 +393,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -403,7 +403,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -413,7 +413,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38426
+      "transaction_cu": 38428
     },
     {
       "instruction": "sell_door",
@@ -423,7 +423,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -433,7 +433,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39915
+      "transaction_cu": 39917
     },
     {
       "instruction": "sell_door",
@@ -443,7 +443,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -453,7 +453,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -463,7 +463,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39917
+      "transaction_cu": 39919
     },
     {
       "instruction": "sell_door",
@@ -473,7 +473,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41417
+      "transaction_cu": 41419
     },
     {
       "instruction": "sell_door",
@@ -483,7 +483,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -493,7 +493,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -503,7 +503,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -513,7 +513,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38416
+      "transaction_cu": 38418
     },
     {
       "instruction": "sell_door",
@@ -523,7 +523,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -533,7 +533,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 44425
+      "transaction_cu": 44427
     },
     {
       "instruction": "sell_door",
@@ -543,7 +543,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41417
+      "transaction_cu": 41419
     },
     {
       "instruction": "sell_door",
@@ -553,7 +553,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -563,7 +563,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 57916
+      "transaction_cu": 57918
     },
     {
       "instruction": "sell_door",
@@ -573,7 +573,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42917
+      "transaction_cu": 42919
     },
     {
       "instruction": "sell_door",
@@ -583,7 +583,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -593,7 +593,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42916
+      "transaction_cu": 42918
     },
     {
       "instruction": "sell_door",
@@ -603,7 +603,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41416
+      "transaction_cu": 41418
     },
     {
       "instruction": "sell_door",
@@ -613,7 +613,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -623,7 +623,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41417
+      "transaction_cu": 41419
     },
     {
       "instruction": "sell_door",
@@ -633,7 +633,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -643,7 +643,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -653,7 +653,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38438
+      "transaction_cu": 38440
     },
     {
       "instruction": "sell_door",
@@ -663,7 +663,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -673,7 +673,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -683,7 +683,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -693,7 +693,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "sell_door",
@@ -703,12 +703,12 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39916
+      "transaction_cu": 39918
     },
     {
       "instruction": "claim_protocol_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 32180
+      "transaction_cu": 32182
     },
     {
       "instruction": "buy_door",
@@ -718,12 +718,12 @@
     {
       "instruction": "swap_doors_lazy_vault",
       "trace_entries": 10,
-      "transaction_cu": 92031
+      "transaction_cu": 92027
     },
     {
       "instruction": "swap_doors_existing_vault",
       "trace_entries": 10,
-      "transaction_cu": 103046
+      "transaction_cu": 103042
     },
     {
       "instruction": "sell_door",
@@ -733,7 +733,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38489
+      "transaction_cu": 38491
     },
     {
       "instruction": "sell_door",
@@ -743,7 +743,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39989
+      "transaction_cu": 39991
     },
     {
       "instruction": "sell_door",
@@ -753,7 +753,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38489
+      "transaction_cu": 38491
     },
     {
       "instruction": "sell_door",
@@ -763,7 +763,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38488
+      "transaction_cu": 38490
     },
     {
       "instruction": "sell_door",
@@ -773,7 +773,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38490
+      "transaction_cu": 38492
     },
     {
       "instruction": "sell_door",
@@ -783,7 +783,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39990
+      "transaction_cu": 39992
     },
     {
       "instruction": "sell_door",
@@ -793,7 +793,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38485
+      "transaction_cu": 38487
     },
     {
       "instruction": "sell_door",
@@ -803,7 +803,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38489
+      "transaction_cu": 38491
     },
     {
       "instruction": "sell_door",
@@ -813,7 +813,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39966
+      "transaction_cu": 39968
     },
     {
       "instruction": "sell_door",
@@ -823,7 +823,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41466
+      "transaction_cu": 41468
     },
     {
       "instruction": "sell_door",
@@ -833,7 +833,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38481
+      "transaction_cu": 38483
     },
     {
       "instruction": "sell_door",
@@ -843,7 +843,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39970
+      "transaction_cu": 39972
     },
     {
       "instruction": "sell_door",
@@ -853,27 +853,27 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38467
-    },
-    {
-      "instruction": "sell_door",
-      "trace_entries": 6,
-      "transaction_cu": 56628
-    },
-    {
-      "instruction": "claim_door_swap_fees",
-      "trace_entries": 5,
-      "transaction_cu": 38470
-    },
-    {
-      "instruction": "sell_door",
-      "trace_entries": 6,
-      "transaction_cu": 56628
-    },
-    {
-      "instruction": "claim_door_swap_fees",
-      "trace_entries": 5,
       "transaction_cu": 38469
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 56628
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 38472
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 56628
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 38471
     },
     {
       "instruction": "sell_door",
@@ -883,7 +883,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 44479
+      "transaction_cu": 44481
     },
     {
       "instruction": "sell_door",
@@ -893,7 +893,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41469
+      "transaction_cu": 41471
     },
     {
       "instruction": "sell_door",
@@ -903,7 +903,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39967
+      "transaction_cu": 39969
     },
     {
       "instruction": "sell_door",
@@ -913,7 +913,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 57968
+      "transaction_cu": 57970
     },
     {
       "instruction": "sell_door",
@@ -923,7 +923,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42981
+      "transaction_cu": 42983
     },
     {
       "instruction": "sell_door",
@@ -933,7 +933,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38481
+      "transaction_cu": 38483
     },
     {
       "instruction": "sell_door",
@@ -943,7 +943,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42981
+      "transaction_cu": 42983
     },
     {
       "instruction": "sell_door",
@@ -953,7 +953,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41466
+      "transaction_cu": 41468
     },
     {
       "instruction": "sell_door",
@@ -963,7 +963,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38480
+      "transaction_cu": 38482
     },
     {
       "instruction": "sell_door",
@@ -973,7 +973,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41466
+      "transaction_cu": 41468
     },
     {
       "instruction": "sell_door",
@@ -983,7 +983,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38466
+      "transaction_cu": 38468
     },
     {
       "instruction": "sell_door",
@@ -993,7 +993,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38466
+      "transaction_cu": 38468
     },
     {
       "instruction": "sell_door",
@@ -1003,7 +1003,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38486
+      "transaction_cu": 38488
     },
     {
       "instruction": "sell_door",
@@ -1013,7 +1013,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -1023,7 +1023,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38415
+      "transaction_cu": 38417
     },
     {
       "instruction": "sell_door",
@@ -1033,7 +1033,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39917
+      "transaction_cu": 39919
     },
     {
       "instruction": "sell_door",
@@ -1043,7 +1043,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39915
+      "transaction_cu": 39917
     },
     {
       "instruction": "sell_door",
@@ -1053,12 +1053,12 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39917
+      "transaction_cu": 39919
     },
     {
       "instruction": "claim_protocol_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 32181
+      "transaction_cu": 32183
     },
     {
       "instruction": "buy_door",
@@ -1068,12 +1068,12 @@
     {
       "instruction": "swap_doors_lazy_vault",
       "trace_entries": 10,
-      "transaction_cu": 91982
+      "transaction_cu": 91978
     },
     {
       "instruction": "swap_doors_existing_vault",
       "trace_entries": 10,
-      "transaction_cu": 103046
+      "transaction_cu": 103042
     },
     {
       "instruction": "sell_door",
@@ -1083,7 +1083,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38489
+      "transaction_cu": 38491
     },
     {
       "instruction": "sell_door",
@@ -1093,7 +1093,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39989
+      "transaction_cu": 39991
     },
     {
       "instruction": "sell_door",
@@ -1103,7 +1103,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38489
+      "transaction_cu": 38491
     },
     {
       "instruction": "sell_door",
@@ -1113,7 +1113,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38488
+      "transaction_cu": 38490
     },
     {
       "instruction": "sell_door",
@@ -1123,7 +1123,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38490
+      "transaction_cu": 38492
     },
     {
       "instruction": "sell_door",
@@ -1133,7 +1133,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39990
+      "transaction_cu": 39992
     },
     {
       "instruction": "sell_door",
@@ -1143,7 +1143,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38485
+      "transaction_cu": 38487
     },
     {
       "instruction": "sell_door",
@@ -1153,7 +1153,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38489
+      "transaction_cu": 38491
     },
     {
       "instruction": "sell_door",
@@ -1163,7 +1163,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39966
+      "transaction_cu": 39968
     },
     {
       "instruction": "sell_door",
@@ -1173,7 +1173,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41466
+      "transaction_cu": 41468
     },
     {
       "instruction": "sell_door",
@@ -1183,7 +1183,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38481
+      "transaction_cu": 38483
     },
     {
       "instruction": "sell_door",
@@ -1193,7 +1193,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39970
+      "transaction_cu": 39972
     },
     {
       "instruction": "sell_door",
@@ -1203,27 +1203,27 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38467
-    },
-    {
-      "instruction": "sell_door",
-      "trace_entries": 6,
-      "transaction_cu": 56628
-    },
-    {
-      "instruction": "claim_door_swap_fees",
-      "trace_entries": 5,
-      "transaction_cu": 38470
-    },
-    {
-      "instruction": "sell_door",
-      "trace_entries": 6,
-      "transaction_cu": 56628
-    },
-    {
-      "instruction": "claim_door_swap_fees",
-      "trace_entries": 5,
       "transaction_cu": 38469
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 56628
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 38472
+    },
+    {
+      "instruction": "sell_door",
+      "trace_entries": 6,
+      "transaction_cu": 56628
+    },
+    {
+      "instruction": "claim_door_swap_fees",
+      "trace_entries": 5,
+      "transaction_cu": 38471
     },
     {
       "instruction": "sell_door",
@@ -1233,7 +1233,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 44479
+      "transaction_cu": 44481
     },
     {
       "instruction": "sell_door",
@@ -1243,7 +1243,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41469
+      "transaction_cu": 41471
     },
     {
       "instruction": "sell_door",
@@ -1253,7 +1253,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39967
+      "transaction_cu": 39969
     },
     {
       "instruction": "sell_door",
@@ -1263,7 +1263,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 57968
+      "transaction_cu": 57970
     },
     {
       "instruction": "sell_door",
@@ -1273,7 +1273,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42981
+      "transaction_cu": 42983
     },
     {
       "instruction": "sell_door",
@@ -1283,7 +1283,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38481
+      "transaction_cu": 38483
     },
     {
       "instruction": "sell_door",
@@ -1293,7 +1293,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 42981
+      "transaction_cu": 42983
     },
     {
       "instruction": "sell_door",
@@ -1303,7 +1303,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41466
+      "transaction_cu": 41468
     },
     {
       "instruction": "sell_door",
@@ -1313,7 +1313,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38480
+      "transaction_cu": 38482
     },
     {
       "instruction": "sell_door",
@@ -1323,7 +1323,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 41466
+      "transaction_cu": 41468
     },
     {
       "instruction": "sell_door",
@@ -1333,7 +1333,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38466
+      "transaction_cu": 38468
     },
     {
       "instruction": "sell_door",
@@ -1343,7 +1343,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38466
+      "transaction_cu": 38468
     },
     {
       "instruction": "sell_door",
@@ -1353,7 +1353,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38486
+      "transaction_cu": 38488
     },
     {
       "instruction": "sell_door",
@@ -1363,7 +1363,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38417
+      "transaction_cu": 38419
     },
     {
       "instruction": "sell_door",
@@ -1373,7 +1373,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 38415
+      "transaction_cu": 38417
     },
     {
       "instruction": "sell_door",
@@ -1383,7 +1383,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39917
+      "transaction_cu": 39919
     },
     {
       "instruction": "sell_door",
@@ -1393,7 +1393,7 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39915
+      "transaction_cu": 39917
     },
     {
       "instruction": "sell_door",
@@ -1403,12 +1403,12 @@
     {
       "instruction": "claim_door_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 39917
+      "transaction_cu": 39919
     },
     {
       "instruction": "claim_protocol_swap_fees",
       "trace_entries": 5,
-      "transaction_cu": 32181
+      "transaction_cu": 32183
     }
   ]
 }

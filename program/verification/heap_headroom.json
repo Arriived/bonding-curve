@@ -1,15 +1,15 @@
 {
-  "measured_commit": "08490333d14778b2fde1a6b588168ff675da8831",
+  "measured_commit": "311d43ac63edfccb6e0003e90fe4fc215c8ed90a",
   "measured_tree": "clean checkout of measured_commit in a temporary worktree",
   "heap_frame_requested_bytes": null,
   "allocator_heap_bytes": 32768,
   "method": "largest extra allocation appended at the end of the instruction that still succeeds, binary-searched in 16-byte steps; worst case = maximum metadata, all writable launch accounts prefunded, non-zero flat fees, atomic first buy settling a pending backlog; create_room_takeover_uri70 uses an old_holder takeover with name 32, symbol 10 and URI 70; create_room_takeover_uri200 uses the program's maximum URI; transaction packet size is measured separately; open_door_takeover opens a maximum-metadata door whose identity a dead room holds",
   "free_heap_at_end_bytes_at_least": {
-    "create_room": 4080,
-    "open_door": 10640,
-    "create_room_takeover_uri70": 5120,
-    "create_room_takeover_uri200": 4720,
-    "open_door_takeover": 10640,
+    "create_room": 4304,
+    "open_door": 10864,
+    "create_room_takeover_uri70": 5344,
+    "create_room_takeover_uri200": 4944,
+    "open_door_takeover": 10864,
     "buy_door": 17456,
     "claim_door_swap_fees": 26192,
     "claim_protocol_swap_fees": 27072,
@@ -22,12 +22,12 @@
   "create_room_takeover_uri200_passes": true,
   "worst_launch_cu": {
     "create_room": {
-      "tx_cu": 351341,
-      "program_cu": 351191
+      "tx_cu": 350906,
+      "program_cu": 350756
     },
     "open_door": {
-      "tx_cu": 284233,
-      "program_cu": 284083
+      "tx_cu": 283807,
+      "program_cu": 283657
     }
   },
   "launch_cu_budget": {
@@ -39,12 +39,12 @@
     "priority_price_instruction_cu_added": 150,
     "rows": {
       "create_room": {
-        "stressed_transaction_cu": 402601,
-        "margin_cu": 97399
+        "stressed_transaction_cu": 402166,
+        "margin_cu": 97834
       },
       "open_door": {
-        "stressed_transaction_cu": 335493,
-        "margin_cu": 164507
+        "stressed_transaction_cu": 335067,
+        "margin_cu": 164933
       }
     }
   },

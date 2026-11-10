@@ -1,0 +1,31 @@
+{
+  "metadata_field_limit_bytes": 242,
+  "packet_limit": 1232,
+  "priority_price_instruction": true,
+  "rows": {
+    "create_room": {
+      "legacy": 85,
+      "v0_with_static_lookup_table": 235
+    },
+    "create_room_both_takeovers": {
+      "legacy": 21,
+      "v0_with_static_lookup_table": 171
+    },
+    "create_room_name_takeover": {
+      "legacy": 53,
+      "v0_with_static_lookup_table": 203
+    },
+    "create_room_takeover": {
+      "legacy": 53,
+      "v0_with_static_lookup_table": 203
+    },
+    "open_door": {
+      "legacy": 276,
+      "v0_with_static_lookup_table": 364
+    },
+    "open_door_takeover": {
+      "legacy": 244,
+      "v0_with_static_lookup_table": 332
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "git_commit": "08490333d14778b2fde1a6b588168ff675da8831",
+  "git_commit": "311d43ac63edfccb6e0003e90fe4fc215c8ed90a",
   "versions": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
@@ -15,16 +15,16 @@
   },
   "source_sha256": {
     "programs/doors_v1/src/contexts.rs": "7091a95f3858f8eefc26fc38b9288dc1b2cddbd24be1a6d9969f2bf2da29b279",
-    "programs/doors_v1/src/lib.rs": "ad8ff3c1f131b713322696dedd231d3477d9477f1575c0776f4e8c9e33714d7c",
-    "programs/doors_v1/src/math.rs": "ac7c88f69a0a4e6e094bd7f25fba61166cddd9264eb8c6d5620982d80e934c46",
-    "programs/doors_v1/src/state.rs": "87cd48576e5b2fc4459287a27bc67b48b01796037ba2a5677906d9493a9f1c4b",
+    "programs/doors_v1/src/lib.rs": "2632dfe8152b014f900f553e87c3b0f656f6f067f61b87cb5477f409927e232b",
+    "programs/doors_v1/src/math.rs": "c2624ceeb003066ce3ee4aa8ba8d3e350ec16d431e1e0f0d5c9b511903d23c53",
+    "programs/doors_v1/src/state.rs": "fb1ca2cda868fb8e9ce04752994f612d777571e57d1a58a401f5c1d637dca7f8",
     "programs/doors_v1/src/trading.rs": "5d1019b6845da67c2cc80a06f5e3fb2311b8989746e0481fb0ef12a3e2eb93a5",
     "programs/doors_v1/src/vaults.rs": "3ec60fb8df4394af8674f7f85c38e45761bf5cedb8a08366d004ae13ac8d1c3b",
     "programs/doors_v1/tests/cases/adversarial_review.rs": "cd102cb944251698722beec293f00c216a7f56843448325b77b877ab1240de7c",
     "programs/doors_v1/tests/cases/paired_doors.rs": "5a8fc27040f94a8430be52f01eed98732a754168b9b87a6ae382e1142b3ca386",
-    "programs/doors_v1/tests/cases/review_continuation.rs": "f2338d22831a847c86c2d00a79f9bfa072fc2bd86428c7fedacf99d9e7afdbb3",
-    "programs/doors_v1/tests/cases/sweeps.rs": "8b511768264024fd1bb212fdef222a8aefb74d26132dff51838aab9d1c65bb88",
-    "programs/doors_v1/tests/svm.rs": "666f495b96c5487e2086a0ce2a9b6f01cc96662cbe4f9d6208bf328454ed3237",
+    "programs/doors_v1/tests/cases/review_continuation.rs": "d032e7493ce8a81a6dfa5ad19cc1e5e7dda1689aab15b57ced7ff084b7547189",
+    "programs/doors_v1/tests/cases/sweeps.rs": "9923d6a8301d4f0d62645a4bae0c3a6f5091cf96326e5ce0fcced71c0fc275ba",
+    "programs/doors_v1/tests/svm.rs": "e29eb6cf6d873deb4482369f8c24787e752c58e81ac05a6328a633e1650d609e",
     "programs/doors_v1/Cargo.toml": "ca8e422fa5dece2dd35d55589d9256fbcf656f040b6d699dbde9c121656d472b",
     "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
     "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",
@@ -33,8 +33,8 @@
     "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
     "Anchor.toml": "41cf6eb06910ee82a2165d0a778e26d1b5bcb1db6892fdaf8ce1297632e6c8b3"
   },
-  "elf_sha256": "d1fb4975591a2453dbd80ea3671784e91dba753acd2653b4c823ff0c915b5f7e",
-  "idl_sha256": "a7ba398f903a9ab189229fc8248015c00b14b5b5ca049acb72d752041be0ea6a",
+  "elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "idl_sha256": "cbbefa08b83e7a5a3aba6665c59448dc78d12e94a954310a0ca129ac983094f4",
   "vm": {
     "litesvm": "0.18.1",
     "agave_runtime": "4.3.2",
