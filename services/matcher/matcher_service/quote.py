@@ -10,12 +10,13 @@ snapshot, less `max_slippage_bps`. The program enforces that minimum at executio
 moved further than the tolerance between decision and landing fails the launch atomically instead of
 filling at any price (SECURITY_REVIEW.md M-4).
 """
+from math import isqrt
+
 U = 1_000_000_000_000_000  # math.rs U: one billion tokens in base units
 
 DEFAULT_MAX_SLIPPAGE_BPS = 200     # DESIGN.md §3: "the frontend default should be <= 2-3% slippage"
 MAX_SLIPPAGE_BPS = 5_000
 DOOR_VIRTUAL_BASE = 1_073_025_606_000_000
-PRICE_SCALE = 10**18
 
 
 def door_virtual_quote(price_num, price_den):
@@ -36,10 +37,13 @@ def door_advance(virtual_quote, sold, room_tokens):
     return nxt
 
 
-def room_price_limit(curve, slippage_bps):
-    num = curve['v_sol_lamports'] * curve['v_tok']
-    den = (curve['v_tok'] - curve['sold']) ** 2
-    return num * PRICE_SCALE * (10000 + slippage_bps) // (den * 10000)
+def room_reserve_limit(curve, slippage_bps):
+    """Convert nominal spot slippage to an accounted, pre-settlement reserve cap."""
+    v_sol = curve['v_sol_lamports']
+    virtual_reserve = v_sol + curve['reserve']
+    limit = isqrt(virtual_reserve**2 * (10_000 + slippage_bps) // 10_000) - v_sol
+    # Keep a derived bound enabled when the floor is zero on a tiny curve.
+    return min(curve['graduation_trigger_lamports'], max(1, limit))
 
 
 def reserve(vs, vt, q):

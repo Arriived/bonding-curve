@@ -17,6 +17,10 @@ Also, for comparison only (the service signs legacy transactions): the same shap
 whose lookup table holds the accounts that are the same in every launch and are not invoked as a top-level
 program (Config, Token-2022, classic SPL Token, the WSOL mint, the ATA program, the System program).
 
+Total metadata budgets report the packet envelope for name + symbol + URI. They
+can exceed the 242-byte sum of the three program field maxima. URI limits retain
+the 32-byte name, 10-byte symbol and 200-byte program URI cap.
+
 Usage: python3 scripts/max_uri.py [--json]
 """
 import json
@@ -59,8 +63,8 @@ def wire_len_v0(ix, payer, alt):
     return len(bytes(VersionedTransaction.populate(m, [Signature.default()] * m.header.num_required_signatures)))
 
 
-def launch(uri, door_nonce):
-    return txbuild.encode_launch(NAME, SYMBOL, uri, 10**9, 1, 1, 0, 0, 10**9, b"\0" * 32, door_nonce, 10**9)
+def launch(uri, door_nonce, name, symbol):
+    return txbuild.encode_launch(name, symbol, uri, 10**9, 1, 1, 0, 0, 10**9, b"\0" * 32, door_nonce, 10**9)
 
 
 def shapes(b, user, matcher):
@@ -68,15 +72,17 @@ def shapes(b, user, matcher):
     ident = os.urandom(32)
 
     def create(old=None, name_old=None):
-        def f(uri):
+        def f(uri, name=NAME, symbol=SYMBOL):
             kw = {}
             if has_name_lock:
                 kw = {"name_key": os.urandom(16), "old_name_holder_room_id": name_old}
-            return b.create_room_ix(user, matcher, 7, ident, old, launch(uri, 0), **kw)[0]
+            return b.create_room_ix(user, matcher, 7, ident, old, launch(uri, 0, name, symbol), **kw)[0]
         return f
 
     def door(old=None):
-        return lambda uri: b.open_door_ix(user, matcher, 7, 9, ident, old, launch(uri, 9))[0]
+        def f(uri, name=NAME, symbol=SYMBOL):
+            return b.open_door_ix(user, matcher, 7, 9, ident, old, launch(uri, 9, name, symbol))[0]
+        return f
 
     out = {"create_room": create(), "create_room_takeover": create(old=11),
            "open_door": door(), "open_door_takeover": door(old=11)}
@@ -86,14 +92,23 @@ def shapes(b, user, matcher):
     return out, has_name_lock
 
 
-def largest(build, payer, size=wire_len):
-    best = None
-    for n in range(0, 201):
-        if size(build("u" * n), payer) <= txbuild.PACKET_LIMIT:
-            best = n
+def largest(build, payer, size=wire_len, ceiling=200):
+    if size(build(""), payer) > txbuild.PACKET_LIMIT:
+        return None
+    low, high = 0, ceiling
+    while low < high:
+        mid = (low + high + 1) // 2
+        if size(build("u" * mid), payer) <= txbuild.PACKET_LIMIT:
+            low = mid
         else:
-            break
-    return best  # None: does not fit even with an empty URI
+            high = mid - 1
+    return low
+
+
+def total_metadata_budget(build, payer, size=wire_len):
+    # Synthetic strings isolate wire overhead, including the instruction length
+    # prefix. The individual field caps are applied separately to usable bytes.
+    return largest(lambda data: build(data, "", ""), payer, size, ceiling=txbuild.PACKET_LIMIT)
 
 
 def main():
@@ -102,7 +117,12 @@ def main():
     rows, has_name_lock = shapes(b, user, matcher)
     res = {k: largest(f, user) for k, f in rows.items()}
     alt = static_alt(b)
-    v0 = {k: largest(f, user, lambda ix, payer: wire_len_v0(ix, payer, alt)) for k, f in rows.items()}
+    def size_v0(ix, payer):
+        return wire_len_v0(ix, payer, alt)
+
+    v0 = {k: largest(f, user, size_v0) for k, f in rows.items()}
+    legacy_budget = {k: total_metadata_budget(f, user) for k, f in rows.items()}
+    v0_budget = {k: total_metadata_budget(f, user, size_v0) for k, f in rows.items()}
     out = {"idl": os.path.relpath(txbuild.IDL_PATH), "name_lock_in_idl": has_name_lock,
            "packet_limit": txbuild.PACKET_LIMIT, "name_bytes": len(NAME), "symbol_bytes": len(SYMBOL),
            "priority_fee_instruction": True, "compute_unit_limit": DEFAULT_CU_LIMIT,
@@ -110,14 +130,18 @@ def main():
            "largest_uri_wire_bytes": {k: None if n is None else wire_len(rows[k]("u" * n), user)
                                       for k, n in res.items()},
            "full_200_byte_uri_wire_bytes": {k: wire_len(f("u" * 200), user) for k, f in rows.items()},
-           "comparison_only_v0_with_static_lookup_table": v0}
+           "comparison_only_v0_with_static_lookup_table": v0,
+           "metadata_field_limit_bytes": len(NAME) + len(SYMBOL) + 200,
+           "legacy_metadata_budget_bytes": legacy_budget,
+           "v0_metadata_budget_bytes": v0_budget}
     if "--json" in sys.argv:
         print(json.dumps(out, indent=2))
         return
-    fmt = lambda v: "does not fit" if v is None else f"URI <= {v} bytes"  # noqa: E731
-    print(f"{'shape':28} {'legacy (what the service signs)':32} v0 + static lookup table (comparison)")
-    for k, v in res.items():
-        print(f"{k:28} {fmt(v):32} {fmt(v0[k])}")
+    print(f"{'shape':32} {'legacy total':>12} {'legacy URI':>11} {'v0 total':>10} {'v0 URI':>9}")
+    for k in rows:
+        values = (legacy_budget[k], res[k], v0_budget[k], v0[k])
+        cells = [str(n) if n is not None else "no fit" for n in values]
+        print(f"{k:32} {cells[0]:>12} {cells[1]:>11} {cells[2]:>10} {cells[3]:>9}")
 
 
 if __name__ == "__main__":

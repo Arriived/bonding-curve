@@ -260,7 +260,8 @@ def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
     out = svc.route(dict(REQ))
     tx = Transaction.from_bytes(base64.b64decode(out["transaction_base64"]))
     data = bytes(tx.message.instructions[-1].data)
-    terms, door_nonce, expires = data[-64:-32], *struct.unpack("<QQ", data[-32:-16])
+    terms, door_nonce, expires, reserve_cap = struct.unpack("<32sQQQ", data[-56:])
+    assert reserve_cap == 0
     assert expires == 1000 + 150 == out["expires_at_slot"]            # blockhash slot + 150
     assert door_nonce == int(out["decision"]["door_nonce"]) != 0
     assert terms.hex() == svc.chain.snap.config["launch_terms_hash"]
@@ -268,7 +269,7 @@ def test_launch_carries_expiry_terms_hash_and_door_nonce(tmp_path, kp):
     created = make(tmp_path / "n", kp, Snap(1000)).route(dict(REQ, name="Fresh", symbol="FRSH"))
     cdata = bytes(Transaction.from_bytes(base64.b64decode(created["transaction_base64"])).message.instructions[-1].data)
     assert cdata[-17] == 1                                              # Some(name_key): 1 + 16 bytes
-    assert struct.unpack("<Q", cdata[-33:-25])[0] == 0                  # door 0 is nonce 0
+    assert struct.unpack("<Q", cdata[-41:-33])[0] == 0                  # door 0 is nonce 0
 
 
 def test_keyfile_refused_in_production(kp):

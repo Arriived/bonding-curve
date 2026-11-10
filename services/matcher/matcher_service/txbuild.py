@@ -66,13 +66,13 @@ MAX_LAUNCH_WINDOW_SLOTS = 150  # programs/doors_v1/src/state.rs; the runtime's b
 
 
 def encode_launch(name, symbol, uri, first_buy, min_tokens_out, matcher_version, rule, face, max_fee,
-                  terms_hash: bytes, door_nonce, expires_at_slot, max_room_price=0):
+                  terms_hash: bytes, door_nonce, expires_at_slot, max_reserve_lamports=0):
     if len(terms_hash) != 32:
         raise ValueError("expected_terms_hash must be 32 bytes")
     return (_borsh_str(name) + _borsh_str(symbol) + _borsh_str(uri)
             + struct.pack("<QQHBIQ", first_buy, min_tokens_out, matcher_version, rule, face, max_fee)
             + terms_hash + struct.pack("<QQ", door_nonce, expires_at_slot)
-            + max_room_price.to_bytes(16, 'little'))
+            + max_reserve_lamports.to_bytes(8, 'little'))
 
 
 def ata(owner, mint, program):

@@ -6,7 +6,7 @@ ed25519 signature over a canonical message, so the limiter key is a key the call
 
 Canonical message (UTF-8):
 
-    doors-matcher:route:v1\n
+    doors-matcher:route:v1\n (v2 when max_reserve_lamports is explicit)
     + JSON array, no whitespace, of the values of FIELDS in this order:
       strings as JSON strings, integers as JSON strings of their decimal form (JavaScript cannot carry
       u64 exactly as a number), absent optional fields as null.
@@ -25,8 +25,9 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 
 PREFIX = b"doors-matcher:route:v1\n"
+RESERVE_BOUND_PREFIX = b"doors-matcher:route:v2\n"
 FIELDS = ("launcher", "name", "symbol", "uri", "first_buy_lamports", "min_tokens_out", "max_slippage_bps",
-          "max_fee_lamports", "cu_price_micro_lamports", "issued_at", "max_room_price")
+          "max_fee_lamports", "cu_price_micro_lamports", "issued_at", "max_reserve_lamports")
 ALLOWED = frozenset(FIELDS) | {"signature"}
 MAX_SKEW_SECONDS = 120
 
@@ -48,7 +49,10 @@ def message(req: dict) -> bytes:
         else:
             raise AuthError("invalid_request", f"{k} must be a string or an integer")
     try:
-        return PREFIX + json.dumps(values, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        # Requests that omit the bound keep the same absent last slot. An explicit
+        # reserve uses a new domain so a signed price value cannot be relabeled.
+        prefix = PREFIX if req.get("max_reserve_lamports") is None else RESERVE_BOUND_PREFIX
+        return prefix + json.dumps(values, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     except UnicodeEncodeError:
         raise AuthError("invalid_metadata", "name, symbol and uri must be valid Unicode (no lone surrogates)")
 

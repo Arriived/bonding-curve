@@ -165,18 +165,18 @@ class Service:
         if snap.config["door_fee_lamports"] > max_fee and d.kind == "door":
             raise Refusal("fee_limit", f"door fee {snap.config['door_fee_lamports']} > max_fee_lamports {max_fee}")
         first_buy_quote = None
-        requested_price = req.get('max_room_price')
-        if requested_price is not None:
+        requested_reserve = req.get('max_reserve_lamports')
+        if requested_reserve is not None:
             try:
-                if isinstance(requested_price, bool) or not isinstance(requested_price, (str, int)):
+                if isinstance(requested_reserve, bool) or not isinstance(requested_reserve, (str, int)):
                     raise ValueError()
-                max_room_price = int(requested_price)
-                if not 0 <= max_room_price < 2**128 or str(max_room_price) != str(requested_price):
+                max_reserve_lamports = int(requested_reserve)
+                if not 0 <= max_reserve_lamports < 2**64 or str(max_reserve_lamports) != str(requested_reserve):
                     raise ValueError()
             except ValueError:
-                raise Refusal('invalid_request', 'max_room_price must be a decimal u128 (0 disables the bound)')
+                raise Refusal('invalid_request', 'max_reserve_lamports must be a decimal u64 (0 disables the bound)')
         else:
-            max_room_price = 0
+            max_reserve_lamports = 0
         if first_buy > 0:
             curve = quote.new_room_curve(snap.config) if d.kind == "new_room" else snap.rooms[d.room_id]
             try:
@@ -188,15 +188,13 @@ class Service:
                                                       "(capped, complete or zero tokens)")
             if min_out is None:
                 min_out = quote.min_out(tokens, slippage)
-            if requested_price is None:
-                max_room_price = quote.room_price_limit(curve, slippage)
-            if max_room_price >= 2**128:
-                raise Refusal('first_buy_unfillable', 'room price exceeds the signed price representation')
+            if requested_reserve is None:
+                max_reserve_lamports = quote.room_reserve_limit(curve, slippage)
             first_buy_quote = {"tokens": tokens, "max_slippage_bps": slippage if req_min_out is None else None,
                                "min_tokens_out": min_out, "snapshot_slot": snap.slot,
                                "curve": {k:curve[k] for k in ('v_sol_lamports','v_tok','supply',
                                    'graduation_trigger_lamports','fee_bps','sold','reserve','pending_reserve_sol','status')},
-                               "max_room_price": str(max_room_price), "price_slippage_bps": slippage}
+                               "max_reserve_lamports": str(max_reserve_lamports), "reserve_slippage_bps": slippage}
         elif min_out is None:
             min_out = 0
 
@@ -223,7 +221,7 @@ class Service:
         launch = txbuild.encode_launch(name, symbol, uri, first_buy, min_out, self.cfg.matcher_version,
                                        RULE_CODE[d.rule], d.face, max_fee,
                                        bytes.fromhex(snap.config["launch_terms_hash"]), door_nonce, expires_at_slot,
-                                       max_room_price)
+                                       max_reserve_lamports)
         if d.kind == "new_room":
             ix, room_pk, door = self.builder.create_room_ix(
                 launcher, matcher, room_id, identity, d.old_holder_room_id, launch,
@@ -270,8 +268,8 @@ class Service:
                         "first_buy_lamports": first_buy, "min_tokens_out": req_min_out,
                         "max_slippage_bps": req.get("max_slippage_bps"), "max_fee_lamports": max_fee,
                         "cu_price_micro_lamports": cu_price,
-                        "max_room_price": None if requested_price is None else str(max_room_price)},
-            "launch_max_room_price": str(max_room_price),
+                        "max_reserve_lamports": None if requested_reserve is None else str(max_reserve_lamports)},
+            "launch_max_reserve_lamports": str(max_reserve_lamports),
             "first_buy_quote": first_buy_quote,
             "launch_min_tokens_out": min_out,
             "state": {"slots": snap.slots, "slot": snap.slot, "clock_unix": snap.clock_unix,

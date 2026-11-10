@@ -1,5 +1,7 @@
 """HTTP layer: signed requests, rate limits, health readiness, metrics, decision lookup."""
 import time
+
+import pytest
 from conftest import room
 from fastapi.testclient import TestClient
 from solders.keypair import Keypair
@@ -55,7 +57,14 @@ def test_rate_limiter_refills():
     assert rl.allow("k", now=1.01)
 
 
-def test_rate_limit_per_ip(tmp_path, kp):
+@pytest.fixture
+def fixed_limiter_clock(monkeypatch):
+    # Keep 31 requests in one burst even when building responses takes over 2 s.
+    allow = RateLimiter.allow
+    monkeypatch.setattr(RateLimiter, "allow", lambda limiter, key, now=None: allow(limiter, key, now=1000.0))
+
+
+def test_rate_limit_per_ip(tmp_path, kp, fixed_limiter_clock):
     svc = make(tmp_path, kp, Snap(1000))
     c = client(svc)
     codes = [c.post("/route", json=signed({"name": f"N{i}xyz", "symbol": "S"})).status_code
@@ -104,11 +113,7 @@ def test_oversized_body_and_launcher_are_refused_before_use(tmp_path, kp):
     assert r.status_code == 422 and r.json()["error"] == "invalid_request"
 
 
-def test_spoofed_forwarded_for_entries_do_not_evade_the_ip_limit(tmp_path, kp, monkeypatch):
-    # A slow machine can refill this token bucket while constructing 31 launches.
-    # Keep the limiter's own clock fixed to test the intended single burst.
-    allow = RateLimiter.allow
-    monkeypatch.setattr(RateLimiter, "allow", lambda limiter, key, now=None: allow(limiter, key, now=1000.0))
+def test_spoofed_forwarded_for_entries_do_not_evade_the_ip_limit(tmp_path, kp, fixed_limiter_clock):
     svc = make(tmp_path, kp, Snap(1000))
     import dataclasses
     svc.cfg = dataclasses.replace(svc.cfg, trust_forwarded_for=True, forwarded_hops=1)

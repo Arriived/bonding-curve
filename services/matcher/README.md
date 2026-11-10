@@ -71,13 +71,14 @@ Concurrent door launches into one room do not contend, and a dropped one blocks 
   doors-matcher:route:v1\n
   ```
 
-  followed by the JSON array of the ten fields above, in this order:
+  followed by the JSON array of the signed fields in this order.
 
   ```
   [launcher, name, symbol, uri, first_buy_lamports, min_tokens_out,
-   max_slippage_bps, max_fee_lamports, cu_price_micro_lamports, issued_at]
+   max_slippage_bps, max_fee_lamports, cu_price_micro_lamports, issued_at, max_reserve_lamports]
   ```
 
+  Use `doors-matcher:route:v2\n` when `max_reserve_lamports` is explicit.
   Integers are sent as decimal strings, an absent optional field as `null`, with
   no whitespace. `JSON.stringify` produces exactly these bytes.
 - **Freshness:** `issued_at` must be within 120 s of the server clock, and each
@@ -410,13 +411,11 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
    with the same freshness checks.
 6. ~~Program changes recommended in CORRECTIONS~~: done in the program (`e9bd2aa`). There is now an
    explicit `expires_at_slot` (§1), and door addresses are not tied to `door_count` (§3).
-7. **v0 transactions with a lookup table** for longer metadata (§10). **Recommended next, and no longer
-   blocked:** finding M-7 is closed (the v0 maximum takeover fits the heap with 1,280 bytes to spare), and
-   a launch uses at most 49 of its 64 instruction-trace entries (M-8). The NameLock (item 8) made it
-   pressing: at name 32 and symbol 10, legacy transactions now cap the URI at 51 bytes for a new room and
-   19 for a takeover, and a takeover of two locks held by different dead rooms does not fit at all. With
-   a lookup table of the six accounts every launch shares, the same shapes take 200, 169 and 137
-   (`scripts/max_uri.py`, which prints both). Today a longer launch is refused with 413 `tx_too_large`.
+7. **v0 transactions with a lookup table are a pre-mainnet blocker (M-7).**
+   At name 32 and symbol 10 the static table measures 193 bytes of creation URI
+   and 161 for a one-holder takeover. Legacy limits are 43 and 11, respectively.
+   Keep frontend URIs around 25 bytes and apply the combined metadata budget
+   for each shape. `scripts/max_uri.py` measures both formats.
 8. ~~H-1~~: **closed on-chain.** `create_room` creates a `NameLock` PDA keyed by the name key this
    service signs (`rules.name_lock_key`), atomically with the room, so two rooms can never hold one key
    while the first is live. The key is equal for two launches exactly when the text rule routes them
@@ -434,26 +433,21 @@ Exit 0 means agree; 1 means disagree; 2 means it could not complete.
     change, update `idl/`, `txbuild.encode_launch` and `program/devnet/DEPLOY_ELF.sha256` together,
     and rerun both test suites.
 
-## Paired launch price protection (7 November 2026)
+## Paired launch reserve protection
 
-`first_buy_quote.tokens` and `min_tokens_out` are door base units (six decimals).
-The quote anchors the new door at the room spot before pending settlement, settles
-pending room fees, quotes SOL to room tokens, then quotes room tokens to door tokens.
-The independent verifier rebuilds the room's sold amount and pending fees from events.
+The service quotes first-buy tokens from the same snapshot it uses for the
+reserve guard. `min_tokens_out` is in door base units. The program checks reserve
+before settlement, then settles pending fees before executing the first buy.
 
-`max_room_price` is an optional decimal u128 string, in lamports per room base unit
-multiplied by 10^18. With a first buy, omission fills it from the snapshot spot
-multiplied by (10000 + max_slippage_bps)/10000, rounded down. `"0"` disables this
-additional bound. An explicit `min_tokens_out` does not disable room-price protection.
-The token minimum and room-price bound are both included in the co-signed Launch.
-The canonical launcher request appends `max_room_price` after `issued_at`; clients
-must sign the updated `auth.FIELDS` sequence, including null when omitted.
+`max_reserve_lamports` accepts a decimal u64. An explicit `"0"` bypasses the
+reserve cap. If the field is omitted for a first buy, the service translates
+`max_slippage_bps` to a pre-settlement reserve cap using the virtual reserve
+square-root formula. The derived cap has a one-lamport minimum and is capped at
+the graduation trigger. An explicit `min_tokens_out` still leaves this guard on.
 
-The paired Launch appends this 16-byte field. Room creation NameLock derivation
-still reads name and symbol only; no matching or normalization rule changed.
-Run `scripts/max_uri.py --json` for the resulting transaction-size limits.
-The offline program ID is read once from the paired IDL by `program_id.py`.
-
+The field follows `issued_at` in the canonical array. Use the `v2` signature
+domain for an explicit cap, including zero, and the `v1` domain with a final
+`null` when the cap is omitted. See `matcher_service/auth.py` for the client helper.
 
 ## Sparse rooms and operator RPC diagnostics (8 November 2026)
 

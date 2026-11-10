@@ -33,6 +33,7 @@ import base64
 import hashlib
 import importlib.util
 import json
+from math import isqrt
 import struct
 import sys
 from pathlib import Path
@@ -360,7 +361,10 @@ def decode_launch_ix(msg, program, idl_path):
         raise ValueError(f"message must hold exactly one doors instruction and only compute-budget others; got {others}")
     ix = launches[0]
     data = bytes(ix.data)
-    spec = names[data[:8]]
+    legacy_launches = {hashlib.sha256(f"global:{i['name']}".encode()).digest()[:8]: i
+                       for i in idl["instructions"] if i["name"] in ("create_room", "open_door")}
+    legacy = data[:8] in legacy_launches
+    spec = (legacy_launches if legacy else names)[data[:8]]
     def flat(accs, p=""):
         for a in accs:
             if "accounts" in a:
@@ -373,9 +377,15 @@ def decode_launch_ix(msg, program, idl_path):
     launch = {"name": r.s(), "symbol": r.s(), "uri": r.s(), "first_buy_lamports": r.u("Q"),
               "min_tokens_out": r.u("Q"), "matcher_version": r.u("H"), "rule": r.u("B"), "face": r.u("I"),
               "max_fee_lamports": r.u("Q"), "expected_terms_hash": r.take(32).hex(),
-              "door_nonce": r.u("Q"), "expires_at_slot": r.u("Q"), "max_room_price":r.u128()}
+              "door_nonce": r.u("Q"), "expires_at_slot": r.u("Q")}
+    if legacy:
+        launch["max_room_price"] = r.u128()
+    else:
+        launch["max_reserve_lamports"] = r.u("Q")
     if spec["name"] == "create_room":
         launch["name_key"] = r.take(16).hex() if r.u("B") else None
+    if r.o != len(r.b):
+        raise ValueError("unexpected trailing launch instruction bytes")
     return spec["name"], room_id, accounts, launch
 
 
@@ -578,14 +588,28 @@ def verify(record, rpc_url, chain_ok=True):
         independently_quoted = first_buy_quote(curve, req['first_buy_lamports'])
         check('first-buy quote independently replays both curves in door tokens',
               independently_quoted == fbq['tokens'], str(independently_quoted))
-        slip = fbq['price_slippage_bps']
-        expected_price = (int(req['max_room_price']) if req.get('max_room_price') is not None
-                          else curve['v_sol_lamports'] * curve['v_tok'] * 10**18 * (10000 + slip)
-                          // ((curve['v_tok'] - curve['sold'])**2 * 10000))
+    if 'max_room_price' in launch:
+        # Historical signed messages used an absolute u128 price threshold.
+        requested = req.get('max_room_price')
+        if requested is None and fbq:
+            slip = fbq['price_slippage_bps']
+            expected_bound = (curve['v_sol_lamports'] * curve['v_tok'] * 10**18 * (10_000 + slip)
+                              // ((curve['v_tok'] - curve['sold'])**2 * 10_000))
+        else:
+            expected_bound = int(requested or 0)
+        field = 'max_room_price'
     else:
-        expected_price = int(req.get('max_room_price') or 0)
-    check('Launch.max_room_price equals the requested or slippage-derived bound',
-          launch['max_room_price'] == expected_price == int(record['launch_max_room_price']))
+        requested = req.get('max_reserve_lamports')
+        if requested is None and fbq:
+            slip = fbq['reserve_slippage_bps']
+            v_sol = curve['v_sol_lamports']
+            threshold = isqrt((v_sol + curve['reserve'])**2 * (10_000 + slip) // 10_000) - v_sol
+            expected_bound = min(curve['graduation_trigger_lamports'], max(1, threshold))
+        else:
+            expected_bound = int(requested or 0)
+        field = 'max_reserve_lamports'
+    check(f'Launch.{field} equals the requested or slippage-derived bound',
+          launch[field] == expected_bound == int(record[f'launch_{field}']))
     expect = recompute(rm, rebuilt, holder, cfg, now, req["name"], req["symbol"], name_holder)
     def shifted(d):
         return {k: dict(v, last_trade_at=v["last_trade_at"] + d) for k, v in rebuilt.items()}
