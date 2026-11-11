@@ -183,7 +183,12 @@ With both constraints, the mechanism reads as a protocol-level liquidity program
 
 ---
 
-## 5. What to do, in order
+## 5. See also
+
+- `research/doors_into_one_room/POSITIONING.md` — the room as narrative exposure, and the experiment that tests it.
+- `research/doors_into_one_room/MAKER_ROLE.md` — a maker role for the room; Design B ruled out by the graduation arithmetic.
+
+## 6. What to do, in order
 
 Tracked as finding I-10 in `SECURITY_REVIEW.md`.
 
