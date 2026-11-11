@@ -28,13 +28,13 @@ use spl_token_2022_interface::{
     extension::{BaseStateWithExtensions, StateWithExtensions},
     state::{Account as TokenAccount, Mint},
 };
-use std::{fs, io::Read, process::Command, str::FromStr, thread::sleep, time::Duration};
+use std::{fs, io::Write, process::Command, str::FromStr, thread::sleep, time::Duration};
 
 const DEFAULT_RPC: &str = "https://api.devnet.solana.com";
 fn rpc_url() -> String {
     std::env::var("DOORS_RPC").unwrap_or_else(|_| DEFAULT_RPC.to_string())
 }
-const CU_LIMIT: u32 = 400_000;
+const CU_LIMIT: u32 = 500_000;
 const CU_PRICE: u64 = 1; // micro-lamports per CU
 const T22: Pubkey = spl_token_2022_interface::ID;
 const CLASSIC: Pubkey = spl_token_interface::ID;
@@ -201,6 +201,7 @@ impl Chain {
         signers: &[&Keypair],
     ) -> Result<Value> {
         let t = self.tx(ixs, payer, signers)?;
+        journal(&json!({"state": "prepared", "name": name, "signature": t.signatures[0].to_string()}))?;
         let sig = self
             .submit(&t, false)?
             .map_err(|e| anyhow!("{name}: {e}"))?;
@@ -303,6 +304,7 @@ impl Chain {
             err.is_none()
         );
         self.log.push(rec.clone());
+        journal(&rec)?;
         if expect_ok && err.is_some() {
             bail!("{name} failed: {sig} {err:?} {error_log:?}");
         }
@@ -859,9 +861,10 @@ impl Ctx {
 
 /// Room nonce from the OS CSPRNG, as scripts/room_nonce.py does.
 fn random_u64() -> Result<u64> {
-    let mut b = [0u8; 8];
-    fs::File::open("/dev/urandom")?.read_exact(&mut b)?;
-    Ok(u64::from_le_bytes(b))
+    // Portable OS CSPRNG. Only public entropy becomes the room identifier.
+    Ok(u64::from_le_bytes(
+        Keypair::new().pubkey().to_bytes()[..8].try_into()?,
+    ))
 }
 
 fn trades_in(rec: &Value) -> Vec<Trade> {
@@ -1354,6 +1357,15 @@ fn selftest(dir: &str) -> Result<()> {
 
 include!("paired_doors.rs");
 
+fn journal(record: &Value) -> Result<()> {
+    if let Ok(path) = std::env::var("DOORS_TX_JOURNAL") {
+        let mut file = fs::OpenOptions::new().create(true).append(true).open(path)?;
+        writeln!(file, "{}", serde_json::to_string(record)?)?;
+        file.sync_data()?;
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let arg = |i: usize| {
@@ -1361,15 +1373,22 @@ fn main() -> Result<()> {
             .map(String::as_str)
             .ok_or_else(|| anyhow!("missing argument {i}"))
     };
+    if let Ok(expected) = std::env::var("DOORS_REQUIRE_GENESIS") {
+        anyhow::ensure!(
+            Chain::new().rpc("getGenesisHash", json!([]))? == expected,
+            "cluster genesis mismatch"
+        );
+    }
     match args.get(1).map(String::as_str) {
         Some("init") => init(arg(2)?, arg(3)?, arg(4)?),
         Some("config") => config(arg(2)?, arg(3)?),
         Some("smoke") => smoke(arg(2)?, arg(3)?),
         Some("fail") => fail(arg(2)?, arg(3)?, arg(4)?),
         Some("selftest") => selftest(arg(2)?),
-        Some("paired") => run_paired(arg(2)?, arg(3)?),
+        Some("paired") => run_paired(arg(2)?, arg(3)?, &[50, 10, 0]),
+        Some("paired-small") => run_paired(arg(2)?, arg(3)?, SMALL_PAIRED_SEEDS),
         Some("paired-cleanup") => resume_paired_cleanup(arg(2)?, arg(3)?, arg(4)?),
-        _ => bail!("usage: doors-devnet init|config|smoke|fail|selftest|paired|paired-cleanup ..."),
+        _ => bail!("usage: doors-devnet init|config|smoke|fail|selftest|paired|paired-small|paired-cleanup ..."),
     }
 }
 
@@ -1378,5 +1397,14 @@ mod tests {
     #[test]
     fn smoke_name_key_equals_the_service_vectors() {
         super::smoke_key_matches_the_service();
+    }
+
+    #[test]
+    fn small_run_contains_exactly_the_six_fully_sized_cases() {
+        let cases = super::paired_cases(super::SMALL_PAIRED_SEEDS);
+        assert_eq!(cases, vec![(0, false, false), (0, false, true),
+            (10, false, false), (10, false, true),
+            (10, true, false), (10, true, true)]);
+        assert!(!cases.iter().any(|case| case.0 == 50));
     }
 }

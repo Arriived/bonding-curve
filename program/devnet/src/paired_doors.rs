@@ -1,6 +1,22 @@
 use anchor_lang::solana_program::system_instruction::transfer as transfer_sol;
 
 const SOL: u64 = 1_000_000_000;
+const SMALL_PAIRED_SEEDS: &[u64] = &[0, 10];
+
+fn paired_cases(seeds: &[u64]) -> Vec<(u64, bool, bool)> {
+    let mut cases = Vec::new();
+    for &seed in seeds {
+        for dump in [false, true] {
+            if seed == 0 && dump {
+                continue;
+            }
+            for rotate in [false, true] {
+                cases.push((seed, dump, rotate));
+            }
+        }
+    }
+    cases
+}
 
 fn paired_spot(r: &Room) -> Result<f64> {
     let price = r.price()?;
@@ -232,7 +248,7 @@ fn resume_paired_cleanup(dir: &str, interrupted_report: &str, out: &str) -> Resu
     result
 }
 
-fn run_paired(dir: &str, out: &str) -> Result<()> {
+fn run_paired(dir: &str, out: &str, seeds: &[u64]) -> Result<()> {
     anyhow::ensure!(
         !std::path::Path::new(out).exists(),
         "use a fresh report path for a new run"
@@ -267,12 +283,7 @@ fn run_paired(dir: &str, out: &str) -> Result<()> {
     let mut results = Vec::new();
     let mut active = Value::Null;
     let result: Result<()> = (|| {
-        for seed in [50, 10, 0] {
-            for dump in [false, true] {
-                if seed == 0 && dump {
-                    continue;
-                }
-                for rotate in [false, true] {
+        for (seed, dump, rotate) in paired_cases(seeds) {
                     let id = door_nonce()?;
                     let tag = format!("{id:016x}");
                     let ctx = Ctx::new(id);
@@ -300,6 +311,12 @@ fn run_paired(dir: &str, out: &str) -> Result<()> {
                             funding.push(transfer_sol(&payer.pubkey(), &wallet.pubkey(), amount));
                         }
                     }
+                    let needed: u64 = funding.iter().map(|ix| {
+                        u64::from_le_bytes(ix.data[4..12].try_into().unwrap())
+                    }).sum();
+                    let available = chain.account(&payer.pubkey())?.lamports;
+                    anyhow::ensure!(available >= needed + 50_000_000,
+                        "stop before scenario: funding {needed} plus recovery/fee allowance exceeds payer {available}");
                     for batch in funding.chunks(8) {
                         chain.send("fund_test_wallets", batch, &payer, &[])?;
                     }
@@ -415,8 +432,6 @@ fn run_paired(dir: &str, out: &str) -> Result<()> {
                             "program": ID.to_string(), "active_case": active, "cases": results, "transactions": chain.log,
                         }),
                     )?;
-                }
-            }
         }
         Ok(())
     })();

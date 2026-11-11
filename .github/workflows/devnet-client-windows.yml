@@ -1,0 +1,36 @@
+name: devnet-client-windows
+on:
+  push:
+    branches: [claude/paired-doors]
+    paths: ['program/devnet/**', '.github/workflows/devnet-client-windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.0
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: program/devnet
+      - name: Format and test client
+        shell: pwsh
+        run: |
+          cargo fmt --manifest-path program/devnet/Cargo.toml
+          cargo test --locked --manifest-path program/devnet/Cargo.toml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo build --locked --release --manifest-path program/devnet/Cargo.toml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-FileHash program/devnet/target/release/doors-devnet.exe -Algorithm SHA256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: devnet-client-windows
+          path: |
+            program/devnet/target/release/doors-devnet.exe
+            program/devnet/src/
