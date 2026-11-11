@@ -414,6 +414,18 @@ Catching typos was measured (phonetic keys, rule F) and costs precision (97.7%).
 nobody was evading a matcher, overstates recall under deliberate evasion. Only the economics can close the rest:
 being a door must be nearly as good as owning the room.
 
+### I-10 — Fee design: creator share pays instantly on volume (open, design)
+
+The door creator's 60% is paid immediately on trade volume and never clawed back. This is the incentive that
+produced 761,000 throwaway launches from 25 wallets on the incumbent platform (`FEE_DESIGN.md` §1). The matcher
+stops a narrative fragmenting across rooms; it does not stop door-creation fee farming inside a room.
+
+Two owner proposals are specified in `FEE_DESIGN.md` §3 and §4, each with the failure mode that must be solved
+first: a creator-chosen holder share is self-paying unless the creator's own balance is excluded and the share is
+weighted by holding duration; protocol revenue injected into narratives must be rules-based and must add to the
+reserve rather than buy tokens, or it makes the protocol a market participant trading ahead of its own flow.
+Neither is implemented. Nothing before graduation design.
+
 ### I-9 — Name squatting (open)
 
 The first launch of a name on this launchpad creates its room. A squatter can create rooms for likely narratives early
