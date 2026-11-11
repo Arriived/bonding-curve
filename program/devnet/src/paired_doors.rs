@@ -3,6 +3,12 @@ use anchor_lang::solana_program::system_instruction::transfer as transfer_sol;
 const SOL: u64 = 1_000_000_000;
 const SMALL_PAIRED_SEEDS: &[u64] = &[0, 10];
 
+fn paired_follower_allowance(token_rent_bound: u64, vault_rent: u64, native_rent: u64) -> u64 {
+    // Two user ATAs, plus the first swap's fee vault and destination backing
+    // vault. Native rent and 50k cover the wallet's transaction/cleanup fees.
+    2 * token_rent_bound + 2 * vault_rent + native_rent + 50_000
+}
+
 fn paired_cases(seeds: &[u64]) -> Vec<(u64, bool, bool)> {
     let mut cases = Vec::new();
     for &seed in seeds {
@@ -279,7 +285,8 @@ fn run_paired(dir: &str, out: &str, seeds: &[u64]) -> Result<()> {
     );
 
     let setup = chain.rent(2048)? * 16;
-    let follower_allowance = chain.rent(256)? * 2 + chain.rent(0)? + 50_000;
+    let follower_allowance =
+        paired_follower_allowance(chain.rent(256)?, chain.rent(165)?, chain.rent(0)?);
     let mut results = Vec::new();
     let mut active = Value::Null;
     let result: Result<()> = (|| {

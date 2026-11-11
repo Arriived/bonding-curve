@@ -1420,4 +1420,16 @@ mod tests {
         );
         assert!(!cases.iter().any(|case| case.0 == 50));
     }
+
+    #[test]
+    fn first_rotation_wallet_can_fund_both_lazy_vaults_and_cleanup() {
+        // The live 0-SOL rotation stopped here after its ATA setup and buy.
+        // These account sizes and this rent tariff were read on devnet.
+        let rent = |bytes: u64| (128 + bytes) * 5_080;
+        let allowance = super::paired_follower_allowance(rent(256), rent(165), rent(0));
+        let user_atas = 2 * rent(170);
+        let lazy_vaults = 2 * rent(165);
+        let transaction_fees = 7 * 5_001;
+        assert!(allowance >= user_atas + lazy_vaults + transaction_fees + rent(0));
+    }
 }
