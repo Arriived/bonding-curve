@@ -63,6 +63,39 @@ into one pool.
 - **Graduation.** The pool position must migrate with the room or be withdrawable before it. Decide alongside the
   Meteora graduation design, not separately.
 
+## 3a. Prior art, and the failure it demonstrates
+
+The maker role already exists commercially, owned by the venue rather than by the market. Axiom, a Solana
+trading terminal, is reported to route SOL↔USDC legs through its own proprietary AMMs at roughly 0.6% worse than
+public routes, inside an advertised 1% fee ([@bencirc, 10 Nov 2026](https://x.com/bencirc), using
+[Circular Replay](https://github.com/Circular-fi/circular-replay-api-usage)).
+
+**Verified from chain** (tx `4fckb2Lp…FXtn`, slot 467,760,261): the signer spent 12.002 SOL for 14.8M of a
+pump.fun token, routed as `SwapV2` through `FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9` for the SOL→quote leg,
+then `BuyExactQuoteInV2` on PumpSwap. The two-hop structure is exactly as described. **Not verified:** who owns
+`FLASHX8…`, and whether the fill was worse than the best route at that slot — that is the actual claim and it
+needs a historical-state replay against alternatives.
+
+**What it proves:** the maker role is worth real money. ~0.64% on a ~$1,000 trade, at terminal volume, is a large
+business.
+
+**What it warns:** if we run both the maker pool and the router, we face precisely this temptation — route to
+ourselves slightly worse and keep the difference, invisibly, because a quote is just a number. This is the same
+failure as the incumbent's inverted fee schedule (`program/docs/FEE_DESIGN.md` §1), moved from a fee table nobody
+reads into a route nobody can see. Both work only because the user cannot check.
+
+**Therefore, a hard requirement on Design A, not a promise:**
+
+1. The route split is **deterministic from on-chain state** and computed in the same instruction that settles,
+   so it cannot depend on anything off-chain or operator-chosen.
+2. Every routed trade emits the quote it compared against, so the decision is reconstructible from the
+   transaction alone.
+3. **Design so that a third-party replay exonerates us.** Circular Replay is the tool that caught this; our
+   routing should be something it clears. A verifiable claim beats any marketing claim, because it needs no
+   trust in us.
+
+Permissionless making plus verifiable routing is the whole counter-position: same machine, inverted ownership.
+
 ## 4. Design B: makers deepen the curve itself — the arithmetic rules it out
 
 The capital-efficient version: a maker's deposit scales both virtual reserves by λ, which leaves the starting
