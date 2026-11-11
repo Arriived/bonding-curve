@@ -122,25 +122,28 @@ stress test.
 
 ## Devnet status
 
-The prototype's public program ID is
-`8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ`.
-The deploy wallet is
-`J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD`.
-The last recorded balance was 26,544,000,361 lamports at finalized slot
-519,671,497 after the owner funding and wallet recovery. Devnet rollout
-is held pending owner funding. This review pass runs Linux SBF and client
-verification.
+Deployed the exact `4437e58` pinned ELF (`fc2d615e…9002`) on 11 November 2026,
+slot 520,996,477. Production Config read-back matches; the 120-SOL
+trigger is refused on-chain with Config unchanged. [Complete public deployment,
+measurement and recovery report](../verification/devnet/paired-4437e58/report.md).
 
-After a fresh deploy and default Config read-back, the Linux runner's
-`paired <keys_dir> <report.json>` command measures the default-room
-matrix, sells outstanding test positions, reclaims empty wallet ATAs
-and sweeps the test wallets. It expects the smoke launcher, smoke
-trader and a separate follower keypair per follower. It writes public
-transaction evidence and a recovery checkpoint. The
-`paired-cleanup <keys_dir> <interrupted-report.json> <cleanup-report.json>`
-command recovers the active case after checking landed transactions
-and resolving the interruption. Pass the live report to
-`report_paired_doors.py --live` for the VM comparison.
+Live qualification stopped at the first swap of the 0-SOL rotation case because
+the runner omitted two lazy-vault rents from a follower's allowance. The 0-SOL
+cash-out case completed with exactly 8.097503855 SOL paid to A, matching VM.
+The rotation case was unwound with `paired-cleanup`; the four 10-SOL cases and
+full program smoke remain unrun. The 50-SOL matrix remains VM-only.
+
+Runner-only fix `78ddb1b` and its rent regression pass all three client tests;
+the pinned program and rent-saving accounts are unchanged. No live retry was
+made after the owner's stop condition. Closing balance is
+43.344866003 SOL at finalized slot 521,004,319; net cost
+3.199134358 SOL, mostly persistent rent. All test/admin wallets
+were swept and their token accounts closed. Both live NameLocks match the
+service keys and all 12 offline vectors pass. M-7 remains a pre-mainnet blocker.
+
+Use `paired-small` for only 0/10-SOL cases. `paired` includes 50 SOL and is not
+authorized for this funded run. Preserve interruption receipts and use
+`paired-cleanup` after resolving the recorded signatures.
 
 ## Decisions and corrections
 

@@ -1,0 +1,13 @@
+{
+  "started_at": "2026-11-11T05:21:05.069823+00:00",
+  "completed": [
+    "deploy",
+    "verify-deploy",
+    "fund-admin",
+    "init",
+    "config",
+    "stress-refusal"
+  ],
+  "active": "paired-small",
+  "error": "paired-small exited 1: 1111111111111111111111 invoke [1]\",\"Program ComputeBudget111111111111111111111111111111 success\",\"Program 8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ invoke [1]\",\"Program log: Instruction: SwapDoors\",\"Program 11111111111111111111111111111111 invoke [2]\",\"Program 11111111111111111111111111111111 success\",\"Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [2]\",\"Program log: Instruction: InitializeAccount3\",\"Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 3064 of 454755 compute units\",\"Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success\",\"Program 11111111111111111111111111111111 invoke [2]\",\"Transfer: insufficient lamports 70557, need 1488440\",\"Program 11111111111111111111111111111111 failed: custom program error: 0x1\",\"Program 8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ consumed 52074 of 499700 compute units\",\"Program 8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ failed: custom program error: 0x1\"],\"postBalances\":null,\"postTokenBalances\":null,\"preBalances\":null,\"preTokenBalances\":null,\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":52374},\"message\":\"Transaction simulation failed: Error processing Instruction 2: custom program error: 0x1\"}\n"
+}

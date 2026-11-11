@@ -1,0 +1,44 @@
+{
+  "room_addresses": [
+    "5yRa1Tyqc4qwBb9X9uK6SkvnPjt9Scbxsg7oHz2jjsRm",
+    "EMbMwkrYfwPx2MQ7BjProfaSZeKos9haNqaWH5WiRc7t"
+  ],
+  "signatures": [
+    "64rtrDxkFC6gJirPj7R7kMy3dN7sztjYCJVset8cdTQaKysqgDmXBsPwxHikKqou4sEPenpXxUrTPcKtjLjsa9on",
+    "2VZcGiSNKRJjUSLJ3bPuhKLJq1UG7dDdkox21NfFC8HSXzbnT9goG98cxUnY5NV4X3upm39L6m6XjuCBobFd8Tk9",
+    "ozDjsUvanpddzc6eVL9JtVnaeehruifzzBuc4GEbCLkqDtmqNxSP2LRoqHKXCURH8Z6jymZxf9a2z2KRadpeCEC",
+    "3zrPosokMdXeRGmfC3EbMtPKK5WcEvET7f9VJPZTm9DC9CBzMuNr1mrWD8o9SZf3KEjngYK5RyXQ352UhYsmkLkf",
+    "8bCYagaKpjxYfpPavDYbEZRR7LkpkT1k6taYpnPZ5NB7gKnNyCAwKE4e2tb2LyPLrdsf5gRKUdLCCzYAozs2SW9",
+    "257HHS5pqeVSoRm19hfEwBETs1BdPYfWZJkAFu1HV6JLKEtUNpXrEjNJke3BmFSxfFhiosE5KBELkznFezE8ZC1f",
+    "4sGo9asProVRLtmngPgjYtBNrRn4oTrHHB56jXRQBHB3AkNqbHt2N5xpbjh9cnc9QVHY1xTZzHQtpDGAU48W6dMs",
+    "dBYmpQMgxPVV8K58hRsN3Ljprokx33AnnTb9m6iNNnjwg1hkCAu9y1yDpKbQcLjBNytP73qGyfTMBQCiCe4muKp",
+    "p2rrnriaNxwvjv5haN4QwuXtkwQTEib7dyB1ibqMHWip53BkXow8Rov2WPa2cEoeXSWY8et9MX1GwdMQjWwmb4v"
+  ],
+  "balances": {
+    "J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD": 43344866003,
+    "3hWYyu6PHJqdtmuHtzVWkYExoBE8uh9Lg5EJLdMqdux4": 0,
+    "7wK5M89HthcegKEz8sf3goajdY8KUSfQbZg4Y2YQhqS6": 0,
+    "8AjgpyhTB5NnLx5ojzXbeTpcJjHjf7t71GRQZnJqmhdx": 0,
+    "BoC5Rd9gcJ63c8CXqzPhTZ7dfqzqj3pvUW7WdR6pKVY1": 0,
+    "4tRkBuAVy4qZVELk3jCBJKu1SxjRc3BEXTDfeBrbGwBG": 0,
+    "36SDTwao26YX4xaLyFvuxFuw4AQfjbAxMSn78qaCe4iH": 0,
+    "eMooasBpoHTs996sGhfti5uwH9Y8jqbfAwTC2as78Jj": 0,
+    "7gA43TpevZjhkeaAEm9y1aoGuctRHcSR15ZLoKuGxg4Z": 0,
+    "XBYjPZNNV7LBEjYdd5edUcVcGds19vHYR5nSS84qsr3": 0,
+    "Cm5BBDWmmXSH7X7BJuUw2pnDZNcVUjtu5uCrS4sBPHKV": 0,
+    "EnASv1ZmaBRrK4aPLgmoVYXUt9Vwm8V4EvoDnov9TrXB": 0,
+    "8z83sp1hgFrFMiMWmiVXh9DBDnjMFjrYzBhFwPxtrxjA": 0,
+    "AynQJtNoiSWotQ1nKMzAVE6oVQogBFEeWAgdzvwhejfP": 0,
+    "DEo4iVwQPBTwMqm3wuKJHensZZZMFsGVWKv4UxLrFUpd": 0,
+    "4tesHhcaEHDHhPMgM2kjt4ghZUDjVb4TsLRmqfWUwMbm": 0,
+    "9kNGZUW7Uvhn8t4QVNdUE2zR1cyMuPDU92fMtZqtmKTH": 0,
+    "2q4yHLrrcbygZXzb6tiTsDNTjxaemPYNhUMKAHntaa5i": 0,
+    "8mgjQZfbxGVXemsmV8uvy3ohNAeYcvGFTVLMgVogHbHX": 0,
+    "HMUGAhJYT3oaax9PbmuWtYw53BPGkfhn863qqH9og56U": 0,
+    "35pXe746QU2mewt3rY22zKuzygzYyFJA9i3WA587nNbw": 0,
+    "DuLwP9qU3eDAiNkRswUfx9woXnWr12twswJjqmbYDa1M": 0,
+    "FpuiereXjV4TFP2joAMa9d5puMVK4Ti7cJ3PgZpZ1pzy": 0,
+    "FG5bd9gBrS26PcaDpRG5LMZmpB8bkPd4pfsFxGrbW8iH": 0
+  },
+  "read_slot": 521003703
+}

@@ -1,0 +1,19 @@
+{
+  "pending_requests": [
+    {
+      "name": "swap_doors",
+      "signature": "3VHjgX3J9PaEgQNQK6zsFwrwyH9FMS4yyb9ZntwVAo9B2Jo49eHBK1CAkm2396eZcpHHb4HFWK6f2hzcWzpP6rkU",
+      "state": "prepared"
+    }
+  ],
+  "status_read": {
+    "context": {
+      "apiVersion": "4.4.0",
+      "slot": 521001002
+    },
+    "value": [
+      null
+    ]
+  },
+  "resolution": "RPC preflight rejection; swap was not broadcast or charged"
+}

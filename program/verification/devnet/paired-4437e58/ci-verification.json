@@ -1,0 +1,12 @@
+{
+  "commit": "78ddb1b02da574fe69fd1481d944f4f32da0dd97",
+  "program_run": 42967648576,
+  "windows_run": 42967648571,
+  "sbf_passed": 73,
+  "property_iterations": 10000,
+  "client_tests_passed": 3,
+  "curve_fuzz_cases": 400000,
+  "program_source_unchanged_from": "4437e58daaacc8c4f90d060df8a12a84abb5aefd",
+  "elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "full_log_sha256": "faf68bb6bad87250bf1732679da7d80b16b9f0a8a3580e15e49d41f4137a4b01"
+}

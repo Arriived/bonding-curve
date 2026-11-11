@@ -1,0 +1,73 @@
+{
+  "program_source": "4437e58daaacc8c4f90d060df8a12a84abb5aefd",
+  "program": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+  "elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "elf_bytes": 611752,
+  "genesis_hash": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "opening_read": {
+    "context": {
+      "apiVersion": "4.4.0",
+      "slot": 520987644
+    },
+    "value": [
+      {
+        "data": [
+          "",
+          "base64"
+        ],
+        "executable": false,
+        "lamports": 46544000361,
+        "owner": "11111111111111111111111111111111",
+        "rentEpoch": 18446744073709551615,
+        "space": 0
+      },
+      null
+    ]
+  },
+  "programdata_rent_lamports": 3108579000,
+  "program_rent_lamports": 833120,
+  "selected_cases": [
+    [
+      0,
+      false,
+      false
+    ],
+    [
+      0,
+      false,
+      true
+    ],
+    [
+      10,
+      false,
+      false
+    ],
+    [
+      10,
+      true,
+      false
+    ],
+    [
+      10,
+      false,
+      true
+    ],
+    [
+      10,
+      true,
+      true
+    ]
+  ],
+  "budget": {
+    "rent_read_finalized_slot": 519485996,
+    "cases": 6,
+    "peak_buy_float_lamports": 32100000000,
+    "total_scenario_loss_ceiling_lamports": 3624803819,
+    "deploy_rent_lamports": 2972577240,
+    "account_rent_ceiling_lamports": 2637373440,
+    "network_and_admin_lamports": 112002400,
+    "budget_ceiling_lamports": 41446756899,
+    "funding_request_sol": 42
+  },
+  "corrected_budget_ceiling_lamports": 41583591779
+}

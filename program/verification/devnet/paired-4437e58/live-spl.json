@@ -1,0 +1,26 @@
+{
+  "read_slot": 520994003,
+  "programs": [
+    {
+      "name": "token-2022",
+      "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "elf_sha256": "b781b71d230a9910de4d3c103e72608f597fc73c83ee207242ac82b708382a6a",
+      "matches_pinned": true,
+      "deployed_slot": 503153936
+    },
+    {
+      "name": "spl-token",
+      "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "elf_sha256": "8190d3f7ceb6cb7a7a8d8924bff89f9f611e15ce1f806f2b6237f3311a98f697",
+      "matches_pinned": true,
+      "deployed_slot": 451008000
+    },
+    {
+      "name": "ata",
+      "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "elf_sha256": "6804554e69fd3a58caa191dc4a58f4c67223d30ca28ab8987f39fc18d2f7374d",
+      "matches_pinned": true,
+      "deployed_slot": null
+    }
+  ]
+}

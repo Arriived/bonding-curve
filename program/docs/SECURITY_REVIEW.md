@@ -1559,3 +1559,28 @@ and curve fuzz passed 400,000 cases. Birth rent measured 17,515,840 lamports.
 The paired IDLs and program source hashes match the verified `fc2d615e` ELF.
 The service passed 178 tests on `d2e8f0e` and reproduced its 1,223-target evasion
 reference byte for byte. [Pinned verification run 42754852665](https://github.com/Arriived/bonding-curve/actions/runs/42754852665)
+
+
+## Paired devnet rollout and stopped qualification (11 November 2026)
+
+The exact `4437e58` production ELF is deployed at slot 520,996,477;
+final on-chain hash is `fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002`.
+Config matches the production profile and the 120-SOL cap is refused at slot
+520,996,578, with unchanged state. This adds on-chain evidence for the
+fixed stress-cap finding.
+
+The first 0-SOL cash-out measurement matches VM exactly (8.097503855 SOL
+to A). The next 0-SOL rotation stopped in RPC preflight: the runner's wallet
+allowance omitted the swap-fee vault and destination backing vault rents.
+This is a runner funding defect. `78ddb1b` fixes it and adds a passing lifecycle
+rent regression; 73 SBF / 10,000 iterations, heap, 400,000 curve cases and all
+three client tests pass. The production ELF and deferred-account design did
+not change. Remaining live cases and the full smoke were not run under the
+owner's stop rule; qualification remains incomplete. No 50-SOL live case ran.
+
+`paired-cleanup` and fee recovery finished. Closing balance is
+43.344866003 SOL at finalized slot 521,004,319; actual net cost is
+3.199134358 SOL (3.190453360 rent and 0.008680998
+network fees). Every other signer wallet and all scanned token accounts are
+empty. [Report and complete signatures/slots](../verification/devnet/paired-4437e58/report.md).
+M-7 stays a pre-mainnet blocker. Service e2e and graduation design were not run.

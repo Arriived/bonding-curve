@@ -1,0 +1,27 @@
+{
+  "rows": [
+    {
+      "room": "EMbMwkrYfwPx2MQ7BjProfaSZeKos9haNqaWH5WiRc7t",
+      "room_id": 3420602406442188307,
+      "name": "Room 2f786bc3f9d53e13",
+      "symbol": "PAIR",
+      "key": "c2d0ee123d325ce6c325fe87d3b459d4",
+      "lock": "HX24CZ6HVytyUeUzjtz2ydje8mDG9BvDqs5xtGM9NEwd",
+      "creation_signature": "3bQqzoEFCSE7NAeuNmqpRv5T3dCPGEgJeRFv5Cap3ZG2UcdSC3f5K2dTobYN4EDC44Euf4aqxyBo8CS4jQ1GR5C",
+      "creation_slot": 520996795,
+      "matches_service": true
+    },
+    {
+      "room": "5yRa1Tyqc4qwBb9X9uK6SkvnPjt9Scbxsg7oHz2jjsRm",
+      "room_id": 13392954188542162152,
+      "name": "Room b9dd54e02522b4e8",
+      "symbol": "PAIR",
+      "key": "359ad21930247babd6dc4753f899303f",
+      "lock": "FvryYbNpkdMkskyoYDXiDahnu7DikE4VqaJVKpgqSqKm",
+      "creation_signature": "3DQTKKws6L8bMvpF4ZR18kBgGsQMfYKG5hVyWY2oXK6e7YdmWuqH5o6QWXSJfUhJdgLqZgykkMCE6CK2wYrRh2fc",
+      "creation_slot": 520999363,
+      "matches_service": true
+    }
+  ],
+  "offline_vectors_passed": 12
+}

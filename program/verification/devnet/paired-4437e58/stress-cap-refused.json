@@ -1,0 +1,111 @@
+{
+  "name": "stress-cap-refused",
+  "signature": "s7ddCKxNreRxddtKRMEfhk8YkVZfcSiw4yXmZh9Vxu7Wa34k25xKs5dPaX1U5yXvbEXG5um85sPYRdLNC1th6ah",
+  "state": "finalized",
+  "last_valid_block_height": 508132654,
+  "wire_bytes": 503,
+  "slot": 520996578,
+  "fee_lamports": 5001,
+  "transaction": {
+    "blockTime": 1794374624,
+    "meta": {
+      "computeUnitsConsumed": 6116,
+      "costUnits": 7653,
+      "err": {
+        "InstructionError": [
+          2,
+          {
+            "Custom": 6002
+          }
+        ]
+      },
+      "fee": 5001,
+      "innerInstructions": [],
+      "loadedAddresses": {
+        "readonly": [],
+        "writable": []
+      },
+      "logMessages": [
+        "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+        "Program ComputeBudget111111111111111111111111111111 success",
+        "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+        "Program ComputeBudget111111111111111111111111111111 success",
+        "Program 8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ invoke [1]",
+        "Program log: Instruction: UpdateConfig",
+        "Program log: AnchorError thrown in programs/doors_v1/src/state.rs:32. Error Code: BadConfig. Error Number: 6002. Error Message: Invalid config or share bounds.",
+        "Program 8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ consumed 5816 of 499700 compute units",
+        "Program 8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ failed: custom program error: 0x1772"
+      ],
+      "postBalances": [
+        48079918,
+        1910080,
+        1,
+        833120
+      ],
+      "postTokenBalances": [],
+      "preBalances": [
+        48084919,
+        1910080,
+        1,
+        833120
+      ],
+      "preTokenBalances": [],
+      "rewards": [],
+      "status": {
+        "Err": {
+          "InstructionError": [
+            2,
+            {
+              "Custom": 6002
+            }
+          ]
+        }
+      }
+    },
+    "slot": 520996578,
+    "transaction": {
+      "message": {
+        "accountKeys": [
+          "8AjgpyhTB5NnLx5ojzXbeTpcJjHjf7t71GRQZnJqmhdx",
+          "J2bC431hNTQqtbQ3fcrLw5vHL6YcEqGnW72nyoyBHxZg",
+          "ComputeBudget111111111111111111111111111111",
+          "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ"
+        ],
+        "header": {
+          "numReadonlySignedAccounts": 0,
+          "numReadonlyUnsignedAccounts": 2,
+          "numRequiredSignatures": 1
+        },
+        "instructions": [
+          {
+            "accounts": [],
+            "data": "EvSMNP",
+            "programIdIndex": 2,
+            "stackHeight": 1
+          },
+          {
+            "accounts": [],
+            "data": "3DdGGhkhJbjm",
+            "programIdIndex": 2,
+            "stackHeight": 1
+          },
+          {
+            "accounts": [
+              0,
+              1
+            ],
+            "data": "RNN74qZsRWXKEZwWs88VpnNquekYfGrvABDzLWjabtL5GSKXRbW5kcxoEmRLiUTgWM4bNfa8CzHXBJ2sC5cswFSeeSibGbWax1deA7zGrsMKTDtKnjZ7iRhfmAXSgNYV3f2bwGHuCPVtLeAsDLKNUFJWjtBLyZQiPtd7D5obokMkL2f15VpiMKdeJuKSn3MRUa5AzVo147DeQcLUsudxEMge7eXSA768uhCdRQ6TTQsYwPEu5mQNZHHgN7XjpKcJ98a1zRVFwyhuEahsFoTBD4TsmWYhbsZXH7kDBqjdr95PCG9CyeArcfhbsFrqbodSgGRKNGDWu3UjNKwzW",
+            "programIdIndex": 3,
+            "stackHeight": 1
+          }
+        ],
+        "recentBlockhash": "Df8j6f1cYFpCUi7DDmrvZqWxLbcjYZxDjGz6bHwYWqE4"
+      },
+      "signatures": [
+        "s7ddCKxNreRxddtKRMEfhk8YkVZfcSiw4yXmZh9Vxu7Wa34k25xKs5dPaX1U5yXvbEXG5um85sPYRdLNC1th6ah"
+      ]
+    },
+    "transactionIndex": 6,
+    "version": "legacy"
+  }
+}

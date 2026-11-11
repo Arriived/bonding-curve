@@ -1,5 +1,14 @@
 # Doors v1 deployment
 
+
+Current paired-doors deployment: exact `4437e58` / `fc2d615e…9002`, deployed
+11 November 2026 at slot 520,996,477. Production Config and 120-SOL
+refusal are verified. The six-case live qualification stopped on a runner rent
+allowance defect after one completed case; recovery is complete. Closing
+balance 43.344866003 SOL; actual cost 3.199134358 SOL.
+[Current report and every signature/slot](../verification/devnet/paired-4437e58/report.md).
+The sections below preserve the historical original-program deployments.
+
 4 November 2026; devnet upgraded to `54215ae`, then to `71d32f3`, on 5 November 2026 (§5).
 
 ## 1. Status
