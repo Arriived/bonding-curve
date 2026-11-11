@@ -96,6 +96,72 @@ reads into a route nobody can see. Both work only because the user cannot check.
 
 Permissionless making plus verifiable routing is the whole counter-position: same machine, inverted ownership.
 
+## 3b. Making it one-click, and the one thing that cannot be promised
+
+**Target UX (owner's).** A maker section lists narratives — room plus its doors. Pick "Elon". Deposit SOL. Earn
+a share of fees. As easy as launching a token.
+
+**What cannot be delivered: a yield with no exposure.** Fees compensate for risk. A depositor with no position
+has nothing to be paid for, so any yield would have to come from other users — the same extraction this project
+is positioned against (`program/docs/FEE_DESIGN.md`). A product that looks like a savings account either hides
+the risk or is subsidised. Build neither. The UX can still be one button; what changes is what the user is told
+they now hold.
+
+**Version 1 — balanced LP (zap).** Deposit SOL; half is swapped to room tokens; hold an LP position earning fees
+from every door in the narrative. Standard, works with a full-range AMM. Costs: swap impact on entry, and
+immediate exposure to the narrative.
+
+**Version 2 — single-sided bid (recommended).** Deposit SOL only. It rests as buy-side liquidity *below* spot and
+earns fees as trades cross it. If the narrative dips through the range, the SOL has bought room tokens at prices
+the maker implicitly accepted.
+
+> *"Deposit SOL into the Elon narrative. Earn fees from every coin in it. If it dips, you bought the dip."*
+
+One asset, one button, and the risk is something the user wants rather than something concealed. This matches the
+target UX honestly, which Version 1 does not.
+
+**Constraint found in Meteora's interface.** DAMM v2 keeps `sqrt_min_price` / `sqrt_max_price` at the **pool**
+level; a `Position` carries only liquidity and fee checkpoints, with no per-position range. DAMM v2 positions are
+therefore full-range and two-sided: **it cannot express Version 2.** Range-per-position is Meteora's DLMM (bins),
+a different program.
+
+This conflicts with the graduation recommendation of DAMM v2, which was chosen for permanent-lock-with-fees.
+**Decide once with both uses in view**: DLMM for both, DAMM v2 for graduated rooms with DLMM-style bins for the
+maker side, or drop Version 2. Do not decide these separately.
+
+**Why the narrative list is the product, not just navigation.** LPing one memecoin earns from one coin's volume.
+Making a room earns from **every door in the narrative**. In the 83-minute watcher run, 287 rooms received doors,
+averaging 3.6 and peaking at **92 doors into one room**. Same capital, several times the flow, and no competitor
+can match it because no competitor aggregates a narrative into one pool.
+
+## 3c. Fees versus impermanent loss: first measurement
+
+`scripts/maker_il.py`, over the 2,956-launch outcome set. Price ratio from the final reserve, constant-product
+IL, fee income expressed as a multiple of final reserve (net buying is a hard lower bound on volume).
+
+**Where coins end up:** 91.0% final reserve under 0.01 SOL, 3.7% to 0.1, 1.9% to 1, 1.3% to 5, 1.2% to 20,
+1.0% above 20 SOL.
+
+**A maker providing at launch and holding to the end** loses to simply holding in only 70 of 2,956 cases (2%) —
+but that is mostly because 91% of coins never traded at all, so there is neither loss nor fee. The number that
+matters is conditional on the coin actually trading:
+
+| set | n | median break-even volume |
+|---|---:|---:|
+| final reserve ≥ 1 SOL | 102 | **6.0× final reserve** |
+| final reserve ≥ 5 SOL | 65 | **12.7× final reserve** |
+
+So at a 1% fee a maker needs turnover of roughly 6–13× the coin's final reserve to cover impermanent loss.
+Memecoin turnover is routinely higher than that, so **the design is not dead on arrival** — which is what this
+measurement was for.
+
+**What it does not settle, and this is the important part.** The dataset has launch state and one final reading,
+not a price path. Impermanent loss is path-dependent, so these are a **lower bound** for a maker who provides at
+launch and holds. They say nothing about a maker entering mid-life at an elevated price — which is precisely the
+product in §3b, where the user picks an established narrative from a list. Settling it needs price and volume
+time series. The watcher can collect them from the devnet run onward; until it has, treat 6–13× as encouraging
+rather than decisive, and note that Version 2's risk profile is different again and is not modelled here at all.
+
 ## 4. Design B: makers deepen the curve itself — the arithmetic rules it out
 
 The capital-efficient version: a maker's deposit scales both virtual reserves by λ, which leaves the starting
