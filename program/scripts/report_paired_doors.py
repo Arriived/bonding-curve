@@ -111,7 +111,7 @@ def render_status(directory):
     assert tests, "passing full SBF suite required"
     client_log = (directory / "devnet-client-tests.log").read_text(encoding="utf-8")
     assert "smoke_name_key_equals_the_service_vectors ... ok" in client_log
-    assert "test result: ok. 1 passed; 0 failed" in client_log
+    assert re.search(r"test result: ok\. [1-9][0-9]* passed; 0 failed", client_log)
     elf = hashlib.sha256((directory.parent / "target/deploy/doors_v1.so").read_bytes()).hexdigest()
     run_id = os.environ.get("GITHUB_RUN_ID")
     source = f"Source commit `{build['git_commit']}`."

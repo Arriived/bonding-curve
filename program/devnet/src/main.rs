@@ -201,7 +201,9 @@ impl Chain {
         signers: &[&Keypair],
     ) -> Result<Value> {
         let t = self.tx(ixs, payer, signers)?;
-        journal(&json!({"state": "prepared", "name": name, "signature": t.signatures[0].to_string()}))?;
+        journal(
+            &json!({"state": "prepared", "name": name, "signature": t.signatures[0].to_string()}),
+        )?;
         let sig = self
             .submit(&t, false)?
             .map_err(|e| anyhow!("{name}: {e}"))?;
@@ -1359,7 +1361,10 @@ include!("paired_doors.rs");
 
 fn journal(record: &Value) -> Result<()> {
     if let Ok(path) = std::env::var("DOORS_TX_JOURNAL") {
-        let mut file = fs::OpenOptions::new().create(true).append(true).open(path)?;
+        let mut file = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)?;
         writeln!(file, "{}", serde_json::to_string(record)?)?;
         file.sync_data()?;
     }
@@ -1402,9 +1407,17 @@ mod tests {
     #[test]
     fn small_run_contains_exactly_the_six_fully_sized_cases() {
         let cases = super::paired_cases(super::SMALL_PAIRED_SEEDS);
-        assert_eq!(cases, vec![(0, false, false), (0, false, true),
-            (10, false, false), (10, false, true),
-            (10, true, false), (10, true, true)]);
+        assert_eq!(
+            cases,
+            vec![
+                (0, false, false),
+                (0, false, true),
+                (10, false, false),
+                (10, false, true),
+                (10, true, false),
+                (10, true, true)
+            ]
+        );
         assert!(!cases.iter().any(|case| case.0 == 50));
     }
 }
