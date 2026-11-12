@@ -17,6 +17,10 @@ VM_NAME = {"initialize_config": "initialize_config", "create_room": "create_room
 
 
 def main():
+    # Reports are UTF-8 artifacts, including when redirected on Windows where
+    # the inherited legacy encoding cannot represent the mathematical symbols.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     out, svm_path, label = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
     vm = json.load(open(svm_path))["cu"]
     deploy = json.load(open(out / "deploy.json"))

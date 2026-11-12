@@ -19,6 +19,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: program/devnet
+      - name: Check saved devnet report encoding
+        shell: pwsh
+        run: |
+          python -m unittest discover -s program/devnet -p test_report.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Format and test client
         shell: pwsh
         run: |

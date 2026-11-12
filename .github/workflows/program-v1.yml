@@ -120,6 +120,9 @@ jobs:
           python3 scripts/door_curve_fuzz.py --json verification/door_curve_fuzz.json
           python3 scripts/report_paired_doors.py --report docs/PAIRED_DOORS_REPORT.md > verification/paired_report.md
           sha256sum -c devnet/DEPLOY_ELF.sha256
+      - name: Check saved devnet report under Windows stdout encoding
+        if: github.ref_name == 'claude/paired-doors'
+        run: python3 -m unittest discover -s devnet -p test_report.py
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4
