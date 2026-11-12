@@ -479,3 +479,20 @@ allows URI 43 for legacy creation, 11 for a one-holder creation takeover and 200
 for either open shape. A creation with URI 200 is 1,389 bytes and exceeds the
 1,232-byte packet limit. `scripts/max_uri.py --json` reports total metadata budgets
 and URI limits for legacy and static-table v0 messages.
+
+## Paired devnet qualification client
+
+`tests/e2e/paired_live.py --rpc URL --keys LOCAL_DIRECTORY --out OUTPUT_DIRECTORY`
+uses funded smoke wallets and the configured matcher signing file. It checks
+the devnet genesis and pinned deployed ELF before submitting a launcher-signed
+new-room request, an identity-floor door and a name-matched door. Each first
+buy must fill the exact door-token quote. The independent decision verifier
+must agree with all three signed decisions and find their successful on-chain
+transactions. Every transaction signature is saved before submission.
+
+This client does not deploy, initialize Config or obtain funds. It stops at
+the first refusal or mismatch; inspect its saved receipts before any further
+live work. It uses the existing devnet end-to-end freshness budget of 30-slot
+coherence, 60-slot lag and 15-second age, plus the default 500,000-CU limit.
+Only immutable finalized transaction responses are shared across verifier
+replays. Mutable account reads are fresh for each replay.
