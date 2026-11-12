@@ -760,3 +760,19 @@ CU, leaving **97,399 CU** under 500,000. Birth rent remains 17,515,840 lamports.
 Service `6109176` passes 172/172 tests; the full evasion JSON repeats identically.
 The config/message regression's pre-fix control is `b86ae42`; all committed
 candidate tests pass. Data and hashes: `data/launch_cu_budget_checks.json`.
+
+## 25. Door verification must replay the candidate NameLock (12 November 2026)
+
+Preparing the paired devnet end-to-end check exposed a verifier omission:
+`verify()` derived the candidate name key only for `create_room`. Consequently
+`open_door` replay supplied no current name holder to the otherwise-correct
+independent routing calculation. Floor routes could appear to conflict with
+the NameLock, and name routes could appear to require a new room.
+
+Two ordinary regressions, covering floor and T2n doors, failed against `584596a`
+because no NameLock-history read occurred. The verifier now independently
+derives the key for both instruction types; only creation requires a signed
+name-key argument. Both regressions and all 180 service tests pass. Routing,
+request authentication and normalization rules are unchanged. The fixed-seed
+1,223-target evasion JSON repeats byte for byte (SHA-256
+`2c09b97bb1b6e029b03b0b0eadce2023d62bd839d64d1be604a3fc71cea211a4`).

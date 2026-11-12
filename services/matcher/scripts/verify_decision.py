@@ -501,7 +501,10 @@ def verify(record, rpc_url, chain_ok=True):
     oh = acc.get("old_holder")
     want_oh = program if dec["old_holder_room_id"] is None else str(pda([b"room", struct.pack("<Q", int(dec["old_holder_room_id"]))], program))
     check("old holder account equals the decision", oh == want_oh, oh)
-    want_key = name_key_research(rm, req["name"], req["symbol"]) if name == "create_room" else None
+    # Both new rooms and door routes depend on the current candidate NameLock.
+    # Only create_room carries that key in its instruction; replay must derive
+    # it independently for open_door as well.
+    want_key = name_key_research(rm, req["name"], req["symbol"])
     if name == "create_room":
         check("Launch name_key is the research matcher's key for the request",
               launch["name_key"] == (want_key.hex() if want_key else None) == dec.get("name_key"), launch["name_key"])

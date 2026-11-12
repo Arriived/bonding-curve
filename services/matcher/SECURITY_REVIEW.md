@@ -15,6 +15,7 @@ evidence. No deployment or production signing material is used.
 | 7 | Low | Authorized admin can choose the 120 SOL stress cap | Fixed in paired program | Default build refuses above the normal ceiling; isolated test-stress build accepts 120 SOL |
 | 8 | Info | Excess unused room birth storage | Implemented; target not reached | Rent 26,959,560 -> 17,515,840 lamports, 35.0% saved; unused vault costs deferred |
 | 9 | Info | Request replay and alteration | Existing M-3 protection confirmed | Concurrent replay accepts exactly one of 32 requests; every changed signed field is refused |
+| 10 | Low | Independent door verifier skipped candidate NameLock history | Fixed | Valid floor and name routes could be reported as disagreements; every launch path now replays the current holder |
 
 The first-buy regression failed before the port: 19,628,248,343,287 room base
 units versus the recorded SBF output of 33,699,309,828,108 door base units.
