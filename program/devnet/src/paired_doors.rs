@@ -24,6 +24,13 @@ fn paired_cases(seeds: &[u64]) -> Vec<(u64, bool, bool)> {
     cases
 }
 
+fn remaining_paired_cases() -> Vec<(u64, bool, bool)> {
+    paired_cases(SMALL_PAIRED_SEEDS)
+        .into_iter()
+        .filter(|case| *case != (0, false, false))
+        .collect()
+}
+
 fn paired_spot(r: &Room) -> Result<f64> {
     let price = r.price()?;
     Ok(price.numerator as f64 / price.denominator as f64)
@@ -254,7 +261,7 @@ fn resume_paired_cleanup(dir: &str, interrupted_report: &str, out: &str) -> Resu
     result
 }
 
-fn run_paired(dir: &str, out: &str, seeds: &[u64]) -> Result<()> {
+fn run_paired(dir: &str, out: &str, cases: &[(u64, bool, bool)]) -> Result<()> {
     anyhow::ensure!(
         !std::path::Path::new(out).exists(),
         "use a fresh report path for a new run"
@@ -290,7 +297,7 @@ fn run_paired(dir: &str, out: &str, seeds: &[u64]) -> Result<()> {
     let mut results = Vec::new();
     let mut active = Value::Null;
     let result: Result<()> = (|| {
-        for (seed, dump, rotate) in paired_cases(seeds) {
+        for &(seed, dump, rotate) in cases {
                     let id = door_nonce()?;
                     let tag = format!("{id:016x}");
                     let ctx = Ctx::new(id);

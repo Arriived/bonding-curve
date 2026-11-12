@@ -1390,10 +1390,11 @@ fn main() -> Result<()> {
         Some("smoke") => smoke(arg(2)?, arg(3)?),
         Some("fail") => fail(arg(2)?, arg(3)?, arg(4)?),
         Some("selftest") => selftest(arg(2)?),
-        Some("paired") => run_paired(arg(2)?, arg(3)?, &[50, 10, 0]),
-        Some("paired-small") => run_paired(arg(2)?, arg(3)?, SMALL_PAIRED_SEEDS),
+        Some("paired") => run_paired(arg(2)?, arg(3)?, &paired_cases(&[50, 10, 0])),
+        Some("paired-small") => run_paired(arg(2)?, arg(3)?, &paired_cases(SMALL_PAIRED_SEEDS)),
+        Some("paired-remaining") => run_paired(arg(2)?, arg(3)?, &remaining_paired_cases()),
         Some("paired-cleanup") => resume_paired_cleanup(arg(2)?, arg(3)?, arg(4)?),
-        _ => bail!("usage: doors-devnet init|config|smoke|fail|selftest|paired|paired-small|paired-cleanup ..."),
+        _ => bail!("usage: doors-devnet init|config|smoke|fail|selftest|paired|paired-small|paired-remaining|paired-cleanup ..."),
     }
 }
 
@@ -1431,5 +1432,19 @@ mod tests {
         let lazy_vaults = 2 * rent(165);
         let transaction_fees = 7 * 5_001;
         assert!(allowance >= user_atas + lazy_vaults + transaction_fees + rent(0));
+    }
+
+    #[test]
+    fn resumed_run_has_exactly_the_five_remaining_cases() {
+        assert_eq!(
+            super::remaining_paired_cases(),
+            vec![
+                (0, false, true),
+                (10, false, false),
+                (10, false, true),
+                (10, true, false),
+                (10, true, true)
+            ]
+        );
     }
 }
