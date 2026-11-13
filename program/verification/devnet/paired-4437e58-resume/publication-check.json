@@ -1,0 +1,9 @@
+{
+  "public_files_scanned": 57,
+  "private_material_matches": 0,
+  "unique_transaction_signatures": 1801,
+  "finalized_slots": 1800,
+  "balance_reconciliation": "exact",
+  "zero_other_operating_wallets": 24,
+  "empty_token_ownership_scans": 50
+}

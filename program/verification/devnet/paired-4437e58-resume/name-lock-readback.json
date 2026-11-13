@@ -1,0 +1,60 @@
+{
+  "rows": [
+    {
+      "room": "HuqPkGFFYeCEhHwcjSfD4qnAjNC5mFL8bn58MPex8r47",
+      "room_id": 8223736925964952389,
+      "name": "Room 72209529b6676345",
+      "symbol": "PAIR",
+      "key": "68e4358802faddceadb9e9326407b1b1",
+      "lock": "8BPD86rQ9TWYreke6HzZ2XBMaC8WbVwwyNEbDPMSU8Hf",
+      "creation_signature": "4Ua3DQSpUjtwamPmag48iu5HGfaPHgoDyyzJ8CCiNCSFkXJT6p5TUD7fdnpRmV6Bbif2noPZ2fudBJrNdthF1bWK",
+      "creation_slot": 521579995,
+      "matches_service": true
+    },
+    {
+      "room": "Dmcm68JjNkeyLwbFqkLDRsT4oQqoMaQR3PrcxMPV5Fu1",
+      "room_id": 1139445092016322580,
+      "name": "Room 0fd01f462eb1f814",
+      "symbol": "PAIR",
+      "key": "b257cf68dcd644798710c417e09a47e2",
+      "lock": "8ko9MGZhrVxpL1RfAqvfayEke9aLZh6UoHxXhJm38ZyB",
+      "creation_signature": "3oXYakP7EK2VBxqhVPEauW6e3G5Wd5fUZeeFKr1mpEnqLRGgBHLsxANN5mczMM1G6x9xehiKJho5n4foRPg4LtXC",
+      "creation_slot": 521582793,
+      "matches_service": true
+    },
+    {
+      "room": "AB1tqXQUcbQvitpEQxnJk6rA5KKXk3TDWYcgimmBDbgL",
+      "room_id": 5693837597897965967,
+      "name": "Room 4f049320c778c18f",
+      "symbol": "PAIR",
+      "key": "d94a8abf609b27198c067d4b458b8497",
+      "lock": "1SRTAJUead4Kkm5Exu1AKz6b7V8kXTBDYw1pPu6JrDv",
+      "creation_signature": "4hZpw2SXazSH75rzsPz1FZUW8VfNYLnMWbtKQw3Xtsv9mU5ztzJx5nsyqNQ1K6VAGUQ1sW2nCR2CSpdbEyGH3V9Q",
+      "creation_slot": 521585335,
+      "matches_service": true
+    },
+    {
+      "room": "CrdVkosHrzRHUqeT3o5Z8JQRWB1V5DKDgHii8RPFvtr9",
+      "room_id": 6853838861290315521,
+      "name": "Room 5f1dba2192fa1f01",
+      "symbol": "PAIR",
+      "key": "214bfefc1da61db441c43411b48602da",
+      "lock": "4ueEyHKNAzX5aQWHPAmg6K1HdRwWpGydJ3zLrmV7ZgUb",
+      "creation_signature": "PQvBTMGaMUWMSmR2eqYFHJUtDPMELGjS3AZYtmJeJWh3bSu47sapHa3rhCRQ5gL4s1eDrJxzetwGJC6PsApkCHP",
+      "creation_slot": 521588009,
+      "matches_service": true
+    },
+    {
+      "room": "U7e6S2dN46Q1riAd8HvhG6LoW7G3Qa2bgHKeiPzueju",
+      "room_id": 14222967385388769681,
+      "name": "Room c562217b02106191",
+      "symbol": "PAIR",
+      "key": "cd8b28557f7008fb900c04609078912f",
+      "lock": "4kD6FCF9qnWhyv8FRLNgHLBasnj1S2z5ht232F3UgiaV",
+      "creation_signature": "wufonMBFq7MrERgNHfckH57JJv55ukdSPtsZ7pYSr6bp8eq9cxvGs4A2zZ1GY2B5oy3DT8bQ6sc3A1nMLCMJ3F5",
+      "creation_slot": 521590427,
+      "matches_service": true
+    }
+  ],
+  "offline_vectors_passed": 12
+}

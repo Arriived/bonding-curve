@@ -1,0 +1,9 @@
+{
+  "source_commit": "db8d71811bfba6bfd0f603021b362b5c0e778067",
+  "windows_build_run": 43297174031,
+  "artifact_id": 13980245923,
+  "exe_sha256": "04dcd4680c35a9f8b97051d2a39bab9f1c16771032e1efb0ca29a4d684a0cbc3",
+  "follower_allowance_fix": "78ddb1b",
+  "case_selector": "paired-remaining",
+  "test_count": 4
+}

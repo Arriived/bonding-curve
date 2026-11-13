@@ -246,3 +246,41 @@ and curve fuzz passed 400,000 cases. Birth rent measured 17,515,840 lamports.
 The paired IDLs and program source hashes match the verified `fc2d615e` ELF.
 The service passed 178 tests on `d2e8f0e` and reproduced its 1,223-target evasion
 reference byte for byte. [Pinned verification run 42754852665](https://github.com/Arriived/bonding-curve/actions/runs/42754852665)
+
+## Paired devnet resume and report-only stop (12 November 2026)
+
+All five remaining 0/10-SOL scenarios completed without reduced inputs. With
+the earlier 0-SOL cash-out, all six cases match VM exactly: zero payout,
+reserve, sold/backing, price and FDV gaps across 26 snapshots. Sixty paired
+swaps plus the full smoke swap succeeded. Peak swap used 123,059 program /
+123,359 transaction CU (slot 521,580,621, trace 11). The largest observed
+launch used 368,902 transaction CU, leaving 131,098 under 500,000. Its 30,908
+program-CU gap decomposes into 30,000 modelled bump-search CU and 908 residual;
+live SPL binaries match the pinned VM binaries. No 50-SOL case ran.
+
+Full program smoke and all six negative requests ran. The report renderer then
+stopped on Windows cp1252 output (U+2212), before printing its check summary.
+The owner's stop rule was honored: **no matcher end-to-end requests or
+transactions were submitted**. Rendering the same saved receipts offline in
+UTF-8 passed 34/34 checks. A permanent report regression failed on `db8d718`
+and passes with `9594aad`; both CI workflows run it. The production program,
+rent saving and deployed ELF `fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002` are unchanged.
+
+Recovery completed, including entitled swap fees, room-token redemption,
+empty ATAs and native wallet sweeps. Finalized closing balance is
+**53.089376282 SOL at slot 521,596,121**. All 24 other operating wallets are
+zero, and all 50 token-owner scans are empty. Whole qualification cost is
+**3.454624079 SOL**: 3.439800080 retained rent, 0.001867201 retained reserve /
+pending balances, and 0.012956798 network fees. This includes the earlier
+deployment, stopped case and recovery, and accounts for two later 5-SOL
+funding transfers. This resume cost 0.255489721 SOL. Receipt fees reconcile
+independently and exactly.
+
+The service's independent verifier also had a preparation-time omission:
+`open_door` skipped candidate NameLock history. Two regressions failed on
+`584596a`; `310e12a` fixes floor and T2n verification. All 180 service tests
+pass, and the 1,223-target evasion benchmark is byte-identical. The signed
+service client is pushed at `a7aa8c0`, but its real launch/door/verifier check
+remains outstanding after the halt. No routing or normalization rules changed.
+
+[Complete measurements, halt record, every signature and slot](../verification/devnet/paired-4437e58-resume/report.md).

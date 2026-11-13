@@ -1,0 +1,125 @@
+### paired resume devnet, saved receipts only
+
+| item | value |
+|---|---|
+| program ID | `8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ` |
+| deploy signature | `23b2XfG4xXhyZ6uhxNiJ7Qm1os3b67W2jYKRSJfq9m9iik3Na9Bw5NToLMYBDyuijhwj9P5SqH15GnSF7qoEmtwp` |
+| deploy slot (`lastDeploySlot`) | 520,996,477 |
+| ProgramData account | `Edv3YGm1FGZfjcHCAhMGYsffvGRoPYnkToeq5bVg2hJm` |
+| upgrade authority | `8AjgpyhTB5NnLx5ojzXbeTpcJjHjf7t71GRQZnJqmhdx` |
+| ProgramData lamports | 3,108,579,000 |
+| local ELF SHA-256 | `fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002` |
+| on-chain bytes SHA-256 (first ELF-length bytes of `solana program dump`) | `fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002` |
+| on-chain bytes equal local ELF | yes |
+| Config account | `J2bC431hNTQqtbQ3fcrLw5vHL6YcEqGnW72nyoyBHxZg` (read at slot 521,579,791, 248 bytes) |
+| Config fields differing from settings | 0 of 22 |
+
+**Config read back against the generated settings:**
+
+| field | on-chain | expected | match |
+|---|---|---|---|
+| `admin` | `8AjgpyhTB5NnLx5ojzXbeTpcJjHjf7t71GRQZnJqmhdx` | `8AjgpyhTB5NnLx5ojzXbeTpcJjHjf7t71GRQZnJqmhdx` | yes |
+| `protocol_fee_recipient` | `J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD` | `J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD` | yes |
+| `fee_bps` | `100` | `100` | yes |
+| `door_share_bps` | `6000` | `6000` | yes |
+| `founder_share_bps` | `0` | `0` | yes |
+| `door_fee_lamports` | `0` | `0` | yes |
+| `room_fee_lamports` | `0` | `0` | yes |
+| `convert_fee_lamports` | `0` | `0` | yes |
+| `v_sol_lamports` | `30000852995` | `30000852995` | yes |
+| `v_tok` | `1073025606000000` | `1073025606000000` | yes |
+| `supply` | `1000000000000000` | `1000000000000000` | yes |
+| `r_star_lamports` | `85000000000` | `85000000000` | yes |
+| `meteora_dynamic_config` | `11111111111111111111111111111111` | `11111111111111111111111111111111` | yes |
+| `graduation_trigger_lamports` | `85018013680` | `85018013680` | yes |
+| `paused` | `false` | `false` | yes |
+| `matcher_authority` | `HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz` | `HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz` | yes |
+| `live_min_reserve_lamports` | `500000000` | `500000000` | yes |
+| `live_max_idle_seconds` | `21600` | `21600` | yes |
+| `live_new_seconds` | `3600` | `3600` | yes |
+| `live_min_volume_lamports` | `5000000000` | `5000000000` | yes |
+| `pool_min_window_lp_fee` | `80000000` | `80000000` | yes |
+| `bump` | `255` | `255` | yes |
+
+**Transactions, live CU against the VM observations of the same ELF** (VM figures are observed values from LiteSVM's Agave 4.3.2 at fixed addresses, not upper bounds; a positive last column is expected, not a failure):
+
+| step | signature | slot | live program CU | VM observed min–max CU (same ELF) | live − VM observed max |
+|---|---|---|---|---|---|
+| initialize_config | `4izewk4svpn6cwAcaSU7Wc4WXDrKhDSy5yJ1CBq9k4jGMoZgUe3XESiCm6EEhgcgPY32JcqXBxuaGtijuGTJxD3z` | 520,996,544 | 11,849 | 11,849–11,849 (n=1) | +0 |
+| create_room | `Yvju6ocqKupsFEf2Z9FFA1Mr9q7nywMs8jFw9vqpAx5aZzQAx2Qp3AKHgqUWNgRBWg2Cbj9Rc88EPbJe5JkCUD2` | 521,593,045 | 239,285 | 228,246–228,246 (n=1) | +11,039 |
+| create_atas_launcher | `4tLFrD5wB5hYP4VsNpSYhor67VPJtcVb4ET5gBK5QUomzJiqfy3sQ7YxHRDKcFVgTDkkj1ybLWsPxMZrmzHkbGaj` | 521,593,057 | None | not measured | — |
+| open_door | `3VNhoiCKtsQVPjQc5MaThN2WkWQp6bzAWSTdN1PtkaZWX5Ufvc6ghyMMHLYMhJaodX4LZzug44qwN6xpNkFATMxV` | 521,593,071 | 134,309 | 136,726–150,237 (n=3) | -15,928 |
+| create_atas_trader | `svvmfQokL8UmcZm9EDnfqmdyFrWEcyg62MKKcAFkBg6pkEN7cnao54LXGLAAgqD63FdWLcbsmPbQFkfLAyng3Tr` | 521,593,081 | None | not measured | — |
+| buy_door0 | `2t8KjH9PCXmnzaq9NfiwBajMWymErgbvYhGBqgtQhWz4a6vRgNzdcEUDviSkVeDpuY3v22vFruJGgHbKH4KKvHFr` | 521,593,093 | 102,030 | 70,182–108,011 (n=3,348) | -5,981 |
+| buy_door1 | `2MutXzyupjKPphtaeFrpkKzUHAV9MnZnGdZRhaxgkHJr9P9kXnqn4zNqtchm3pgUoPA99AuycUhTP7hrokJ8ZXED` | 521,593,102 | 71,952 | 70,182–108,011 (n=3,348) | -36,059 |
+| sell_door0 | `4Tb8px6CoyuXhv5NWsXPou1ATSq813KNuN2MY2gHryMfhvywmizi9uM6QBpcUAgbbAgVozpPaCq6TzwHYKCsskd1` | 521,593,115 | 63,871 | 56,247–61,081 (n=1,673) | +2,790 |
+| swap_door0_to_door1 | `5BGb6XoGcQw1tzz6jcFkbMyVx3FgG5gMatYBsDdmQBtCL35Z14D4VdHWfW1YA8RiRje5exffzDs1nJQZ1iqzKceR` | 521,593,127 | 93,636 | 78,993–92,330 (n=800) | +1,306 |
+| buy_room_token | `Y8BpxbCprCPaTXZNZurKLjVyAdx6kFQ129XJeiUj3yDNwRozqiaH45GjMtkLyiBCdozAewWgizEobDuJZRBgR7J` | 521,593,138 | 44,751 | 52,215–61,850 (n=840) | -17,099 |
+| retire_pending | `3fcHVNy9Mp4K5h69pSkWga23ZTq9pFSd6YnL4fumJNygfxuEKyT9nacjkCwgWRF5tNL2rUm6EMDJ2XrSuyjXi8M2` | 521,593,166 | 37,082 | 19,107–28,526 (n=829) | +8,556 |
+| claim_door_fees | `37oXurQdkdgowUkj6vhfNfugnDb5dJnqMAFELxcyaDBnybZ1P1fA9iWeZu3VWnXnxUMWoei5Pb33GTY5eyS9dfVS` | 521,593,178 | 57,318 | 35,700–39,605 (n=808) | +17,713 |
+
+ATA rows are client setup (Associated Token program), not doors program CU.
+
+**Expected failures:**
+
+| case | landed on-chain | signature | slot | error |
+|---|---|---|---|---|
+| create_room_without_matcher_signature | yes | `3fH2KGs3CX1KQ9zm5mJin7xmPZE7cAM9tmEBRgCaSjrAZuhoy6989uPCxNtVQ5NoyKNNFEiPotPWDf3zS8WTjbp9` | 521,593,280 | {"InstructionError":[2,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| open_door_without_matcher_signature | yes | `3B1Lrph88aMMG3JbAW2uYkjpd6taMPHxiJdUpziqPPzqKM4TcehXBR9zYFTMTe21uv4fmWTrkn29W7SH8cZwvUZJ` | 521,593,290 | {"InstructionError":[2,{"Custom":3010}]}; `Program log: AnchorError caused by account: matcher. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.` |
+| create_room_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
+| open_door_signature_over_different_routing_data | no: rejected before execution | — | — | `SignatureFailure`: Transaction simulation failed: Transaction did not pass signature verification |
+| sell_exceeding_balance | yes | `PTq3j3HH27fhQqcFKCMXFy41DefzxYBnCkuonq5kPbc4TKfBMBbYdosqnJTAPRQGx5P5mdhiXBHAJNQXFH9695t` | 521,593,310 | {"InstructionError":[2,{"Custom":1}]}; `Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1` |
+| claim_door_fees_by_non_recipient | yes | `4GsvHPRPDZ7ktwjmAWNkU3d9tQEUHvFVHLHnAMd73Uf9sW7LjUnjLp8nZyEejiZQbxTaU66gQwcaNC5gDto7Jh9N` | 521,593,320 | {"InstructionError":[2,{"Custom":6006}]}; `Program log: AnchorError thrown in programs/doors_v1/src/lib.rs:1048. Error Code: Authority. Error Number: 6006. Error Message: Unauthorized.` |
+
+**On-chain state checks after the sequence:**
+
+| check | result |
+|---|---|
+| room mint `HzBD5rhmB4XQZ32wRioYnd5VSAGLBBbeF2Zez4c3DtKJ`: supply, mint/freeze/metadata authorities | 1000000000000000, None, None, None → ok |
+| door 0 mint `FTbzYP3EdPpP7Mb34g3VQ6LQeU31e9mKRxWKTA7nVrkE`: supply, authorities | 1000000000000000, None, None, None → ok |
+| door 0 backing vault vs curve integral | 880225756822 vs 880225756822 → covers |
+| door 1 mint `GgGNZvhZ9yx6NnTg33cZjALg3HgZyck2tDC8K9CJPBwE`: supply, authorities | 1000000000000000, None, None, None → ok |
+| door 1 backing vault vs curve integral | 4379299644228 vs 4379299644228 → covers |
+| reserve vs curve integral of `sold` | 197826968 vs 197826968 → covers |
+| ReserveVault lamports − rent vs `reserve` | 197826968 vs 197826968 → covers |
+| RoomVault vs unsold supply | 992970772114960 vs U − 7029227885040 → covers |
+| fee counters vs 60/40 split of every Trade event's fee | expected {'door0': 894029, 'door1': 594060, 'fee_total': 2975199, 'founder': 0, 'pending_reserve': 297030, 'protocol': 1190080}; on-chain {'door0': 894029, 'door1': 594060, 'fee_total': 2975199, 'founder': 0, 'pending_reserve': 297030, 'protocol': 1190080} → match |
+| retire_pending | pending 0, reserve +297030 |
+| claim_door_fees (door 0) | accrued 0, claimed 894029 |
+
+PASS  deployed bytes equal the pinned ELF
+PASS  program ID matches the deploy output
+PASS  upgrade authority is set (not the deploy wallet)
+PASS  initialize_config succeeded
+PASS  every Config field matches the settings
+PASS  Config matcher_authority equals the smoke matcher
+PASS  smoke step create_room landed and succeeded with program CU recorded
+PASS  smoke step open_door landed and succeeded with program CU recorded
+PASS  smoke step buy_door0 landed and succeeded with program CU recorded
+PASS  smoke step buy_door1 landed and succeeded with program CU recorded
+PASS  smoke step sell_door0 landed and succeeded with program CU recorded
+PASS  smoke step swap_door0_to_door1 landed and succeeded with program CU recorded
+PASS  smoke step buy_room_token landed and succeeded with program CU recorded
+PASS  smoke step retire_pending landed and succeeded with program CU recorded
+PASS  smoke step claim_door_fees landed and succeeded with program CU recorded
+PASS  NameLock holds the smoke room under the matcher's name key
+PASS  room mint: 1B supply, no mint/freeze/metadata authority
+PASS  door 0 mint: 1B supply, no mint/freeze/metadata authority
+PASS  door 0 backing vault covers curve integral
+PASS  door 1 mint: 1B supply, no mint/freeze/metadata authority
+PASS  door 1 backing vault covers curve integral
+PASS  reserve covers the curve integral of sold
+PASS  ReserveVault lamports minus rent cover reserve
+PASS  RoomVault covers unsold supply
+PASS  fee counters equal the 60/40 split of every Trade fee
+PASS  FeeVault lamports minus rent cover all fee counters
+PASS  retire_pending moved all pending into reserve
+PASS  claim_door_fees paid door 0 exactly its accrued fees
+PASS  failure case create_room_without_matcher_signature rejected with {"Custom":3010}
+PASS  failure case open_door_without_matcher_signature rejected with {"Custom":3010}
+PASS  failure case create_room_signature_over_different_routing_data rejected with SignatureFailure
+PASS  failure case open_door_signature_over_different_routing_data rejected with SignatureFailure
+PASS  failure case sell_exceeding_balance rejected with {"Custom":1}
+PASS  failure case claim_door_fees_by_non_recipient rejected with {"Custom":6006}
+
+34 of 34 checks passed

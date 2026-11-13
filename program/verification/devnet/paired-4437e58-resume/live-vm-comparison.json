@@ -1,0 +1,1373 @@
+{
+  "elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "scenarios": [
+    {
+      "initial_room_sol": 0,
+      "dump": false,
+      "followers_rotate": true,
+      "vm_a_payout_lamports": 8097503855,
+      "live_a_payout_lamports": 8097503855,
+      "payout_gap_lamports": 0,
+      "sale_signature": "5fC4SmN5a77dbBHJuWSPS8ymG2pwYeewiQREvMuentnWPf3RQHxWaG79NkRvQJxHD4njVQVeJYH1E2CixepXPQQf",
+      "sale_slot": 521580581,
+      "steps": [
+        {
+          "step": "after_a_buys",
+          "slot": 521580055,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_buy",
+          "slot": 521580547,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_a_exits",
+          "slot": 521580587,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_rotate",
+          "slot": 521580989,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        }
+      ]
+    },
+    {
+      "initial_room_sol": 10,
+      "dump": false,
+      "followers_rotate": false,
+      "vm_a_payout_lamports": 7335805961,
+      "live_a_payout_lamports": 7335805961,
+      "payout_gap_lamports": 0,
+      "sale_signature": "5GjQbT1cWSr9v3AHH2iJeu856dZ9wjSuCZnwqVgty14HH9HMCbe7N4MdbgKkhKDX11jMjcnjsBBLHdgQsVrNy2hi",
+      "sale_slot": 521583418,
+      "steps": [
+        {
+          "step": "after_a_buys",
+          "slot": 521582843,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_buy",
+          "slot": 521583384,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_a_exits",
+          "slot": 521583424,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_cash_out",
+          "slot": 521583803,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        }
+      ]
+    },
+    {
+      "initial_room_sol": 10,
+      "dump": false,
+      "followers_rotate": true,
+      "vm_a_payout_lamports": 7335805961,
+      "live_a_payout_lamports": 7335805961,
+      "payout_gap_lamports": 0,
+      "sale_signature": "2MPaTgmHH8EZnDxnTw1ce8syYg2zkT314F3s5uzXhivfni4PGPcz8bLg3QU7Xeso5rqssprwBZLyTQgNLtpKRLXG",
+      "sale_slot": 521585862,
+      "steps": [
+        {
+          "step": "after_a_buys",
+          "slot": 521585379,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_buy",
+          "slot": 521585829,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_a_exits",
+          "slot": 521585867,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_rotate",
+          "slot": 521586233,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        }
+      ]
+    },
+    {
+      "initial_room_sol": 10,
+      "dump": true,
+      "followers_rotate": false,
+      "vm_a_payout_lamports": 3801439748,
+      "live_a_payout_lamports": 3801439748,
+      "payout_gap_lamports": 0,
+      "sale_signature": "4hdLJ8FMaNW6qgAh2dfEgQ4W8vvz3kNLG4SPT8fW3Jn9xCf9igHtM5Ga2F2bahEVuoiY9p36pCJrQSY9MdQuTB5F",
+      "sale_slot": 521588605,
+      "steps": [
+        {
+          "step": "after_a_buys",
+          "slot": 521588052,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_buy",
+          "slot": 521588511,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_unrelated_room_dump",
+          "slot": 521588567,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_a_exits",
+          "slot": 521588609,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_cash_out",
+          "slot": 521588973,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        }
+      ]
+    },
+    {
+      "initial_room_sol": 10,
+      "dump": true,
+      "followers_rotate": true,
+      "vm_a_payout_lamports": 3801439748,
+      "live_a_payout_lamports": 3801439748,
+      "payout_gap_lamports": 0,
+      "sale_signature": "3c52JFWHEhL5Hfh6MMfrg1XAhwqcPEvfzvLjBnQWz4MyQmyMUa28bTgauERXco2qy7wH3W4PhXvot6NiVNWt2Doo",
+      "sale_slot": 521591025,
+      "steps": [
+        {
+          "step": "after_a_buys",
+          "slot": 521590473,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_buy",
+          "slot": 521590937,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_unrelated_room_dump",
+          "slot": 521590993,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_a_exits",
+          "slot": 521591031,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        },
+        {
+          "step": "after_followers_rotate",
+          "slot": 521591400,
+          "integer_state_matches": true,
+          "room_price_multiple_gap": 0.0,
+          "max_fdv_sol_gap": 0.0
+        }
+      ]
+    }
+  ],
+  "create_room_bump_decomposition": [
+    {
+      "signature": "4Ua3DQSpUjtwamPmag48iu5HGfaPHgoDyyzJ8CCiNCSFkXJT6p5TUD7fdnpRmV6Bbif2noPZ2fudBJrNdthF1bWK",
+      "slot": 521579995,
+      "first_buy": false,
+      "live_program_cu": 225631,
+      "vm_program_cu": 225246,
+      "measured_gap_cu": 385,
+      "live_tries": 32,
+      "vm_tries": 32,
+      "modelled_bump_gap_cu": 0,
+      "residual_cu": 385,
+      "live_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "door",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "reserve",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fees",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        }
+      ],
+      "vm_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "reserve",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "fees",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        }
+      ]
+    },
+    {
+      "signature": "3oXYakP7EK2VBxqhVPEauW6e3G5Wd5fUZeeFKr1mpEnqLRGgBHLsxANN5mczMM1G6x9xehiKJho5n4foRPg4LtXC",
+      "slot": 521582793,
+      "first_buy": true,
+      "live_program_cu": 368602,
+      "vm_program_cu": 337694,
+      "measured_gap_cu": 30908,
+      "live_tries": 83,
+      "vm_tries": 63,
+      "modelled_bump_gap_cu": 30000,
+      "residual_cu": 908,
+      "live_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 6,
+          "total_tries": 24
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 3,
+          "total_tries": 12
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 4,
+          "total_tries": 4
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 6,
+          "total_tries": 12
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 3,
+          "total_tries": 9
+        }
+      ],
+      "vm_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 5,
+          "total_tries": 20
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 2,
+          "total_tries": 6
+        }
+      ]
+    },
+    {
+      "signature": "4hZpw2SXazSH75rzsPz1FZUW8VfNYLnMWbtKQw3Xtsv9mU5ztzJx5nsyqNQ1K6VAGUQ1sW2nCR2CSpdbEyGH3V9Q",
+      "slot": 521585335,
+      "first_buy": true,
+      "live_program_cu": 307114,
+      "vm_program_cu": 337694,
+      "measured_gap_cu": -30580,
+      "live_tries": 42,
+      "vm_tries": 63,
+      "modelled_bump_gap_cu": -31500,
+      "residual_cu": 920,
+      "live_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 3,
+          "total_tries": 12
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 1,
+          "total_tries": 3
+        }
+      ],
+      "vm_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 5,
+          "total_tries": 20
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 2,
+          "total_tries": 6
+        }
+      ]
+    },
+    {
+      "signature": "PQvBTMGaMUWMSmR2eqYFHJUtDPMELGjS3AZYtmJeJWh3bSu47sapHa3rhCRQ5gL4s1eDrJxzetwGJC6PsApkCHP",
+      "slot": 521588009,
+      "first_buy": true,
+      "live_program_cu": 332588,
+      "vm_program_cu": 337694,
+      "measured_gap_cu": -5106,
+      "live_tries": 59,
+      "vm_tries": 63,
+      "modelled_bump_gap_cu": -6000,
+      "residual_cu": 894,
+      "live_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 3,
+          "total_tries": 12
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 3,
+          "total_tries": 6
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 2,
+          "total_tries": 6
+        }
+      ],
+      "vm_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 5,
+          "total_tries": 20
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 2,
+          "total_tries": 6
+        }
+      ]
+    },
+    {
+      "signature": "wufonMBFq7MrERgNHfckH57JJv55ukdSPtsZ7pYSr6bp8eq9cxvGs4A2zZ1GY2B5oy3DT8bQ6sc3A1nMLCMJ3F5",
+      "slot": 521590427,
+      "first_buy": true,
+      "live_program_cu": 328236,
+      "vm_program_cu": 337694,
+      "measured_gap_cu": -9458,
+      "live_tries": 56,
+      "vm_tries": 63,
+      "modelled_bump_gap_cu": -10500,
+      "residual_cu": 1042,
+      "live_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 3,
+          "total_tries": 6
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 3,
+          "total_tries": 9
+        }
+      ],
+      "vm_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 4,
+          "tries_per_call": 1,
+          "total_tries": 4
+        },
+        {
+          "seed": "reserve",
+          "calls": 4,
+          "tries_per_call": 2,
+          "total_tries": 8
+        },
+        {
+          "seed": "fees",
+          "calls": 4,
+          "tries_per_call": 5,
+          "total_tries": 20
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "user_ata",
+          "calls": 3,
+          "tries_per_call": 2,
+          "total_tries": 6
+        }
+      ]
+    },
+    {
+      "signature": "Yvju6ocqKupsFEf2Z9FFA1Mr9q7nywMs8jFw9vqpAx5aZzQAx2Qp3AKHgqUWNgRBWg2Cbj9Rc88EPbJe5JkCUD2",
+      "slot": 521593045,
+      "first_buy": false,
+      "live_program_cu": 239285,
+      "vm_program_cu": 225246,
+      "measured_gap_cu": 14039,
+      "live_tries": 41,
+      "vm_tries": 32,
+      "modelled_bump_gap_cu": 13500,
+      "residual_cu": 539,
+      "live_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "reserve",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fees",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 7,
+          "total_tries": 7
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 1,
+          "tries_per_call": 9,
+          "total_tries": 9
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 2,
+          "total_tries": 4
+        }
+      ],
+      "vm_derivations": [
+        {
+          "seed": "room",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "reserve",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "fees",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "grad_payer",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_mint",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "retired",
+          "calls": 1,
+          "tries_per_call": 3,
+          "total_tries": 3
+        },
+        {
+          "seed": "fee_wsol",
+          "calls": 1,
+          "tries_per_call": 5,
+          "total_tries": 5
+        },
+        {
+          "seed": "slug",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_mint",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "door_vault",
+          "calls": 1,
+          "tries_per_call": 1,
+          "total_tries": 1
+        },
+        {
+          "seed": "door_room_vault",
+          "calls": 1,
+          "tries_per_call": 2,
+          "total_tries": 2
+        },
+        {
+          "seed": "name",
+          "calls": 2,
+          "tries_per_call": 1,
+          "total_tries": 2
+        }
+      ]
+    }
+  ]
+}

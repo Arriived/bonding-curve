@@ -1,0 +1,17 @@
+{
+  "active": "smoke-check",
+  "completed": [
+    "config",
+    "paired-remaining",
+    "fund-smoke",
+    "smoke",
+    "failures",
+    "smoke-check-offline",
+    "recovery"
+  ],
+  "error": "smoke-check exited 1; inspect its saved error and receipts",
+  "authorized_case_count": 5,
+  "status": "halted_recovered",
+  "matcher_e2e": "not_started",
+  "report_encoding_fix": "9594aad"
+}

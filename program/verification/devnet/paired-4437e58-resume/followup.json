@@ -1,0 +1,5 @@
+{
+  "active": "waiting_for_program_checks",
+  "completed": [],
+  "error": "AssertionError: Program checks stopped; do not start matcher checks"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "not_started",
+  "reason": "Owner stop rule: report renderer exited on Windows cp1252 output after completed program smoke and negative requests. No service HTTP requests or transactions were submitted.",
+  "prepared_service_commit": "a7aa8c0378e20b74fbc801a22aace4d9145ab58d",
+  "client_sha256": "06c3fee963a80cb05adb07712f2c02914177a5c33d5e4fbc1f6e256f5bc3abe9",
+  "verifier_fix_commit": "310e12a",
+  "tests_passed": 180
+}

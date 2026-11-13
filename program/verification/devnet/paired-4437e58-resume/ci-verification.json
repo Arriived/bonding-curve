@@ -1,0 +1,61 @@
+{
+  "program_commit": "9594aad24455629364127a944231597dfb4d7403",
+  "program_run": 43308113879,
+  "executed_client_windows_run": 43297174031,
+  "sbf_passed": 73,
+  "property_iterations": 10000,
+  "client_tests_passed": 4,
+  "curve_fuzz_cases": 400000,
+  "elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "source_sha256": {
+    "programs/doors_v1/src/contexts.rs": "7091a95f3858f8eefc26fc38b9288dc1b2cddbd24be1a6d9969f2bf2da29b279",
+    "programs/doors_v1/src/lib.rs": "2632dfe8152b014f900f553e87c3b0f656f6f067f61b87cb5477f409927e232b",
+    "programs/doors_v1/src/math.rs": "c2624ceeb003066ce3ee4aa8ba8d3e350ec16d431e1e0f0d5c9b511903d23c53",
+    "programs/doors_v1/src/state.rs": "fb1ca2cda868fb8e9ce04752994f612d777571e57d1a58a401f5c1d637dca7f8",
+    "programs/doors_v1/src/trading.rs": "5d1019b6845da67c2cc80a06f5e3fb2311b8989746e0481fb0ef12a3e2eb93a5",
+    "programs/doors_v1/src/vaults.rs": "3ec60fb8df4394af8674f7f85c38e45761bf5cedb8a08366d004ae13ac8d1c3b",
+    "programs/doors_v1/tests/cases/adversarial_review.rs": "cd102cb944251698722beec293f00c216a7f56843448325b77b877ab1240de7c",
+    "programs/doors_v1/tests/cases/paired_doors.rs": "5a8fc27040f94a8430be52f01eed98732a754168b9b87a6ae382e1142b3ca386",
+    "programs/doors_v1/tests/cases/review_continuation.rs": "d032e7493ce8a81a6dfa5ad19cc1e5e7dda1689aab15b57ced7ff084b7547189",
+    "programs/doors_v1/tests/cases/sweeps.rs": "9923d6a8301d4f0d62645a4bae0c3a6f5091cf96326e5ce0fcced71c0fc275ba",
+    "programs/doors_v1/tests/svm.rs": "e29eb6cf6d873deb4482369f8c24787e752c58e81ac05a6328a633e1650d609e",
+    "programs/doors_v1/Cargo.toml": "ca8e422fa5dece2dd35d55589d9256fbcf656f040b6d699dbde9c121656d472b",
+    "test-fixtures/launch_proxy/src/lib.rs": "1bf97925417233de32ddd320e2c1b6e65bb8eb81ca485b89878c0e7397de9165",
+    "test-fixtures/launch_proxy/Cargo.toml": "32e15192c8b977bd6ade49015d9dae19fc945a949446fb04c7954f2d0c075fb3",
+    "test-fixtures/launch_proxy/Cargo.lock": "e98c1572b4a90e4df2829f54418163a041dab3ee09b6f78081369a6b2f904eba",
+    "Cargo.lock": "1f20992f4c25877e3706d4bac49d073bb3bd6c908ab71c0ac35b14d6d1c710a5",
+    "Cargo.toml": "94cdc1fd5bc8a84dd4067ceae73929f95a12cb7874a7504ea496693a9cf366fc",
+    "Anchor.toml": "41cf6eb06910ee82a2165d0a778e26d1b5bcb1db6892fdaf8ce1297632e6c8b3"
+  },
+  "service_tests_passed": 180,
+  "service_verifier_pre_fix_commit": "584596a",
+  "service_verifier_fix": "310e12a",
+  "verifier_tests_failed_before": 2,
+  "verifier_tests_pass_after": 2,
+  "evasion_targets": 1223,
+  "evasion_identical": true,
+  "report_encoding_pre_fix_commit": "db8d718",
+  "report_encoding_fix": "9594aad",
+  "report_encoding_regressions_failed_before": 1,
+  "report_encoding_regressions_pass_after": 1,
+  "smoke_checks_passed_offline": 34,
+  "service_e2e": "not_started",
+  "report_fix_ci": [
+    {
+      "id": 43308113879,
+      "head_sha": "9594aad24455629364127a944231597dfb4d7403",
+      "name": "program-v1",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Arriived/bonding-curve/actions/runs/43308113879"
+    },
+    {
+      "id": 43308113918,
+      "head_sha": "9594aad24455629364127a944231597dfb4d7403",
+      "name": "devnet-client-windows",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Arriived/bonding-curve/actions/runs/43308113918"
+    }
+  ]
+}

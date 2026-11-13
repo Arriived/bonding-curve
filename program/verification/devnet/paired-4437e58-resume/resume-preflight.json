@@ -1,0 +1,77 @@
+{
+  "program": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+  "pinned_elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "genesis_hash": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "opening_lamports": 53344866003,
+  "opening_slot": 521579340,
+  "wallet_balances": {
+    "deploy-wallet": 53344866003,
+    "upgrade-authority": 0,
+    "matcher-authority": 0,
+    "smoke-launcher": 0,
+    "smoke-trader": 0,
+    "follower-01": 0,
+    "follower-02": 0,
+    "follower-03": 0,
+    "follower-04": 0,
+    "follower-05": 0,
+    "follower-06": 0,
+    "follower-07": 0,
+    "follower-08": 0,
+    "follower-09": 0,
+    "follower-10": 0,
+    "follower-11": 0,
+    "follower-12": 0,
+    "follower-13": 0,
+    "follower-14": 0,
+    "follower-15": 0,
+    "follower-16": 0,
+    "follower-17": 0,
+    "follower-18": 0,
+    "follower-19": 0,
+    "follower-20": 0
+  },
+  "selected_cases": [
+    [
+      0,
+      false,
+      true
+    ],
+    [
+      10,
+      false,
+      false
+    ],
+    [
+      10,
+      true,
+      false
+    ],
+    [
+      10,
+      false,
+      true
+    ],
+    [
+      10,
+      true,
+      true
+    ]
+  ],
+  "offline_budget": {
+    "rent_read_finalized_slot": 519485996,
+    "cases": 5,
+    "peak_buy_float_lamports": 32100000000,
+    "total_scenario_loss_ceiling_lamports": 3189160212,
+    "deploy_rent_lamports": 2972577240,
+    "account_rent_ceiling_lamports": 2197811200,
+    "network_and_admin_lamports": 110002000,
+    "budget_ceiling_lamports": 40569550652,
+    "funding_request_sol": 41
+  },
+  "resume_ceiling_lamports": 39656511012,
+  "prior_closing_lamports": 43344866003,
+  "additional_funding_since_prior_close_lamports": 10000000000,
+  "original_qualification_opening_lamports": 46544000361,
+  "config_fields_match": true
+}

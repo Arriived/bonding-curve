@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "C:\Users\moadl\OneDrive\Documents\ChatGPT\bonding curve research\.tmp\paired-doors\program\devnet\report.py", line 162, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\moadl\OneDrive\Documents\ChatGPT\bonding curve research\.tmp\paired-doors\program\devnet\report.py", line 86, in main
+    print("\n".join(L))
+    ~~~~~^^^^^^^^^^^^^^
+  File "encodings\cp1252.py", line 19, in encode
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2212' in position 2784: character maps to <undefined>
