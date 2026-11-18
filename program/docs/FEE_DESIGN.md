@@ -183,6 +183,68 @@ With both constraints, the mechanism reads as a protocol-level liquidity program
 
 ---
 
+## 4a. Liquidity depth decays as a coin grows — and fee routing fixes it
+
+Claim, [@the_smart_ape, 15 Nov 2026](https://x.com/the_smart_ape/status/2121921459614531607): a pump.fun pool
+receives about 68 SOL at bonding and never grows, so the larger the coin gets the easier it is to crash.
+
+**Verified independently.** For a constant-product pool holding fraction `f` of supply, selling fraction `s`
+gives `p'/p = (f/(f+s))²`. Price goes as the square of the SOL in the pool, so `f` decays as `1/sqrt(mcap)`.
+Reproducing their four figures exactly:
+
+| mcap | pool holds | sell to halve the price |
+|---|---:|---:|
+| $1m | 3.20% | **1.33%** (their 1.3%) |
+| $10m | 1.01% | **0.42%** (their 0.42%) |
+| $100m | 0.32% | **0.13%** (their 0.13%) |
+| $1b | 0.10% | **0.042%** (their 0.04%) |
+
+At $1b, someone selling 0.04% of supply halves the coin. The maths is right and the cause is structural: fixed
+liquidity, growing market cap.
+
+**Our bonding curve is far more robust**, because the virtual reserve buys price-impact resistance with no real
+capital:
+
+| room reserve | effective pool as % of supply | sell to halve |
+|---:|---:|---:|
+| 0 SOL | 107.3% | 44.5% |
+| 10 SOL | 80.5% | 33.3% |
+| 50 SOL | 40.2% | 16.7% |
+| 85 SOL (graduation) | 28.0% | **11.6%** |
+
+**But that advantage ends at graduation, and this is the decision still open.** Our room graduates at 85 SOL
+(~$7,600); pump.fun bonds at ~68 SOL (~$6,100). If we hand a pool a fixed amount and walk away, **we inherit
+exactly the same 1/sqrt(mcap) decay.** Nothing about paired doors prevents it.
+
+**Routing a share of the trade fee into the pool fixes it, and the fix is scale-invariant.** Because both the
+pool and the market cap then grow with cumulative volume, `f` stops depending on size. Assuming lifetime volume
+of 10× market cap:
+
+| share of the 1% fee routed to the pool | pool at $100m mcap | pool at $1b mcap | f | sell to halve |
+|---:|---:|---:|---:|---:|
+| 0% (pump.fun's model) | $0.01m | $0.01m | ~0% | ~0.0% |
+| **20%** | $2.0m | $20.0m | **2.0%** | **0.83%** |
+| 40% | $4.0m | $40.0m | 4.0% | 1.66% |
+| 100% | $10.0m | $100.0m | 10.0% | 4.15% |
+
+Routing just **20% of the fee** makes a $1b coin roughly **20× harder to crash** than a pump.fun coin, and the
+figure no longer degrades with size. This is precisely Sparsity's "compounding liquidity so the pool grows with
+volume" (§1), achieved through fee routing rather than new mechanism.
+
+**Consequences for decisions already on the table:**
+- It raises the stakes on the **post-graduation fee**: that fee is the only thing that can fund compounding depth.
+  Charging nothing after graduation forfeits the mechanism entirely.
+- It is the same lever as **Proposal A** (§3): paying the room rather than individual holders. That proposal was
+  justified on sybil-resistance grounds; this shows it also solves a structural liquidity defect.
+- The accreted liquidity must be **permanently locked**, or it is not depth — it is a protocol position that
+  could be withdrawn. Meteora DAMM v2's permanently-locked-position-that-still-earns-fees is a natural vehicle,
+  which strengthens the case for DAMM v2 over DLMM at graduation.
+
+**Caveats.** The 10× lifetime-volume assumption is illustrative, not measured; the conclusion is scale-invariance,
+which holds at any multiple. Fee routed to the pool is fee not paid to the creator or protocol, so this is a real
+cost, not free. And fee accretion is slow in practice: the cited post notes `$mihao` reached only 1.4% of supply
+after weeks of heavy trading, so depth builds over a coin's life rather than at graduation.
+
 ## 5. See also
 
 - `research/doors_into_one_room/POSITIONING.md` — the room as narrative exposure, and the experiment that tests it.
