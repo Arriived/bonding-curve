@@ -1297,3 +1297,55 @@ the decoder is now the best-evidenced component in the service.
 The suite stands at **225 tests**. The commit that added this section says 221 in its message, which is
 wrong; the count here is the correct one. Noted rather than rewritten, because amending a pushed commit
 to fix a number in prose is not worth rewriting history for.
+
+## 34. The 74% door share is an upper bound; the real range is 60-74% (19 November 2026)
+
+`watcher/shadow.py` states in its own docstring that it treats every room as live for the whole run and therefore
+"counts the upper end of doors". Every door-share figure reported so far, including the 74.1% in section 26b and
+in the summaries given to the owner, carries that assumption. It had never been quantified.
+
+`doors_v1` lets rooms die. A room is live for `live_new_seconds` = 3600 after creation, and after that only while
+**reserve >= 0.5 SOL AND idle <= 6h AND 24h volume >= 5 SOL** (`program/docs/DEPLOYMENT.md`). A dead room's
+NameLock key is free, so the next launch of that name opens a **new** room instead of becoming a door.
+
+The launch records carry no reserve or volume, so both ends were modelled instead, over 75,578 launches spanning
+59.7 hours:
+
+| model | doors | share | keys re-taken |
+|---|---:|---:|---:|
+| **live forever** — the published figure, upper bound | 56,034 | **74.1%** | 0 |
+| idle window — assume the reserve and volume bars are met, only idleness kills a room | 53,107 | 70.3% | 2,927 |
+| **grace only** — no room ever meets the 0.5 SOL bar, so each lives exactly 1 hour, lower bound | 45,516 | **60.2%** | 10,518 |
+
+**The honest headline is 60-74%, and nearer the bottom than the top**, because 91% of coins end with a reserve
+under 0.01 SOL (`research/doors_into_one_room/MAKER_ROLE.md` §3c) and so would never clear the 0.5 SOL bar. The
+impersonation split in section 26b (53.7% by a different creator) inherits the same upper-bound assumption and
+should be read the same way. **Door share should not be quoted again without saying which model it assumes**, in
+the same way it should not be quoted without its window.
+
+### 34a. The tension this exposes, which is an owner decision
+
+Under the pessimistic model a key changes hands **10,518 times in 60 hours**. Each change is a narrative
+splitting in two: the old room keeps its holders, the new room takes the name, and later copies route to the new
+one. That is precisely the fragmentation the product exists to prevent.
+
+The obvious reaction — loosen liveness so rooms keep their keys — is wrong, and the reason is already in
+`program/docs/SECURITY_REVIEW.md`: liveness is what stops permanent squatting. "A squatter must actually create
+the room and keep it live." Make rooms immortal and a squatter buys a name once and holds it forever, which
+section 30 shows is cheap at 0.0288 SOL of rent. So:
+
+- **strict liveness** prevents squatting and fragments narratives;
+- **loose liveness** aggregates narratives and enables squatting.
+
+These are the same knob and it cannot be set to satisfy both.
+
+**What the numbers actually suggest, and the argument against alarm.** The model treats launches as a room's only
+activity. On our launchpad a door opening and the trading that follows both add reserve and volume, so a narrative
+with genuine traction would clear the bar and keep its key, while a dead one would release it. Read that way the
+rule already does the right thing: **worthless narratives give their names back, valuable ones keep them.** The
+60.2% figure is not a prediction, it is the share that would hold if every narrative were worthless. Reality sits
+between the rows, weighted by how many narratives get traction.
+
+**What would settle it** is the one thing the launch records cannot provide: reserve and volume per room over
+time. The devnet run, or a watcher extended to follow trades rather than only launches, would give it. Until then
+the range stands and the midpoint should not be presented as a measurement.
