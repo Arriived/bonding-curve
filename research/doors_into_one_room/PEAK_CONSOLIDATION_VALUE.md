@@ -3,7 +3,7 @@
 
 **Pre-registered rules:** lifetime c below 25%, or zero/near-zero additional peak-pooled graduations, rejects the consolidation claim on this evidence. Near-zero was fixed at at most 2 of the original 283 clusters. Missing history is unknown.
 
-**Measurement pending: 0/20 selected clusters have complete validated histories. No population verdict is available.**
+**Measurement pending: 2/20 selected clusters have complete validated histories. No population verdict is available.**
 
 The owner amended this run before full transactions to the top 20 of 248 uncompleted multi-member clusters, ranked by complete total signature counts across members, including failed transactions. The 35 copy clusters with a completed member already graduated under fragmentation and contribute no extra graduation. Exclude 743 non-SOL launches and 731 SOL singletons. The selected subset is not an estimate of all 283 clusters or the full population.
 
@@ -11,8 +11,8 @@ Fixed trigger: 85.018013680 SOL. Price: $95.045/SOL observed 2026-11-01T14:40:30
 
 | Rank | Root mint | Pooled peak SOL | Largest individual peak SOL | Lifetime c | Spec crossing |
 |---:|---|---:|---:|---:|---|
-| 1 | `9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump` | not_measured | unknown | unknown | unknown |
-| 2 | `EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump` | not_measured | unknown | unknown | unknown |
+| 1 | `9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump` | 50.484155838 | 30.027131215 | 66.64% | False |
+| 2 | `EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump` | 101.018785843 | 60.189838165 | 49.18% | True |
 | 3 | `GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH` | not_measured | unknown | unknown | unknown |
 | 4 | `Hwn9ZoNK34sVvZbTo412UwDfLUq79H7GVdL9JJsApump` | not_measured | unknown | unknown | unknown |
 | 5 | `45fVVhitRDuJhs5otnxvV8o698cpBUzNqhA21U4spump` | not_measured | unknown | unknown | unknown |
@@ -34,27 +34,27 @@ Fixed trigger: 85.018013680 SOL. Price: $95.045/SOL observed 2026-11-01T14:40:30
 
 ## Count and decision
 
-Observed crossing lower bounds from 0 validated clusters: {'spec default': 0, '$10,000': 0, '$50,000': 0, '$100,000': 0}. These compare the maximum simultaneous pooled reserve with the maximum individual reserve ever reached, using each threshold separately. The count in the fixed 248-cluster in-window eligible cohort is bounded by [0, 248]; these bounds do not assert the original near-zero decision rule for the whole cohort. An incomplete collection supplies no negative population verdict.
+Observed crossing lower bounds from 2 validated clusters: {'spec default': 1, '$10,000': 0, '$50,000': 0, '$100,000': 0}. These compare the maximum simultaneous pooled reserve with the maximum individual reserve ever reached, using each threshold separately. The count in the fixed 248-cluster in-window eligible cohort is bounded by [1, 247]; these bounds do not assert the original near-zero decision rule for the whole cohort. An incomplete collection supplies no negative population verdict.
 
 A positive crossing is an existence witness under fixed historical behaviour, not proof of the product’s causal effect. A zero in these 20 supports the negative result for this activity-selected subset; unmeasured clusters remain unknown. No remaining full transactions will be collected after the requested top-20 search without further authorization.
 
 ## Lifetime inflow and retention
 
-Primary peak-reserve-weighted c: **undefined**. Pooled gross-inflow ratio: **undefined**. Same-subset current-stock c: undefined; original 283-cluster stock c: 10.18%. This is a top-activity subset, not full-population lifetime c. Gross inflow sums positive reserve changes on buys; it never subtracts sells or treats retained balances as lifetime spending.
+Primary peak-reserve-weighted c: **55.00%**. Pooled gross-inflow ratio: **52.28%**. Same-subset current-stock c: 21.81%; original 283-cluster stock c: 10.18%. This is a top-activity subset, not full-population lifetime c. Gross inflow sums positive reserve changes on buys; it never subtracts sells or treats retained balances as lifetime spending.
 
-Funded cut stays $10,000 at peak pooled reserve. Funded: 0 clusters, weighted c undefined. Dust: 0 clusters, weighted c undefined. Empty or zero-weight categories are undefined, not zero.
+Funded cut stays $10,000 at peak pooled reserve. Funded: 0 clusters, weighted c undefined. Dust: 2 clusters, weighted c 55.00%. Empty or zero-weight categories are undefined, not zero.
 
-Both weightings remain undefined until complete histories are available. These are different allocations of weights across clusters, not conflicting measurements of one quantity.
+The peak-weighted share exceeds the pooled-inflow ratio by 2.71 percentage points. Higher-copy-share clusters contribute relatively more accumulated peak capital per SOL of gross turnover. These are different allocations of weights across clusters, not conflicting measurements of one quantity.
 
-Per-cluster c distribution: {'p25': None, 'p50': None, 'p75': None, 'p90': None, 'p99': None, 'max': None}. Gap from original stock c, in percentage points: None. The decomposition adds weighting, leader reassignment, differential retention with a fixed stock leader, and cohort selection. Only the retention term describes the gross-versus-retained accounting gap; none is a causal estimate of consolidation.
+Per-cluster c distribution: {'p25': 0.5354239151696807, 'p50': 0.5790888950921533, 'p75': 0.6227538750146261, 'p90': 0.6489528629681096, 'p99': 0.6646722557401998, 'max': 0.6664188549370987}. Gap from original stock c, in percentage points: {'weighting_points': 2.7148580620710905, 'leader_definition_points': -2.1363914022460295, 'differential_retention_points': 32.605611662274235, 'cohort_selection_points': 11.635490824632308, 'total_points': 44.81956914673161}. The decomposition adds weighting, leader reassignment, differential retention with a fixed stock leader, and cohort selection. Only the retention term describes the gross-versus-retained accounting gap; none is a causal estimate of consolidation.
 
-Overall retained/gross: undefined. Member retention distribution: {'p25': None, 'p50': None, 'p75': None, 'p90': None, 'p99': None, 'max': None}. Full per-member gross buys, sell outflows and net retained reserves are in the machine-readable results. Every completed trajectory reconciles gross buys minus sell outflows to its own cached terminal reserve.
+Overall retained/gross: 0.06%. Member retention distribution: {'p25': 1.0248159849567554e-09, 'p50': 1.9515100206956813e-09, 'p75': 3.7967418502803295e-09, 'p90': 0.00026418388391135554, 'p99': 0.0010290439937219427, 'max': 0.0011054884063578289}. Full per-member gross buys, sell outflows and net retained reserves are in the machine-readable results. Every completed trajectory reconciles gross buys minus sell outflows to its own cached terminal reserve.
 
 ## Timing and the unmeasured remainder
 
-Non-root launch lag distribution in seconds: {'p25': None, 'p50': None, 'p75': None, 'p90': None, 'p99': None, 'max': None}. Non-root inflow in the first root hour: undefined. Root time uses its on-chain CreateEvent where available. These describe the selected subset; they are not matcher recall or a production grace-window counterfactual.
+Non-root launch lag distribution in seconds: {'p25': 63.0, 'p50': 94.0, 'p75': 176.5, 'p90': 269.2, 'p99': 380.3599999999999, 'max': 398}. Non-root inflow in the first root hour: 95.40%. Root time uses its on-chain CreateEvent where available. These describe the selected subset; they are not matcher recall or a production grace-window counterfactual.
 
-Measured peak/current ratios: {'p25': None, 'p50': None, 'p75': None, 'p90': None, 'p99': None, 'max': None}; infinite ratio observed: False. Largest remainder current reserve: 14.552146958 SOL. Conditional empirical envelope: unknown SOL; below spec trigger: None.
+Measured peak/current ratios: {'p25': 12066.297224344544, 'p50': 23989.245275805948, 'p75': 35912.193327267356, 'p90': 43065.9621581442, 'p99': 47358.223456670305, 'max': 47835.14137872876}; infinite ratio observed: False. Largest remainder current reserve: 14.552146958 SOL. Conditional empirical envelope: 696,104.007 SOL; below spec trigger: False.
 
 **Stopping limit:** that envelope assumes the remainder never drew down more than the worst measured cluster. No observed maximum establishes this assumption. Zero-current clusters can have positive past peaks. There is no finite certified upper bound on the remainder from these stock reads and the selected drawdowns, so this calculation cannot prove that the rest cannot qualify. Collection stops at 20 because that is the owner’s authorized negative-search scope.
 
@@ -64,15 +64,19 @@ True pre-window root count: **unknown**. Earliest in-window member offsets and n
 
 Full signature-count distribution across 248 eligible clusters: {'p25': 221.25, 'p50': 569.0, 'p75': 2286.25, 'p90': 9944.800000000001, 'p99': 44214.740000000005, 'max': 71826}. Total references: 906,967; successful references: 154,577. The capped first page is never used as a total count.
 
-Cached RPC replies by method: {'getBlock': 25, 'getSignaturesForAddress': 2121, 'getTransaction': 773}. HTTP attempts: 3,312; HTTP 429s: 431; observed span 2026-11-01T17:17:16.980591+00:00 to 2026-11-01T19:10:52.260060+00:00. Ranking elapsed 2069.8 seconds. Transaction-stage telemetry: `{'completed_current': 304, 'elapsed_seconds': 2379.4318656921387, 'rank': 1, 'root_mint': '9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump', 'uncached_at_start': 688, 'updated_at_utc': '2026-11-01T19:10:52.286590+00:00'}`. Batch pacing counts logical calls, not just HTTP posts. `SOLANA_RPC_URL` is the provider override; this run uses the official public mainnet endpoint.
+Cached RPC replies by method: {'getBlock': 860, 'getSignaturesForAddress': 2121, 'getTransaction': 8570}. HTTP attempts: 12,065; HTTP 429s: 538; observed span 2026-11-01T17:17:16.980591+00:00 to 2026-11-02T09:27:13.516978+00:00. Ranking elapsed 2069.8 seconds. Transaction-stage telemetry: `{'completed_current': 5526, 'elapsed_seconds': 16350.337955713272, 'rank': 2, 'root_mint': 'EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump', 'uncached_at_start': 5526, 'updated_at_utc': '2026-11-01T23:03:43.192680+00:00'}`. Batch pacing counts logical calls, not just HTTP posts. `SOLANA_RPC_URL` is the provider override; this run uses the official public mainnet endpoint.
 
 Restore raw history with `python scripts/narrative/archive_peak_cache.py --restore`, then rerun `report_peak_consolidation.py`; the archive manifest records response counts and SHA-256 checks. Resume ranking with `rank_peak_candidates.py`, or selected transaction collection with `collect_peak_transactions.py`. The working SQLite file is excluded from Git; verified compressed archive parts retain raw query parameters, timestamps, responses and attempt telemetry. Event schemas are pinned to the official Pump IDL commit recorded in `peak_event_sources.json`.
+
+Run `python scripts/narrative/measure_peak_consolidation.py --offline` to recompute the measurements from cached raw transactions. Every reserve delta must equal the emitted trade amount, and each terminal reserve must match its stock snapshot. Ambiguous member ordering uses finalized block signatures. A slot-local sum of maxima is used only to prune slots that cannot beat an already observed pooled peak; it is never reported as a simultaneous peak. Other ordering that could change the peak is resolved exactly. The event JSONL files retain slot/signature/instruction keys and do not claim lexicographic signature order is chain execution order.
 
 ## Corrections and limitations
 
 - Owner rescope: an activity-selected existence search supersedes a full census and the earlier size-selected time budget. Full-population lifetime c is not measured by this run.
 - Signature pages cap at 1,000. Full pagination to the known creation signature is required before ranking; failed signatures affect activity rank but have no executed reserve changes.
 - The creation slot is retained in full; signature-list ordering within that slot does not decide which transactions existed after creation. Actual reserve changes use finalized block execution order.
+- First-hour inflow uses age strictly below 3,600 seconds, matching the v1 grace gate. USD thresholds round upward to the next whole lamport, matching the stock study; the prototype used nearest-integer rounding.
+- Indexed successful signatures can have null direct transaction lookups. The collector attempts recovery from raw finalized blocks at their advertised slots, records the block and transaction index as provenance, and stops if any body remains missing. Missing signatures are never silently excluded.
 - Public RPC returned -32015 for transaction version 1 when the prototype requested version 0. Requests now allow version 1 and reuse usable earlier responses. The [official JSON format documentation](https://solana.com/docs/rpc/json-structures) also specifies this setting. A trial at 3 logical calls/second encountered throttling; collection resumed at 0.8, honoring Retry-After and retrying only unresolved items.
 - The bulk-history probe on the official endpoint was throttled, so support is unestablished. A single known historical transaction returned null from the documented keyless Solana Tracker endpoint; it was not used as a replacement history source. Probe details are retained in peak_provider_probe.json and its compressed cache.
 - Median lag is not a maximum, and observed drawdown is not a universal cap. Neither requested heuristic is presented as a certified upper bound.

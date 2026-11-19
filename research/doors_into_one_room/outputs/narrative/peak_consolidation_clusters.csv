@@ -1,6 +1,6 @@
 rank,root_mint,status,member_count,peak_pooled_sol,max_individual_peak_sol,current_pooled_sol,gross_inflow_sol,c_gross,spec_additional_crossing
-1,9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump,not_measured,,,,,,,
-2,EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump,not_measured,,,,,,,
+1,9M2AamKUGjvHWKJ9QwFKAfBhsncYNT7s44MECbgVpump,complete,5,50.484155838,30.027131215,0.001055378,211.985817183,0.6664188549370987,False
+2,EuKzdtZSuh6Bnime6oAJYvLWSynR5fH9KsMGoe5Ypump,complete,12,101.018785843,60.189838165,0.704704351,980.38279899,0.49175893524720804,True
 3,GJKTcdJWd9zcqmp2kCa9FJ2yp8rSUqLF2X3iFVjNauwH,not_measured,,,,,,,
 4,Hwn9ZoNK34sVvZbTo412UwDfLUq79H7GVdL9JJsApump,not_measured,,,,,,,
 5,45fVVhitRDuJhs5otnxvV8o698cpBUzNqhA21U4spump,not_measured,,,,,,,
