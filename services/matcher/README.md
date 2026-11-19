@@ -358,6 +358,19 @@ minute is a missed minute. For complete coverage, use a provider's websocket (He
 have free or cheap plans). Pass it as `WATCHER_WS` / `WATCHER_HTTP` (comma-separated) rather than on the command
 line; logs and the summary show only each endpoint's host.
 
+**Backfill** (`watcher/backfill.py`) collects *past* launches instead of waiting for new ones, and is far
+faster. Every pump.fun `create`/`create_v2` touches one fixed mint-authority PDA,
+`TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokwaKt1eokM`, which trades never touch, so `getSignaturesForAddress` on that one
+account enumerates launches directly. Measured 19 November 2026: about 44,000 signatures a day there, matching the
+~42,000 launches a live watch records, 1,000 signatures per call covering ~32 minutes of history, and ~50
+launches a second decoded end to end. That is roughly **18 minutes per day of history** against 24 hours of
+waiting. Resumable through `cursor.json`; rows share the watcher's format and deduplicate on (signature, mint).
+
+    python3 -m watcher.backfill --out DIR --days 7
+
+It covers pump.fun only. LaunchLab has no equivalent single-account chokepoint identified yet, so bonk.fun and
+StonkFun history still needs the live watcher.
+
 **Run** (from `services/matcher`, with `requirements.txt` and `requirements-watcher.txt` installed):
 
     python3 -m watcher.watch --out /var/lib/doors-watch            # until stopped; resumes from launches.jsonl
