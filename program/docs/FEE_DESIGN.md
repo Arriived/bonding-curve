@@ -245,6 +245,36 @@ which holds at any multiple. Fee routed to the pool is fee not paid to the creat
 cost, not free. And fee accretion is slow in practice: the cited post notes `$mihao` reached only 1.4% of supply
 after weeks of heavy trading, so depth builds over a coin's life rather than at graduation.
 
+## 4b. If the founder share is ever raised above 0, squatting needs prediction — measured
+
+`founder_share_bps` is 0 in both the devnet and mainnet config. Raising it is an obvious-looking way to reward
+whoever starts a narrative, and it is the one fee knob here that pays a party for *being first* rather than for
+holding or trading. `SECURITY_REVIEW.md` already bounds the resulting attack: the founder position goes to
+whichever launcher wins the race, it pays a share of every later trade in the room including every door, and
+squatting costs about 0.0288 SOL of rent plus keeping the room live. What that note does not say is whether a
+squatter would have to **predict** which narratives take off, or could register broadly and wait.
+
+Measured on 65,630 real pump.fun launches over 57.6 hours
+(`services/matcher/scripts/shadow_replay.py`, matcher `CORRECTIONS.md` §30):
+
+- The **first door arrives within five minutes in 56.9% of rooms** (median 2.3 minutes). There is no window in
+  which to notice a narrative starting and race to register its key. A squatter must hold the key in advance.
+- **65.9% of rooms never receive a single door.** Breadth bought blindly is mostly spent on rooms that stay empty.
+- The largest rooms in the sample are trend-specific names nobody could have pre-registered: Dacity (1,128
+  launches), AudaCity (628), Apocry, Lucia, Mandy, dog wif cap.
+
+So the attack needs prediction, and prediction is hard on this traffic. **The residual is the evergreen keys** —
+DOG, CAT, AI, INU, GTA, PEPE recur across cycles and are cheap to hold indefinitely.
+
+**What this implies for the decision.** If the founder share is raised, cap or taper it rather than adding a
+reservation mechanism: the reservation was removed for good reasons (matcher `CORRECTIONS.md` §16) and rooms fill
+faster than any reservation window would help. A taper that pays the founder only while the room is young, or
+only up to a ceiling, keeps the intended reward for starting a narrative without making a pre-registered evergreen
+key a perpetual annuity.
+
+**Limit.** 57.6 hours is one market episode, dominated by the GTA VI and Dacity/Audacity waves. Fill times in a
+quiet week could be far slower, which would make breadth more viable. Re-measure before acting.
+
 ## 5. See also
 
 - `research/doors_into_one_room/POSITIONING.md` — the room as narrative exposure, and the experiment that tests it.
