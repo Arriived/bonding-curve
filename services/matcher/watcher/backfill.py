@@ -251,12 +251,23 @@ def main():
     try:
         while True:
             params = [MINT_AUTHORITY, {"limit": 1000, **({"before": before} if before else {})}]
-            sigs = pool.call("getSignaturesForAddress", params)
+            # A signature page can fail on every endpoint at once and still be fine a minute later: the cursor
+            # signature may be pruned on one endpoint while the other is rate-limiting. Giving up on the first
+            # such page stopped a run 1.4 days in with the walk otherwise healthy, so wait it out first.
+            sigs = None
+            for wait in (0, 10, 20, 40, 60):
+                if wait:
+                    print(f"  signature page failed on every endpoint; waiting {wait}s", flush=True)
+                    time.sleep(wait)
+                sigs = pool.call("getSignaturesForAddress", params)
+                if sigs is MISSING or sigs:
+                    break
             if sigs is MISSING or sigs == []:
                 print("no more signatures")
                 break
             if not sigs:
-                print("signature page failed on every endpoint; stopping (resume with the same --out)")
+                print("signature page still failing after 130s of retries; stopping "
+                      "(resume with the same --out)")
                 break
             pages += 1
             if stop_at is None and a.days:
