@@ -14,6 +14,10 @@ Four measurements, each answering a question the synthetic evasion benchmark can
                the honest measure of what the folds are worth on organic traffic.
   multifold    the blast radius of MULTI_FOLD (rn -> m, vv -> w): keys moved, rooms merged that would otherwise
                be separate, rooms split that would otherwise be one.
+  refused      the launches whose name folds to nothing, which our launchpad would turn away.
+  classes      whether rule A's NAME_EQUAL_MIN_LEN boundary scatters one narrative over several rooms, and what
+               a lower minimum would merge. This is the only check here that looks for MISSED merges rather than
+               wrong ones, which is the dangerous direction for an anti-impersonation rule.
 
 Door share rises with the length of the window, because rooms stay live for the whole replay, so a figure is
 meaningless without the span this prints. Nothing is signed or sent.
@@ -189,11 +193,59 @@ def multifold(rows, top=10):
             print(f"    {c:>4}x {n!r:34} -> {rules.name_letters(n)!r}")
 
 
+def refused(rows, top=12):
+    """Launches the matcher turns away. All observed cases are names made only of emoji, braille or punctuation."""
+    out = [r for r in rows if live_key(r) is None]
+    print(f"\n=== refused: name folds to nothing ({len(out):,}, {100 * len(out) / len(rows):.2f}%)")
+    for r in out[:top]:
+        i = rules.ident(r["name"], r["symbol"])
+        print(f"    name={r['name']!r:24} symbol={r['symbol']!r:14} folded name={i['full']!r}")
+
+
+def classes(rows, top=12):
+    """Rule A puts a name in class N (routes on the name alone) when the folded name BEFORE affixes are stripped
+    reaches NAME_EQUAL_MIN_LEN, else class P (the symbol must match too). So "GTA Coin" is class N with name key
+    GTA while "GTA" is class P, and the two cannot route together however identical they look."""
+    groups = collections.defaultdict(list)
+    for k, mem in rooms_by(rows, live_key).items():
+        groups[k.split(chr(0))[-1]].append((k, mem))
+    split = sorted(((nk, ks) for nk, ks in groups.items() if len(ks) > 1),
+                   key=lambda t: -sum(len(m) for _, m in t[1]))
+    misplaced = sum(sum(len(m) for _, m in ks) - max(len(m) for _, m in ks) for _, ks in split)
+    print(f"\n=== rule A class boundary (NAME_EQUAL_MIN_LEN = {rules.NAME_EQUAL_MIN_LEN})")
+    print(f"  {len(split):,} name keys are scattered over more than one room")
+    print(f"  {misplaced:,} launches ({100 * misplaced / len(rows):.1f}%) sit outside the largest room for "
+          f"their own name")
+    for nk, ks in split[:top]:
+        print(f"    {nk!r} - {sum(len(m) for _, m in ks)} launches over {len(ks)} rooms:")
+        for k, mem in sorted(ks, key=lambda t: -len(t[1]))[:4]:
+            names = collections.Counter(r["name"] for r in mem)
+            print(f"        [{'N' if k.startswith('N' + chr(0)) else 'P'}] {k.replace(chr(0), '|')!r:22} "
+                  f"{len(mem):>4}: " + ", ".join(f"{n!r}x{c}" for n, c in names.most_common(3)))
+
+    print(f"\n  what a lower minimum would do:")
+    saved = rules.NAME_EQUAL_MIN_LEN
+    print(f"    {'min':>4} {'doors':>8} {'rooms':>7} {'scattered':>10} {'misplaced':>10}")
+    for m in (saved, 3, 2, 1):
+        rules.NAME_EQUAL_MIN_LEN = m
+        rules.ident.cache_clear()
+        occ = rooms_by(rows, live_key)
+        g = collections.defaultdict(list)
+        for k, mem in occ.items():
+            g[k.split(chr(0))[-1]].append((k, mem))
+        sp = [ks for ks in g.values() if len(ks) > 1]
+        lo = sum(sum(len(x) for _, x in ks) - max(len(x) for _, x in ks) for ks in sp)
+        d = sum(len(v) - 1 for v in occ.values())
+        print(f"    {m:>4} {d:>8,} {len(occ):>7,} {len(sp):>10,} {lo:>10,}")
+    rules.NAME_EQUAL_MIN_LEN = saved
+    rules.ident.cache_clear()
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("files", nargs="+")
-    ap.add_argument("--only", default="routing,merges,naive,multifold",
-                    help="comma-separated subset of routing,merges,naive,multifold")
+    ap.add_argument("--only", default="routing,merges,naive,multifold,refused,classes",
+                    help="comma-separated subset of routing,merges,naive,multifold,refused,classes")
     a = ap.parse_args()
 
     rows = load(a.files)
@@ -204,7 +256,8 @@ def main():
           f"({time.strftime('%d %b %H:%M', time.gmtime(rows[0]['ts']))} -> "
           f"{time.strftime('%d %b %H:%M', time.gmtime(rows[-1]['ts']))} UTC)\n")
     want = {s.strip() for s in a.only.split(",")}
-    for name, fn in (("routing", routing), ("merges", merges), ("naive", naive), ("multifold", multifold)):
+    for name, fn in (("routing", routing), ("merges", merges), ("naive", naive), ("multifold", multifold),
+                     ("refused", refused), ("classes", classes)):
         if name in want:
             fn(rows)
 

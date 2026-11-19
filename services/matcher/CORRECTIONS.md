@@ -921,3 +921,107 @@ Ranking all 5,345 occupied rooms by how much their members' raw names differ and
 genuine over-merge in 61,388 launches: the Chinese character 婆 transliterates to "po" under rule C and shares a
 key with the English name "po". It is class P, where symbol and name must both match, so the bar is already
 higher than for ordinary names. Left as is.
+
+## 27. Real-data rule audit: a missed-merge bug in rule A, and three bugs of my own in the backfill (19 November 2026)
+
+Continuing section 26, I audited every remaining normalization rule against 63,082 real launches
+(`scripts/shadow_replay.py --only refused,classes,multifold,merges,naive`). The matcher findings are below;
+the collector findings are in 27d and were mine, not the matcher's.
+
+### 27a. Rule A's class boundary scatters a narrative over several rooms — needs an owner ruling
+
+`_key_string` puts a name in **class N** (routes on the name alone) when the folded name *before* affixes are
+stripped reaches `NAME_EQUAL_MIN_LEN` = 4, and in **class P** (symbol must match too) otherwise. The pre-strip
+length is deliberate, so that "Bitcoin"/BTC and "Bitcoin"/BITCOIN share the key BIT. The consequence on real
+launches was not measured until now, and it is the first **missed-merge** defect found — the dangerous direction
+for an anti-impersonation rule, since every other finding so far has been a wrong merge.
+
+Two mechanisms, both visible in the data:
+
+1. **The affix decides the class.** "GTA Coin" folds to GTACOIN (7) so it is class N with name key GTA.
+   "GTA" folds to GTA (3) so it is class P. Identical narrative, different class, cannot route together.
+2. **Within class P the symbol splits the room.** The same short name under a different symbol opens a new room:
+   `P|GTA|GTA`, `P|SOI|GTA`, `P|MEMES|GTA`, `P|COUNTDOWN|GTA` and eight more.
+
+Measured: **85 name keys scattered over more than one room; 260 launches (0.4%) outside the largest room for
+their own name.** The percentage understates it, because the damage lands on exactly the short, high-value
+tickers. **GTA — the hottest narrative in the sample — is shattered into 13 rooms.** So are INU (64 launches,
+3 rooms), WAG (55, 2), DIP (25, 2), PS5 (17, 2), X (17, 4).
+
+Lowering the minimum, measured on the same launches:
+
+| `NAME_EQUAL_MIN_LEN` | doors | rooms | scattered names | launches misplaced |
+|---:|---:|---:|---:|---:|
+| **4 (today)** | 46,923 | 16,020 | 85 | 260 |
+| **3** | 47,013 | 15,930 | **22** | **50** |
+| 2 | 47,027 | 15,916 | 11 | 20 |
+| 1 | 47,046 | 15,897 | 0 | 0 |
+
+I inspected all 36 rooms that a minimum of 3 merges and a minimum of 4 keeps apart. **Every one is correct** —
+a name joined to its own `coin` variant: GTA/GTA Coin/GTAcoin, Inu/InuCoin, wag/WAGCOIN, Dip/DipCoin,
+PS5/ps5coin, LOL/LOLCOIN, CR7/CR7 COIN, 404/404 Coin, Ryu/Ryucoin, Six/SIXCOIN. No false merge appeared.
+Synthetic dodge recall is unchanged (56.04% to 56.06%), so this is not a trade against evasion resistance.
+
+**Recommendation: lower it to 3, not below.** It repairs 63 of the 85 scatterings and 210 of the 260 misplaced
+launches at no observed cost. Below 3, one- and two-character names start routing without symbol confirmation,
+and that is where confirmation earns its keep: ":3", "e" and "3" all fold to E and would merge into one room.
+
+**Why this is an owner ruling and not a fix I can make.** `NAME_EQUAL_MIN_LEN` is marked "calibrated, not
+configurable" and it is part of the NameLock key derivation, so changing it is a **breaking key change** of the
+same class as `MULTI_FOLD` — possible now, impossible after mainnet. Four tests in `tests/test_rules.py` assert
+the boundary explicitly and would need updating with it. Nothing is changed in this commit; the audit and the
+numbers are recorded so the decision can be made on evidence.
+
+### 27b. DIGIT_FOLD: keep, with a documented limitation
+
+`DIGIT_FOLD` (0→O, 1→I, 3→E, 4→A, 5→S, 7→T, 8→B) moves the key of 2,446 launches (3.97%) and merges 20 rooms
+that would otherwise be separate. Most are correct leet catches: N3ON COIN with Neon, Gh0st with GHOST, T4NK El
+Yamen with Tank El Yamen, U0DF with UODF, BITCO1N with Bitcoin.
+
+Three are wrong, and they share one cause — **digits colliding with roman numerals**:
+
+- `N|GTAVII`: "GTA VII" (13 launches) merged with "GTAVI $1 Coin" (3), because GTAVI1COIN strips to GTAVI1 and
+  1 folds to I.
+- `N|GTAI`: "GTA 1" merged with "GTAI".
+- `N|GTAS`: "GTA 5" merged with "GTA S".
+
+Kept, because the leet catches are real and frequent while the collisions need a name mixing digits with roman
+numerals. Recorded as a known limitation rather than fixed; any fix (suppressing the fold near roman numerals)
+is more special-casing than the problem justifies.
+
+### 27c. Refusals are correct
+
+219 launches (0.36%) fold to nothing and our launchpad would turn them away. Every one is a name made only of
+emoji, braille patterns, arrows, box-drawing characters or punctuation: "👌", "⠃⠇⠊⠝⠙⠁⠏⠑", "↑→↓←↑ ←↓→", "???",
+"███", "$". These are genuinely unroutable and refusing them is right. Affix stripping was also checked: it moves
+14.73% of keys and merges 433 rooms, and every room inspected was correct. Note that room count and door count
+move very differently — the large rooms are dominated by byte-identical names, which is why rule I reshapes 433
+rooms while adding little to the +1.1% door figure in section 26a.
+
+### 27d. Three bugs in my own backfill, one of which was discarding most of the data
+
+`watcher/backfill.py` as committed in `0a35ff3` had three defects. All three are fixed in this commit, and all
+three were mine.
+
+1. **Failed fetches advanced the cursor.** A signature whose transaction could not be fetched was counted and
+   skipped, and the cursor moved past it, so the launch was lost permanently with no record of which one.
+2. **A cumulative counter hid the failure rate.** The log printed total failures, not the rate for the page, so a
+   run that had reached 100% failure still looked like it was working. It was found only by noticing that pages
+   85, 86 and 87 each wrote zero launches while the counter climbed to 51,056. **Roughly 48,000 launches were
+   silently skipped**, and because nothing recorded which signatures failed, they can only be recovered by
+   walking the range again.
+3. **A null result was treated as proof of absence.** `getTransaction` returning null means only that *this*
+   endpoint has pruned the record. Measured 19 November 2026: publicnode had dropped transactions 2.37 days old
+   that api.mainnet-beta still served in full, 10 of 10 on probe. The old code accepted the first null as
+   authoritative, so everything older than the *shallowest* endpoint's retention was discarded as nonexistent.
+
+Fixed: failures are appended to `failed.jsonl` and drained by `--retry`; the log reports the per-page failure
+rate; concurrency halves above `--max-fail` and creeps back when clean; requests rotate over both endpoints with
+a cooldown on 429; and a null is accepted as absent **only after every endpoint has answered and none has the
+record**. Smoke-tested at 45 launches/s with a 0.0% page failure rate.
+
+**The collection ceiling this exposed.** Past about 2.4 days, publicnode has pruned and only api.mainnet-beta
+serves, and it rate-limits hard enough that throughput collapses (82 launches in several minutes against 45/s
+inside the retained window). So roughly **2.4 days, about 105,000 launches, is the practical limit of free
+historical collection**. Deeper history needs a paid archival endpoint. Collection beyond that limit has to come
+from watching forward in real time, at roughly 1,750 launches an hour.
