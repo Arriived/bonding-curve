@@ -15,6 +15,10 @@ room nonce; `scripts/room_nonce.py` generates one using the OS CSPRNG. Encode
 it as an exact u64/BigInt/BN, never a JavaScript Number. A collision needs a new
 nonce and fresh signatures. Config is read-only on permissionless creation.
 
+Before every buy, accounted pending reserve fees are retired at the existing
+price. The buyer's quote and position use the resulting price, including door
+routes and optional first buys. Failed slippage limits roll back retirement.
+
 `buy`, `sell`, `convert`, `retire_pending`, door/founder fee claims, recipient
 rotation, protocol sweeps and slug release are implemented. Room-token and
 door routes have the same curve and fee. There is no door-to-room conversion,
@@ -184,6 +188,14 @@ an execution-time fee increase above it fails atomically with `FeeLimit`.
 The maximum covers flat protocol fees; first-buy spend, trading slippage,
 account rent and network fees have their own budgets. Legacy instruction
 payloads without the maximum are rejected. Account layouts are unchanged.
+
+`Launch.expected_terms_hash` additionally binds creation to the exact Config
+economics the user and matcher approved. Use
+`scripts/launch_terms_hash.py decoded_config.json` to compute its 32 bytes;
+the [security sweep report](docs/SECURITY_SWEEPS.md) specifies its encoding.
+Include the appended field for `open_door` too (zero bytes are suitable there).
+Rebuild account metas from the IDL: Core's `retired` vault is now writable.
+Buy quotes must include settlement of the existing pending reserve fees.
 
 Launch clients derive SlugLock from raw metadata, fetch its holder if any,
 obtain the matcher's route/nonce/signature and the launcher's signature over
