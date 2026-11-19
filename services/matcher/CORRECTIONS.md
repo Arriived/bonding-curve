@@ -1170,3 +1170,39 @@ good reasons (section 16) and the rooms fill faster than any reservation window 
 **Limit of this measurement.** 57.6 hours is one market episode, dominated by the GTA VI and Dacity/Audacity
 waves. Fill times in a quiet week could be much slower, which would make breadth more viable. Re-measure before
 acting on it.
+
+## 31. The two collectors disagreed on what a launch's timestamp means (19 November 2026)
+
+`watcher.watch` reads transactions as they land; `watcher.backfill` fetches them later by signature. Both call
+`watcher.decode`, so where they have seen the same (signature, mint) the rows must agree. Cross-checking the
+collected files found that they do — with two exceptions, and one of them silently poisoned a measurement.
+
+**The decoder itself is correct.** Backfill against gapfill: **59,501 launches decoded by both paths, every
+field identical on every one.** That is the strongest check the decoder has had, and it passed.
+
+**`ts` meant different things in the two collectors.** `watch.py` set `"ts": int(time.time())` — the moment the
+watcher *noticed* the launch. `backfill.py` uses `blockTime` — the moment it *confirmed*. They differ by the
+poll latency: on the overlapping rows, 1 to 10 seconds, disagreeing on 71% of them. Mixing the two across
+collectors skews any timing analysis, and section 30's fill-time medians were computed over the combined set,
+so they are affected. The effect there is negligible — live rows were 3,233 of about 71,000 (4.5%) and the skew
+is seconds against medians in minutes — but the numbers in section 30 were produced before this was found and
+should be read with that known.
+
+Fixed: the live watcher now emits `ts` as the block time, plus `block_time` and `observed_at` as separate
+explicit fields, so the two can never be conflated again. On the logs fast path there is no transaction to read
+`blockTime` from, so it resolves the slot through a cached `getBlockTime` — many launches share a slot, so this
+costs about one call per slot.
+
+**`ix` was absent from every live row.** The backfill records which instruction created the launch
+(`create` or `create_v2`); the live watcher never did, so `ix` was `None` on 100% of overlapping rows. Any
+analysis filtering on `ix` silently excluded every live row. The live watcher now records it where it can.
+
+It **cannot** record it on the logs fast path, and that is a real limit rather than an oversight: that path
+decodes a `CreateEvent`, which does not carry the instruction that emitted it. Recovering it would mean fetching
+the transaction for every launch, which is the cost the fast path exists to avoid. So `ix` is `None` there by
+construction, and the row's `decoded_from` field says which path produced it. A row without `ix` is a row
+decoded from logs, not a row whose instruction was something else.
+
+**Rows collected before this commit** keep the old meaning: in `bigset`, `ts` is observation time and `ix` is
+always absent. Rows collected after it, and every backfilled row, carry confirmation time. Treat the two
+vintages separately rather than assuming a single column means one thing.

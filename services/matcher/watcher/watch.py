@@ -102,6 +102,7 @@ class Watcher:
         self.seen = collections.OrderedDict()       # signature:mint of recorded launches
         self.seen_sigs = collections.OrderedDict()  # notifications already queued (a reconnect can repeat them)
         self.platforms = {}            # platform_config -> (label, name, web)
+        self._slot_times = {}          # slot -> blockTime, so `ts` is confirmation and not observation
         self.stats = collections.Counter()
         self.started = time.time()
         self.first_ts = None
@@ -175,9 +176,24 @@ class Watcher:
             self.platforms[cfg] = (D.platform_label(name, web) if pc else "LaunchLab (config unreadable)", name, web)
         return self.platforms[cfg]
 
+    def _block_time(self, slot):
+        """Block time for a slot, cached. The logs fast path has no transaction to read blockTime from, and
+        without this the row's `ts` would be the moment we noticed rather than the moment it confirmed: the two
+        differ by the poll latency, 1 to 10 seconds on measurement, and mixing them across collectors silently
+        skews any timing analysis (CORRECTIONS section 31). Many launches share a slot, so this costs about one
+        call per slot."""
+        if slot in self._slot_times:
+            return self._slot_times[slot]
+        bt = self.http.call("getBlockTime", [slot])
+        bt = bt if isinstance(bt, int) else None
+        if len(self._slot_times) > 4096:
+            self._slot_times.clear()
+        self._slot_times[slot] = bt
+        return bt
+
     def _decode(self, src, slot, v):
         """Blocking: the launches in one create notification, as records."""
-        sig, launches, path = v["signature"], [], "logs"
+        sig, launches, path, block_time = v["signature"], [], "logs", None
         if src == "pump":
             launches = [{**x, "platform_raw": "pump"} for x in D.pump_create_from_logs(v["logs"])]
         if not launches:
@@ -188,9 +204,12 @@ class Watcher:
                 self.stats[f"tx fetch failed {src}"] += 1
                 return []
             launches = [{**x, "platform_raw": x["platform"]} for x in D.launches_from_tx(tx)]
+            block_time = tx.get("blockTime")
         if not launches:
             self.stats[f"create seen, nothing decoded {src}"] += 1
             return []
+        if block_time is None:
+            block_time = self._block_time(slot)
         out = []
         for x in launches:
             if x["platform_raw"] == "pump":
@@ -198,10 +217,16 @@ class Watcher:
             else:
                 label, name, web = self._platform(x["platform_config"])
                 platform, declared = label, {"name": name, "web": web, "config": x["platform_config"]}
-            out.append({"ts": int(time.time()), "slot": slot, "signature": sig, "platform": platform,
+            observed = int(time.time())
+            # `ix` is only knowable from the instruction data. The logs fast path decodes a CreateEvent, which
+            # does not carry it, so it is None there and never silently absent: a row without `ix` is a row
+            # decoded from logs, not a row whose instruction was something else.
+            out.append({"ts": block_time if block_time is not None else observed,
+                        "block_time": block_time, "observed_at": observed,
+                        "slot": slot, "signature": sig, "platform": platform,
                         "declared_platform": declared, "mint": x["mint"], "name": x["name"], "symbol": x["symbol"],
-                        "uri": x["uri"], "creator": x.get("creator"), "quote_mint": x.get("quote_mint"),
-                        "decoded_from": path})
+                        "uri": x["uri"], "creator": x.get("creator"), "ix": x.get("ix"),
+                        "quote_mint": x.get("quote_mint"), "decoded_from": path})
             self.stats[f"decoded from {path} {src}"] += 1
         return out
 
