@@ -43,9 +43,14 @@ def b58encode(b):
 
 
 def b58decode(s):
+    """Raises ValueError on anything that is not base58, so callers can catch it with their other decode
+    failures rather than seeing a KeyError escape (CORRECTIONS section 33)."""
     n = 0
     for c in s:
-        n = n * 58 + _B58_INDEX[c]
+        try:
+            n = n * 58 + _B58_INDEX[c]
+        except KeyError:
+            raise ValueError(f"not base58: {c!r}") from None
     body = n.to_bytes((n.bit_length() + 7) // 8, "big") if n else b""
     return b"\0" * (len(s) - len(s.lstrip("1"))) + body
 
@@ -108,20 +113,39 @@ def is_create_log(platform, logs):
 
 
 def _account_keys(tx):
-    msg = tx["transaction"]["message"]
-    keys = list(msg["accountKeys"])
-    loaded = (tx.get("meta") or {}).get("loadedAddresses") or {}
-    return keys + list(loaded.get("writable", [])) + list(loaded.get("readonly", []))
+    msg = ((tx or {}).get("transaction") or {}).get("message") or {}
+    keys = list(msg.get("accountKeys") or [])
+    loaded = (tx.get("meta") or {}).get("loadedAddresses")
+    if isinstance(loaded, dict):
+        keys += list(loaded.get("writable") or []) + list(loaded.get("readonly") or [])
+    return keys
 
 
 def _instructions(tx):
-    """Outer and inner instructions as (program_id, [account keys], data bytes)."""
+    """Outer and inner instructions as (program_id, [account keys], data bytes).
+
+    Every field here comes from an RPC, so none of it is guaranteed. A malformed or partly resolved transaction
+    must yield nothing rather than raise: this is a generator consumed by a `for` statement in the caller, so an
+    exception raised in here escapes the caller's own try/except entirely and ends a collection run. A v0
+    transaction whose lookup-table addresses were not resolved is the realistic case, since then every index
+    overruns the shortened key list (CORRECTIONS section 33).
+    """
     keys = _account_keys(tx)
-    raw = list(tx["transaction"]["message"]["instructions"])
+    msg = ((tx or {}).get("transaction") or {}).get("message") or {}
+    raw = list(msg.get("instructions") or [])
     for inner in (tx.get("meta") or {}).get("innerInstructions") or []:
-        raw += inner["instructions"]
+        if isinstance(inner, dict):
+            raw += list(inner.get("instructions") or [])
     for ix in raw:
-        yield keys[ix["programIdIndex"]], [keys[i] for i in ix["accounts"]], b58decode(ix["data"])
+        if not isinstance(ix, dict):
+            continue
+        try:
+            program = keys[ix["programIdIndex"]]
+            accts = [keys[i] for i in ix["accounts"]]
+            data = b58decode(ix["data"])
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+        yield program, accts, data
 
 
 def launches_from_tx(tx):

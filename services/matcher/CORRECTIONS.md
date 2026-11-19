@@ -1257,3 +1257,39 @@ of free historical collection. That figure came from the same flawed logic and i
 roughly 2.4 days, but api.mainnet-beta serves well past it; what collapses past that depth is throughput, not
 availability, because only one endpoint remains and it rate-limits hard (about 2 launches a second against 45
 inside publicnode's window). The limit is time, not the data.
+
+## 33. The decoder raised on eleven of twelve malformed transactions (19 November 2026)
+
+`launches_from_tx` wraps each instruction's decode in `try/except (ValueError, struct.error, IndexError)`. That
+handler never fired for a malformed transaction, because `_instructions` is a **generator consumed by the `for`
+statement itself**: anything it raises is raised by the `for`, outside the loop body, and escapes the function.
+Twelve malformed shapes were probed and **eleven raised**:
+
+| input | before |
+|---|---|
+| missing `transaction`, `message`, `accountKeys`, `instructions` | `KeyError` |
+| `programIdIndex` past the end of the key list | `IndexError` |
+| an account index past the end | `IndexError` |
+| instruction data that is not base58 | `KeyError` from the alphabet lookup |
+| missing `data` or `accounts` | `KeyError` |
+| malformed `innerInstructions` | `KeyError` |
+| `loadedAddresses` not a dict | `AttributeError` |
+
+**Severity: research tooling, not production.** The matcher service does not import `watcher` at all; the
+decoder is used only by the collectors. But one malformed transaction from an RPC ends a multi-hour collection
+run, and runs have already been lost to process deaths, so a crash here is expensive in exactly the way that is
+hardest to notice afterwards.
+
+**The realistic trigger is not a hostile input but an ordinary one.** A v0 transaction whose lookup-table
+addresses were not resolved comes back with a short `accountKeys` list and indices that refer to the unresolved
+entries, so every index overruns. The collectors request `maxSupportedTransactionVersion: 1`, and an RPC that
+omits `loadedAddresses` produces exactly this.
+
+Fixed: `_instructions` validates each instruction and skips what it cannot read instead of raising, `_account_keys`
+tolerates missing or wrongly typed fields, and `b58decode` raises `ValueError` rather than letting a `KeyError`
+escape every handler written to catch decode failures. `tests/test_decode_robustness.py` pins all thirteen shapes.
+
+**Checked that the hardening did not make the decoder quietly skip real launches** — the obvious way to "fix"
+crashes while creating a far worse bug. 40 real transaction-path launches were re-fetched and re-decoded:
+**40 identical, 0 missing, 0 differing.** Combined with the 59,501-launch cross-path agreement in section 31,
+the decoder is now the best-evidenced component in the service.
