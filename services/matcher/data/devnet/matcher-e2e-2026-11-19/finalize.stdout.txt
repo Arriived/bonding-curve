@@ -1,0 +1,17 @@
+{
+  "status": "passed_recovered",
+  "error": null,
+  "opening_lamports": 63089376282,
+  "opening_slot": 523854133,
+  "closing_lamports": 63046940822,
+  "closing_slot": 523857921,
+  "cost_lamports": 42435460,
+  "external_funding_lamports": 0,
+  "new_retained_rent_lamports": 42255440,
+  "new_retained_above_rent_lamports": 0,
+  "network_fees_lamports": 180020,
+  "transaction_count": 20,
+  "program_hash_unchanged": true,
+  "production_config_unchanged": true,
+  "verifier_status": "passed"
+}

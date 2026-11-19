@@ -1,0 +1,22 @@
+{
+  "protocol_fee_recipient": "J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD",
+  "fee_bps": 100,
+  "door_share_bps": 6000,
+  "founder_share_bps": 0,
+  "door_fee_lamports": "0",
+  "room_fee_lamports": "0",
+  "convert_fee_lamports": "0",
+  "v_sol_lamports": "30000852995",
+  "v_tok": "1073025606000000",
+  "supply": "1000000000000000",
+  "r_star_lamports": "85000000000",
+  "meteora_dynamic_config": "11111111111111111111111111111111",
+  "graduation_trigger_lamports": "85018013680",
+  "paused": false,
+  "matcher_authority": "HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz",
+  "live_min_reserve_lamports": "500000000",
+  "live_max_idle_seconds": "21600",
+  "live_new_seconds": "3600",
+  "live_min_volume_lamports": "5000000000",
+  "pool_min_window_lp_fee": "80000000"
+}

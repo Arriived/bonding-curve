@@ -117,7 +117,7 @@ def name_letters(name):
     that is deliberate: it is what stops "Pur npkin" from dodging "Pumpkin" by splitting the homoglyph itself.
     The cost is that the fold also fires where no reader sees one letter, across a word boundary
     ("Remember November" -> REMEMBEMOVEMBER) and inside ordinary English ("BURN" -> BUM, "Unicorn" -> UNICOM).
-    Measured on 58,515 real pump.fun launches (CORRECTIONS section 21): MULTI_FOLD moves the key of 0.61% of
+    Measured on 61,388 real pump.fun launches (CORRECTIONS section 26): MULTI_FOLD moves the key of 0.58% of
     launches, causes one false merge ("BURN" with "bum") and no missed merges. tests/test_multi_fold.py pins
     every case above, because an earlier version of this docstring claimed the opposite and nothing caught it."""
     raw = re.split(r"[^0-9a-zÀ-￿]+", _base(_pre(name)))

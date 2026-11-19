@@ -1,4 +1,4 @@
-"""MULTI_FOLD (rn -> m, vv -> w) pinned against the behaviour measured on 58,515 real pump.fun launches.
+"""MULTI_FOLD (rn -> m, vv -> w) pinned against the behaviour measured on 61,388 real pump.fun launches.
 
 Nothing pinned this fold before. The docstring on name_letters claimed "rn/vv cannot straddle a split", which the
 code had never done, and the whole suite passed anyway (CORRECTIONS section 21). Every case below is either a
@@ -46,8 +46,8 @@ def test_known_collateral_is_unchanged(name, folded):
     assert rules.name_letters(name) == folded
 
 
-def test_the_one_false_merge_found_in_58515_launches():
-    """"BURN" and "bum" share a key. Measured cost of the fold on real data: this, and nothing else."""
+def test_the_one_false_merge_found_in_61388_launches():
+    """"BURN" and "bum" share a key. Measured cost of the fold on 61,388 real launches: this, and nothing else."""
     assert key("BURN", "BURN") == key("bum", "bum")
 
 

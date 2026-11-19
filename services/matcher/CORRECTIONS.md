@@ -800,7 +800,47 @@ The reconciliation includes the earlier deployment and recovery and two later
 5-SOL funding transfers. All 24 other wallets and all 50 token-owner scans
 are empty. [Program measurements and every signature/slot](https://github.com/Arriived/bonding-curve/blob/claude/paired-doors/program/verification/devnet/paired-4437e58-resume/report.md).
 
-## 21. MULTI_FOLD was undocumented, mis-documented and untested (19 November 2026)
+## Live matcher devnet E2E completed (19 November 2026)
+
+All three signed matcher decisions finalized successfully against the pinned
+`fc2d615e` deployment: new room at slot 523,854,267, identity-floor door at
+523,854,322 and T2n name door at 523,854,377. Every fill equals the door-token
+quote exactly. The prepared `a7aa8c0` client is unchanged and ran through a real
+loopback HTTP matcher instance. The `310e12a` verifier ran in a separate
+process, independently checked the decision-store hash chain, replayed 435
+historical devnet transactions and returned **AGREE for every decision**.
+Service and signer modules were absent from that verifier process. Mutable
+reads were fresh; only finalized immutable transactions were reused.
+
+The live HTTP service refused an altered signed request with **401
+unauthenticated**, leaving zero decision rows and no transaction. The valid
+original request was subsequently accepted. No unexpected refusal, verifier
+disagreement or quote mismatch occurred. The existing service suite passed
+180/180 before funding. The two new adapters change test transport and
+verification orchestration; production matcher rules and code are unchanged.
+
+The original signer files were located in app-local cache, read in place,
+and their admin, treasury, matcher and test-wallet public keys verified before
+signing. No keyfiles were copied into the repository or a synced folder.
+The earlier unfunded missing-path preflight is separate and cost zero.
+
+All test positions, entitled fees and remaining wallet balances were swept.
+Closing treasury balance is **63.046940822 SOL at finalized slot 523,857,921**.
+Incremental cost is **0.042435460 SOL**: 0.042255440 new-account rent and
+0.000180020 network fees, with zero retained balances above rent. All 24 other
+known operating wallets are zero; all six token-owner scans of the treasury
+and used test wallets are empty. All 20 funding, service and recovery
+transactions are finalized, and the reconciliation is exact. Program bytes
+and the production Config still match; no redeployment was performed.
+
+The matcher live-validation gap recorded after the 12 November halt is now
+closed. Graduation design remains the next task and requires the owner's
+DAMM v2 versus DLMM ruling. No graduation, lookup-table or maker implementation
+was changed by this qualification.
+
+[Full public evidence and every signature/slot](data/devnet/matcher-e2e-2026-11-19/report.md).
+
+## 26. MULTI_FOLD was undocumented, mis-documented and untested (19 November 2026)
 
 `name_letters` said "rn/vv cannot straddle a split". The code had never behaved that way: it joins every letter
 *before* `MULTI_FOLD` runs, so the pair folds across separators. "Remember November" keys as REMEMBEMOVEMBER.
@@ -833,7 +873,7 @@ written for, at a frequency the fuzzer's author chose. On 61,388 real launches t
 and cost one false merge. Synthetic dodge recall and real-traffic value are different measurements and the
 benchmark only ever produced the first.
 
-### 21a. What the folds are worth on organic traffic
+### 26a. What the folds are worth on organic traffic
 
 The same replay compared the full rule stack against the cheapest matcher anyone would write — NFKC, drop
 non-alphanumerics, upper case, nothing else:
@@ -858,7 +898,7 @@ fork with thirty lines of `upper()` and `isalnum()` captures 99% of the measured
 are being first to hold the narrative rooms, and the folds mattering once copies adapt. The second is a bet. It
 should be recorded as one.
 
-### 21b. Impersonation against self-spam
+### 26b. Impersonation against self-spam
 
 Earlier door-share figures did not separate who opened the door. Over the 31.4-hour window:
 
@@ -875,7 +915,7 @@ claim is the 53.7%, not the 74.2%. Door share also rises with the length of the 
 for the whole replay: the earlier 55.3% came from an 83-minute run and is not comparable. **Never quote a door
 share without its window.**
 
-### 21c. One further over-merge, accepted
+### 26c. One further over-merge, accepted
 
 Ranking all 5,345 occupied rooms by how much their members' raw names differ and inspecting the worst found one
 genuine over-merge in 61,388 launches: the Chinese character 婆 transliterates to "po" under rule C and shares a

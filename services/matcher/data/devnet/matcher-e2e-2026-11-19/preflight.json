@@ -1,0 +1,99 @@
+{
+  "status": "passed",
+  "program": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+  "programdata": "Edv3YGm1FGZfjcHCAhMGYsffvGRoPYnkToeq5bVg2hJm",
+  "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "deploy_slot": 520996477,
+  "elf_sha256": "fc2d615e37c63710326e18a29d157b50b0ad678ef9083e3161007bf43e8e9002",
+  "opening_lamports": 63089376282,
+  "opening_slot": 523854133,
+  "balances": {
+    "deploy-wallet": 63089376282,
+    "upgrade-authority": 0,
+    "matcher-authority": 0,
+    "smoke-launcher": 0,
+    "smoke-trader": 0,
+    "follower-01": 0,
+    "follower-02": 0,
+    "follower-03": 0,
+    "follower-04": 0,
+    "follower-05": 0,
+    "follower-06": 0,
+    "follower-07": 0,
+    "follower-08": 0,
+    "follower-09": 0,
+    "follower-10": 0,
+    "follower-11": 0,
+    "follower-12": 0,
+    "follower-13": 0,
+    "follower-14": 0,
+    "follower-15": 0,
+    "follower-16": 0,
+    "follower-17": 0,
+    "follower-18": 0,
+    "follower-19": 0,
+    "follower-20": 0
+  },
+  "empty_token_scans": [
+    {
+      "role": "deploy-wallet",
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "count": 0,
+      "read_slot": 523854136
+    },
+    {
+      "role": "deploy-wallet",
+      "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "count": 0,
+      "read_slot": 523854142
+    },
+    {
+      "role": "smoke-launcher",
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "count": 0,
+      "read_slot": 523854145
+    },
+    {
+      "role": "smoke-launcher",
+      "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "count": 0,
+      "read_slot": 523854151
+    },
+    {
+      "role": "smoke-trader",
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "count": 0,
+      "read_slot": 523854157
+    },
+    {
+      "role": "smoke-trader",
+      "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "count": 0,
+      "read_slot": 523854163
+    }
+  ],
+  "client_source": "a7aa8c0",
+  "client_sha256": "06c3fee963a80cb05adb07712f2c02914177a5c33d5e4fbc1f6e256f5bc3abe9",
+  "verifier_source": "310e12a",
+  "verifier_sha256": "aae613a765ebbb770b776fcb9aef76be686a73928733db11dcd17b25f4fdf20b",
+  "service_checkout": "605f0024ce914fd5b97ba3b0157d05147708d9fe",
+  "funding_float_lamports": 1200000000,
+  "recovery_and_fee_allowance_lamports": 100000000,
+  "scope": [
+    "signed_new_room",
+    "signed_floor_door",
+    "signed_name_door",
+    "altered_signed_request_refused",
+    "independent_verifier_process",
+    "sweep"
+  ],
+  "production_config_matches": true,
+  "verified_signers": {
+    "upgrade-authority": "8AjgpyhTB5NnLx5ojzXbeTpcJjHjf7t71GRQZnJqmhdx",
+    "deploy-wallet": "J57cz21ZzDpcGf7XdF2hQv1NE26NpE4BrGys18EX9QGD",
+    "smoke-launcher": "3hWYyu6PHJqdtmuHtzVWkYExoBE8uh9Lg5EJLdMqdux4",
+    "smoke-trader": "7wK5M89HthcegKEz8sf3goajdY8KUSfQbZg4Y2YQhqS6",
+    "matcher-authority": "HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz"
+  },
+  "keyfiles_read_in_place_outside_repo_and_synced_folders": true
+}
