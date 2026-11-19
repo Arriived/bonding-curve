@@ -1293,3 +1293,7 @@ escape every handler written to catch decode failures. `tests/test_decode_robust
 crashes while creating a far worse bug. 40 real transaction-path launches were re-fetched and re-decoded:
 **40 identical, 0 missing, 0 differing.** Combined with the 59,501-launch cross-path agreement in section 31,
 the decoder is now the best-evidenced component in the service.
+
+The suite stands at **225 tests**. The commit that added this section says 221 in its message, which is
+wrong; the count here is the correct one. Noted rather than rewritten, because amending a pushed commit
+to fix a number in prose is not worth rewriting history for.
