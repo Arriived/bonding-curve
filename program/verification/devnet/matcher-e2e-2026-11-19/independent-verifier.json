@@ -1,0 +1,557 @@
+{
+  "status": "passed",
+  "pid": 2112,
+  "parent_pid": 30780,
+  "rooted_slot": 523854395,
+  "verifier_sha256": "aae613a765ebbb770b776fcb9aef76be686a73928733db11dcd17b25f4fdf20b",
+  "rpc_transactions_fetched": 435,
+  "decisions": [
+    {
+      "decision_id": "79nTDdpGpxCX5C3vYHafRZJ6x2X3FCxnD3oG7EGLsRev233bFcxb3oNE21zPVB9JpxDCkQboFK6yDDY7L5xL8nq",
+      "verdict": "AGREE",
+      "checks": [
+        {
+          "check": "store hash chain",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "unicode tables match the service's",
+          "ok": true,
+          "detail": "verifier 15.1.0, service 15.1.0",
+          "inconclusive": false
+        },
+        {
+          "check": "matcher signature verifies over the recorded message",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "Config at the decision slot replayed from ConfigChanged",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "signer equals Config.matcher_authority at the decision slot",
+          "ok": true,
+          "detail": "HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz",
+          "inconclusive": false
+        },
+        {
+          "check": "message fee payer is the launcher",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "message blockhash is the recorded one",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "instruction matches the decision kind",
+          "ok": true,
+          "detail": "create_room",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.name equals the request",
+          "ok": true,
+          "detail": "'Qual C43A8A1EA82C'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.symbol equals the request",
+          "ok": true,
+          "detail": "'QC43A8'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.uri equals the request",
+          "ok": true,
+          "detail": "'https://e.invalid/q'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.first_buy_lamports equals the request",
+          "ok": true,
+          "detail": "100000000",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.max_fee_lamports equals the request",
+          "ok": true,
+          "detail": "0",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.min_tokens_out equals the request, or the recorded quote less max_slippage_bps",
+          "ok": true,
+          "detail": "3447754727909",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.rule and face equal the decision",
+          "ok": true,
+          "detail": "0,0",
+          "inconclusive": false
+        },
+        {
+          "check": "room account equals the decision",
+          "ok": true,
+          "detail": "6JuEWEXkWMdbRuG97cJtTQtasMagQnkTrHSt8QnZzr3d",
+          "inconclusive": false
+        },
+        {
+          "check": "room-id nonce equals the decision",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "door account equals the decision",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "door account is the PDA of the signed door nonce",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.expires_at_slot is the recorded expiry, within 150 slots of the blockhash slot",
+          "ok": true,
+          "detail": "523854402",
+          "inconclusive": false
+        },
+        {
+          "check": "SlugLock account equals the candidate identity's PDA",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "old holder account equals the decision",
+          "ok": true,
+          "detail": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch name_key is the research matcher's key for the request",
+          "ok": true,
+          "detail": "b4ed8f1c190203bc5b99d0c46391e066",
+          "inconclusive": false
+        },
+        {
+          "check": "NameLock account equals the key's PDA",
+          "ok": true,
+          "detail": "D1dUensNWsiPgdQoezeKkuE7JxrvzZevfEBrCDpGKbnp",
+          "inconclusive": false
+        },
+        {
+          "check": "old name holder account equals the decision",
+          "ok": true,
+          "detail": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+          "inconclusive": false
+        },
+        {
+          "check": "decision clock equals the block time of the clock-read slot",
+          "ok": true,
+          "detail": "chain 1795058555, record 1795058555",
+          "inconclusive": false
+        },
+        {
+          "check": "first-buy quote independently replays both curves in door tokens",
+          "ok": true,
+          "detail": "3518117069295",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.max_reserve_lamports equals the requested or slippage-derived bound",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "the recomputed decision does not depend on block-time precision (\u00b15 s)",
+          "ok": true,
+          "detail": "the outcome changes within the tolerance: a liveness boundary",
+          "inconclusive": false
+        },
+        {
+          "check": "independent recomputation agrees with the decision",
+          "ok": true,
+          "detail": "recomputed {'kind': 'new_room', 'rule': 'new_room', 'room_id': None, 'old_holder': None, 'old_name_holder': None}, recorded {'kind': 'new_room', 'rule': 'new_room', 'room_id': None, 'old_holder': None, 'old_name_holder': None}",
+          "inconclusive": false
+        }
+      ],
+      "landed": {
+        "signature": "3QNqjcw7vnvgFuZ3fa1Gb2wPJ1Jess1y2grs9akBa3w4N7HAcxUe22viVoPky8xU67yq9nkJUCWGyoqpp8TESLr3",
+        "slot": 523854267,
+        "ok": true,
+        "err": null
+      },
+      "store_hash_chain": "3 records, head eb4f8f567f434ac9e3c62959ac1ab147e3e5d4f2b1b44985336fe6a55eea096d"
+    },
+    {
+      "decision_id": "3CsoK8VvZDBb9SMw2C3zrt5bTAVVRjCJ7Rm2moXcREcKXhYVzWXsKj5SKU8WPR8iFCbcvgwpX9ny9EM19KJCDcBf",
+      "verdict": "AGREE",
+      "checks": [
+        {
+          "check": "store hash chain",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "unicode tables match the service's",
+          "ok": true,
+          "detail": "verifier 15.1.0, service 15.1.0",
+          "inconclusive": false
+        },
+        {
+          "check": "matcher signature verifies over the recorded message",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "Config at the decision slot replayed from ConfigChanged",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "signer equals Config.matcher_authority at the decision slot",
+          "ok": true,
+          "detail": "HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz",
+          "inconclusive": false
+        },
+        {
+          "check": "message fee payer is the launcher",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "message blockhash is the recorded one",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "instruction matches the decision kind",
+          "ok": true,
+          "detail": "open_door",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.name equals the request",
+          "ok": true,
+          "detail": "'Qual C43A8A1EA82C'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.symbol equals the request",
+          "ok": true,
+          "detail": "'QC43A8'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.uri equals the request",
+          "ok": true,
+          "detail": "'https://e.invalid/q'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.first_buy_lamports equals the request",
+          "ok": true,
+          "detail": "100000000",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.max_fee_lamports equals the request",
+          "ok": true,
+          "detail": "0",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.min_tokens_out equals the request, or the recorded quote less max_slippage_bps",
+          "ok": true,
+          "detail": "3447791876192",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.rule and face equal the decision",
+          "ok": true,
+          "detail": "1,0",
+          "inconclusive": false
+        },
+        {
+          "check": "room account equals the decision",
+          "ok": true,
+          "detail": "6JuEWEXkWMdbRuG97cJtTQtasMagQnkTrHSt8QnZzr3d",
+          "inconclusive": false
+        },
+        {
+          "check": "door account equals the decision",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "door account is the PDA of the signed door nonce",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.expires_at_slot is the recorded expiry, within 150 slots of the blockhash slot",
+          "ok": true,
+          "detail": "523854457",
+          "inconclusive": false
+        },
+        {
+          "check": "SlugLock account equals the candidate identity's PDA",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "old holder account equals the decision",
+          "ok": true,
+          "detail": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+          "inconclusive": false
+        },
+        {
+          "check": "decision clock equals the block time of the clock-read slot",
+          "ok": true,
+          "detail": "chain 1795058569, record 1795058569",
+          "inconclusive": false
+        },
+        {
+          "check": "room 7728968838714237897 state at slot 523854299 equals the recorded state (timestamps within 5 s of block time)",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "first-buy quote independently replays both curves in door tokens",
+          "ok": true,
+          "detail": "3518154975707",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.max_reserve_lamports equals the requested or slippage-derived bound",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "the recomputed decision does not depend on block-time precision (\u00b15 s)",
+          "ok": true,
+          "detail": "the outcome changes within the tolerance: a liveness boundary",
+          "inconclusive": false
+        },
+        {
+          "check": "independent recomputation agrees with the decision",
+          "ok": true,
+          "detail": "recomputed {'kind': 'door', 'rule': 'floor', 'room_id': 7728968838714237897, 'old_holder': None, 'old_name_holder': None}, recorded {'kind': 'door', 'rule': 'floor', 'room_id': 7728968838714237897, 'old_holder': None, 'old_name_holder': None}",
+          "inconclusive": false
+        }
+      ],
+      "landed": {
+        "signature": "4HhvL5SLHbisjhNbcSi3PM56MUaMsXhzUVwSNYEW6xnMNpsBoUcQ7Hyx8bbksgL3AN3UBJDJpbeAnSnYinBAJMm8",
+        "slot": 523854322,
+        "ok": true,
+        "err": null
+      },
+      "store_hash_chain": "3 records, head eb4f8f567f434ac9e3c62959ac1ab147e3e5d4f2b1b44985336fe6a55eea096d"
+    },
+    {
+      "decision_id": "3coTeqZo3k61NuMALgJeRiuCJ5CtcPipxYXCH5kbGVN33tLd1FX8Xih4hD2n4n4VfhWoPMdo9X5BNRSu3YPGJPXE",
+      "verdict": "AGREE",
+      "checks": [
+        {
+          "check": "store hash chain",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "unicode tables match the service's",
+          "ok": true,
+          "detail": "verifier 15.1.0, service 15.1.0",
+          "inconclusive": false
+        },
+        {
+          "check": "matcher signature verifies over the recorded message",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "Config at the decision slot replayed from ConfigChanged",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "signer equals Config.matcher_authority at the decision slot",
+          "ok": true,
+          "detail": "HKhgVW7bhSe6r9cMVzbXJNFa2UoTLD3DUsMn6u4nUuVz",
+          "inconclusive": false
+        },
+        {
+          "check": "message fee payer is the launcher",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "message blockhash is the recorded one",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "instruction matches the decision kind",
+          "ok": true,
+          "detail": "open_door",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.name equals the request",
+          "ok": true,
+          "detail": "'Qual C43A8A1EA82C'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.symbol equals the request",
+          "ok": true,
+          "detail": "'XC43A8'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.uri equals the request",
+          "ok": true,
+          "detail": "'https://e.invalid/q'",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.first_buy_lamports equals the request",
+          "ok": true,
+          "detail": "100000000",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.max_fee_lamports equals the request",
+          "ok": true,
+          "detail": "0",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.min_tokens_out equals the request, or the recorded quote less max_slippage_bps",
+          "ok": true,
+          "detail": "3447828816050",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.rule and face equal the decision",
+          "ok": true,
+          "detail": "3,0",
+          "inconclusive": false
+        },
+        {
+          "check": "room account equals the decision",
+          "ok": true,
+          "detail": "6JuEWEXkWMdbRuG97cJtTQtasMagQnkTrHSt8QnZzr3d",
+          "inconclusive": false
+        },
+        {
+          "check": "door account equals the decision",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "door account is the PDA of the signed door nonce",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.expires_at_slot is the recorded expiry, within 150 slots of the blockhash slot",
+          "ok": true,
+          "detail": "523854513",
+          "inconclusive": false
+        },
+        {
+          "check": "SlugLock account equals the candidate identity's PDA",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "old holder account equals the decision",
+          "ok": true,
+          "detail": "8tPd1ZUEGxrj5zYu8aeg95cU92nmKWKYKoSaKPqFuZAZ",
+          "inconclusive": false
+        },
+        {
+          "check": "decision clock equals the block time of the clock-read slot",
+          "ok": true,
+          "detail": "chain 1795058582, record 1795058582",
+          "inconclusive": false
+        },
+        {
+          "check": "room 7728968838714237897 state at slot 523854353 equals the recorded state (timestamps within 5 s of block time)",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "first-buy quote independently replays both curves in door tokens",
+          "ok": true,
+          "detail": "3518192669439",
+          "inconclusive": false
+        },
+        {
+          "check": "Launch.max_reserve_lamports equals the requested or slippage-derived bound",
+          "ok": true,
+          "detail": "",
+          "inconclusive": false
+        },
+        {
+          "check": "the recomputed decision does not depend on block-time precision (\u00b15 s)",
+          "ok": true,
+          "detail": "the outcome changes within the tolerance: a liveness boundary",
+          "inconclusive": false
+        },
+        {
+          "check": "independent recomputation agrees with the decision",
+          "ok": true,
+          "detail": "recomputed {'kind': 'door', 'rule': 'T2n', 'room_id': 7728968838714237897, 'old_holder': None, 'old_name_holder': None}, recorded {'kind': 'door', 'rule': 'T2n', 'room_id': 7728968838714237897, 'old_holder': None, 'old_name_holder': None}",
+          "inconclusive": false
+        }
+      ],
+      "landed": {
+        "signature": "4uGyEjAXRwTNxij7yPp9KYXpZpFNN11uPPkkGP9rjZBVPLEL5mMjRXKCvSDuemyMz1FtPsH2TtReBdiBbkYXgXfT",
+        "slot": 523854377,
+        "ok": true,
+        "err": null
+      },
+      "store_hash_chain": "3 records, head eb4f8f567f434ac9e3c62959ac1ab147e3e5d4f2b1b44985336fe6a55eea096d"
+    }
+  ],
+  "error": null,
+  "service_and_signer_modules_loaded": false,
+  "active_decision": null,
+  "cached_rooted_transactions": 435
+}

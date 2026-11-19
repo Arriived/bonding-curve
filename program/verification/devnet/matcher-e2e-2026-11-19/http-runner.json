@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "pid": 30780,
+  "transport": "HTTP loopback",
+  "refusal": "passed",
+  "verifier": "separate process",
+  "error": null,
+  "verifier_pid": 2112
+}

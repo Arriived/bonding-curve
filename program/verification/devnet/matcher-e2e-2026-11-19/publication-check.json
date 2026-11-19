@@ -1,0 +1,13 @@
+{
+  "public_files_scanned": 57,
+  "private_material_matches": 0,
+  "unique_finalized_transactions": 20,
+  "verifier_verdicts": [
+    "AGREE",
+    "AGREE",
+    "AGREE"
+  ],
+  "exact_cost_reconciliation": true,
+  "other_native_wallets_zero": 24,
+  "empty_token_owner_scans": 6
+}
