@@ -1,0 +1,24 @@
+{
+  "kind": "altered_signed_request",
+  "request": {
+    "launcher": "3hWYyu6PHJqdtmuHtzVWkYExoBE8uh9Lg5EJLdMqdux4",
+    "name": "Qual C43A8A1EA82C x",
+    "symbol": "QC43A8",
+    "uri": "https://e.invalid/q",
+    "first_buy_lamports": 100000000,
+    "max_slippage_bps": 200,
+    "cu_price_micro_lamports": 1,
+    "issued_at": 1795058557,
+    "signature": "51i1TeCoMpU7JDn7JNhXqgszFZWSoPvMjDuDAemgFsvLKaXdSvSQxG7jnijPqkapPkP5AFCpusDq5aPNKdGXMDm3"
+  },
+  "http_status": 401,
+  "response": {
+    "error": "unauthenticated",
+    "message": "signature by launcher over the canonical request is required (see matcher_service/auth.py)"
+  },
+  "decision_rows_before": 0,
+  "decision_rows_after": 0,
+  "transaction_signature": null,
+  "transaction_slot": null,
+  "auth_request_signature": "51i1TeCoMpU7JDn7JNhXqgszFZWSoPvMjDuDAemgFsvLKaXdSvSQxG7jnijPqkapPkP5AFCpusDq5aPNKdGXMDm3"
+}
