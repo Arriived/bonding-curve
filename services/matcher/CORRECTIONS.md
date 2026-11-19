@@ -799,3 +799,85 @@ Whole qualification cost is 3.454624079 SOL; this resume cost 0.255489721 SOL.
 The reconciliation includes the earlier deployment and recovery and two later
 5-SOL funding transfers. All 24 other wallets and all 50 token-owner scans
 are empty. [Program measurements and every signature/slot](https://github.com/Arriived/bonding-curve/blob/claude/paired-doors/program/verification/devnet/paired-4437e58-resume/report.md).
+
+## 21. MULTI_FOLD was undocumented, mis-documented and untested (19 November 2026)
+
+`name_letters` said "rn/vv cannot straddle a split". The code had never behaved that way: it joins every letter
+*before* `MULTI_FOLD` runs, so the pair folds across separators. "Remember November" keys as REMEMBEMOVEMBER.
+All 180 tests passed with that claim in place, because **nothing in the suite referenced `MULTI_FOLD` at all** —
+no test, no fixture, no assertion. The docstring was free to drift from the code and did.
+
+Measured on 61,388 real pump.fun launches collected over 31.4 hours (`scripts/shadow_replay.py`):
+
+| | |
+|---|---:|
+| launches whose on-chain key `MULTI_FOLD` moves | 356 (0.58%) |
+| rooms it merges that would otherwise be separate | **1** |
+| rooms it splits that would otherwise be one | 0 |
+
+The single false merge is `"BURN"` with `"bum"`, both class P. The fold also rewrites ordinary English inside the
+NameLock key: BURN to BUM, TURN to TUM, Unicorn to UNICOM, Arnold to AMOID, Tournament to TOUMAMENT.
+
+**The straddle is kept, deliberately.** Folding per token instead would let `"Pur npkin"` dodge `"Pumpkin"` by
+splitting the homoglyph itself, which is a free and visually perfect evasion. One false merge per 61,000 launches
+is the right price for closing it. What changed is the record, not the rule: the docstring now states that
+straddling is intentional and names its cost, and `tests/test_multi_fold.py` pins all 15 cases, including the
+`"BURN"`/`"bum"` collision and the `"Remember November"` artefact, so neither can drift again.
+
+`MULTI_FOLD` is part of the NameLock key derivation. Changing that tuple is a breaking key change, not a tweak.
+
+**Correction to an earlier claim.** The evasion benchmark credits `rn -> m` with +1,087 catches (55.22% to
+56.04%). That figure should be discounted: the catches come almost entirely from `composed_lookalike`, the fuzzer
+whose job is to substitute `rn` for `m`. The benchmark is scoring the rule against the attack the rule was
+written for, at a frequency the fuzzer's author chose. On 61,388 real launches the fold caught no impersonation
+and cost one false merge. Synthetic dodge recall and real-traffic value are different measurements and the
+benchmark only ever produced the first.
+
+### 21a. What the folds are worth on organic traffic
+
+The same replay compared the full rule stack against the cheapest matcher anyone would write — NFKC, drop
+non-alphanumerics, upper case, nothing else:
+
+| matcher | doors | share of launches |
+|---|---:|---:|
+| live rule (A + B + I + C) | 45,526 | 74.2% |
+| NFKC + alphanumerics + upper case | 45,043 | 73.4% |
+| **difference** | **+483** | **+0.8pp (+1.1% relative)** |
+
+Attributing each room's merge to the rule responsible: 91.5% of occupied rooms are byte-identical names needing
+no fold at all, rule I accounts for 7.7%, rules B and C for 0.5%.
+
+This does not make the folds worthless, and it is not an argument for removing them. It fixes what they are for.
+The 74% door share — the figure the product rests on — is obtained by exact string matching. Launches are not
+disguised today because nothing punishes an undisguised copy; the folds are insurance against adaptation, and
+insurance pays nothing until the event. They cannot be added after an attack begins, because the NameLock key is
+on-chain and changing it is breaking.
+
+The honest statement of the moat is therefore **not** "our matcher is hard to replicate". On today's traffic a
+fork with thirty lines of `upper()` and `isalnum()` captures 99% of the measured benefit. The defensible claims
+are being first to hold the narrative rooms, and the folds mattering once copies adapt. The second is a bet. It
+should be recorded as one.
+
+### 21b. Impersonation against self-spam
+
+Earlier door-share figures did not separate who opened the door. Over the 31.4-hour window:
+
+| | launches | share |
+|---|---:|---:|
+| new room (an original) | 15,643 | 25.5% |
+| routed into an existing room | 45,526 | 74.2% |
+| ... by a **different** creator — impersonation | 32,942 | **53.7%** |
+| ... by the **same** creator — one wallet spamming | 12,584 | 20.5% |
+| refused, name folds to nothing | 219 | 0.4% |
+
+A fifth of all launches are one wallet mass-producing the same name. That is spam, not vamping, and the anti-vamp
+claim is the 53.7%, not the 74.2%. Door share also rises with the length of the window, because rooms stay live
+for the whole replay: the earlier 55.3% came from an 83-minute run and is not comparable. **Never quote a door
+share without its window.**
+
+### 21c. One further over-merge, accepted
+
+Ranking all 5,345 occupied rooms by how much their members' raw names differ and inspecting the worst found one
+genuine over-merge in 61,388 launches: the Chinese character 婆 transliterates to "po" under rule C and shares a
+key with the English name "po". It is class P, where symbol and name must both match, so the bar is already
+higher than for ordinary names. Left as is.

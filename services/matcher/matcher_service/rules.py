@@ -111,7 +111,15 @@ def symbol_key(symbol):
 
 def name_letters(name):
     """Every letter and digit of the name, joined, then folded once (rule I): separators, case and the camelCase
-    split cannot change it, and rn/vv cannot straddle a split. Stopwords are kept."""
+    split cannot change it. Stopwords are kept.
+
+    Because the letters are joined *before* MULTI_FOLD runs, an rn or vv pair **can** straddle a separator, and
+    that is deliberate: it is what stops "Pur npkin" from dodging "Pumpkin" by splitting the homoglyph itself.
+    The cost is that the fold also fires where no reader sees one letter, across a word boundary
+    ("Remember November" -> REMEMBEMOVEMBER) and inside ordinary English ("BURN" -> BUM, "Unicorn" -> UNICOM).
+    Measured on 58,515 real pump.fun launches (CORRECTIONS section 21): MULTI_FOLD moves the key of 0.61% of
+    launches, causes one false merge ("BURN" with "bum") and no missed merges. tests/test_multi_fold.py pins
+    every case above, because an earlier version of this docstring claimed the opposite and nothing caught it."""
     raw = re.split(r"[^0-9a-zÀ-￿]+", _base(_pre(name)))
     return _fold("".join(ch for t in raw for ch in t if ch.isalnum()))
 
