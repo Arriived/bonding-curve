@@ -1025,3 +1025,81 @@ serves, and it rate-limits hard enough that throughput collapses (82 launches in
 inside the retained window). So roughly **2.4 days, about 105,000 launches, is the practical limit of free
 historical collection**. Deeper history needs a paid archival endpoint. Collection beyond that limit has to come
 from watching forward in real time, at roughly 1,750 launches an hour.
+
+## 28. The fold order is load-bearing and was untested; how much disguise is actually live (19 November 2026)
+
+Continuing the audit of section 27, on 63,401 launches.
+
+### 28a. Appearance-folding must run before sound-folding, and nothing checked that it did
+
+`_pre` applies the Unicode confusables table (rule B) and then transliterates whatever is left (rule C). Where
+the two disagree, only the first is right for impersonation, because an impersonator exploits how a character
+**looks**, not how it sounds:
+
+| character | confusables (appearance) | anyascii (sound) |
+|---|---|---|
+| U+0420 CYRILLIC CAPITAL ER `Р` | `P` | `R` |
+| U+0440 CYRILLIC SMALL ER `р` | `p` | `r` |
+| U+0455 CYRILLIC SMALL DZE `ѕ` | `s` | `dz` |
+
+**291 characters** in the pinned table disagree with their transliteration. The two lines in `_pre` were in the
+right order, but nothing tested it: swapping them would have opened that whole attack class with no test failing,
+exactly as with `MULTI_FOLD` in section 26.
+
+This is not hypothetical. A live attack in the sample depends on it: `Реbu Thе Market Bull` (Cyrillic Р and е)
+copying `Pebu The Market Bull`. It folds to PEBUTHEMARKETBUII and routes into the original's room. Under
+transliteration alone it folds to **REBU**THEMARKETBUII and escapes.
+
+`tests/test_fold_order.py` now pins the ordering, the three characters above, the live attack, cross-script kana
+merges, and the generic property over all 291 disagreeing characters. Restricted to characters NFKC leaves alone,
+since NFKC runs first and its answer stands where it decomposes — which is why U+017F LONG S keys as `s` rather
+than the `f` the confusables table offers.
+
+### 28b. A hypothesis of mine that was wrong
+
+I expected rule C to be what makes non-Latin names usable at all, and that dropping it would make our launchpad
+refuse every CJK-named launch. **It does not.** Refusals are identical at 229 (0.36%) with and without it, because
+`_base` splits on `[^0-9a-zÀ-￿]+` and CJK characters fall inside that range, so they survive as letters either
+way. Rule C only decides whether such a name keys as romanized text (`蝴蝶` to HUDIE) or as the raw codepoints.
+Recorded because the claim was nearly written into the design notes as a justification for the rule.
+
+### 28c. How much disguise is actually happening
+
+Section 26a argued the folds are insurance against adaptation rather than a present need. The audit **confirms**
+that, and now gives the number. Rooms each fold merges that would otherwise be separate:
+
+| fold | rooms merged | launches pulled in |
+|---|---:|---:|
+| rule B, Unicode confusables | 2 | 2 |
+| rule C, transliteration | 15 | 20 |
+| `INVISIBLE`, blank-rendering alphanumerics | 0 | 0 |
+| `MULTI_FOLD` (section 26) | 1 | 1, and it was a false merge |
+| `DIGIT_FOLD` (section 27b) | 20 | 17 right, 3 wrong |
+
+So roughly **22 live disguised impersonations in 63,401 launches, under 0.04%**. The attack families that do
+appear are worth naming, because they are what adaptation will look like at scale: Cyrillic letter substitution
+(`Реbu`, `Оversized`, `Cowbоys`, `Dеwiе Thе Turtlе`, `Finnеgan`, `Just а Memе`, `Stоrk`, `Tоken`), the turned-V
+homoglyph for A (`ɅI` for `AI`, `GTA ɅI`, `Grand Theft ɅI`), and switching Japanese script (`毒うさぎ` against
+`毒ウサギ`). In one family the disguised version is already **more numerous than the original** — `Dеwiе Thе
+Turtlе` appears 7 times against 3 for the Latin spelling.
+
+Rule B's 2 rooms look small only because rule C covers most of the same ground: anyascii also maps Cyrillic О, А,
+Е, е, о, а, і to their Latin letters. The confusables table earns its place on precisely the characters where the
+two disagree, which is why 28a matters more than the count of 2 suggests.
+
+### 28d. `INVISIBLE` is complete over this sample
+
+Every alphanumeric character in 63,401 real names and symbols that renders blank is already in `INVISIBLE`.
+No gap was found. Recorded as a negative result so the check is not repeated blindly: the method was to look for
+characters that `str.isalnum()` accepts (so `name_letters` keeps them) while being format, spacing or combining
+category, or normalizing to whitespace. Characters that are not alphanumeric need no entry, since the separator
+split discards them anyway.
+
+### 28e. The class P escape hatch, measured
+
+Following 27a: class P rooms require the **symbol** to match as well, so a copy that changes its symbol opens its
+own room. This covers **157 of 5,468 occupied rooms (2.9%) and 1,313 of 52,566 routed launches (2.5%)** — narrow
+in aggregate, but it is exactly the short, high-value tickers: `GTA` (132 launches), `VRL` (141), `657` (108),
+`猫` (95), `67%` (94), `$wag` (32). Lowering `NAME_EQUAL_MIN_LEN` to 3 as recommended in 27a closes it for
+three-character names, which is most of the value. It cannot be closed for one- and two-character names without
+merging unrelated junk, and that remainder should be treated as an accepted limit rather than a bug.
