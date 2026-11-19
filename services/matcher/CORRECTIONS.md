@@ -1103,3 +1103,70 @@ in aggregate, but it is exactly the short, high-value tickers: `GTA` (132 launch
 `猫` (95), `67%` (94), `$wag` (32). Lowering `NAME_EQUAL_MIN_LEN` to 3 as recommended in 27a closes it for
 three-character names, which is most of the value. It cannot be closed for one- and two-character names without
 merging unrelated junk, and that remainder should be treated as an accepted limit rather than a bug.
+
+## 29. The symbol key strips no affixes while the name key does (19 November 2026)
+
+`name_letters` feeds `_strip_affixes`, so a trailing COIN, TOKEN, OFFICIAL, SOLANA or CTO leaves the **name** key.
+`symbol_key` never calls it. For class N this is irrelevant, because the key is the name alone and the symbol does
+not appear in it. For class P the key is (symbol, name), so the same short name splits across rooms purely by
+whether the creator put COIN in the **ticker**:
+
+```
+name='gta' symbol='GTACOIN' -> P|GTACOIN|GTA
+name='gta' symbol='GTA'     -> P|GTA|GTA
+```
+
+Measured on 65,630 launches: of 457 class P keys, this splits exactly **one** group — `P|GTA|GTA` with 149
+launches against `P|GTACOIN|GTA` with 1.
+
+**Not changed, and not worth changing on its own.** It is part of the on-chain NameLock derivation, so altering it
+is a breaking key change, and the measured cost is one launch in 65,630. More to the point, the fix recommended in
+section 27a subsumes it: at `NAME_EQUAL_MIN_LEN` 3 every affected name (GTA, INU, WAG, DIP, X) becomes class N,
+where the symbol is not in the key at all. The asymmetry is also arguably correct rather than accidental — a name
+is prose and a ticker is an identifier — but nothing in the code said so, which is why it is now documented and
+pinned in `tests/test_symbol_affix.py`.
+
+## 30. Narrative squatting: already bounded, now measured (19 November 2026)
+
+`program/docs/SECURITY_REVIEW.md` records that the room **founder** position goes to whoever creates the room
+first, that it pays a share of every later trade in the room including every door, that it matters only while
+`founder_share_bps > 0` (it is 0 in both the devnet and mainnet config), and that squatting costs about 0.0288 SOL
+of rent plus keeping the room live. That bound is correct and this is not a new finding. What was missing is
+whether a squatter would have to **predict** which narratives take off, or could simply register broadly and wait.
+It matters because turning the founder share on is a live option in `program/docs/FEE_DESIGN.md`.
+
+Measured over 65,630 launches spanning 57.6 hours, for rooms whose first launch is at least 6 hours inside the
+window so the fill time is not censored by the window edge:
+
+| | median | 25th | 75th | within 5 min |
+|---|---:|---:|---:|---:|
+| 1st door after door 0 | 2.3 min | 0.1 | 62.1 | **56.9%** |
+| 2nd door | 18.8 min | 0.9 | 279.8 | 40.7% |
+| 4th door | 59.9 min | 2.6 | 427.3 | 31.0% |
+
+**Rooms fill too fast to react to.** The first door arrives within five minutes in 57% of cases, so a squatter
+cannot watch a narrative start and then race to register it. They would have to hold the key in advance.
+
+Registering in advance looks cheap until you ask which keys:
+
+| rooms registered | rent | launches sitting under them |
+|---:|---:|---:|
+| 100 | 2.9 SOL | 18,039 (27.6% of all flow) |
+| 1,000 | 28.8 SOL | 38,696 (59.2%) |
+| 5,000 | 144.0 SOL | 53,114 (81.2%) |
+
+**That table is retrospective and must not be read as an attack cost.** It is the concentration of flow over the
+*largest* rooms, chosen with hindsight. Picking them in advance is the whole difficulty: 65.9% of rooms never
+receive a single door, and the biggest rooms in this sample are trend-specific names nobody could have
+pre-registered — Dacity (1,128 launches), AudaCity (628), Apocry, Lucia, Mandy, dog wif cap. A squatter buying
+breadth blindly would mostly be buying the two thirds of rooms that stay empty.
+
+**Conclusion: the attack needs prediction, and prediction is hard on this traffic.** The residual worth watching
+is not the trend names but the evergreen ones — DOG, CAT, AI, INU, GTA, PEPE recur across cycles and are cheap to
+hold. If `founder_share_bps` is ever raised above 0, the mitigation that follows from these numbers is to cap or
+taper the founder share rather than to add a reservation mechanism, since the earlier reservation was removed for
+good reasons (section 16) and the rooms fill faster than any reservation window would help.
+
+**Limit of this measurement.** 57.6 hours is one market episode, dominated by the GTA VI and Dacity/Audacity
+waves. Fill times in a quiet week could be much slower, which would make breadth more viable. Re-measure before
+acting on it.
