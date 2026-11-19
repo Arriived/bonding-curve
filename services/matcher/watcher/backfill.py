@@ -46,7 +46,7 @@ MINT_AUTHORITY = "TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokwaKt1eokM"
 # Both of these serve getSignaturesForAddress and getTransaction. Each has its own sustained-rate quota, so the
 # pool rotates and a 429 parks one endpoint without stalling the walk.
 DEFAULT_RPCS = ("https://solana-rpc.publicnode.com", "https://api.mainnet-beta.solana.com")
-USER_AGENT = "doors-launch-backfill/3"
+USER_AGENT = "doors-launch-backfill/4"
 MISSING = object()   # EVERY endpoint answered and none has the record; only then is it treated as absent
 
 
@@ -121,8 +121,9 @@ class Pool:
         the backfill silently discards all history older than the shallowest endpoint's retention
         (CORRECTIONS section 27).
         """
+        saw_missing = False
         for a in range(attempts):
-            saw_missing = False
+            saw_error = False
             for _ in range(len(self.rpcs)):
                 got = self.pick().once(method, params)
                 if got is MISSING:
@@ -130,9 +131,13 @@ class Pool:
                     continue
                 if got is not None:
                     return got
-            if saw_missing:
-                return MISSING          # every endpoint answered; none has it
+                saw_error = True        # this endpoint did not answer, so it confirms nothing
+            if saw_missing and not saw_error:
+                return MISSING          # every endpoint answered on this pass and none has it
             time.sleep(min(10, 0.4 * 2 ** a))
+        # One endpoint said "pruned" and another never answered. That is not proof of absence, so it is queued
+        # for retry rather than recorded as gone. Returning MISSING here was the first version of this fix and
+        # it reintroduced the very bug it was written for, one level up (CORRECTIONS section 32).
         return None
 
     def report(self, label):

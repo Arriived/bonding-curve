@@ -1206,3 +1206,54 @@ decoded from logs, not a row whose instruction was something else.
 **Rows collected before this commit** keep the old meaning: in `bigset`, `ts` is observation time and `ix` is
 always absent. Rows collected after it, and every backfilled row, carry confirmation time. Treat the two
 vintages separately rather than assuming a single column means one thing.
+
+## 32. My fix for the absence bug reintroduced the same bug one level up (19 November 2026)
+
+Section 27d fixed `backfill.py` treating a null `getTransaction` result as proof a transaction never existed,
+when it only means that endpoint has pruned it. The fix required every endpoint to be asked before accepting
+absence. **It did not require every endpoint to answer.** The code was:
+
+```python
+for _ in range(len(self.rpcs)):
+    got = self.pick().once(method, params)
+    if got is MISSING:
+        saw_missing = True
+        continue
+    if got is not None:
+        return got
+if saw_missing:
+    return MISSING          # every endpoint answered; none has it
+```
+
+The comment asserts something the code never checks. When publicnode returned MISSING (pruned at that depth) and
+api.mainnet-beta returned an **error** rather than an answer — it logged 461 HTTP 429s during the run — the
+result was recorded as confirmed absent on the word of one endpoint. That is exactly the defect of section 27d,
+moved up one level, and I wrote it while fixing that defect.
+
+**Cost: a gap-fill run reported 41,237 transactions "genuinely absent".** Probing 20 of them directly against
+both endpoints, patiently and with backoff:
+
+| | |
+|---|---:|
+| present on api.mainnet-beta | **20 / 20** |
+| present on publicnode | 0 / 20 |
+| absent from both (really gone) | **0 / 20** |
+
+None were gone. All 41,237 were recoverable and had been written off.
+
+Fixed: an endpoint that errors confirms nothing, so MISSING now requires a pass in which every endpoint
+*answered* and none had the record. Where one says pruned and another never answers, the signature is queued to
+`failed.jsonl` for retry instead of being recorded as absent — unproven absence is now a retry, not a fact.
+
+**What this says beyond the bug.** Both faults share a shape: treating the absence of evidence from one source as
+evidence of absence. The first version printed a cumulative counter that hid a 100% failure rate; the second
+wrote a comment asserting an invariant it did not enforce. In both cases the code reported success while
+discarding data, which is the failure mode that costs most here, because nothing downstream can tell a gap from a
+quiet period. Any future collector change should be reviewed against that specific question: **when this is
+wrong, does it report a gap, or does it report success?**
+
+**Retention, corrected.** Section 27d concluded that about 2.4 days and 105,000 launches was the practical limit
+of free historical collection. That figure came from the same flawed logic and is wrong. publicnode does prune at
+roughly 2.4 days, but api.mainnet-beta serves well past it; what collapses past that depth is throughput, not
+availability, because only one endpoint remains and it rate-limits hard (about 2 launches a second against 45
+inside publicnode's window). The limit is time, not the data.
