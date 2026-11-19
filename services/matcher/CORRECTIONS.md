@@ -1349,3 +1349,50 @@ between the rows, weighted by how many narratives get traction.
 **What would settle it** is the one thing the launch records cannot provide: reserve and volume per room over
 time. The devnet run, or a watcher extended to follow trades rather than only launches, would give it. Until then
 the range stands and the midpoint should not be presented as a measurement.
+
+## 35. The metadata packet budget priced against real launches (19 November 2026)
+
+M-7 (v0 transactions with address lookup tables) is already recorded as a pre-mainnet blocker. It had never been
+costed against real traffic. Measured over 85,844 collected launches, by total metadata bytes
+(name + symbol + URI, UTF-8):
+
+```
+min 23   10th 61   median 83   90th 100   max 221
+```
+
+| transaction shape | budget | real launches that fit |
+|---|---:|---:|
+| legacy, new room | 85 B | **50,042 (58.3%)** |
+| legacy, takeover | 53 B | **2,039 (2.4%)** |
+| v0 + lookup tables, new room | 235 B | 85,844 (100.0%) |
+| v0 + lookup tables, takeover | 203 B | 85,835 (100.0%) |
+
+**Without v0 lookup tables our launchpad would turn away 41.7% of new-room launches and 97.6% of takeovers**,
+not for anything the creator did wrong but because the transaction will not fit. M-7 is not an optimization, it
+is the difference between accepting four launches in ten and all of them. It should be stated that way in the
+mainnet checklist.
+
+The program's own hard limits are not the problem. Against `state.rs` (name ≤ 32 B, symbol ≤ 10 B, URI ≤ 200 B),
+only **895 launches (1.04%)** are refused outright, almost all for a symbol over 10 bytes; 2 names exceed 32
+bytes and no URI exceeds 200. The constraint is the packet, not the schema.
+
+### 35a. What the median tells you, and a retrospective on the u128 near-miss
+
+The median launch carries **83 bytes against an 85-byte legacy budget**. The distribution sits exactly on the
+cliff edge, so small changes to the budget move the pass rate enormously. That can now be priced:
+
+| creation budget | launches that fit | |
+|---:|---:|---|
+| 93 B | 66,659 (77.6%) | before the `max_room_price` u128 recommendation |
+| 85 B | 50,045 (58.3%) | restored by switching to `max_reserve_lamports` (u64) |
+| **77 B** | **25,762 (30.0%)** | what the u128 bound would have left |
+
+The u128 price bound I recommended cost 16 bytes and was caught and reverted at the time (§ earlier corrections).
+Priced against real traffic it would have cut accepted launches from 77.6% to **30.0%** — it would have refused
+seven launches in ten while every test still passed, because no test in the suite knows what a real pump.fun URI
+looks like. The revert was not a close call.
+
+**The general lesson, and it is the same one as sections 26 and 33.** A budget expressed in bytes, with tests
+that use short synthetic names, looks comfortable right up until it is measured against traffic. The suite
+should carry a fixture built from the real distribution — median 83 bytes, 90th percentile 100 — so that any
+future change to the packet is priced in launches refused rather than in bytes saved.
