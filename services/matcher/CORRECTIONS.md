@@ -1396,3 +1396,97 @@ looks like. The revert was not a close call.
 that use short synthetic names, looks comfortable right up until it is measured against traffic. The suite
 should carry a fixture built from the real distribution — median 83 bytes, 90th percentile 100 — so that any
 future change to the packet is priced in launches refused rather than in bytes saved.
+
+## 36. A public dataset 29 times larger than ours exists; it corrects three of our figures (20 November 2026)
+
+The owner asked whether anyone had already indexed pump.fun launches. They have.
+
+**[loopholetape/pumpfun-launches](https://huggingface.co/datasets/loopholetape/pumpfun-launches)**, CC BY 4.0:
+**2,713,057 launches over 67 days** (2026-08-31 to 2026-11-05), 43 columns, 372 MB of daily Parquet. It carries
+every field our routing needs — `name`, `symbol`, `uri`, `creator`, `t0` — and outcomes we cannot observe at all:
+`graduated`, `rugged`, `peak_rs`, `terminal_rs`, `dev_buy_sol`, `dev_share`. Recorded from the project's own
+Yellowstone gRPC stream. Our own collectors reached 94,899 launches over three days before free-RPC retention and
+rate limits bit, so this is **29 times larger** and covers ground we cannot reach.
+
+`scripts/fetch_external_dataset.py` re-fetches and re-audits it. The data is **not committed**: 372 MB of
+third-party data does not belong in git, and the licence asks for attribution rather than redistribution.
+
+**It was audited, not trusted.** Its window ends before ours begins, so no shared mint exists to cross-check
+against our own rows; the only available test is against chain. 18 random rows were re-fetched by mint, their
+creation transactions decoded with our own `watcher.decode`, and compared: **16 matched exactly on name, symbol,
+URI and creator, 0 mismatched**, 2 unverifiable because their creation transactions are past RPC retention.
+
+Two documented defects, neither touching the fields we route on. The `legacy` subset (before 2026-09-27)
+predates a decoder fix, so about 48% of **buy** rows and 32% of SOL entering curves are undercounted — name,
+symbol, creator and time are unaffected. And `rugged` is the project's own observation rule rather than verified
+fraud, while the `f10_`/`f60_` early features are sampled on 81.6% of launches with heavy selection bias; those
+are treated as unusable and are not used here.
+
+Also evaluated and rejected: **[RED-PUMP-2026-v1](https://zenodo.org/records/20633487)** (Zenodo, CC BY 4.0,
+860,213 launches with survival outcomes) is well documented but its launches file has **no name field** — launch
+metadata is reduced to `has_twitter`, `has_website`, `description_length`, and the outcomes file carries `symbol`
+but no name and no creator. It was built for survival analysis and cannot drive a name matcher.
+
+### 36a. What it corrects
+
+**Door share, widening section 34's range.** Over 67 days rather than 60 hours:
+
+| model | doors | share | impersonation | self-spam |
+|---|---:|---:|---:|---:|
+| live forever | 2,134,910 | **78.7%** | 67.9% | 10.8% |
+| idle window | 1,691,094 | 62.3% | 46.5% | 15.9% |
+| grace only | 1,424,489 | **52.5%** | 34.6% | 17.9% |
+
+The honest range is **52.5-78.7%**, not the 60-74% section 34 gave. Refusals hold at 0.39%.
+
+**Our own 60-hour window was not representative, and this proves it.** It reported self-spam at 20.5% of all
+launches; over 67 days it is **10.8%**. Our sample was taken during the Dacity/Audacity and GTA VI waves, where a
+few wallets mass-produced one name. Every figure in sections 26 to 35 derived from that window inherits the
+distortion. The warnings attached to them were right and should now be read as demonstrated rather than cautious.
+
+**Squatting concentration, correcting section 30.** That section reported the top 1,000 rooms holding 59.2% of
+flow, with the caveat that the figure was retrospective. At 67 days the top 1,000 rooms hold **24.2%**, and
+62.8% of rooms never receive a single door. The small-window figure overstated concentration by more than
+double, so **narrative squatting is less attractive than section 30 implied**, on top of already needing
+prediction.
+
+**The naive-matcher result replicates, which is the most important confirmation here.** Section 26a found the
+whole rule stack worth +1.1% over NFKC + alphanumerics + upper case, on 63,000 launches. At 2,713,057:
+
+| matcher | doors | share |
+|---|---:|---:|
+| live rule (A+B+I+C) | 2,134,910 | 78.7% |
+| NFKC + alnum + upper, nothing else | 2,115,098 | 78.0% |
+| **difference** | **+19,812** | **+0.73pp (+0.94%)** |
+
+Replicated at 43 times the sample. The folds are adaptation insurance, not present value, and that is now a
+finding rather than an observation on one window.
+
+### 36b. The new result: copies outperform originals
+
+The outcome columns allow a question the launch records never could.
+
+| matcher verdict | n | graduated | rugged | median peak reserve |
+|---|---:|---:|---:|---:|
+| new room (an original) | 567,509 | **1.382%** | 52.3% | 0.987 SOL |
+| door (a copy) | 2,134,910 | **1.814%** | 57.7% | 0.916 SOL |
+
+**Copies graduate 31% more often than originals.** They also rug more (57.7% against 52.3%), so it is not a free
+lunch, but the direction is the opposite of the story the project tells about itself.
+
+**The causality runs backwards and must be stated whenever this is quoted.** A launch is a door *because* someone
+used that name first, and names get copied because they are working. This is not "copying succeeds", it is
+"copied names are good names" — the selection sits inside the definition. A cleaner test would condition on the
+original's state at the moment the copy launched, which this dataset supports and nobody has run yet.
+
+Two consequences:
+
+1. **It strengthens the maker case** in `research/doors_into_one_room/MAKER_ROLE.md` §3b beyond what is written
+   there. That section argued a room aggregates *more* flow than a single coin. It also aggregates *better*
+   flow: the room's population graduates at 1.814% against 1.382% for a random original. Measured aggregation:
+   **12.8 launches per occupied room** on average, largest room 9,477 launches, 19,331 rooms (3.41%) contain at
+   least one graduation and 4,702 contain two or more.
+2. **It complicates the positioning** in `research/doors_into_one_room/POSITIONING.md`. "Vampires extract from
+   originals" reads differently when copies are the more successful cohort and the original is often the weaker
+   bet. The anti-vamp mechanism still does what it claims — it aggregates capital that would otherwise scatter —
+   but the moral framing should be decided deliberately rather than inherited, because anyone can run this query.
