@@ -1658,7 +1658,10 @@ and the production Config still match; no redeployment was performed.
 
 The matcher live-validation gap recorded after the 12 November halt is now
 closed. Graduation design remains the next task and requires the owner's
-DAMM v2 versus DLMM ruling. No graduation, lookup-table or maker implementation
+DAMM v2 versus DLMM ruling, which the owner settled on 20 November 2026: DAMM v2,
+the maker role being shelved until demand is proven (research/doors_into_one_room/MAKER_ROLE.md 3b).
+Graduation is therefore unblocked, and M-7 lookup-table integration is the work in front of it.
+No graduation, lookup-table or maker implementation
 was changed by this qualification.
 
 [Full public evidence and every signature/slot](../verification/devnet/matcher-e2e-2026-11-19/report.md).

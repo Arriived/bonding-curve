@@ -126,8 +126,16 @@ therefore full-range and two-sided: **it cannot express Version 2.** Range-per-p
 a different program.
 
 This conflicts with the graduation recommendation of DAMM v2, which was chosen for permanent-lock-with-fees.
-**Decide once with both uses in view**: DLMM for both, DAMM v2 for graduated rooms with DLMM-style bins for the
-maker side, or drop Version 2. Do not decide these separately.
+
+**Resolved by shelving, 20 November 2026 (owner).** The maker role is shelved until demand and product-market
+fit are proven; this document stays research. With no maker side to serve, the single-sided-position objection
+to DAMM v2 does not apply, and graduation takes **DAMM v2** for permanent-lock-with-fees.
+
+**The consequence, recorded so it is not a surprise later:** DAMM v2 keeps price bounds at the pool level, so a
+graduated room cannot express Version 2's single-sided SOL-only position. If the maker role is ever revived,
+either the maker side runs on DLMM alongside DAMM v2 graduation, or Version 2 is dropped for the balanced-LP
+Version 1. Reviving the maker does not require re-opening the graduation decision; it requires accepting one of
+those two options.
 
 **Why the narrative list is the product, not just navigation.** LPing one memecoin earns from one coin's volume.
 Making a room earns from **every door in the narrative**. In the 83-minute watcher run, 287 rooms received doors,
