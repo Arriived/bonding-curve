@@ -1490,3 +1490,70 @@ Two consequences:
    originals" reads differently when copies are the more successful cohort and the original is often the weaker
    bet. The anti-vamp mechanism still does what it claims — it aggregates capital that would otherwise scatter —
    but the moral framing should be decided deliberately rather than inherited, because anyone can run this query.
+
+## 37. Consolidation and runners: what the matcher would have built (20 November 2026)
+
+The owner asked how many launches our matcher would have put together across everything collected, and how many
+runners that would have created.
+
+**Consolidation.** Both datasets, routed chronologically through `matcher_service.rules`:
+
+| dataset | launches | rooms (live forever) | rooms (idle window) | rooms (grace only) |
+|---|---:|---:|---:|---:|
+| external, 67 days | 2,713,057 | **567,509** | 1,011,325 | 1,277,930 |
+| our own, 4.5 days | 95,153 | **24,876** | 29,921 | 39,991 |
+
+Under live-forever, 210,957 of the external rooms hold more than one coin. Our own collection has no outcome
+columns, so it can answer the consolidation question and not the runner one.
+
+### 37a. A modelling error of mine, found in the output
+
+The first run measured thresholds of 10, 25, 85, 200 and 500 SOL of peak reserve. It reported **one** launch in
+2.7M above 200 SOL, which is not a market fact but an artefact of the question. Checking the distribution:
+
+```
+  50.00th percentile      1.19 SOL
+  90.00th percentile     17.10 SOL
+  99.00th percentile     85.01 SOL
+ 100.00th percentile  2,187.77 SOL      (3 coins above 90 SOL, 1 above 200)
+```
+
+**The pump.fun curve completes at about 85 SOL and migrates, so a single curve's peak reserve cannot exceed it.**
+Thresholds above 85 measure nothing about a coin. Worse, the `sum` model is wrong above 85 for rooms too: our
+room graduates at `graduation_trigger_lamports` ≈ 85.02 SOL, so a room cannot hold 200 SOL either — it graduates
+and the rest of the flow goes to the graduated pool, which is a different question with a different answer.
+**Only the 85 SOL row is meaningful, and the 200 and 500 SOL rows are withdrawn.**
+
+### 37b. Runners at the only threshold that means anything
+
+Actual, one coin at a time: **46,606 true graduations (1.718%)**, and 45,584 launches whose peak reserve reached
+85 SOL (1.680%).
+
+Rooms reaching 85 SOL under consolidation, bounded as in `scripts/runners.py` — `max` assumes consolidation adds
+nothing, `sum` adds every member's peak and overstates:
+
+| liveness model | rooms (max) | rooms (sum) | **created by aggregation** |
+|---|---:|---:|---:|
+| live forever | 18,906 | 33,588 | **14,682** |
+| idle window | 28,464 | 43,452 | **14,988** |
+| grace only | 39,267 | 51,372 | **12,105** |
+
+"Created" counts rooms that clear 85 SOL only once their members are added together, and in which **no single
+member would have cleared it alone**. That is the honest version of the claim, and it is **12,105 to 14,988
+regardless of which liveness model is used** — the most stable number in this whole audit.
+
+**But consolidation does not multiply runners, it redistributes them, and that is the part worth understanding.**
+Under live-forever, 45,584 individual winners are compressed into 18,906 rooms, and 14,682 new winner-rooms
+appear, giving 33,588 in total. So the count of runner *events* falls from 45,584 to 33,588 while each surviving
+one is larger, and 14,682 narratives that produced nothing on their own now produce a winner. Under grace-only
+the compression is weaker and the total rises to 51,372. Which way the net goes is decided by the liveness
+setting, which is the owner decision in section 34a — so that decision also sets whether the launchpad produces
+more runners or fewer, bigger ones.
+
+**What would make the `sum` bound trustworthy, and why it is not yet.** Summing peaks assumes every lamport that
+entered a copy would have entered the room instead. Two reasons it will not:
+the peaks are not simultaneous, so a sum overstates any reserve the room actually holds at one moment; and part
+of the demand for a copy is demand for a *fresh* curve — cheap entry and lottery odds — which a room already at
+40 SOL does not offer. Settling it needs per-trade timing, which the dataset's `features` columns cannot give
+because they are sampled with heavy selection bias. Until then, treat 12,105-14,988 as the defensible claim and
+the `sum` column as an upper bound only.
